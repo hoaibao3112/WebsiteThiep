@@ -8,27 +8,27 @@ import {
   X,
   Sparkles,
   QrCode,
-  Gamepad2,
+  Sparkle,
   Image as ImageIcon,
-  Globe,
-  UtensilsCrossed,
+  Globe2,
+  CalendarCheck,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 export default function CardViteHomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Bộ chọn danh mục
+  // Bộ chọn danh mục (Không dùng emoji, phong cách tối giản thanh lịch)
   const [selectedCategory, setSelectedCategory] = useState("WEDDING");
   const [customName, setCustomName] = useState("");
   const [selectedEffect, setSelectedEffect] = useState("WAX_SEAL");
   const [selectedColor, setSelectedColor] = useState("#C8A251");
 
   const categories = [
-    { id: "WEDDING", label: "💒 Đám Cưới & Lễ Thành Hôn" },
-    { id: "NEWBORN", label: "👼 Đầy Tháng & Thôi Nôi" },
-    { id: "BIRTHDAY", label: "🎂 Sinh Nhật & Party" },
-    { id: "EVENT", label: "🥂 Sự Kiện Doanh Nghiệp" },
+    { id: "WEDDING", label: "Đám Cưới & Lễ Thành Hôn" },
+    { id: "NEWBORN", label: "Đầy Tháng & Thôi Nôi" },
+    { id: "BIRTHDAY", label: "Sinh Nhật & Party" },
+    { id: "EVENT", label: "Sự Kiện Doanh Nghiệp" },
   ];
 
   const themeColors = [
@@ -143,16 +143,16 @@ export default function CardViteHomePage() {
       {/* 2. HERO SECTION */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 pt-4 pb-16 md:px-12 lg:px-20">
-        {/* CATEGORY PILLS */}
+        {/* CATEGORY PILLS (KHÔNG DÙNG EMOJI - THANH LỊCH) */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition cursor-pointer border ${
+              className={`px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition cursor-pointer border ${
                 selectedCategory === cat.id
-                  ? "bg-white text-[#181716] border-[#E8E2D8] shadow-2xs"
-                  : "bg-white/40 text-[#181716]/60 border-transparent hover:bg-white/80"
+                  ? "bg-white text-[#181716] border-[#181716] font-semibold shadow-2xs"
+                  : "bg-white/50 text-[#181716]/60 border-[#E8E2D8] hover:bg-white"
               }`}
             >
               {cat.label}
@@ -172,7 +172,7 @@ export default function CardViteHomePage() {
           </h1>
 
           {/* SIMULATOR FORM BOX */}
-          <div className="p-6 bg-white/70 rounded-3xl border border-[#EFE9E1] shadow-2xs space-y-4 max-w-md">
+          <div className="p-6 bg-white/80 rounded-3xl border border-[#EFE9E1] shadow-2xs space-y-4 max-w-md">
             <div>
               <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
                 Tên nhân vật chính
@@ -192,9 +192,9 @@ export default function CardViteHomePage() {
               </label>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 {[
-                  { id: "WAX_SEAL", label: "🕯️ Sáp Nến 3D" },
-                  { id: "GATE_OPEN", label: "🚪 Cổng Hoa" },
-                  { id: "GIFT_BOX", label: "🎁 Hộp Quà" },
+                  { id: "WAX_SEAL", label: "Sáp Nến 3D" },
+                  { id: "GATE_OPEN", label: "Cổng Hoa" },
+                  { id: "GIFT_BOX", label: "Hộp Quà" },
                 ].map((eff) => (
                   <button
                     key={eff.id}
@@ -257,20 +257,19 @@ export default function CardViteHomePage() {
           </p>
         </div>
 
-        {/* BENTO GRID 3 ROWS EXACTLY AS SCREENSHOT */}
+        {/* BENTO GRID 3 ROWS */}
         <div className="space-y-5">
           {/* ROW 1: THIỆP GỬI ĐÍCH DANH (LEFT 65%) + QUẢN LÝ RSVP (RIGHT 35%) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* CARD 1: THIỆP GỬI ĐÍCH DANH */}
             <div className="lg:col-span-8 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-end min-h-[300px] group hover:shadow-md transition">
-              {/* Background Mockup Image */}
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&auto=format&fit=crop')`,
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-white via-white/85 to-transparent" />
 
               <div className="relative z-10 pt-16">
                 <span className="inline-block px-3 py-1 bg-white/90 backdrop-blur-xs text-[#99732b] rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 border border-[#EFE9E1]">
@@ -289,7 +288,7 @@ export default function CardViteHomePage() {
             <div className="lg:col-span-4 bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-[#5C7658]/10 text-[#5C7658] flex items-center justify-center mb-4">
-                  <UtensilsCrossed className="w-4 h-4" />
+                  <CalendarCheck className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-serif font-bold text-[#181716]">
                   Quản Lý RSVP & Chốt Bàn
@@ -307,7 +306,7 @@ export default function CardViteHomePage() {
             <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-[#99732b]/10 text-[#99732b] flex items-center justify-center mb-4">
-                  <QrCode className="w-4 h-4" />
+                  <QrCode className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-serif font-bold text-[#181716]">
                   Hộp Mừng Cưới VietQR
@@ -322,7 +321,7 @@ export default function CardViteHomePage() {
             <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-[#E08269]/10 text-[#E08269] flex items-center justify-center mb-4">
-                  <Gamepad2 className="w-4 h-4" />
+                  <Sparkle className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-serif font-bold text-[#181716]">
                   Mini-Game Tương Tác
@@ -339,8 +338,8 @@ export default function CardViteHomePage() {
             {/* CARD 5: ALBUM ẢNH 3D & NHẠC */}
             <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700 flex items-center justify-center mb-4">
-                  <ImageIcon className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-4">
+                  <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-serif font-bold text-[#181716]">
                   Album Ảnh 3D & Nhạc
@@ -354,8 +353,8 @@ export default function CardViteHomePage() {
             {/* CARD 6: ĐA NGÔN NGỮ TOÀN CẦU */}
             <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
-                  <Globe className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center mb-4">
+                  <Globe2 className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-lg font-serif font-bold text-[#181716]">
                   Đa Ngôn Ngữ Toàn Cầu
