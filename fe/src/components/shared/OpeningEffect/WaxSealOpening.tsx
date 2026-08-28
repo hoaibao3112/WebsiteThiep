@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import { LanguageSwitcher } from "./LanguageSwitcher";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 interface WaxSealOpeningProps {
   primaryColor?: string;
