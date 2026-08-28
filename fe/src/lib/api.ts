@@ -1,0 +1,48 @@
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+export class ApiClient {
+  private static getToken(): string | null {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("auth_token");
+  }
+
+  static setToken(token: string) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_token", token);
+    }
+  }
+
+  static clearToken() {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+    }
+  }
+
+  static async request<T = any>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<{ success: boolean; data?: T; error?: string; message?: string }> {
+    const token = this.getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      const data = await res.json();
+      return data;
+    } catch (error: any) {
+      console.error("API Request failed:", error);
+      return { success: false, error: error.message || "Lỗi kết nối máy chủ" };
+    }
+  }
+}
