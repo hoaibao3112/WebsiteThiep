@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Outfit, Quicksand } from "next/font/google";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -39,7 +41,12 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${outfit.variable} ${quicksand.variable} antialiased`}
       >
-        <LanguageProvider>{children}</LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            {children}
+            <AuthModal />
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );

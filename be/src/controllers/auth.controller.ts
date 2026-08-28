@@ -1,13 +1,73 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService } from "../services/auth.service";
+import { OtpService } from "../services/otp.service";
 import {
   RegisterSchema,
   LoginSchema,
   UpdateProfileSchema,
+  SendOtpSchema,
+  VerifyOtpRegisterSchema,
+  GoogleLoginSchema,
 } from "../lib/validators/auth.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export class AuthController {
+  /**
+   * 2 & 6. Gửi mã OTP xác thực qua Email
+   */
+  static async sendOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validated = SendOtpSchema.parse(req.body);
+      const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "127.0.0.1";
+
+      const result = await OtpService.sendRegisterOtp(validated.email, clientIp);
+
+      res.status(200).json({
+        success: true,
+        message: "Mã xác thực OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
+   * 1. Đăng ký tài khoản kèm xác thực mã OTP
+   */
+  static async registerWithOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validated = VerifyOtpRegisterSchema.parse(req.body);
+      const result = await AuthService.registerWithOtp(validated);
+
+      res.status(201).json({
+        success: true,
+        message: "Đăng ký và xác thực tài khoản thành công!",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(400).json({ success: false, error: error.message });
+    }
+  }
+
+  /**
+   * 3 & 4. Đăng nhập / Đăng ký qua Google OAuth
+   */
+  static async googleLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const validated = GoogleLoginSchema.parse(req.body);
+      const result = await AuthService.googleLogin(validated.idToken);
+
+      res.status(200).json({
+        success: true,
+        message: "Đăng nhập với Google thành công!",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(401).json({ success: false, error: error.message });
+    }
+  }
+
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = RegisterSchema.parse(req.body);

@@ -5,4 +5,6 @@ export const redisConnectionOptions: ConnectionOptions = {
   port: Number(process.env.REDIS_PORT) || 6379,
   password: process.env.REDIS_PASSWORD || undefined,
   maxRetriesPerRequest: null,
+  connectTimeout: 2000,
+  enableOfflineQueue: false,
 };

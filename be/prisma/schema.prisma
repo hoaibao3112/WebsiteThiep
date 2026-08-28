@@ -26,6 +26,8 @@ model User {
   name          String?
   phone         String?
   avatar        String?
+  googleId      String?   @unique
+  emailVerified Boolean   @default(false)
   role          Role      @default(USER)
   telegramId    String?   // ID Telegram nhận thông báo RSVP realtime
   createdAt     DateTime  @default(now())

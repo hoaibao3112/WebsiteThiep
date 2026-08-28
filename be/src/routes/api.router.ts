@@ -18,6 +18,9 @@ const upload = multer({
 export const apiRouter = Router();
 
 // --- AUTH ROUTES ---
+apiRouter.post("/auth/send-otp", AuthController.sendOtp); // Gửi mã OTP xác thực qua Email
+apiRouter.post("/auth/verify-otp-register", AuthController.registerWithOtp); // Đăng ký tài khoản với mã OTP
+apiRouter.post("/auth/google", AuthController.googleLogin); // Đăng nhập / Đăng ký qua Google OAuth
 apiRouter.post("/auth/register", AuthController.register);
 apiRouter.post("/auth/login", AuthController.login);
 apiRouter.get("/auth/me", authGuard, AuthController.getMe);

@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 const CAROUSEL_CARDS = [
   {
@@ -137,6 +138,7 @@ const COUPLES_STORIES = [
 
 export default function CardViteHomePage() {
   const { t } = useLanguage();
+  const { user, logout, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Bộ điều khiển Simulator Hero
@@ -301,10 +303,38 @@ export default function CardViteHomePage() {
           {/* RIGHT ACTION */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
+
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/dashboard/cards"
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-stone-200 text-stone-800 text-xs font-semibold hover:border-[#BE944E] transition shadow-2xs"
+                >
+                  <div className="w-5 h-5 rounded-full bg-[#BE944E] text-white flex items-center justify-center text-[10px] font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="max-w-[120px] truncate">{user.name}</span>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-[11px] font-bold text-stone-500 hover:text-stone-900 transition cursor-pointer"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => openAuthModal("login")}
+                className="px-4 py-2 rounded-full text-[11px] font-bold text-stone-700 hover:text-stone-900 border border-stone-300 hover:bg-white transition cursor-pointer"
+              >
+                Đăng Nhập
+              </button>
+            )}
+
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href="/dashboard/cards/new"
-                className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-md transition cursor-pointer"
+                className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-md transition cursor-pointer"
               >
                 {t("homeCreateBtn")}
               </Link>

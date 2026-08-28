@@ -5,6 +5,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import path from "path";
 import { apiRouter } from "./routes/api.router";
+import "./queues/workers/mail.worker"; // Khởi động background worker xử lý gửi email bất đồng bộ
 
 dotenv.config();
 
