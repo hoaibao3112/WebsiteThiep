@@ -37,24 +37,21 @@ export default function CardViteHomePage() {
             </span>
           </Link>
 
-          {/* DESKTOP NAV LINKS */}
+          {/* DESKTOP NAV LINKS: 4 CHỨC NĂNG CHÍNH */}
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
             <Link
-              href="#collections"
+              href="/collections"
               className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5"
             >
               {t("homeNavCollections")}
             </Link>
-            <Link href="#custom" className="hover:text-[#181716] transition">
-              {t("homeNavCustom")}
+            <Link href="/journal" className="hover:text-[#181716] transition">
+              {t("homeNavJournal")}
             </Link>
-            <Link href="#rsvp" className="hover:text-[#181716] transition">
-              {t("homeNavRsvp")}
+            <Link href="/pricing" className="hover:text-[#181716] transition">
+              {t("homeNavPricing")}
             </Link>
-            <Link href="#gallery" className="hover:text-[#181716] transition">
-              {t("homeNavGallery")}
-            </Link>
-            <Link href="#concierge" className="hover:text-[#181716] transition">
+            <Link href="/concierge" className="hover:text-[#181716] transition">
               {t("homeNavConcierge")}
             </Link>
           </nav>
@@ -92,32 +89,32 @@ export default function CardViteHomePage() {
           </button>
           <div className="space-y-6 text-center">
             <Link
-              href="#collections"
+              href="/collections"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
               {t("homeNavCollections")}
             </Link>
             <Link
-              href="#custom"
+              href="/journal"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              {t("homeNavCustom")}
+              {t("homeNavJournal")}
             </Link>
             <Link
-              href="#rsvp"
+              href="/pricing"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              {t("homeNavRsvp")}
+              {t("homeNavPricing")}
             </Link>
             <Link
-              href="#gallery"
+              href="/concierge"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              {t("homeNavGallery")}
+              {t("homeNavConcierge")}
             </Link>
             <div className="pt-6 flex flex-col items-center gap-4">
               <LanguageSwitcher />

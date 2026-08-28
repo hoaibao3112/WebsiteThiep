@@ -3,12 +3,11 @@ export type SupportedLanguage = "vi" | "en" | "zh";
 export const DICTIONARY = {
   vi: {
     // Navigation
-    homeNavCollections: "COLLECTIONS",
-    homeNavCustom: "CUSTOM",
-    homeNavRsvp: "RSVP",
-    homeNavGallery: "GALLERY",
-    homeNavConcierge: "CONCIERGE",
-    homeCreateBtn: "CREATE",
+    homeNavCollections: "MẪU THIỆP",
+    homeNavJournal: "CẨM NANG",
+    homeNavPricing: "BẢNG GIÁ",
+    homeNavConcierge: "LIÊN HỆ",
+    homeCreateBtn: "TẠO THIỆP",
 
     // Hero Section
     homeTagWedding: "WEDDING",
@@ -158,10 +157,9 @@ export const DICTIONARY = {
 
   en: {
     // Navigation
-    homeNavCollections: "COLLECTIONS",
-    homeNavCustom: "CUSTOM",
-    homeNavRsvp: "RSVP",
-    homeNavGallery: "GALLERY",
+    homeNavCollections: "TEMPLATES",
+    homeNavJournal: "JOURNAL",
+    homeNavPricing: "PRICING",
     homeNavConcierge: "CONCIERGE",
     homeCreateBtn: "CREATE",
 
@@ -313,11 +311,10 @@ export const DICTIONARY = {
 
   zh: {
     // Navigation
-    homeNavCollections: "精选模板",
-    homeNavCustom: "定制设计",
-    homeNavRsvp: "出席回执",
-    homeNavGallery: "相册展示",
-    homeNavConcierge: "专属顾问",
+    homeNavCollections: "精选模版",
+    homeNavJournal: "婚礼指南",
+    homeNavPricing: "服务价格",
+    homeNavConcierge: "定制咨询",
     homeCreateBtn: "立即制作",
 
     // Hero Section

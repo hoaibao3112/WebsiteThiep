@@ -146,12 +146,11 @@ export default function CollectionsPage() {
 
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
             <Link href="/collections" className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5">
-              COLLECTIONS
+              MẪU THIỆP
             </Link>
-            <Link href="/custom" className="hover:text-[#181716] transition">CUSTOM</Link>
-            <Link href="/rsvp" className="hover:text-[#181716] transition">RSVP</Link>
-            <Link href="/gallery" className="hover:text-[#181716] transition">GALLERY</Link>
-            <Link href="/concierge" className="hover:text-[#181716] transition">CONCIERGE</Link>
+            <Link href="/journal" className="hover:text-[#181716] transition">CẨM NANG</Link>
+            <Link href="/pricing" className="hover:text-[#181716] transition">BẢNG GIÁ</Link>
+            <Link href="/concierge" className="hover:text-[#181716] transition">LIÊN HỆ</Link>
           </nav>
 
           <div className="flex items-center gap-3">
