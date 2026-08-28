@@ -130,17 +130,17 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
   };
 
   return (
-    <section className="w-full max-w-lg mx-auto my-8 px-6 pb-6">
-      <div className="text-center mb-6">
+    <section className="w-full max-w-lg mx-auto my-6 sm:my-8 px-4 sm:px-6 pb-6">
+      <div className="text-center mb-4 sm:mb-6">
         <div
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-2 bg-[#FAF2E6] border border-[#E8D9C5] shadow-2xs"
+          className="inline-flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full mb-1.5 sm:mb-2 bg-[#FAF2E6] border border-[#E8D9C5] shadow-2xs"
         >
           <MessageSquare className="w-4 h-4 text-[#BE944E]" />
         </div>
-        <h2 className="text-2xl font-serif font-bold text-[#6D4C33]">
+        <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#6D4C33]">
           {t("guestbookTitle") || "Sổ Lưu Bút & Lời Chúc"}
         </h2>
-        <p className="text-xs text-[#8C6D53] mt-1 font-light">
+        <p className="text-[11px] sm:text-xs text-[#8C6D53] mt-0.5 sm:mt-1 font-light leading-relaxed">
           {t("guestbookSubtitle") || "Hãy để lại những lời chúc phúc ngọt ngào nhất dành cho chúng mình nhé!"}
         </p>
       </div>
@@ -148,23 +148,23 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
       {/* FORM GỬI LỜI CHÚC */}
       <form
         onSubmit={handleSubmit}
-        className="bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] p-5 sm:p-6 rounded-[28px] border border-[#EAE0D2] shadow-xs space-y-3.5 mb-8"
+        className="bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] p-4 sm:p-6 rounded-2xl sm:rounded-[28px] border border-[#EAE0D2] shadow-xs space-y-3 sm:space-y-3.5 mb-6 sm:mb-8"
       >
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <input
             type="text"
             required
             placeholder={t("yourName") || "Tên của bạn *"}
             value={senderName}
             onChange={(e) => setSenderName(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
+            className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
           />
           <input
             type="text"
             placeholder={t("relationship") || "Mối quan hệ (VD: Bạn thân)"}
             value={relationship}
             onChange={(e) => setRelationship(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
+            className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
           />
         </div>
 
@@ -174,21 +174,21 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
           placeholder={t("writeWish") || "Viết lời chúc của bạn ở đây..."}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800 resize-none"
+          className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800 resize-none"
         />
 
         {/* EMOJI SELECTOR & SUBMIT */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto py-1 max-w-full">
             {EMOJI_OPTIONS.map((em) => (
               <button
                 key={em}
                 type="button"
                 onClick={() => setSelectedEmoji(em)}
-                className={`p-1.5 text-sm sm:text-base rounded-lg transition cursor-pointer ${
+                className={`p-1 sm:p-1.5 text-base sm:text-lg rounded-lg transition cursor-pointer min-w-[34px] min-h-[34px] flex items-center justify-center ${
                   selectedEmoji === em
-                    ? "bg-[#FAF2E6] border border-[#BE944E]/40 scale-125 shadow-2xs"
-                    : "hover:bg-white"
+                    ? "bg-[#FAF2E6] border border-[#BE944E]/50 scale-110 shadow-2xs"
+                    : "hover:bg-white active:bg-stone-100"
                 }`}
               >
                 {em}
@@ -199,7 +199,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-[#A6784D] to-[#8C6038] hover:opacity-95 text-white shadow-sm transition cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-[#A6784D] to-[#8C6038] active:scale-[0.98] text-white shadow-sm transition cursor-pointer disabled:opacity-50 min-h-[40px]"
           >
             <Send className="w-3.5 h-3.5" />
             <span>{submitting ? "..." : t("sendWish") || "Gửi Lời Chúc"}</span>
@@ -207,21 +207,21 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
         </div>
 
         {successMsg && (
-          <p className="text-xs text-emerald-700 text-center font-medium pt-1 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
+          <p className="text-xs text-emerald-700 text-center font-medium pt-1 bg-emerald-50 py-2 rounded-xl border border-emerald-200">
             {successMsg}
           </p>
         )}
       </form>
 
       {/* DANH SÁCH LỜI CHÚC */}
-      <div className="space-y-3">
+      <div className="space-y-2.5 sm:space-y-3">
         {wishes.length > 0 ? (
           wishes.map((w) => (
             <div
               key={w.id}
-              className="p-4 rounded-2xl bg-white border border-[#EAE0D2] shadow-2xs flex items-start gap-3"
+              className="p-3.5 sm:p-4 rounded-2xl bg-white border border-[#EAE0D2] shadow-2xs flex items-start gap-3"
             >
-              <div className="text-2xl pt-0.5 select-none">{w.emoji || "❤️"}</div>
+              <div className="text-xl sm:text-2xl pt-0.5 select-none">{w.emoji || "❤️"}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
                   <h4 className="text-xs font-bold text-[#6D4C33] truncate">
@@ -232,7 +232,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
                       </span>
                     )}
                   </h4>
-                  <span className="text-[10px] text-stone-400 shrink-0">
+                  <span className="text-[9.5px] sm:text-[10px] text-stone-400 shrink-0">
                     {new Date(w.createdAt).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
@@ -243,7 +243,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
             </div>
           ))
         ) : (
-          <div className="p-8 text-center bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] rounded-2xl border border-dashed border-[#DFCEBA] text-[#8C6D53] text-xs">
+          <div className="p-6 sm:p-8 text-center bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] rounded-2xl border border-dashed border-[#DFCEBA] text-[#8C6D53] text-xs">
             {t("emptyWishes") || "Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc nhé! ✨"}
           </div>
         )}
@@ -251,3 +251,4 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
     </section>
   );
 };
+

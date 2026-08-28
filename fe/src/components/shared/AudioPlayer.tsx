@@ -76,13 +76,13 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   return (
-    <div className="fixed bottom-24 right-4 z-40">
+    <div className="fixed bottom-[74px] sm:bottom-24 right-3.5 sm:right-4 z-40">
       <motion.button
         type="button"
         onClick={togglePlay}
         whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.92 }}
-        className="relative flex items-center justify-center w-11 h-11 rounded-full bg-[#3D2C1E]/85 backdrop-blur-md text-white shadow-xl border border-white/25 cursor-pointer focus:outline-none"
+        whileTap={{ scale: 0.9 }}
+        className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#3D2C1E]/85 backdrop-blur-md text-white shadow-xl border border-white/25 cursor-pointer focus:outline-none active:scale-90 transition-transform"
         title={isPlaying ? "Tắt nhạc" : "Bật nhạc"}
       >
         <motion.div
@@ -94,10 +94,10 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           }}
           className="flex items-center justify-center"
         >
-          <Music className="w-4 h-4 text-amber-300" />
+          <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300" />
         </motion.div>
 
-        <div className="absolute -top-1 -right-1 bg-[#BE944E] rounded-full p-0.5 shadow-sm">
+        <div className="absolute -top-0.5 -right-0.5 bg-[#BE944E] rounded-full p-0.5 shadow-sm">
           {isPlaying ? (
             <Volume2 className="w-2.5 h-2.5 text-white" />
           ) : (
