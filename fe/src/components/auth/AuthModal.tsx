@@ -55,13 +55,16 @@ export function AuthModal() {
 
   // Load & Initialize Google Identity Services SDK
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !isAuthModalOpen) return;
 
     const initGsi = () => {
       if (googleClientId && window.google?.accounts?.id) {
         try {
           window.google.accounts.id.initialize({
             client_id: googleClientId,
+            use_fedcm_for_prompt: false,
+            auto_select: false,
+            cancel_on_tap_outside: true,
             callback: (response: any) => {
               if (response.credential) {
                 setLoading(true);
@@ -108,6 +111,14 @@ export function AuthModal() {
     } else {
       initGsi();
     }
+
+    return () => {
+      try {
+        window.google?.accounts?.id?.cancel();
+      } catch (e) {
+        // ignore cleanup error
+      }
+    };
   }, [googleClientId, isAuthModalOpen, activeTab]);
 
   // Countdown timer effect
@@ -236,7 +247,15 @@ export function AuthModal() {
   // 5. Đăng nhập Google Trigger
   const handleGoogleSignIn = () => {
     if (googleClientId && window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
+      try {
+        window.google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed?.() || notification.isSkippedMoment?.()) {
+            console.log("[GSI] One-tap prompt skipped/not displayed");
+          }
+        });
+      } catch (err) {
+        console.warn("[GSI] Prompt error:", err);
+      }
     } else {
       // Khi chưa cấu hình Google Client ID, mở popup hướng dẫn và cho phép test
       setShowGoogleGuide(true);

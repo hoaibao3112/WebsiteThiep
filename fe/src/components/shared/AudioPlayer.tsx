@@ -10,12 +10,11 @@ interface AudioPlayerProps {
   autoPlay?: boolean;
 }
 
-const DEFAULT_WEDDING_SONG =
-  "https://assets.mixkit.co/music/preview/mixkit-wedding-dreams-romantic-intro-1152.mp3";
+const DEFAULT_WEDDING_SONG = "/music/le-duong.mp3";
 
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   musicUrl,
-  autoPlay = true,
+  autoPlay = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const soundRef = useRef<Howl | null>(null);
@@ -23,41 +22,67 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   useEffect(() => {
     const url = musicUrl && musicUrl.trim() !== "" ? musicUrl : DEFAULT_WEDDING_SONG;
 
-    soundRef.current = new Howl({
-      src: [url],
-      html5: true,
-      loop: true,
-      volume: 0.6,
-      onplay: () => setIsPlaying(true),
-      onpause: () => setIsPlaying(false),
-      onstop: () => setIsPlaying(false),
-    });
+    try {
+      soundRef.current = new Howl({
+        src: [url],
+        html5: true,
+        loop: true,
+        volume: 0.6,
+        onplay: () => setIsPlaying(true),
+        onpause: () => setIsPlaying(false),
+        onstop: () => setIsPlaying(false),
+        onloaderror: () => {
+          setIsPlaying(false);
+        },
+        onplayerror: () => {
+          soundRef.current?.once("unlock", () => {
+            soundRef.current?.play();
+          });
+          setIsPlaying(false);
+        },
+      });
 
-    if (autoPlay) {
-      soundRef.current.play();
+      if (autoPlay) {
+        try {
+          soundRef.current.play();
+        } catch {
+          setIsPlaying(false);
+        }
+      }
+    } catch {
+      setIsPlaying(false);
     }
 
     return () => {
-      soundRef.current?.unload();
+      try {
+        soundRef.current?.unload();
+      } catch {
+        // ignore
+      }
     };
   }, [musicUrl, autoPlay]);
 
   const togglePlay = () => {
     if (!soundRef.current) return;
-    if (isPlaying) {
-      soundRef.current.pause();
-    } else {
-      soundRef.current.play();
+    try {
+      if (isPlaying) {
+        soundRef.current.pause();
+      } else {
+        soundRef.current.play();
+      }
+    } catch {
+      setIsPlaying(false);
     }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-24 right-4 z-40">
       <motion.button
+        type="button"
         onClick={togglePlay}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="relative flex items-center justify-center w-12 h-12 rounded-full bg-stone-900/80 backdrop-blur-md text-white shadow-xl border border-white/20 cursor-pointer focus:outline-none"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.92 }}
+        className="relative flex items-center justify-center w-11 h-11 rounded-full bg-[#3D2C1E]/85 backdrop-blur-md text-white shadow-xl border border-white/25 cursor-pointer focus:outline-none"
         title={isPlaying ? "Tắt nhạc" : "Bật nhạc"}
       >
         <motion.div
@@ -69,14 +94,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           }}
           className="flex items-center justify-center"
         >
-          <Music className="w-5 h-5 text-amber-300" />
+          <Music className="w-4 h-4 text-amber-300" />
         </motion.div>
 
-        <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 shadow-sm">
+        <div className="absolute -top-1 -right-1 bg-[#BE944E] rounded-full p-0.5 shadow-sm">
           {isPlaying ? (
-            <Volume2 className="w-3 h-3 text-white" />
+            <Volume2 className="w-2.5 h-2.5 text-white" />
           ) : (
-            <VolumeX className="w-3 h-3 text-white" />
+            <VolumeX className="w-2.5 h-2.5 text-white" />
           )}
         </div>
       </motion.button>

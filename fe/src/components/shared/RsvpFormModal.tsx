@@ -45,6 +45,18 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
     setLoading(true);
     setErrorMsg("");
 
+    if (!cardId || cardId.startsWith("demo-")) {
+      setTimeout(() => {
+        setLoading(false);
+        setSuccess(true);
+        setTimeout(() => {
+          setSuccess(false);
+          onClose();
+        }, 2000);
+      }, 500);
+      return;
+    }
+
     const res = await ApiClient.request("/rsvp", {
       method: "POST",
       body: JSON.stringify({

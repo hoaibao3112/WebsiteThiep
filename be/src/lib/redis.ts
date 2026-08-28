@@ -47,9 +47,9 @@ const originalIncr = redis.incr.bind(redis);
 const originalExpire = redis.expire.bind(redis);
 const originalTtl = redis.ttl.bind(redis);
 
-redis.get = async (key: string): Promise<string | null> => {
+(redis as any).get = async (key: string): Promise<string | null> => {
   if (isRedisConnected) {
-    try { return await originalGet(key); } catch (e) {}
+    try { return await (originalGet as any)(key); } catch (e) {}
   }
   const item = memoryStore.get(key);
   if (!item) return null;
@@ -60,7 +60,7 @@ redis.get = async (key: string): Promise<string | null> => {
   return item.value;
 };
 
-redis.set = async (key: string, value: string | number, ...args: any[]): Promise<any> => {
+(redis as any).set = async (key: string, value: string | number, ...args: any[]): Promise<any> => {
   if (isRedisConnected) {
     try { return await (originalSet as any)(key, value, ...args); } catch (e) {}
   }
@@ -72,9 +72,9 @@ redis.set = async (key: string, value: string | number, ...args: any[]): Promise
   return "OK";
 };
 
-redis.del = async (...keys: string[]): Promise<number> => {
+(redis as any).del = async (...keys: string[]): Promise<number> => {
   if (isRedisConnected) {
-    try { return await originalDel(...keys); } catch (e) {}
+    try { return await (originalDel as any)(...keys); } catch (e) {}
   }
   let count = 0;
   for (const k of keys) {
@@ -83,9 +83,9 @@ redis.del = async (...keys: string[]): Promise<number> => {
   return count;
 };
 
-redis.incr = async (key: string): Promise<number> => {
+(redis as any).incr = async (key: string): Promise<number> => {
   if (isRedisConnected) {
-    try { return await originalIncr(key); } catch (e) {}
+    try { return await (originalIncr as any)(key); } catch (e) {}
   }
   const item = memoryStore.get(key);
   let current = item ? parseInt(item.value, 10) || 0 : 0;
@@ -94,9 +94,9 @@ redis.incr = async (key: string): Promise<number> => {
   return current;
 };
 
-redis.expire = async (key: string, seconds: number): Promise<number> => {
+(redis as any).expire = async (key: string, seconds: number): Promise<number> => {
   if (isRedisConnected) {
-    try { return await originalExpire(key, seconds); } catch (e) {}
+    try { return await (originalExpire as any)(key, seconds); } catch (e) {}
   }
   const item = memoryStore.get(key);
   if (!item) return 0;
@@ -105,9 +105,9 @@ redis.expire = async (key: string, seconds: number): Promise<number> => {
   return 1;
 };
 
-redis.ttl = async (key: string): Promise<number> => {
+(redis as any).ttl = async (key: string): Promise<number> => {
   if (isRedisConnected) {
-    try { return await originalTtl(key); } catch (e) {}
+    try { return await (originalTtl as any)(key); } catch (e) {}
   }
   const item = memoryStore.get(key);
   if (!item || !item.expireAt) return -1;

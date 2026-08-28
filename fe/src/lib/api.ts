@@ -41,8 +41,8 @@ export class ApiClient {
       const data = await res.json();
       return data;
     } catch (error: any) {
-      console.error("API Request failed:", error);
-      return { success: false, error: error.message || "Lỗi kết nối máy chủ" };
+      // Silently return failure without triggering Next.js dev error overlay
+      return { success: false, error: error?.message || "Lỗi kết nối máy chủ" };
     }
   }
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { PLANS, PlanConfig } from "@/config/plans";
+import { PLANS, PlanConfig, getLocalizedPlans } from "@/config/plans";
+import { useLanguage } from "@/context/LanguageContext";
 import { ApiClient } from "@/lib/api";
 import {
   Crown,
@@ -16,7 +17,9 @@ import {
 import confetti from "canvas-confetti";
 
 export default function BillingPage() {
-  const [selectedPlan, setSelectedPlan] = useState<PlanConfig>(PLANS[2]); // Default VIP
+  const { t } = useLanguage();
+  const localizedPlans = getLocalizedPlans(t);
+  const [selectedPlan, setSelectedPlan] = useState<PlanConfig>(localizedPlans[2] || PLANS[2]); // Default VIP
   const [loading, setLoading] = useState(false);
   const [orderData, setOrderData] = useState<any | null>(null);
   const [isPaid, setIsPaid] = useState(false);
@@ -98,7 +101,7 @@ export default function BillingPage() {
 
         {/* BẢNG CHỌN GÓI */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PLANS.map((plan) => (
+          {localizedPlans.map((plan) => (
             <div
               key={plan.code}
               className={`bg-white rounded-3xl p-6 border transition flex flex-col justify-between ${

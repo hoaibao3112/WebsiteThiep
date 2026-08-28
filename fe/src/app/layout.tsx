@@ -7,22 +7,29 @@ import "./globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
   variable: "--font-playfair",
+  display: "swap",
 });
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
+  display: "swap",
 });
 
 const quicksand = Quicksand({
   subsets: ["latin", "vietnamese"],
   variable: "--font-quicksand",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

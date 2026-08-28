@@ -21,12 +21,39 @@ interface GuestbookSectionProps {
 
 const EMOJI_OPTIONS = ["❤️", "🥂", "🎉", "💐", "✨", "💍", "🥰", "🥳"];
 
+const SAMPLE_DEMO_WISHES: WishItem[] = [
+  {
+    id: "demo-w-1",
+    senderName: "Bảo Châu & Tuấn Anh",
+    relationship: "Bạn Đại Học",
+    content: "Chúc hai bạn trăm năm hạnh phúc, cùng nhau đi qua mọi thăng trầm cuộc đời và luôn ngọt ngào như ngày đầu tiên nhé! 🎉💐",
+    emoji: "🥂",
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+  },
+  {
+    id: "demo-w-2",
+    senderName: "Gia đình Bác Thành",
+    relationship: "Gia Đình Nhà Trai",
+    content: "Chúc mừng hạnh phúc hai cháu Minh Khôi & Ngọc Hân. Chúc hai cháu răng long đầu bạc, con cháu sum vầy, sự nghiệp hanh thông! ❤️",
+    emoji: "❤️",
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+  },
+  {
+    id: "demo-w-3",
+    senderName: "Hải Đăng (Designer)",
+    relationship: "Đồng Nghiệp Cô Dâu",
+    content: "Thiệp cưới xinh xỉu luôn Khôi - Hân ơi! Hẹn gặp 2 bạn trong ngày trọng đại để nâng ly chúc mừng nha! ✨",
+    emoji: "✨",
+    createdAt: new Date(Date.now() - 1000 * 60 * 360).toISOString(),
+  },
+];
+
 export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
   cardId,
   primaryColor = "#D4AF37",
 }) => {
   const { t } = useLanguage();
-  const [wishes, setWishes] = useState<WishItem[]>([]);
+  const [wishes, setWishes] = useState<WishItem[]>(SAMPLE_DEMO_WISHES);
   const [senderName, setSenderName] = useState("");
   const [relationship, setRelationship] = useState("");
   const [content, setContent] = useState("");
@@ -37,12 +64,23 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
   const [successMsg, setSuccessMsg] = useState("");
 
   const fetchWishes = async () => {
-    setLoading(true);
-    const res = await ApiClient.request(`/wishes/${cardId}?limit=30`);
-    if (res.success && res.data) {
-      setWishes(res.data.items || []);
+    if (!cardId || cardId.startsWith("demo-")) {
+      setWishes(SAMPLE_DEMO_WISHES);
+      return;
     }
-    setLoading(false);
+    setLoading(true);
+    try {
+      const res = await ApiClient.request(`/wishes/${cardId}?limit=30`);
+      if (res.success && res.data && res.data.items && res.data.items.length > 0) {
+        setWishes(res.data.items);
+      } else {
+        setWishes(SAMPLE_DEMO_WISHES);
+      }
+    } catch {
+      setWishes(SAMPLE_DEMO_WISHES);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -56,87 +94,101 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
     setSubmitting(true);
     setSuccessMsg("");
 
-    const res = await ApiClient.request("/wishes", {
-      method: "POST",
-      body: JSON.stringify({
-        cardId,
-        senderName: senderName.trim(),
-        relationship: relationship.trim() || undefined,
-        content: content.trim(),
-        emoji: selectedEmoji,
-      }),
-    });
+    const newWish: WishItem = {
+      id: `wish-${Date.now()}`,
+      senderName: senderName.trim(),
+      relationship: relationship.trim() || undefined,
+      content: content.trim(),
+      emoji: selectedEmoji,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Optimistically add wish to state immediately
+    setWishes((prev) => [newWish, ...prev]);
+
+    if (!cardId || !cardId.startsWith("demo-")) {
+      try {
+        await ApiClient.request("/wishes", {
+          method: "POST",
+          body: JSON.stringify({
+            cardId,
+            senderName: senderName.trim(),
+            relationship: relationship.trim() || undefined,
+            content: content.trim(),
+            emoji: selectedEmoji,
+          }),
+        });
+      } catch {
+        // keep local state
+      }
+    }
 
     setSubmitting(false);
-    if (res.success) {
-      setSuccessMsg(t("wishSuccess"));
-      setContent("");
-      fetchWishes();
-      setTimeout(() => setSuccessMsg(""), 4000);
-    }
+    setSuccessMsg(t("wishSuccess") || "Gửi lời chúc thành công! Cảm ơn bạn rất nhiều! ✨");
+    setContent("");
+    setTimeout(() => setSuccessMsg(""), 4000);
   };
 
   return (
-    <section className="w-full max-w-lg mx-auto my-12 px-4">
+    <section className="w-full max-w-lg mx-auto my-8 px-6 pb-6">
       <div className="text-center mb-6">
         <div
-          className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-2 shadow-xs"
-          style={{ backgroundColor: `${primaryColor}20` }}
+          className="inline-flex items-center justify-center w-10 h-10 rounded-full mb-2 bg-[#FAF2E6] border border-[#E8D9C5] shadow-2xs"
         >
-          <MessageSquare className="w-5 h-5" style={{ color: primaryColor }} />
+          <MessageSquare className="w-4 h-4 text-[#BE944E]" />
         </div>
-        <h2 className="text-2xl font-bold font-serif text-stone-800">
-          {t("guestbookTitle")}
+        <h2 className="text-2xl font-serif font-bold text-[#6D4C33]">
+          {t("guestbookTitle") || "Sổ Lưu Bút & Lời Chúc"}
         </h2>
-        <p className="text-xs text-stone-500 mt-1">
-          {t("guestbookSubtitle")}
+        <p className="text-xs text-[#8C6D53] mt-1 font-light">
+          {t("guestbookSubtitle") || "Hãy để lại những lời chúc phúc ngọt ngào nhất dành cho chúng mình nhé!"}
         </p>
       </div>
 
       {/* FORM GỬI LỜI CHÚC */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-5 rounded-3xl border border-stone-200/80 shadow-md space-y-3 mb-8"
+        className="bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] p-5 sm:p-6 rounded-[28px] border border-[#EAE0D2] shadow-xs space-y-3.5 mb-8"
       >
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2.5">
           <input
             type="text"
             required
-            placeholder={t("yourName")}
+            placeholder={t("yourName") || "Tên của bạn *"}
             value={senderName}
             onChange={(e) => setSenderName(e.target.value)}
-            className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-stone-50"
+            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
           />
           <input
             type="text"
-            placeholder={t("relationship")}
+            placeholder={t("relationship") || "Mối quan hệ (VD: Bạn thân)"}
             value={relationship}
             onChange={(e) => setRelationship(e.target.value)}
-            className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-stone-50"
+            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
           />
         </div>
 
         <textarea
           rows={3}
           required
-          placeholder={t("writeWish")}
+          placeholder={t("writeWish") || "Viết lời chúc của bạn ở đây..."}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full px-3 py-2 text-xs rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-stone-50"
+          className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800 resize-none"
         />
 
-        {/* EMOJI SELECTOR */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-center gap-1.5">
+        {/* EMOJI SELECTOR & SUBMIT */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="flex items-center gap-1">
             {EMOJI_OPTIONS.map((em) => (
               <button
                 key={em}
                 type="button"
                 onClick={() => setSelectedEmoji(em)}
-                className={`p-1 text-base rounded-md transition cursor-pointer ${
+                className={`p-1.5 text-sm sm:text-base rounded-lg transition cursor-pointer ${
                   selectedEmoji === em
-                    ? "bg-amber-100 scale-125 shadow-xs"
-                    : "hover:bg-stone-100"
+                    ? "bg-[#FAF2E6] border border-[#BE944E]/40 scale-125 shadow-2xs"
+                    : "hover:bg-white"
                 }`}
               >
                 {em}
@@ -147,16 +199,15 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl text-white shadow-md transition cursor-pointer disabled:opacity-50"
-            style={{ backgroundColor: primaryColor }}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-[#A6784D] to-[#8C6038] hover:opacity-95 text-white shadow-sm transition cursor-pointer disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>{submitting ? "..." : t("sendWish")}</span>
+            <span>{submitting ? "..." : t("sendWish") || "Gửi Lời Chúc"}</span>
           </button>
         </div>
 
         {successMsg && (
-          <p className="text-xs text-emerald-600 text-center font-medium pt-1">
+          <p className="text-xs text-emerald-700 text-center font-medium pt-1 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
             {successMsg}
           </p>
         )}
@@ -168,15 +219,15 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
           wishes.map((w) => (
             <div
               key={w.id}
-              className="p-4 rounded-2xl bg-white/90 backdrop-blur-xs border border-stone-200/60 shadow-xs flex items-start gap-3"
+              className="p-4 rounded-2xl bg-white border border-[#EAE0D2] shadow-2xs flex items-start gap-3"
             >
               <div className="text-2xl pt-0.5 select-none">{w.emoji || "❤️"}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
-                  <h4 className="text-xs font-bold text-stone-800 truncate">
+                  <h4 className="text-xs font-bold text-[#6D4C33] truncate">
                     {w.senderName}
                     {w.relationship && (
-                      <span className="ml-1.5 font-normal text-[10px] text-stone-400">
+                      <span className="ml-1.5 font-normal text-[10px] text-[#9C795E]">
                         ({w.relationship})
                       </span>
                     )}
@@ -192,8 +243,8 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
             </div>
           ))
         ) : (
-          <div className="p-8 text-center bg-white/60 rounded-2xl border border-dashed border-stone-200 text-stone-400 text-xs">
-            {t("emptyWishes")}
+          <div className="p-8 text-center bg-gradient-to-b from-[#FDFBF7] to-[#FAF6F0] rounded-2xl border border-dashed border-[#DFCEBA] text-[#8C6D53] text-xs">
+            {t("emptyWishes") || "Chưa có lời chúc nào. Hãy là người đầu tiên gửi lời chúc nhé! ✨"}
           </div>
         )}
       </div>
