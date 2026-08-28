@@ -851,14 +851,56 @@ export default function CardViteHomePage() {
       {/* 4. MỤC: HỖ TRỢ ĐA NGÔN NGỮ (BILINGUAL & 3D GLOBE) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 relative overflow-hidden">
-        {/* Subtle Ambient Globe Outline Background */}
-        <div className="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[550px] h-[550px] opacity-10 pointer-events-none">
-          <svg viewBox="0 0 100 100" className="w-full h-full stroke-stone-800 fill-none">
-            <circle cx="50" cy="50" r="45" strokeWidth="0.5" />
-            <ellipse cx="50" cy="50" rx="45" ry="20" strokeWidth="0.5" />
-            <ellipse cx="50" cy="50" rx="20" ry="45" strokeWidth="0.5" />
-            <line x1="5" y1="50" x2="95" y2="50" strokeWidth="0.5" />
-          </svg>
+        {/* CONTINUOUS ROTATING 3D WIREFRAME GLOBE ANIMATION */}
+        <div className="absolute right-[-140px] sm:right-[-80px] top-1/2 -translate-y-1/2 w-[480px] sm:w-[600px] h-[480px] sm:h-[600px] pointer-events-none z-0 flex items-center justify-center opacity-25 overflow-visible">
+          {/* LỚP 1: VÒNG TRÒN CHÍNH XOAY THUẬN CHIỀU KIM ĐỒNG HỒ */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <svg viewBox="0 0 200 200" className="w-full h-full stroke-[#BE944E] fill-none">
+              {/* Vành ngoài */}
+              <circle cx="100" cy="100" r="95" strokeWidth="0.75" strokeDasharray="4 2" />
+              <circle cx="100" cy="100" r="90" strokeWidth="1" opacity="0.6" />
+
+              {/* Các đường kinh tuyến dọc */}
+              <ellipse cx="100" cy="100" rx="90" ry="38" strokeWidth="0.8" opacity="0.8" />
+              <ellipse cx="100" cy="100" rx="90" ry="68" strokeWidth="0.6" opacity="0.6" />
+              <ellipse cx="100" cy="100" rx="38" ry="90" strokeWidth="0.8" opacity="0.8" />
+              <ellipse cx="100" cy="100" rx="68" ry="90" strokeWidth="0.6" opacity="0.6" />
+
+              {/* Đường xích đạo ngang & trục dọc */}
+              <line x1="10" y1="100" x2="190" y2="100" strokeWidth="0.8" strokeDasharray="3 3" />
+              <line x1="100" y1="10" x2="100" y2="190" strokeWidth="0.8" strokeDasharray="3 3" />
+            </svg>
+          </motion.div>
+
+          {/* LỚP 2: VÒNG KINH TUYẾN NGHIÊNG XOAY NGƯỢC CHIỀU KIM ĐỒNG HỒ */}
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-4 flex items-center justify-center rotate-45"
+          >
+            <svg viewBox="0 0 200 200" className="w-full h-full stroke-stone-700 fill-none">
+              <ellipse cx="100" cy="100" rx="85" ry="40" strokeWidth="0.75" strokeDasharray="6 3" opacity="0.7" />
+              <ellipse cx="100" cy="100" rx="40" ry="85" strokeWidth="0.75" opacity="0.5" />
+
+              {/* Vệ tinh phát sáng bay quanh quỹ đạo */}
+              <motion.circle
+                animate={{ cx: [100, 185, 100, 15, 100], cy: [60, 100, 140, 100, 60] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                r="3"
+                fill="#BE944E"
+              />
+              <motion.circle
+                animate={{ cx: [15, 100, 185, 100, 15], cy: [100, 60, 100, 140, 100] }}
+                transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                r="2.5"
+                fill="#7D6331"
+              />
+            </svg>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
