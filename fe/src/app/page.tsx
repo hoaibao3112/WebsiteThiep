@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
   ArrowRight,
@@ -28,7 +28,8 @@ import {
   Disc,
   Check,
   Star,
-  Quote,
+  Flowers,
+  Package,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -139,8 +140,28 @@ export default function CardViteHomePage() {
 
   // Bộ điều khiển Simulator Hero
   const [names, setNames] = useState("Sarah & James");
-  const [selectedEffect, setSelectedEffect] = useState("Wax Seal");
+  const [selectedEffect, setSelectedEffect] = useState<"Wax Seal" | "Flower Gate" | "Gift Box">("Wax Seal");
   const [sealOpened, setSealOpened] = useState(false);
+
+  // 3D Parallax Mouse Physics cho Hero Phone
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 150 };
+  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [12, -12]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-12, 12]), springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   // State cho 3D Carousel
   const [carouselIndex, setCarouselIndex] = useState(2);
@@ -180,13 +201,13 @@ export default function CardViteHomePage() {
     setCarouselIndex((prev) => (prev - 1 + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length);
   };
 
-  const handleWaxSealClick = () => {
+  const handleHeroCardClick = () => {
     setSealOpened(!sealOpened);
     confetti({
-      particleCount: 50,
-      spread: 60,
+      particleCount: 70,
+      spread: 70,
       origin: { y: 0.6 },
-      colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#E08269"],
+      colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#E08269", "#10B981"],
     });
   };
 
@@ -360,10 +381,40 @@ export default function CardViteHomePage() {
       </AnimatePresence>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. HERO SECTION */}
+      {/* 2. HERO SECTION VỚI NHIỀU HIỆU ỨNG ANIMATION VÀ 3D PARALLAX */}
       {/* ------------------------------------------------------------- */}
-      <section className="max-w-6xl mx-auto px-6 pt-6 pb-16 md:px-12 lg:px-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="max-w-6xl mx-auto px-6 pt-6 pb-20 md:px-12 lg:px-20 relative"
+      >
+        {/* BACKGROUND FLOATING GOLD DUST PARTICLES */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              animate={{
+                y: [0, -120, 0],
+                x: [0, (i % 2 === 0 ? 30 : -30), 0],
+                opacity: [0.2, 0.7, 0.2],
+                scale: [0.8, 1.3, 0.8],
+              }}
+              transition={{
+                duration: 6 + i * 1.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.7,
+              }}
+              className="absolute w-2 h-2 rounded-full bg-[#BE944E]/30 blur-[1px]"
+              style={{
+                left: `${15 + i * 11}%`,
+                top: `${40 + (i % 4) * 15}%`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           {/* CỘT TRÁI: TIÊU ĐỀ & FORM */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -381,10 +432,13 @@ export default function CardViteHomePage() {
                   {t("homeTagGala")}
                 </span>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-stone-200 text-[10px] text-stone-600 shadow-2xs">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-stone-200 text-[10px] text-stone-600 shadow-2xs"
+              >
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span>1,248 thiệp gửi hôm nay</span>
-              </div>
+              </motion.div>
             </div>
 
             {/* HEADLINE */}
@@ -400,8 +454,8 @@ export default function CardViteHomePage() {
               </span>
             </h1>
 
-            {/* FORM SIMULATOR */}
-            <div className="p-6 bg-white/80 backdrop-blur-md rounded-3xl border border-[#EFE9E1] shadow-md space-y-4 max-w-md">
+            {/* FORM SIMULATOR CÓ HIỆU ỨNG REALTIME */}
+            <div className="p-6 bg-white/85 backdrop-blur-md rounded-3xl border border-[#EFE9E1] shadow-lg space-y-4 max-w-md">
               <div>
                 <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
                   {t("homeFieldCoupleName")}
@@ -421,19 +475,22 @@ export default function CardViteHomePage() {
                 </label>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   {[
-                    { id: "Wax Seal", label: t("homeEffectWaxSeal") },
-                    { id: "Flower Gate", label: t("homeEffectFlowerGate") },
-                    { id: "Gift Box", label: t("homeEffectGiftBox") },
+                    { id: "Wax Seal", label: t("homeEffectWaxSeal"), icon: Stamp },
+                    { id: "Flower Gate", label: t("homeEffectFlowerGate"), icon: Flowers },
+                    { id: "Gift Box", label: t("homeEffectGiftBox"), icon: Gift },
                   ].map((eff) => (
                     <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
                       key={eff.id}
                       type="button"
-                      onClick={() => setSelectedEffect(eff.id)}
+                      onClick={() => {
+                        setSelectedEffect(eff.id as any);
+                        setSealOpened(false);
+                      }}
                       className={`py-2 px-2 rounded-xl border text-center transition cursor-pointer text-[11px] font-medium ${
                         selectedEffect === eff.id
-                          ? "bg-[#FAF2E4] border-[#BE944E] text-[#8C6424] font-bold shadow-xs"
+                          ? "bg-[#FAF2E4] border-[#BE944E] text-[#8C6424] font-bold shadow-xs ring-1 ring-[#BE944E]/30"
                           : "bg-white border-[#E8E2D8] text-[#181716]/70 hover:bg-[#FAF7F2]"
                       }`}
                     >
@@ -455,38 +512,72 @@ export default function CardViteHomePage() {
             </div>
           </motion.div>
 
-          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:col-span-5 flex justify-center"
-          >
+          {/* CỘT PHẢI: SLEEK PHONE MOCKUP CÓ 3D MOUSE PARALLAX & TƯƠNG TÁC SỐNG ĐỘNG */}
+          <div className="lg:col-span-5 flex justify-center relative">
+            {/* FLOATING PILL 1: GỬI ĐÍCH DANH */}
             <motion.div
-              animate={{
-                y: [0, -12, 0],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -top-4 -left-6 z-30 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-[#EFE9E1] shadow-xl flex items-center gap-2"
             >
-              {/* MÀN HÌNH BÊN TRONG CÓ THỂ CHẠM MỞ SEAL */}
+              <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center text-xs">
+                ✉️
+              </div>
+              <div className="text-[10px]">
+                <span className="text-stone-400 block font-medium">Gửi đích danh:</span>
+                <span className="font-bold text-stone-900">{names || "Sarah & James"}</span>
+              </div>
+            </motion.div>
+
+            {/* FLOATING PILL 2: RSVP XÁC NHẬN */}
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="absolute -bottom-4 -right-4 z-30 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-[#EFE9E1] shadow-xl flex items-center gap-2"
+            >
+              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                ✓
+              </div>
+              <div className="text-[10px]">
+                <span className="text-stone-400 block font-medium">RSVP xác nhận:</span>
+                <span className="font-bold text-emerald-700">2 người tham dự</span>
+              </div>
+            </motion.div>
+
+            {/* MAIN 3D PARALLAX PHONE CONTAINER */}
+            <motion.div
+              style={{
+                rotateX,
+                rotateY,
+                transformStyle: "preserve-3d",
+              }}
+              whileHover={{ scale: 1.03 }}
+              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300 cursor-pointer"
+              onClick={handleHeroCardClick}
+            >
+              {/* GLOSSY SCREEN REFLECTION */}
+              <div className="absolute inset-0 rounded-[42px] bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none z-20" />
+
+              {/* MÀN HÌNH BÊN TRONG CÓ THAY ĐỔI THEO HIỆU ỨNG ĐƯỢC CHỌN */}
               <div className="w-full h-full bg-[#FAF7F2] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center relative border border-stone-200 shadow-inner">
                 {/* Dynamic Island */}
                 <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-4" />
 
-                {/* THIỆP MỜI SARAH & JAMES */}
+                {/* NỘI DUNG THIỆP MỜI REALTIME */}
                 <div className="my-auto space-y-3">
                   <span className="text-[9px] uppercase tracking-[0.25em] text-[#181716]/60 font-medium block">
                     {t("homePhoneInvited")}
                   </span>
 
-                  <h3 className="text-2xl font-serif font-bold text-[#181716] tracking-tight">
+                  {/* TÊN CÔ DÂU CHÚ RỂ LIVE TRANSITION */}
+                  <motion.h3
+                    key={names}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-2xl font-serif font-bold text-[#181716] tracking-tight"
+                  >
                     {names || "Sarah & James"}
-                  </h3>
+                  </motion.h3>
 
                   <div className="w-8 h-px bg-[#BE944E] mx-auto my-2" />
 
@@ -495,31 +586,52 @@ export default function CardViteHomePage() {
                     {t("homePhoneVenue")}
                   </p>
 
-                  {/* NÚT CON DẤU SÁP CÓ THỂ CHẠM PHÁT PHÁO HOA */}
+                  {/* PHẦN HIỆU ỨNG ĐỘNG (WAX SEAL / FLOWER GATE / GIFT BOX) */}
                   <div className="pt-3">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={handleWaxSealClick}
-                      className="px-5 py-2 rounded-full border border-[#BE944E] bg-[#FAF2E4] text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
-                    >
-                      <Sparkles className="w-3 h-3 text-[#BE944E]" />
-                      <span>{sealOpened ? "ĐÃ MỞ THIỆP" : t("homePhoneRsvp")}</span>
-                    </motion.button>
+                    {selectedEffect === "Wax Seal" && (
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="px-5 py-2 rounded-full border border-[#BE944E] bg-[#FAF2E4] text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                      >
+                        <Sparkles className="w-3 h-3 text-[#BE944E]" />
+                        <span>{sealOpened ? "ĐÃ MỞ CON DẤU" : "CHẠM MỞ SEAL"}</span>
+                      </motion.div>
+                    )}
+
+                    {selectedEffect === "Flower Gate" && (
+                      <motion.div
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="px-5 py-2 rounded-full border border-pink-300 bg-pink-50 text-pink-800 text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                      >
+                        <span>🌸 CỔNG HOA MỞ</span>
+                      </motion.div>
+                    )}
+
+                    {selectedEffect === "Gift Box" && (
+                      <motion.div
+                        animate={{ rotate: [0, -3, 3, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity }}
+                        className="px-5 py-2 rounded-full border border-amber-300 bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                      >
+                        <span>🎁 HỘP QUÀ 3D</span>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
 
                 <div className="text-[8px] uppercase tracking-widest text-[#181716]/40 pb-1">
-                  CardVite Interactive Studio
+                  CardVite Interactive 3D
                 </div>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. MỤC MỚI: MỜI ĐÍCH DANH TỪNG KHÁCH, BIẾT AI SẼ ĐẾN */}
+      {/* 3. MỤC: MỜI ĐÍCH DANH TỪNG KHÁCH, BIẾT AI SẼ ĐẾN */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 border-t border-[#EFE9E1]/60">
         <div className="text-center max-w-2xl mx-auto mb-14">
@@ -700,7 +812,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. MỤC MỚI: HỖ TRỢ ĐA NGÔN NGỮ (BILINGUAL & 3D GLOBE) */}
+      {/* 4. MỤC: HỖ TRỢ ĐA NGÔN NGỮ (BILINGUAL & 3D GLOBE) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 relative overflow-hidden">
         {/* Subtle Ambient Globe Outline Background */}
@@ -835,7 +947,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 5. MỤC MỚI: CẢM HỨNG TỪ NHỮNG CẶP ĐÔI (STORIES & TESTIMONIALS) */}
+      {/* 5. MỤC: CẢM HỨNG TỪ NHỮNG CẶP ĐÔI (STORIES & TESTIMONIALS) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 border-t border-[#EFE9E1]/60">
         <div className="text-center max-w-2xl mx-auto mb-12">
