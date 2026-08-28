@@ -544,7 +544,7 @@ export default function CardViteHomePage() {
               </div>
             </motion.div>
 
-            {/* MAIN 3D PARALLAX PHONE CONTAINER */}
+            {/* MAIN 3D PARALLAX PHONE CONTAINER WITH LIVE VIDEO BACKGROUND */}
             <motion.div
               style={{
                 rotateX,
@@ -552,20 +552,38 @@ export default function CardViteHomePage() {
                 transformStyle: "preserve-3d",
               }}
               whileHover={{ scale: 1.03 }}
-              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300 cursor-pointer"
+              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300 cursor-pointer overflow-hidden group"
               onClick={handleHeroCardClick}
             >
               {/* GLOSSY SCREEN REFLECTION */}
-              <div className="absolute inset-0 rounded-[42px] bg-gradient-to-tr from-transparent via-white/10 to-transparent pointer-events-none z-20" />
+              <div className="absolute inset-0 rounded-[42px] bg-gradient-to-tr from-transparent via-white/15 to-transparent pointer-events-none z-30" />
 
-              {/* MÀN HÌNH BÊN TRONG CÓ THAY ĐỔI THEO HIỆU ỨNG ĐƯỢC CHỌN */}
-              <div className="w-full h-full bg-[#FAF7F2] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center relative border border-stone-200 shadow-inner">
-                {/* Dynamic Island */}
-                <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-4" />
+              {/* MÀN HÌNH BÊN TRONG CÓ VIDEO CHUYỂN ĐỘNG VÔ TẬN */}
+              <div className="w-full h-full bg-[#181716] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center relative border border-stone-300 shadow-inner">
+                {/* 1. CINEMATIC WEDDING VIDEO BACKGROUND */}
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover scale-105 opacity-75 group-hover:scale-110 transition duration-1000"
+                  poster="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop"
+                >
+                  <source
+                    src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-walking-in-a-field-41484-large.mp4"
+                    type="video/mp4"
+                  />
+                </video>
 
-                {/* NỘI DUNG THIỆP MỜI REALTIME */}
-                <div className="my-auto space-y-3">
-                  <span className="text-[9px] uppercase tracking-[0.25em] text-[#181716]/60 font-medium block">
+                {/* 2. GRADIENT OVERLAYS ĐẢM BẢO CHỮ CỰC KỲ RÕ NÉT VÀ SANG TRỌNG */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/75 z-10" />
+
+                {/* 3. Dynamic Island */}
+                <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-4 relative z-20 shadow-md border border-white/10" />
+
+                {/* 4. NỘI DUNG THIỆP MỜI REALTIME TRÊN NỀN VIDEO */}
+                <div className="my-auto space-y-3 relative z-20 text-white">
+                  <span className="text-[9px] uppercase tracking-[0.25em] text-white/80 font-medium block">
                     {t("homePhoneInvited")}
                   </span>
 
@@ -574,14 +592,14 @@ export default function CardViteHomePage() {
                     key={names}
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-2xl font-serif font-bold text-[#181716] tracking-tight"
+                    className="text-2xl font-serif font-bold text-white tracking-tight drop-shadow-md"
                   >
                     {names || "Sarah & James"}
                   </motion.h3>
 
-                  <div className="w-8 h-px bg-[#BE944E] mx-auto my-2" />
+                  <div className="w-8 h-px bg-[#BE944E] mx-auto my-2 shadow-sm" />
 
-                  <p className="text-[10px] text-[#181716]/70 leading-relaxed">
+                  <p className="text-[10px] text-white/85 leading-relaxed drop-shadow-xs">
                     {t("homePhoneDate")} <br />
                     {t("homePhoneVenue")}
                   </p>
@@ -592,7 +610,7 @@ export default function CardViteHomePage() {
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="px-5 py-2 rounded-full border border-[#BE944E] bg-[#FAF2E4] text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                        className="px-5 py-2 rounded-full border border-[#BE944E] bg-white/90 backdrop-blur-md text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
                       >
                         <Sparkles className="w-3 h-3 text-[#BE944E]" />
                         <span>{sealOpened ? "ĐÃ MỞ CON DẤU" : "CHẠM MỞ SEAL"}</span>
@@ -603,7 +621,7 @@ export default function CardViteHomePage() {
                       <motion.div
                         animate={{ scale: [1, 1.05, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        className="px-5 py-2 rounded-full border border-pink-300 bg-pink-50 text-pink-800 text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                        className="px-5 py-2 rounded-full border border-pink-300 bg-white/90 backdrop-blur-md text-pink-800 text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
                       >
                         <span>🌸 CỔNG HOA MỞ</span>
                       </motion.div>
@@ -613,7 +631,7 @@ export default function CardViteHomePage() {
                       <motion.div
                         animate={{ rotate: [0, -3, 3, 0] }}
                         transition={{ duration: 2.5, repeat: Infinity }}
-                        className="px-5 py-2 rounded-full border border-amber-300 bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto"
+                        className="px-5 py-2 rounded-full border border-amber-300 bg-white/90 backdrop-blur-md text-amber-800 text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
                       >
                         <span>🎁 HỘP QUÀ 3D</span>
                       </motion.div>
@@ -621,8 +639,10 @@ export default function CardViteHomePage() {
                   </div>
                 </div>
 
-                <div className="text-[8px] uppercase tracking-widest text-[#181716]/40 pb-1">
-                  CardVite Interactive 3D
+                {/* 5. FOOTER BADGE TRONG MÀN HÌNH ĐIỆN THOẠI */}
+                <div className="text-[8px] uppercase tracking-widest text-white/70 pb-1 relative z-20 flex items-center justify-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>CardVite Live Cinematic 4K</span>
                 </div>
               </div>
             </motion.div>
