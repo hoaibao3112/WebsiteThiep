@@ -15,17 +15,26 @@ if (isProduction && (!SMTP_HOST || !SMTP_USER || !SMTP_PASS)) {
   );
 }
 
-const transporter = (SMTP_HOST && SMTP_USER && SMTP_PASS)
-  ? nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
+function getTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (host && user && pass) {
+    return nodemailer.createTransport({
+      service: host.includes("gmail") ? "gmail" : undefined,
+      host: host.includes("gmail") ? undefined : host,
+      port: host.includes("gmail") ? undefined : port,
+      secure: port === 465,
       auth: {
-        user: SMTP_USER,
-        pass: SMTP_PASS,
+        user,
+        pass,
       },
-    })
-  : null;
+    });
+  }
+  return null;
+}
 
 export class MailService {
   /**
@@ -75,9 +84,12 @@ export class MailService {
       </html>
     `;
 
+    const transporter = getTransporter();
+    const fromAddress = process.env.SMTP_FROM || `"CardVite" <no-reply@cardvite.vn>`;
+
     if (transporter) {
       await transporter.sendMail({
-        from: SMTP_FROM,
+        from: fromAddress,
         to: email,
         subject,
         html,
