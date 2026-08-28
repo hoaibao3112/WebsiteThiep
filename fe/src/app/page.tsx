@@ -28,8 +28,9 @@ import {
   Disc,
   Check,
   Star,
-  Flowers,
+  Flower2,
   Package,
+  Volume2,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -476,7 +477,7 @@ export default function CardViteHomePage() {
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   {[
                     { id: "Wax Seal", label: t("homeEffectWaxSeal"), icon: Stamp },
-                    { id: "Flower Gate", label: t("homeEffectFlowerGate"), icon: Flowers },
+                    { id: "Flower Gate", label: t("homeEffectFlowerGate"), icon: Flower2 },
                     { id: "Gift Box", label: t("homeEffectGiftBox"), icon: Gift },
                   ].map((eff) => (
                     <motion.button
@@ -512,62 +513,66 @@ export default function CardViteHomePage() {
             </div>
           </motion.div>
 
-          {/* CỘT PHẢI: SLEEK PHONE MOCKUP CÓ 3D MOUSE PARALLAX & TƯƠNG TÁC SỐNG ĐỘNG */}
-          <div className="lg:col-span-5 flex justify-center relative">
-            {/* FLOATING PILL 1: GỬI ĐÍCH DANH */}
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-4 -left-6 z-30 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-[#EFE9E1] shadow-xl flex items-center gap-2"
-            >
-              <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center text-xs">
-                ✉️
-              </div>
-              <div className="text-[10px]">
-                <span className="text-stone-400 block font-medium">Gửi đích danh:</span>
-                <span className="font-bold text-stone-900">{names || "Sarah & James"}</span>
-              </div>
-            </motion.div>
+          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP - DEDICATED FULL-SCREEN VERTICAL VIDEO SHOWCASE */}
+          <div className="lg:col-span-5 flex flex-col items-center relative">
+            {/* 3 TABS CHUYỂN ĐỔI VIDEO MẪU THIỆP */}
+            <div className="flex items-center gap-2 mb-4 z-20">
+              {[
+                {
+                  id: "video1",
+                  title: "Mẫu Vườn Ngọc",
+                  url: "https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-walking-in-a-field-41484-large.mp4",
+                },
+                {
+                  id: "video2",
+                  title: "Mẫu Hoa Lụa",
+                  url: "https://assets.mixkit.co/videos/preview/mixkit-wedding-couple-posing-for-the-camera-41584-large.mp4",
+                },
+                {
+                  id: "video3",
+                  title: "Mẫu Cổ Điển",
+                  url: "https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-holding-hands-in-a-forest-41480-large.mp4",
+                },
+              ].map((v, i) => (
+                <button
+                  key={v.id}
+                  onClick={() => {
+                    const videoEl = document.getElementById("hero-wedding-video") as HTMLVideoElement;
+                    if (videoEl) {
+                      videoEl.src = v.url;
+                      videoEl.play().catch(() => {});
+                    }
+                  }}
+                  className="px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase transition cursor-pointer border bg-white/80 hover:bg-white text-stone-700 border-[#E8E2D8] shadow-2xs hover:border-[#BE944E]"
+                >
+                  {v.title}
+                </button>
+              ))}
+            </div>
 
-            {/* FLOATING PILL 2: RSVP XÁC NHẬN */}
-            <motion.div
-              animate={{ y: [0, 8, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-4 -right-4 z-30 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 py-2 border border-[#EFE9E1] shadow-xl flex items-center gap-2"
-            >
-              <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
-                ✓
-              </div>
-              <div className="text-[10px]">
-                <span className="text-stone-400 block font-medium">RSVP xác nhận:</span>
-                <span className="font-bold text-emerald-700">2 người tham dự</span>
-              </div>
-            </motion.div>
-
-            {/* MAIN 3D PARALLAX PHONE CONTAINER WITH LIVE VIDEO BACKGROUND */}
+            {/* MAIN 3D PARALLAX PHONE CONTAINER WITH DEDICATED VIDEO PLAYER */}
             <motion.div
               style={{
                 rotateX,
                 rotateY,
                 transformStyle: "preserve-3d",
               }}
-              whileHover={{ scale: 1.03 }}
-              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300 cursor-pointer overflow-hidden group"
-              onClick={handleHeroCardClick}
+              whileHover={{ scale: 1.02 }}
+              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[44px] bg-gradient-to-b from-stone-200 via-stone-300 to-stone-400 p-3 shadow-2xl border-2 border-stone-300 group overflow-hidden"
             >
               {/* GLOSSY SCREEN REFLECTION */}
-              <div className="absolute inset-0 rounded-[42px] bg-gradient-to-tr from-transparent via-white/15 to-transparent pointer-events-none z-30" />
+              <div className="absolute inset-0 rounded-[44px] bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none z-30" />
 
-              {/* MÀN HÌNH BÊN TRONG CÓ VIDEO CHUYỂN ĐỘNG VÔ TẬN */}
-              <div className="w-full h-full bg-[#181716] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center relative border border-stone-300 shadow-inner">
-                {/* 1. CINEMATIC WEDDING VIDEO BACKGROUND */}
+              {/* MÀN HÌNH BÊN TRONG PHÁT VIDEO THIỆP CƯỚI FULL HD */}
+              <div className="w-full h-full bg-black rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between">
+                {/* 1. THE VIDEO ELEMENT */}
                 <video
+                  id="hero-wedding-video"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover scale-105 opacity-75 group-hover:scale-110 transition duration-1000"
-                  poster="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop"
+                  className="absolute inset-0 w-full h-full object-cover z-10"
                 >
                   <source
                     src="https://assets.mixkit.co/videos/preview/mixkit-bride-and-groom-walking-in-a-field-41484-large.mp4"
@@ -575,77 +580,58 @@ export default function CardViteHomePage() {
                   />
                 </video>
 
-                {/* 2. GRADIENT OVERLAYS ĐẢM BẢO CHỮ CỰC KỲ RÕ NÉT VÀ SANG TRỌNG */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/25 to-black/75 z-10" />
-
-                {/* 3. Dynamic Island */}
-                <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-4 relative z-20 shadow-md border border-white/10" />
-
-                {/* 4. NỘI DUNG THIỆP MỜI REALTIME TRÊN NỀN VIDEO */}
-                <div className="my-auto space-y-3 relative z-20 text-white">
-                  <span className="text-[9px] uppercase tracking-[0.25em] text-white/80 font-medium block">
-                    {t("homePhoneInvited")}
-                  </span>
-
-                  {/* TÊN CÔ DÂU CHÚ RỂ LIVE TRANSITION */}
-                  <motion.h3
-                    key={names}
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-2xl font-serif font-bold text-white tracking-tight drop-shadow-md"
-                  >
-                    {names || "Sarah & James"}
-                  </motion.h3>
-
-                  <div className="w-8 h-px bg-[#BE944E] mx-auto my-2 shadow-sm" />
-
-                  <p className="text-[10px] text-white/85 leading-relaxed drop-shadow-xs">
-                    {t("homePhoneDate")} <br />
-                    {t("homePhoneVenue")}
-                  </p>
-
-                  {/* PHẦN HIỆU ỨNG ĐỘNG (WAX SEAL / FLOWER GATE / GIFT BOX) */}
-                  <div className="pt-3">
-                    {selectedEffect === "Wax Seal" && (
-                      <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="px-5 py-2 rounded-full border border-[#BE944E] bg-white/90 backdrop-blur-md text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
-                      >
-                        <Sparkles className="w-3 h-3 text-[#BE944E]" />
-                        <span>{sealOpened ? "ĐÃ MỞ CON DẤU" : "CHẠM MỞ SEAL"}</span>
-                      </motion.div>
-                    )}
-
-                    {selectedEffect === "Flower Gate" && (
-                      <motion.div
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="px-5 py-2 rounded-full border border-pink-300 bg-white/90 backdrop-blur-md text-pink-800 text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
-                      >
-                        <span>🌸 CỔNG HOA MỞ</span>
-                      </motion.div>
-                    )}
-
-                    {selectedEffect === "Gift Box" && (
-                      <motion.div
-                        animate={{ rotate: [0, -3, 3, 0] }}
-                        transition={{ duration: 2.5, repeat: Infinity }}
-                        className="px-5 py-2 rounded-full border border-amber-300 bg-white/90 backdrop-blur-md text-amber-800 text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center justify-center gap-1.5 mx-auto"
-                      >
-                        <span>🎁 HỘP QUÀ 3D</span>
-                      </motion.div>
-                    )}
+                {/* 2. DYNAMIC ISLAND TOP BAR */}
+                <div className="relative z-20 pt-3 px-6 flex items-center justify-between">
+                  <div className="w-16 h-4 bg-black/90 rounded-full mx-auto shadow-md border border-white/20 flex items-center justify-end pr-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   </div>
                 </div>
 
-                {/* 5. FOOTER BADGE TRONG MÀN HÌNH ĐIỆN THOẠI */}
-                <div className="text-[8px] uppercase tracking-widest text-white/70 pb-1 relative z-20 flex items-center justify-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>CardVite Live Cinematic 4K</span>
+                {/* 3. FLOATING LUXURY VIDEO CONTROLS OVERLAY (BOTTOM) */}
+                <div className="relative z-20 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent space-y-2">
+                  <div className="flex items-center justify-between text-white text-xs">
+                    <div>
+                      <span className="text-[9px] uppercase font-bold tracking-widest text-[#BE944E] block">
+                        CARDVITE VIDEO SHOWCASE
+                      </span>
+                      <h4 className="text-sm font-serif font-bold text-white tracking-wide">
+                        {names || "Sarah & James"}
+                      </h4>
+                    </div>
+
+                    {/* NÚT MUTE / UNMUTE TƯƠNG TÁC */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const videoEl = document.getElementById("hero-wedding-video") as HTMLVideoElement;
+                        if (videoEl) {
+                          videoEl.muted = !videoEl.muted;
+                        }
+                      }}
+                      className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md flex items-center justify-center text-white transition cursor-pointer border border-white/30"
+                      title="Bật/Tắt âm thanh"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* PROGRESS BAR ANIMATION */}
+                  <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
+                    <motion.div
+                      animate={{ width: ["0%", "100%"] }}
+                      transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                      className="h-full bg-[#BE944E] rounded-full"
+                    />
+                  </div>
                 </div>
               </div>
             </motion.div>
+
+            {/* HINT CHÚ THÍCH PHÍA DƯỚI */}
+            <p className="text-[10px] text-stone-400 mt-3 font-medium flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#BE944E]" />
+              <span>Video mẫu thiệp chuyển động sắc nét chuẩn 4K 60fps</span>
+            </p>
           </div>
         </div>
       </section>

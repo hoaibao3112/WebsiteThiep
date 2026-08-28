@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CardCategory, CardDetail } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
@@ -22,6 +22,14 @@ import {
 } from "lucide-react";
 
 export default function NewCardBuilderPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-stone-500">Đang tải trình tạo thiệp...</div>}>
+      <CardBuilderContent />
+    </Suspense>
+  );
+}
+
+function CardBuilderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialCategory = (searchParams.get("category") as CardCategory) || "WEDDING";
