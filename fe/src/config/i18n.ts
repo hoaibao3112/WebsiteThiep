@@ -106,6 +106,34 @@ export const DICTIONARY = {
     homeQrScanHint: "Mã VietQR tự động điền nội dung chuyển khoản",
     homeQrSuccessToast: "Xác nhận đã nhận mừng cưới thành công! 🎉",
 
+    // Mời đích danh & RSVP Tracker
+    homeNamedTitle1: "Mời đích danh từng khách,",
+    homeNamedTitleEm: "biết ai sẽ đến",
+    homeNamedSub: "Mỗi khách nhận một tấm thiệp để đúng tên mình, bấm một nút để báo có đến hay không — bạn khỏi phải nhắn tin hỏi từng người.",
+    homeNamedFeat1Title: "Thiệp để đúng tên từng khách",
+    homeNamedFeat1Desc: "Ai mở thiệp cũng thấy tên mình trên đó — như được viết tay riêng, người lớn tuổi cũng thấy được trân trọng.",
+    homeNamedFeat2Title: "Khách báo tham dự chỉ một nút bấm",
+    homeNamedFeat2Desc: "Bấm «Tôi sẽ đến» ngay trên thiệp, ghi luôn đi mấy người — không cần cài gì, không cần tài khoản.",
+    homeNamedFeat3Title: "Bạn biết ngay ai đến, ai bận",
+    homeNamedFeat3Desc: "Mở một trang là thấy đầy đủ: bao nhiêu người đến, ai chưa trả lời — khỏi ghi chép sổ tay hay dò tin nhắn.",
+    homeNamedFeat4Title: "Chốt bàn với nhà hàng dễ dàng",
+    homeNamedFeat4Desc: "Dồn danh sách khách một lần là có thiệp cho từng người; gần ngày cưới tải file tổng xuống đưa nhà hàng đặt tiệc.",
+
+    // Hỗ trợ Đa Ngôn Ngữ Song Ngữ
+    homeBilingualTitle1: "Hỗ trợ",
+    homeBilingualTitleEm: "Đa Ngôn Ngữ",
+    homeBilingualSub: "Thiệp cưới của bạn sẵn sàng cho khách mời quốc tế với khả năng hiển thị song ngữ linh hoạt.",
+    homeBilingualFeat1: "Thiệp hiển thị song song hai ngôn ngữ",
+    homeBilingualFeat2: "Hỗ trợ hiển thị song song nội dung",
+    homeBilingualFeat3: "Có sẵn bản dịch mẫu chuyên nghiệp",
+    homeBilingualFeat4: "Tùy chỉnh bản dịch dễ dàng",
+    homeBilingualBtn: "Tạo thiệp ngay",
+
+    // Cảm hứng từ những cặp đôi
+    homeCouplesTitle1: "Cảm hứng từ những",
+    homeCouplesTitleEm: "cặp đôi",
+    homeCouplesSub: "Hơn 15.000 cặp đôi đã trao gửi yêu thương và tạo nên ngày cưới hoàn hảo cùng CardVite.",
+
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)
     // -------------------------------------------------------------
@@ -398,6 +426,34 @@ export const DICTIONARY = {
     homeQrScanHint: "Dynamic VietQR automatically fills account and message",
     homeQrSuccessToast: "Wedding gift confirmed received successfully! 🎉",
 
+    // Mời đích danh & RSVP Tracker
+    homeNamedTitle1: "Personalized Invitations,",
+    homeNamedTitleEm: "Know Who Will Come",
+    homeNamedSub: "Each guest receives an invitation addressed to them personally with a 1-click RSVP response — no more endless texting to check attendance.",
+    homeNamedFeat1Title: "Personalized with each guest's name",
+    homeNamedFeat1Desc: "Every guest sees their name prominently rendered — giving a thoughtful, handcrafted touch that elders deeply appreciate.",
+    homeNamedFeat2Title: "One-click RSVP confirmation",
+    homeNamedFeat2Desc: "Guests simply tap «I will attend» and choose guest count — no app downloads, no registrations required.",
+    homeNamedFeat3Title: "Know instantly who attends and who declines",
+    homeNamedFeat3Desc: "A single dashboard displays full stats: total attendees, declines, and pending replies.",
+    homeNamedFeat4Title: "Effortless banquet table seating planning",
+    homeNamedFeat4Desc: "Consolidate your guest list once, then download a comprehensive summary spreadsheet for your venue catering.",
+
+    // Hỗ trợ Đa Ngôn Ngữ Song Ngữ
+    homeBilingualTitle1: "Dual",
+    homeBilingualTitleEm: "Multi-Language",
+    homeBilingualSub: "Your digital wedding invitation is ready for global guests with flexible bilingual side-by-side display.",
+    homeBilingualFeat1: "Simultaneous dual-language display",
+    homeBilingualFeat2: "Parallel side-by-side content rendering",
+    homeBilingualFeat3: "Professional pre-translated templates",
+    homeBilingualFeat4: "Easy translation customization",
+    homeBilingualBtn: "Create Invitation Now",
+
+    // Cảm hứng từ những cặp đôi
+    homeCouplesTitle1: "Inspiration from our",
+    homeCouplesTitleEm: "Happy Couples",
+    homeCouplesSub: "Over 15,000 couples have celebrated their unforgettable wedding journey with CardVite.",
+
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)
     // -------------------------------------------------------------
@@ -689,6 +745,34 @@ export const DICTIONARY = {
     homeQrSelectAmount: "选择礼金金额：",
     homeQrScanHint: "动态二维码自动填充转账附言与新人姓名",
     homeQrSuccessToast: "恭喜！礼金已确认成功到账！🎉",
+
+    // Mời đích danh & RSVP Tracker
+    homeNamedTitle1: "专属实名邀请，",
+    homeNamedTitleEm: "实时获知出席情况",
+    homeNamedSub: "每位贵宾收到带有专属尊称的独立请柬，一键回复是否出席 — 无需再逐一发消息繁琐统计。",
+    homeNamedFeat1Title: "专属实名尊称请柬",
+    homeNamedFeat1Desc: "宾客打开请柬即可看到专属称谓与姓名，如同亲笔书写般典雅，倍感尊崇与礼遇。",
+    homeNamedFeat2Title: "一键快速回复回执",
+    homeNamedFeat2Desc: "直接在请柬上点击「准时出席」并选择携带人数 — 无需下载任何软件，零门槛操作。",
+    homeNamedFeat3Title: "即刻掌握出席与缺席数据",
+    homeNamedFeat3Desc: "管理后台一目了然：出席总人数、请假人数及待回复名单，彻底告别纸笔统计。",
+    homeNamedFeat4Title: "轻松对接酒店宴会桌位",
+    homeNamedFeat4Desc: "一次性导入宾客名单，临近婚期即可一键导出汇总表格对接酒店排席。",
+
+    // Hỗ trợ Đa Ngôn Ngữ Song Ngữ
+    homeBilingualTitle1: "尊享",
+    homeBilingualTitleEm: "双语及多语言支持",
+    homeBilingualSub: "为国际宾客量身打造，支持优雅的双语对照与多语言智能切换。",
+    homeBilingualFeat1: "请柬双语对照并列呈现",
+    homeBilingualFeat2: "支持中英文等双语排版",
+    homeBilingualFeat3: "内置专业地道的翻译范本",
+    homeBilingualFeat4: "轻松自定义修改双语译文",
+    homeBilingualBtn: "立即制作请柬",
+
+    // Cảm hứng từ những cặp đôi
+    homeCouplesTitle1: "来自幸福新人的",
+    homeCouplesTitleEm: "灵感与故事",
+    homeCouplesSub: "已有超过 15,000 对新人选择 CardVite 开启他们难忘的浪漫婚礼盛典。",
 
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -22,11 +22,13 @@ import {
   Pause,
   Music,
   Heart,
-  Volume2,
   QrCode,
   CheckCircle2,
   Stamp,
   Disc,
+  Check,
+  Star,
+  Quote,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -90,11 +92,52 @@ const SAMPLE_WISHES_2 = [
   { name: "David Chen", relation: "Colleague", wish: "Congratulations! Best wishes on your wonderful journey ahead! 🌟", time: "42 phút trước" },
 ];
 
+const BILINGUAL_SAMPLES: Record<string, { groom: string; bride: string; invite: string }> = {
+  "Tiếng Việt": { groom: "Chú Rể", bride: "Cô Dâu", invite: "Trân trọng kính mời" },
+  "English": { groom: "The Groom", bride: "The Bride", invite: "Cordially Invites You" },
+  "简体中文": { groom: "新郎", bride: "新娘", invite: "谨呈 • 诚挚邀请" },
+  "한국어": { groom: "신랑", bride: "신부", invite: "초대합니다" },
+  "Español": { groom: "El Novio", bride: "La Novia", invite: "Tienen el honor de invitarle" },
+  "Français": { groom: "Le Marié", bride: "La Mariée", invite: "Vous prient d'honorer de votre présence" },
+  "Русский": { groom: "Жених", bride: "Невеста", invite: "Искренне приглашаем вас" },
+  "Deutsch": { groom: "Der Bräutigam", bride: "Die Braut", invite: "Laden herzlich ein" },
+};
+
+const COUPLES_STORIES = [
+  {
+    id: 1,
+    couple: "Hoàng Nam & Thảo Vy",
+    location: "GEM Center, TP. Hồ Chí Minh",
+    date: "Tháng 12, 2024",
+    photo: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
+    quote: "Khách mời ai cũng bất ngờ khi nhận thiệp có đúng tên mình. Tính năng RSVP giúp tụi mình chốt bàn tiệc với nhà hàng chỉ trong 1 nốt nhạc!",
+    stars: 5,
+  },
+  {
+    id: 2,
+    couple: "Minh Quân & Thu Hà",
+    location: "JW Marriott Hotel, Hà Nội",
+    date: "Tháng 10, 2024",
+    photo: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
+    quote: "Hiệu ứng mở con dấu sáp 3D và nhạc nền du dương khiến tấm thiệp sang trọng vượt ngoài mong đợi. Bạn bè quốc tế xem bản song ngữ khen nức nở!",
+    stars: 5,
+  },
+  {
+    id: 3,
+    couple: "Tuấn Anh & Mai Phương",
+    location: "InterContinental Danang Sun Peninsula",
+    date: "Tháng 11, 2024",
+    photo: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&auto=format&fit=crop",
+    quote: "Hộp mừng cưới VietQR cực kỳ tiện lợi cho các bạn ở xa không về kịp. Hệ thống thống kê RSVP tự động xuất file Excel siêu chuyên nghiệp.",
+    stars: 5,
+  },
+];
+
 export default function CardViteHomePage() {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Bộ điều khiển Simulator
+  // Bộ điều khiển Simulator Hero
   const [names, setNames] = useState("Sarah & James");
   const [selectedEffect, setSelectedEffect] = useState("Wax Seal");
   const [sealOpened, setSealOpened] = useState(false);
@@ -121,6 +164,13 @@ export default function CardViteHomePage() {
   // State cho VietQR Simulator
   const [qrAmount, setQrAmount] = useState("500.000đ");
   const [qrSuccess, setQrSuccess] = useState(false);
+
+  // State cho Mời Đích Danh Mockup
+  const [guestAttending, setGuestAttending] = useState<boolean | null>(true);
+  const [guestCompanion, setGuestCompanion] = useState(2);
+
+  // State cho Đa Ngôn Ngữ Song Ngữ
+  const [activeLangTag, setActiveLangTag] = useState("한국어");
 
   const nextSlide = () => {
     setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
@@ -469,17 +519,396 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. MỤC ANIMATION MỚI: AUDIO EQUALIZER & MUSIC STUDIO */}
+      {/* 3. MỤC MỚI: MỜI ĐÍCH DANH TỪNG KHÁCH, BIẾT AI SẼ ĐẾN */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 border-t border-[#EFE9E1]/60">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight">
+            {t("homeNamedTitle1")}{" "}
+            <span className="italic font-normal text-[#BE944E]">
+              {t("homeNamedTitleEm")}
+            </span>
+          </h2>
+          <p className="text-xs sm:text-sm text-[#181716]/65 mt-3 leading-relaxed">
+            {t("homeNamedSub")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* CỘT TRÁI: 2 THẺ FLOATING MOCKUP TƯƠNG TÁC */}
+          <div className="lg:col-span-6 relative flex flex-col items-center justify-center">
+            {/* THẺ 1: LINK RIÊNG CỦA KHÁCH */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="w-full max-w-sm bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-xl relative z-10 space-y-4"
+            >
+              <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-stone-400">
+                <span>LINK RIÊNG CỦA KHÁCH</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              </div>
+
+              <div>
+                <span className="text-[11px] text-stone-500">Kính mời</span>
+                <h4 className="text-lg font-serif font-bold text-stone-900 mt-0.5">
+                  Ngọc Trâm & Hoàng Long
+                </h4>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGuestAttending(true)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    guestAttending === true
+                      ? "bg-[#7D6331] text-white shadow-md"
+                      : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                  }`}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Tôi sẽ đến</span>
+                </button>
+                <button
+                  onClick={() => setGuestAttending(false)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                    guestAttending === false
+                      ? "bg-stone-800 text-white shadow-md"
+                      : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                  }`}
+                >
+                  Bận mất rồi
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-stone-500 pt-1">
+                <span>Số người đi cùng:</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setGuestCompanion(Math.max(1, guestCompanion - 1))}
+                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center font-bold"
+                  >
+                    -
+                  </button>
+                  <span className="font-bold text-stone-900">{guestCompanion}</span>
+                  <button
+                    onClick={() => setGuestCompanion(guestCompanion + 1)}
+                    className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center font-bold"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* THẺ 2: NOTIFICATION & CIRCULAR PROGRESS TRACKER (STACK LỆCH NỔI BẬT) */}
+            <motion.div
+              whileHover={{ y: -4 }}
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-full max-w-xs bg-white/95 backdrop-blur-md rounded-3xl p-5 border border-[#EFE9E1] shadow-2xl mt-[-24px] sm:ml-20 relative z-20 space-y-3"
+            >
+              <div className="flex items-center gap-2 text-[10px] text-stone-600">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span className="font-semibold text-[#BE944E]">Phương Linh</span> vừa xác nhận • 2 phút trước
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <span className="text-3xl font-serif font-bold text-stone-900">86%</span>
+                  <p className="text-[10px] text-stone-400">42 khách đã xác nhận</p>
+                </div>
+
+                {/* MINI STATS BADGES */}
+                <div className="space-y-1 text-[9px] font-bold">
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 mr-1">
+                    32 Có đến
+                  </span>
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 mr-1">
+                    4 Bận
+                  </span>
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                    6 Chờ trả lời
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* CỘT PHẢI: 4 BULLET POINTS CHUẨN XÁC */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="space-y-5">
+              {/* ITEM 1 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h4 className="text-base font-serif font-bold text-[#181716]">
+                    {t("homeNamedFeat1Title")}
+                  </h4>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeNamedFeat1Desc")}
+                  </p>
+                </div>
+              </div>
+
+              {/* ITEM 2 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h4 className="text-base font-serif font-bold text-[#181716]">
+                    {t("homeNamedFeat2Title")}
+                  </h4>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeNamedFeat2Desc")}
+                  </p>
+                </div>
+              </div>
+
+              {/* ITEM 3 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h4 className="text-base font-serif font-bold text-[#181716]">
+                    {t("homeNamedFeat3Title")}
+                  </h4>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeNamedFeat3Desc")}
+                  </p>
+                </div>
+              </div>
+
+              {/* ITEM 4 */}
+              <div className="flex items-start gap-3.5">
+                <div className="w-6 h-6 rounded-full bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h4 className="text-base font-serif font-bold text-[#181716]">
+                    {t("homeNamedFeat4Title")}
+                  </h4>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeNamedFeat4Desc")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 4. MỤC MỚI: HỖ TRỢ ĐA NGÔN NGỮ (BILINGUAL & 3D GLOBE) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 relative overflow-hidden">
+        {/* Subtle Ambient Globe Outline Background */}
+        <div className="absolute right-[-100px] top-1/2 -translate-y-1/2 w-[550px] h-[550px] opacity-10 pointer-events-none">
+          <svg viewBox="0 0 100 100" className="w-full h-full stroke-stone-800 fill-none">
+            <circle cx="50" cy="50" r="45" strokeWidth="0.5" />
+            <ellipse cx="50" cy="50" rx="45" ry="20" strokeWidth="0.5" />
+            <ellipse cx="50" cy="50" rx="20" ry="45" strokeWidth="0.5" />
+            <line x1="5" y1="50" x2="95" y2="50" strokeWidth="0.5" />
+          </svg>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+          {/* CỘT TRÁI: THIỆP MẪU SONG NGỮ THAY ĐỔI THEO NÚT BẤM */}
+          <div className="lg:col-span-5 flex justify-center">
+            <motion.div
+              key={activeLangTag}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35 }}
+              whileHover={{ y: -6 }}
+              className="w-64 sm:w-72 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xl text-center space-y-4"
+            >
+              <div className="w-8 h-px bg-[#BE944E] mx-auto mb-2" />
+
+              <div>
+                <h4 className="text-xl font-serif font-bold text-stone-900">
+                  {BILINGUAL_SAMPLES[activeLangTag]?.groom || "Chú Rể"}
+                </h4>
+                <span className="text-[10px] uppercase tracking-widest text-[#BE944E] font-semibold block mt-0.5">
+                  Chú Rể
+                </span>
+              </div>
+
+              <div className="text-stone-300 text-xs">♥</div>
+
+              <div>
+                <h4 className="text-xl font-serif font-bold text-stone-900">
+                  {BILINGUAL_SAMPLES[activeLangTag]?.bride || "Cô Dâu"}
+                </h4>
+                <span className="text-[10px] uppercase tracking-widest text-[#BE944E] font-semibold block mt-0.5">
+                  Cô Dâu
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-stone-100 text-[11px] text-stone-600 leading-relaxed font-serif">
+                {BILINGUAL_SAMPLES[activeLangTag]?.invite} <br />
+                <span className="text-[9px] text-stone-400 font-sans block mt-1">
+                  Trân trọng kính mời
+                </span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* CỘT PHẢI: TIÊU ĐỀ, CHECKMARKS & BẢNG NÚT NGÔN NGỮ */}
+          <div className="lg:col-span-7 space-y-6">
+            <div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight">
+                {t("homeBilingualTitle1")}{" "}
+                <span className="italic font-normal text-[#BE944E]">
+                  {t("homeBilingualTitleEm")}
+                </span>
+              </h2>
+              <p className="text-xs sm:text-sm text-[#181716]/65 mt-3 leading-relaxed max-w-lg">
+                {t("homeBilingualSub")}
+              </p>
+            </div>
+
+            {/* 4 CHECKMARKS */}
+            <div className="space-y-2.5 text-xs text-stone-700 font-medium">
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-[#BE944E] shrink-0" />
+                <span>{t("homeBilingualFeat1")}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-[#BE944E] shrink-0" />
+                <span>{t("homeBilingualFeat2")}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-[#BE944E] shrink-0" />
+                <span>{t("homeBilingualFeat3")}</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Check className="w-4 h-4 text-[#BE944E] shrink-0" />
+                <span>{t("homeBilingualFeat4")}</span>
+              </div>
+            </div>
+
+            {/* 8 NÚT CHỌN NGÔN NGỮ TƯƠNG TÁC */}
+            <div className="flex flex-wrap gap-2 pt-2">
+              {[
+                "Tiếng Việt",
+                "English",
+                "简体中文",
+                "한국어",
+                "Español",
+                "Français",
+                "Русский",
+                "Deutsch",
+              ].map((lang) => (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  key={lang}
+                  type="button"
+                  onClick={() => setActiveLangTag(lang)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer border ${
+                    activeLangTag === lang
+                      ? "bg-[#7D6331] text-white border-[#7D6331] shadow-xs"
+                      : "bg-white text-stone-700 border-stone-200 hover:bg-stone-50"
+                  }`}
+                >
+                  {lang}
+                </motion.button>
+              ))}
+            </div>
+
+            {/* CTA BUTTON */}
+            <div className="pt-2">
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} className="inline-block">
+                <Link
+                  href="/dashboard/cards/new"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
+                >
+                  <span>{t("homeBilingualBtn")}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 5. MỤC MỚI: CẢM HỨNG TỪ NHỮNG CẶP ĐÔI (STORIES & TESTIMONIALS) */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 border-t border-[#EFE9E1]/60">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight">
+            {t("homeCouplesTitle1")}{" "}
+            <span className="italic font-normal text-[#BE944E]">
+              {t("homeCouplesTitleEm")}
+            </span>
+          </h2>
+          <p className="text-xs sm:text-sm text-[#181716]/65 mt-3">
+            {t("homeCouplesSub")}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {COUPLES_STORIES.map((story) => (
+            <motion.div
+              key={story.id}
+              whileHover={{ y: -6 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs hover:shadow-xl transition flex flex-col justify-between group"
+            >
+              <div>
+                {/* PHOTO */}
+                <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-stone-100 mb-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={story.photo}
+                    alt={story.couple}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                  <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-xs text-[9px] font-bold uppercase text-stone-700 shadow-2xs">
+                    {story.date}
+                  </div>
+                </div>
+
+                {/* RATING STARS */}
+                <div className="flex items-center gap-1 text-amber-400 mb-2">
+                  {[...Array(story.stars)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                  ))}
+                </div>
+
+                {/* QUOTE */}
+                <p className="text-xs text-stone-600 leading-relaxed italic">
+                  &ldquo;{story.quote}&rdquo;
+                </p>
+              </div>
+
+              {/* AUTHOR */}
+              <div className="mt-4 pt-3 border-t border-stone-100">
+                <h4 className="text-sm font-serif font-bold text-stone-900">
+                  {story.couple}
+                </h4>
+                <p className="text-[10px] text-stone-400 mt-0.5">
+                  {story.location}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 6. SECTION: AUDIO EQUALIZER & MUSIC STUDIO */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-12 md:px-12 lg:px-20">
         <div className="bg-[#242322] rounded-[36px] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
-          {/* Subtle Ambient Background Glow */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#BE944E]/15 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* CỘT TRÁI: ĐĨA VINYL XOAY 360 & SÓNG ÂM EQUALIZER */}
             <div className="lg:col-span-5 flex flex-col sm:flex-row items-center gap-6">
-              {/* ĐĨA VINYL XOAY */}
               <motion.div
                 animate={{ rotate: isPlaying ? 360 : 0 }}
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
@@ -492,7 +921,6 @@ export default function CardViteHomePage() {
                 </div>
               </motion.div>
 
-              {/* THÔNG TIN BÀI HÁT & SÓNG ÂM NHẢY MÚA */}
               <div className="space-y-2 text-center sm:text-left">
                 <span className="text-[10px] uppercase tracking-widest text-[#BE944E] font-bold block">
                   {t("homeMusicNowPlaying")}
@@ -571,7 +999,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. MỤC ANIMATION MỚI: 3D WAX SEAL STUDIO INTERACTIVE */}
+      {/* 7. SECTION: 3D WAX SEAL STUDIO INTERACTIVE */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20 text-center">
         <div className="max-w-2xl mx-auto mb-10">
@@ -615,7 +1043,6 @@ export default function CardViteHomePage() {
 
           {/* 3D ENVELOPE WITH STAMP ACTION */}
           <div className="relative w-72 sm:w-80 aspect-[16/11] bg-[#F2ECE4] rounded-2xl p-4 shadow-lg border border-[#E0D8CE] flex flex-col justify-center items-center overflow-hidden">
-            {/* Diagonal Envelope Flap */}
             <div className="absolute top-0 inset-x-0 h-1/2 border-b border-stone-300/80 bg-gradient-to-b from-[#EAE2D8] to-[#DFD6CB] clip-path-triangle opacity-90" />
 
             <span className="text-[10px] uppercase tracking-widest text-stone-500 font-serif mb-4 z-10">
@@ -655,7 +1082,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 5. 3D COVERFLOW CAROUSEL (MẪU THIỆP ĐẸP NHẤT) */}
+      {/* 8. 3D COVERFLOW CAROUSEL (MẪU THIỆP ĐẸP NHẤT) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 text-center overflow-hidden">
         <motion.div
@@ -793,7 +1220,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 6. MỤC ANIMATION MỚI: BỨC TƯỜNG LỜI CHÚC FLOATING WISHES */}
+      {/* 9. SECTION: BỨC TƯỜNG LỜI CHÚC FLOATING WISHES */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20 overflow-hidden">
         <div className="text-center max-w-2xl mx-auto mb-10">
@@ -869,7 +1296,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 7. MỤC ANIMATION MỚI: VIETQR BOX MỪNG CƯỚI SIMULATOR */}
+      {/* 10. SECTION: VIETQR BOX MỪNG CƯỚI SIMULATOR */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="bg-gradient-to-br from-[#FAF7F2] to-[#F0EAE1] rounded-[36px] p-8 sm:p-12 border border-[#EFE9E1] shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -966,7 +1393,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 8. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
+      {/* 11. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -1167,7 +1594,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 9. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
+      {/* 12. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
       {/* ------------------------------------------------------------- */}
       <section id="custom" className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <motion.div
@@ -1339,7 +1766,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 10. FOOTER */}
+      {/* 13. FOOTER */}
       {/* ------------------------------------------------------------- */}
       <footer className="border-t border-[#EFE9E1] bg-white py-10 px-6 md:px-12 lg:px-20 mt-12">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
