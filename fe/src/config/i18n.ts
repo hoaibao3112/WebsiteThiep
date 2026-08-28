@@ -9,7 +9,14 @@ export const DICTIONARY = {
     homeNavConcierge: "LIÊN HỆ",
     homeCreateBtn: "TẠO THIỆP",
 
-    // Hero Section
+    // Common Footer
+    footerPrivacy: "Chính Sách Bảo Mật",
+    footerTerms: "Điều Khoản Dịch Vụ",
+    footerSustainability: "Phát Triển Bền Vững",
+    footerAccessibility: "Khả Năng Tiếp Cận",
+    footerCopyright: "© 2024 CardVite Event Studio. Bảo lưu mọi quyền.",
+
+    // Hero Section (Home)
     homeTagWedding: "WEDDING",
     homeTagGala: "GALA",
     homeHeroTitle1: "Trao thiệp trang",
@@ -62,6 +69,101 @@ export const DICTIONARY = {
     homeCard6Title: "Đa Ngôn Ngữ Toàn Cầu",
     homeCard6Desc:
       "Tự động dịch nội dung thiệp dựa trên ngôn ngữ trình duyệt của khách mời, xóa nhòa khoảng cách địa lý.",
+
+    // -------------------------------------------------------------
+    // COLLECTIONS PAGE (/collections)
+    // -------------------------------------------------------------
+    collectionsBadge: "• BỘ SƯU TẬP CAO CẤP •",
+    collectionsTitle: "Kho Mẫu Thiệp Đa Danh Mục.",
+    collectionsDesc:
+      "Khám phá hàng trăm thiết kế thiệp cưới, đầy tháng, sinh nhật và sự kiện độc quyền. Được chế tác với sự tinh tế trong từng pixel, tối giản nhưng đậm chất nghệ thuật, hoàn hảo để lưu giữ khoảnh khắc của bạn.",
+    filterAll: "Tất Cả",
+    filterWedding: "Đám Cưới",
+    filterNewborn: "Đầy Tháng & Thôi Nôi",
+    filterBirthday: "Sinh Nhật",
+    filterEvent: "Sự Kiện",
+    stylePrefix: "PHONG CÁCH:",
+    styleAll: "Tất Cả Phong Cách",
+    badgeNew: "MỚI",
+    useTemplateBtn: "Dùng Mẫu Này",
+    viewMoreTemplates: "XEM THÊM 240+ MẪU",
+    faqHeading: "Câu Hỏi Thường Gặp",
+    faqSubheading: "GIẢI ĐÁP THẮC MẮC",
+    ctaBannerTitle: "Sẵn sàng tạo tấm thiệp độc bản của bạn?",
+    ctaBannerBtn: "BẮT ĐẦU THIẾT KẾ",
+
+    // -------------------------------------------------------------
+    // PRICING PAGE (/pricing)
+    // -------------------------------------------------------------
+    pricingBadge: "• BẢNG GIÁ DỊCH VỤ •",
+    pricingTitle: "Chọn Gói Dịch Vụ Phù Hợp.",
+    pricingDesc:
+      "Minh bạch, rõ ràng và đẳng cấp. Chọn gói dịch vụ phù hợp nhất để biến sự kiện của bạn thành trải nghiệm số hoàn hảo.",
+    planFreeTitle: "DÙNG THỬ",
+    planFreePrice: "0đ",
+    planFreeDesc: "Trải nghiệm các tính năng cơ bản của thiệp mời số.",
+    planFreeFeat1: "Mẫu thiệp cơ bản",
+    planFreeFeat2: "Tùy chỉnh thông tin cơ bản",
+    planFreeFeat3: "Thời gian sử dụng giới hạn",
+    btnStartFree: "BẮT ĐẦU MIỄN PHÍ",
+
+    planBasicTitle: "TIÊU CHUẨN",
+    planBasicPrice: "199.000đ",
+    planBasicDesc: "Tối ưu cho đám cưới và sự kiện cá nhân với các tiện ích nâng cao.",
+    planBasicFeat1: "Nhạc nền MP3 tự chọn",
+    planBasicFeat2: "Tích hợp VietQR mừng cưới",
+    planBasicFeat3: "Link riêng cho từng khách (Individual links)",
+    planBasicFeat4: "Lưu trữ vĩnh viễn (Permanent access)",
+    btnSelectBasic: "CHỌN TIÊU CHUẨN",
+
+    planVipTitle: "VIP HOÀNG GIA",
+    planVipPrice: "249.000đ",
+    planVipPopular: "★ PHỔ BIẾN NHẤT",
+    planVipDesc: "Trải nghiệm sang trọng tuyệt đối, thiết kế tinh xảo không tì vết.",
+    planVipFeat1: "Mọi tính năng của Tiêu Chuẩn",
+    planVipFeat2: "Hiệu ứng 3D sáp niêm phong (Wax seal)",
+    planVipFeat3: "Không có logo CardVite (White-label)",
+    planVipFeat4: "Xuất danh sách khách mời ra Excel",
+    planVipFeat5: "Hỗ trợ ưu tiên 24/7",
+    btnUpgradeVip: "NÂNG CẤP VIP",
+
+    // -------------------------------------------------------------
+    // JOURNAL / BLOG PAGE (/journal)
+    // -------------------------------------------------------------
+    journalBadge: "• CARDVITE JOURNAL •",
+    journalTitle: "Cẩm Nang & Cảm Hứng Tổ Chức Tiệc",
+    journalDesc:
+      "Khám phá xu hướng thiết kế thiệp mời mới nhất, nghệ thuật viết lời mời tinh tế và cẩm nang toàn diện cho những sự kiện trọng đại của bạn.",
+    tagAll: "Tất Cả",
+    tagWeddingTrend: "Xu Hướng Cưới",
+    tagNewbornCeremony: "Nghi Thức Thôi Nôi",
+    tagInviteEtiquette: "Lời Mời Chuẩn",
+    tagCompare: "So Sánh Thiệp Số",
+    readArticleBtn: "ĐỌC BÀI VIẾT",
+
+    // -------------------------------------------------------------
+    // CONCIERGE / CONTACT PAGE (/concierge)
+    // -------------------------------------------------------------
+    conciergeBadge: "• CARDVITE CONCIERGE •",
+    conciergeTitle: "Đăng Ký Thuê Thiết Kế Riêng.",
+    conciergeDesc:
+      "Chuyên viên thiết kế của chúng tôi sẽ liên hệ lại với bạn trong vòng 15 phút làm việc để bắt đầu hiện thực hóa ý tưởng cho sự kiện của bạn.",
+    zaloSupport: "ZALO HỖ TRỢ",
+    hotlineSupport: "HOTLINE (24/7)",
+    emailSupport: "EMAIL",
+    studioSupport: "CREATIVE STUDIO",
+    studioAddress: "Tầng 12, The Landmark, Quận 1, TP. Hồ Chí Minh",
+    reqFormTitle: "Thông Tin Yêu Cầu",
+    fieldFullName: "Họ & Tên",
+    fieldPhone: "Số Điện Thoại (Zalo)",
+    fieldEmail: "Email",
+    fieldServicePackage: "Gói Dịch Vụ",
+    fieldFavoriteTemplate: "Mẫu Thiệp Yêu Thích (Tùy chọn)",
+    fieldNotes: "Ghi Chú Đặc Biệt / Ý Tưởng Của Bạn",
+    fieldNotesPlaceholder: "Hãy mô tả ngắn gọn về sự kiện hoặc phong cách bạn mong muốn...",
+    btnSubmitConcierge: "GỬI ĐĂNG KÝ THUÊ THIỆP",
+    conciergeSuccessTitle: "Đã Gửi Yêu Cầu Thành Công!",
+    conciergeSuccessDesc: "Chuyên viên CardVite sẽ liên hệ với bạn qua Zalo/SĐT trong vòng 15 phút.",
 
     // Envelope & Opening
     openCard: "Mở Thiệp",
@@ -163,7 +265,14 @@ export const DICTIONARY = {
     homeNavConcierge: "CONCIERGE",
     homeCreateBtn: "CREATE",
 
-    // Hero Section
+    // Common Footer
+    footerPrivacy: "Privacy Policy",
+    footerTerms: "Terms of Service",
+    footerSustainability: "Sustainability",
+    footerAccessibility: "Accessibility",
+    footerCopyright: "© 2024 CardVite Event Studio. All rights reserved.",
+
+    // Hero Section (Home)
     homeTagWedding: "WEDDING",
     homeTagGala: "GALA",
     homeHeroTitle1: "Delivering elegant",
@@ -216,6 +325,101 @@ export const DICTIONARY = {
     homeCard6Title: "Global Multi-Language Support",
     homeCard6Desc:
       "Automatically translates the invitation based on each international guest's browser language, erasing borders.",
+
+    // -------------------------------------------------------------
+    // COLLECTIONS PAGE (/collections)
+    // -------------------------------------------------------------
+    collectionsBadge: "• EXCLUSIVE REPOSITORY •",
+    collectionsTitle: "Multi-Category Template Gallery.",
+    collectionsDesc:
+      "Explore hundreds of exclusive online invitation designs for Weddings, Baby Celebrations, Birthdays, and Corporate Galas. Pixel-perfect, minimalist yet deeply artistic.",
+    filterAll: "All Templates",
+    filterWedding: "Wedding",
+    filterNewborn: "Baby & Full Month",
+    filterBirthday: "Birthday",
+    filterEvent: "Events & Gala",
+    stylePrefix: "STYLE:",
+    styleAll: "All Styles",
+    badgeNew: "NEW",
+    useTemplateBtn: "Use Template",
+    viewMoreTemplates: "LOAD 240+ MORE TEMPLATES",
+    faqHeading: "Frequently Asked Questions",
+    faqSubheading: "ANSWERS & GUIDANCE",
+    ctaBannerTitle: "Ready to design your bespoke invitation?",
+    ctaBannerBtn: "START DESIGNING NOW",
+
+    // -------------------------------------------------------------
+    // PRICING PAGE (/pricing)
+    // -------------------------------------------------------------
+    pricingBadge: "• SERVICE TIERS •",
+    pricingTitle: "Select The Perfect Plan.",
+    pricingDesc:
+      "Transparent, straightforward, and premium. Choose the ideal plan to elevate your event into a seamless digital journey.",
+    planFreeTitle: "TRIAL",
+    planFreePrice: "$0",
+    planFreeDesc: "Experience the core features of digital invitations with zero commitment.",
+    planFreeFeat1: "Access standard templates",
+    planFreeFeat2: "Basic content customization",
+    planFreeFeat3: "Limited duration access",
+    btnStartFree: "START FREE",
+
+    planBasicTitle: "STANDARD",
+    planBasicPrice: "$9.90",
+    planBasicDesc: "Tailored for intimate weddings and celebrations with essential perks.",
+    planBasicFeat1: "Custom MP3 soundtrack",
+    planBasicFeat2: "QR banking gift registry",
+    planBasicFeat3: "Personalized guest links (G-XXXX)",
+    planBasicFeat4: "Permanent lifetime access",
+    btnSelectBasic: "CHOOSE STANDARD",
+
+    planVipTitle: "ROYAL VIP",
+    planVipPrice: "$14.90",
+    planVipPopular: "★ MOST POPULAR",
+    planVipDesc: "Flawless luxury experience, exquisite craftsmanship with zero compromises.",
+    planVipFeat1: "All Standard Tier features",
+    planVipFeat2: "3D Wax Seal opening effect",
+    planVipFeat3: "100% White-label (No CardVite badge)",
+    planVipFeat4: "Export RSVP guest lists to Excel",
+    planVipFeat5: "24/7 Priority VIP Concierge",
+    btnUpgradeVip: "UPGRADE TO VIP",
+
+    // -------------------------------------------------------------
+    // JOURNAL / BLOG PAGE (/journal)
+    // -------------------------------------------------------------
+    journalBadge: "• CARDVITE JOURNAL •",
+    journalTitle: "Event Guides & Inspirations",
+    journalDesc:
+      "Discover the latest invitation trends, nuanced etiquette tips, and comprehensive guides for your landmark celebrations.",
+    tagAll: "All Posts",
+    tagWeddingTrend: "Wedding Trends",
+    tagNewbornCeremony: "Baby Ceremonies",
+    tagInviteEtiquette: "Invitation Etiquette",
+    tagCompare: "Digital vs Paper",
+    readArticleBtn: "READ ARTICLE",
+
+    // -------------------------------------------------------------
+    // CONCIERGE / CONTACT PAGE (/concierge)
+    // -------------------------------------------------------------
+    conciergeBadge: "• CARDVITE CONCIERGE •",
+    conciergeTitle: "Request Bespoke Studio Design.",
+    conciergeDesc:
+      "Our bespoke design consultants will reach out to you within 15 business minutes to bring your dream event vision to life.",
+    zaloSupport: "ZALO SUPPORT",
+    hotlineSupport: "HOTLINE (24/7)",
+    emailSupport: "EMAIL",
+    studioSupport: "CREATIVE STUDIO",
+    studioAddress: "Level 12, The Landmark, District 1, Ho Chi Minh City",
+    reqFormTitle: "Inquiry Details",
+    fieldFullName: "Full Name",
+    fieldPhone: "Phone Number (Zalo/WhatsApp)",
+    fieldEmail: "Email",
+    fieldServicePackage: "Service Package",
+    fieldFavoriteTemplate: "Preferred Template (Optional)",
+    fieldNotes: "Special Notes / Custom Ideas",
+    fieldNotesPlaceholder: "Briefly describe your vision, dates, soundtrack, or custom color scheme...",
+    btnSubmitConcierge: "SUBMIT INQUIRY",
+    conciergeSuccessTitle: "Inquiry Submitted Successfully!",
+    conciergeSuccessDesc: "A CardVite design specialist will contact you via WhatsApp/Zalo within 15 minutes.",
 
     // Envelope & Opening
     openCard: "Open Invitation",
@@ -317,7 +521,14 @@ export const DICTIONARY = {
     homeNavConcierge: "定制咨询",
     homeCreateBtn: "立即制作",
 
-    // Hero Section
+    // Common Footer
+    footerPrivacy: "隐私政策",
+    footerTerms: "服务条款",
+    footerSustainability: "可持续发展",
+    footerAccessibility: "无障碍访问",
+    footerCopyright: "© 2024 CardVite 数字化宴会工作室 • 保留所有权利",
+
+    // Hero Section (Home)
     homeTagWedding: "婚礼盛典",
     homeTagGala: "高端宴会",
     homeHeroTitle1: "传递至臻请柬 —",
@@ -370,6 +581,101 @@ export const DICTIONARY = {
     homeCard6Title: "全球多语言无缝支持",
     homeCard6Desc:
       "根据国际宾客浏览器语言自动翻译请帖内容，跨越山海传递幸福。",
+
+    // -------------------------------------------------------------
+    // COLLECTIONS PAGE (/collections)
+    // -------------------------------------------------------------
+    collectionsBadge: "• 典藏级模板库 •",
+    collectionsTitle: "全品类电子请柬精选。",
+    collectionsDesc:
+      "探索数百款针对婚礼、满月周岁、生日寿宴和高端晚宴的独家设计，像素级精致打磨，极简而富有艺术气息。",
+    filterAll: "全部模版",
+    filterWedding: "婚礼盛典",
+    filterNewborn: "满月 • 周岁",
+    filterBirthday: "生日派对",
+    filterEvent: "企业盛典",
+    stylePrefix: "设计风格：",
+    styleAll: "所有风格",
+    badgeNew: "最新",
+    useTemplateBtn: "使用此模版",
+    viewMoreTemplates: "加载更多 240+ 模版",
+    faqHeading: "常见问题解答",
+    faqSubheading: "答疑与指南",
+    ctaBannerTitle: "准备好制作您的专属独家请帖了吗？",
+    ctaBannerBtn: "立即开启定制",
+
+    // -------------------------------------------------------------
+    // PRICING PAGE (/pricing)
+    // -------------------------------------------------------------
+    pricingBadge: "• 服务定价方案 •",
+    pricingTitle: "选择最适合您的套餐。",
+    pricingDesc:
+      "价格透明，无任何隐形消费。选择心仪方案，开启殿堂级数字化请柬体验。",
+    planFreeTitle: "免费体验",
+    planFreePrice: "¥0",
+    planFreeDesc: "免费体验电子请帖的基础核心功能。",
+    planFreeFeat1: "基础通用模版库",
+    planFreeFeat2: "基础文本信息编辑",
+    planFreeFeat3: "限时访问体验",
+    btnStartFree: "免费开始使用",
+
+    planBasicTitle: "标准典雅版",
+    planBasicPrice: "¥59",
+    planBasicDesc: "专为温馨婚礼与个人私享派对量身定制。",
+    planBasicFeat1: "自定义上传MP3背景音乐",
+    planBasicFeat2: "集成电子礼金二维码",
+    planBasicFeat3: "宾客独立尊称专属链接",
+    planBasicFeat4: "永久永久保存不失效",
+    btnSelectBasic: "选择标准版",
+
+    planVipTitle: "皇家尊享VIP",
+    planVipPrice: "¥89",
+    planVipPopular: "★ 最受青睐",
+    planVipDesc: "无与伦比的奢华体验，臻美细节无懈可击。",
+    planVipFeat1: "包含标准版所有权益",
+    planVipFeat2: "3D火漆封蜡开帖动画特效",
+    planVipFeat3: "去除CardVite品牌标识",
+    planVipFeat4: "一键导出Excel宾客出席名单",
+    planVipFeat5: "24/7 VIP专属客服支持",
+    btnUpgradeVip: "升级至VIP",
+
+    // -------------------------------------------------------------
+    // JOURNAL / BLOG PAGE (/journal)
+    // -------------------------------------------------------------
+    journalBadge: "• 宴会指南与灵感 •",
+    journalTitle: "筹备灵感与宴席指南",
+    journalDesc:
+      "探索最新请帖设计趋势、行文礼仪与全流程宴会筹备指南。",
+    tagAll: "全部文章",
+    tagWeddingTrend: "婚礼趋势",
+    tagNewbornCeremony: "抓周礼俗",
+    tagInviteEtiquette: "请帖礼仪",
+    tagCompare: "电子对比纸质",
+    readArticleBtn: "阅读全文",
+
+    // -------------------------------------------------------------
+    // CONCIERGE / CONTACT PAGE (/concierge)
+    // -------------------------------------------------------------
+    conciergeBadge: "• 专属私人顾问 •",
+    conciergeTitle: "预约专属私人定制服务。",
+    conciergeDesc:
+      "提交您的设计意向，我们的资深视觉设计师将在15分钟内与您联系，为您定制独一无二的专属请柬。",
+    zaloSupport: "在线客服",
+    hotlineSupport: "客服热线 (24/7)",
+    emailSupport: "官方邮箱",
+    studioSupport: "设计工坊",
+    studioAddress: "胡志明市第一郡地标大厦12层",
+    reqFormTitle: "预约定制需求表",
+    fieldFullName: "您的姓名",
+    fieldPhone: "联系电话（微信/Zalo）",
+    fieldEmail: "电子邮箱",
+    fieldServicePackage: "意向套餐",
+    fieldFavoriteTemplate: "喜爱的模版（可选）",
+    fieldNotes: "特殊要求与设计灵感",
+    fieldNotesPlaceholder: "简要描述您的宴会主题、日期、音乐偏好或配色要求...",
+    btnSubmitConcierge: "提交定制预约",
+    conciergeSuccessTitle: "预约提交成功！",
+    conciergeSuccessDesc: "我们的专属顾问将在15分钟内与您取得联系，请保持通讯畅通。",
 
     // Envelope & Opening
     openCard: "打开请柬",

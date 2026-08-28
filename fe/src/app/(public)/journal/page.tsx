@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Clock, Calendar } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Article {
   id: string;
@@ -49,14 +50,15 @@ const ARTICLES: Article[] = [
 ];
 
 export default function JournalPage() {
-  const [selectedTag, setSelectedTag] = useState("Tất Cả");
+  const { t } = useLanguage();
+  const [selectedTag, setSelectedTag] = useState("ALL");
 
   const tags = [
-    "Tất Cả",
-    "Xu Hướng Cưới",
-    "Nghi Thức Thôi Nôi",
-    "Lời Mời Chuẩn",
-    "So Sánh Thiệp Số",
+    { id: "ALL", label: t("tagAll") },
+    { id: "WEDDING", label: t("tagWeddingTrend") },
+    { id: "NEWBORN", label: t("tagNewbornCeremony") },
+    { id: "INVITE", label: t("tagInviteEtiquette") },
+    { id: "COMPARE", label: t("tagCompare") },
   ];
 
   return (
@@ -71,10 +73,10 @@ export default function JournalPage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
-            <Link href="/collections" className="hover:text-[#181716] transition">MẪU THIỆP</Link>
-            <Link href="/journal" className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5">CẨM NANG</Link>
-            <Link href="/pricing" className="hover:text-[#181716] transition">BẢNG GIÁ</Link>
-            <Link href="/concierge" className="hover:text-[#181716] transition">LIÊN HỆ</Link>
+            <Link href="/collections" className="hover:text-[#181716] transition">{t("homeNavCollections")}</Link>
+            <Link href="/journal" className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5">{t("homeNavJournal")}</Link>
+            <Link href="/pricing" className="hover:text-[#181716] transition">{t("homeNavPricing")}</Link>
+            <Link href="/concierge" className="hover:text-[#181716] transition">{t("homeNavConcierge")}</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -83,7 +85,7 @@ export default function JournalPage() {
               href="/dashboard/cards/new"
               className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#7D6331] hover:bg-[#685226] text-white text-[11px] font-bold tracking-widest uppercase shadow-2xs transition cursor-pointer"
             >
-              CREATE
+              {t("homeCreateBtn")}
             </Link>
           </div>
         </div>
@@ -94,13 +96,13 @@ export default function JournalPage() {
       {/* ------------------------------------------------------------- */}
       <section className="max-w-4xl mx-auto px-6 pt-10 pb-8 text-center">
         <div className="inline-block px-3.5 py-1 rounded-full bg-[#E8ECE5] text-[#556353] text-[10px] font-bold uppercase tracking-widest mb-3">
-          • CARDVITE JOURNAL •
+          {t("journalBadge")}
         </div>
         <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#181716] tracking-tight">
-          Cẩm Nang & Cảm Hứng Tổ Chức Tiệc
+          {t("journalTitle")}
         </h1>
         <p className="text-xs sm:text-sm text-[#181716]/65 mt-3 max-w-xl mx-auto leading-relaxed">
-          Khám phá xu hướng thiết kế thiệp mời mới nhất, nghệ thuật viết lời mời tinh tế và cẩm nang toàn diện cho những sự kiện trọng đại của bạn.
+          {t("journalDesc")}
         </p>
       </section>
 
@@ -111,15 +113,15 @@ export default function JournalPage() {
         <div className="flex items-center justify-center gap-2.5 overflow-x-auto pb-4 no-scrollbar">
           {tags.map((tag) => (
             <button
-              key={tag}
-              onClick={() => setSelectedTag(tag)}
+              key={tag.id}
+              onClick={() => setSelectedTag(tag.id)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-                selectedTag === tag
+                selectedTag === tag.id
                   ? "bg-[#7D6331] text-white border-[#7D6331] shadow-xs"
                   : "bg-white text-[#181716]/70 border-[#E8E2D8] hover:bg-white"
               }`}
             >
-              {tag}
+              {tag.label}
             </button>
           ))}
         </div>
@@ -208,7 +210,7 @@ export default function JournalPage() {
                 href="#"
                 className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#7D6331] hover:text-[#BE944E] transition group/link"
               >
-                <span>ĐỌC BÀI VIẾT</span>
+                <span>{t("readArticleBtn")}</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition" />
               </Link>
             </div>
@@ -223,12 +225,12 @@ export default function JournalPage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
           <span className="text-2xl font-serif font-bold text-[#181716]">CardVite</span>
           <div className="flex items-center gap-6 font-medium">
-            <Link href="#" className="hover:text-[#181716]">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#181716]">Terms of Service</Link>
-            <Link href="#" className="hover:text-[#181716]">Sustainability</Link>
-            <Link href="#" className="hover:text-[#181716]">Accessibility</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerPrivacy")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerTerms")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerSustainability")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerAccessibility")}</Link>
           </div>
-          <span>© 2024 CardVite Event Studio. All rights reserved.</span>
+          <span>{t("footerCopyright")}</span>
         </div>
       </footer>
     </div>

@@ -11,8 +11,10 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ConciergePage() {
+  const { t } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -45,11 +47,11 @@ export default function ConciergePage() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
-            <Link href="/collections" className="hover:text-[#181716] transition">MẪU THIỆP</Link>
-            <Link href="/journal" className="hover:text-[#181716] transition">CẨM NANG</Link>
-            <Link href="/pricing" className="hover:text-[#181716] transition">BẢNG GIÁ</Link>
+            <Link href="/collections" className="hover:text-[#181716] transition">{t("homeNavCollections")}</Link>
+            <Link href="/journal" className="hover:text-[#181716] transition">{t("homeNavJournal")}</Link>
+            <Link href="/pricing" className="hover:text-[#181716] transition">{t("homeNavPricing")}</Link>
             <Link href="/concierge" className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5">
-              LIÊN HỆ
+              {t("homeNavConcierge")}
             </Link>
           </nav>
 
@@ -59,7 +61,7 @@ export default function ConciergePage() {
               href="/dashboard/cards/new"
               className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#7D6331] hover:bg-[#685226] text-white text-[11px] font-bold tracking-widest uppercase shadow-2xs transition cursor-pointer"
             >
-              CREATE
+              {t("homeCreateBtn")}
             </Link>
           </div>
         </div>
@@ -70,13 +72,13 @@ export default function ConciergePage() {
       {/* ------------------------------------------------------------- */}
       <section className="max-w-4xl mx-auto px-6 pt-10 pb-12 text-center">
         <div className="inline-block px-3.5 py-1 rounded-full bg-[#E8ECE5] text-[#556353] text-[10px] font-bold uppercase tracking-widest mb-3">
-          • CARDVITE CONCIERGE •
+          {t("conciergeBadge")}
         </div>
         <h1 className="text-4xl sm:text-5xl font-serif font-bold text-[#181716] tracking-tight">
-          Đăng Ký Thuê Thiết Kế Riêng.
+          {t("conciergeTitle")}
         </h1>
         <p className="text-xs sm:text-sm text-[#181716]/65 mt-3 max-w-xl mx-auto leading-relaxed">
-          Chuyên viên thiết kế của chúng tôi sẽ liên hệ lại với bạn trong vòng 15 phút làm việc để bắt đầu hiện thực hóa ý tưởng cho sự kiện của bạn.
+          {t("conciergeDesc")}
         </p>
       </section>
 
@@ -94,7 +96,7 @@ export default function ConciergePage() {
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                  ZALO HỖ TRỢ
+                  {t("zaloSupport")}
                 </span>
                 <span className="text-sm font-bold text-stone-900 mt-0.5 block">
                   090 123 4567
@@ -109,7 +111,7 @@ export default function ConciergePage() {
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                  HOTLINE (24/7)
+                  {t("hotlineSupport")}
                 </span>
                 <span className="text-sm font-bold text-stone-900 mt-0.5 block">
                   1800 8888
@@ -124,7 +126,7 @@ export default function ConciergePage() {
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                  EMAIL
+                  {t("emailSupport")}
                 </span>
                 <span className="text-sm font-bold text-stone-900 mt-0.5 block">
                   concierge@cardvite.com
@@ -139,10 +141,10 @@ export default function ConciergePage() {
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
-                  CREATIVE STUDIO
+                  {t("studioSupport")}
                 </span>
                 <span className="text-xs font-semibold text-stone-900 mt-0.5 block">
-                  Tầng 12, The Landmark, Quận 1, TP. Hồ Chí Minh
+                  {t("studioAddress")}
                 </span>
               </div>
             </div>
@@ -151,17 +153,17 @@ export default function ConciergePage() {
           {/* CỘT PHẢI: FORM THÔNG TIN YÊU CẦU */}
           <div className="lg:col-span-7 bg-white rounded-3xl p-8 sm:p-10 border border-[#EFE9E1] shadow-2xs">
             <h2 className="text-2xl font-serif font-bold text-[#181716] mb-6">
-              Thông Tin Yêu Cầu
+              {t("reqFormTitle")}
             </h2>
 
             {submitted ? (
               <div className="py-12 text-center flex flex-col items-center">
                 <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-3 animate-bounce" />
                 <h3 className="text-xl font-bold font-serif text-stone-900">
-                  Đã Gửi Yêu Cầu Thành Công!
+                  {t("conciergeSuccessTitle")}
                 </h3>
                 <p className="text-xs text-stone-500 mt-1 max-w-sm">
-                  Chuyên viên CardVite sẽ liên hệ với bạn qua Zalo/SĐT trong vòng 15 phút.
+                  {t("conciergeSuccessDesc")}
                 </p>
               </div>
             ) : (
@@ -170,7 +172,7 @@ export default function ConciergePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                      Họ & Tên
+                      {t("fieldFullName")}
                     </label>
                     <input
                       type="text"
@@ -183,7 +185,7 @@ export default function ConciergePage() {
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                      Số Điện Thoại (Zalo)
+                      {t("fieldPhone")}
                     </label>
                     <input
                       type="tel"
@@ -199,7 +201,7 @@ export default function ConciergePage() {
                 {/* ROW 2: EMAIL */}
                 <div>
                   <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                    Email
+                    {t("fieldEmail")}
                   </label>
                   <input
                     type="email"
@@ -215,7 +217,7 @@ export default function ConciergePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                      Gói Dịch Vụ
+                      {t("fieldServicePackage")}
                     </label>
                     <select
                       value={servicePackage}
@@ -230,7 +232,7 @@ export default function ConciergePage() {
 
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                      Mẫu Thiệp Yêu Thích (Tùy chọn)
+                      {t("fieldFavoriteTemplate")}
                     </label>
                     <select
                       value={favoriteTemplate}
@@ -249,13 +251,13 @@ export default function ConciergePage() {
                 {/* ROW 4: GHI CHÚ */}
                 <div>
                   <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                    Ghi Chú Đặc Biệt / Ý Tưởng Của Bạn
+                    {t("fieldNotes")}
                   </label>
                   <textarea
                     rows={4}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Hãy mô tả ngắn gọn về sự kiện hoặc phong cách bạn mong muốn..."
+                    placeholder={t("fieldNotesPlaceholder")}
                     className="w-full px-4 py-3 rounded-xl bg-[#FAF7F2] border border-[#E8E2D8] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/40 text-stone-800"
                   />
                 </div>
@@ -266,7 +268,7 @@ export default function ConciergePage() {
                     type="submit"
                     className="w-full py-3.5 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>GỬI ĐĂNG KÝ THUÊ THIỆP</span>
+                    <span>{t("btnSubmitConcierge")}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -283,12 +285,12 @@ export default function ConciergePage() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
           <span className="text-2xl font-serif font-bold text-[#181716]">CardVite</span>
           <div className="flex items-center gap-6 font-medium">
-            <Link href="#" className="hover:text-[#181716]">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#181716]">Terms of Service</Link>
-            <Link href="#" className="hover:text-[#181716]">Sustainability</Link>
-            <Link href="#" className="hover:text-[#181716]">Accessibility</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerPrivacy")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerTerms")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerSustainability")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerAccessibility")}</Link>
           </div>
-          <span>© 2024 CardVite Event Studio. All rights reserved.</span>
+          <span>{t("footerCopyright")}</span>
         </div>
       </footer>
     </div>
