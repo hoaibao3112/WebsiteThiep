@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import {
   ArrowRight,
   Menu,
@@ -16,6 +18,8 @@ import {
   Sparkles,
   Edit3,
   Send,
+  Eye,
+  CheckCircle2,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -26,36 +30,35 @@ const CAROUSEL_CARDS = [
     title: "Vườn Ngọc",
     couple: "Minh Khôi & Ngọc Hân",
     image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop",
-    color: "#E8ECE5",
+    tag: "Sang Trọng",
   },
   {
     id: 2,
     title: "Hoa Lụa Nâu",
     couple: "Văn Long & Thu Hà",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop",
-    color: "#F0EAE1",
+    tag: "Tối Giản",
   },
   {
     id: 3,
     title: "Hoa Mộc Hồng",
     couple: "Tuấn Anh & Mai Phương",
     image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=500&auto=format&fit=crop",
-    color: "#FAF2E4",
-    isCenter: true,
+    tag: "Romance",
   },
   {
     id: 4,
     title: "Hồng Xanh",
     couple: "Minh Đức & Thu Hà",
     image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&auto=format&fit=crop",
-    color: "#E8ECE5",
+    tag: "Cổ Điển",
   },
   {
     id: 5,
     title: "Minimalism Nâu",
     couple: "Hoàng Nam & Thảo Vy",
     image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500&auto=format&fit=crop",
-    color: "#F0EAE1",
+    tag: "Modern",
   },
 ];
 
@@ -66,9 +69,13 @@ export default function CardViteHomePage() {
   // Bộ điều khiển Simulator
   const [names, setNames] = useState("Sarah & James");
   const [selectedEffect, setSelectedEffect] = useState("Wax Seal");
+  const [sealOpened, setSealOpened] = useState(false);
 
   // State cho 3D Carousel
-  const [carouselIndex, setCarouselIndex] = useState(2); // Center is index 2
+  const [carouselIndex, setCarouselIndex] = useState(2);
+
+  // Active step trong quy trình 3 bước
+  const [activeStep, setActiveStep] = useState(1);
 
   const nextSlide = () => {
     setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
@@ -78,16 +85,26 @@ export default function CardViteHomePage() {
     setCarouselIndex((prev) => (prev - 1 + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length);
   };
 
+  const handleWaxSealClick = () => {
+    setSealOpened(!sealOpened);
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#E08269"],
+    });
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#FAF7F2] text-[#181716] font-sans antialiased overflow-x-hidden selection:bg-[#BE944E]/20">
       {/* ------------------------------------------------------------- */}
       {/* 1. HEADER & NAVBAR */}
       {/* ------------------------------------------------------------- */}
-      <header className="w-full px-6 py-6 md:px-12 lg:px-20 bg-[#FAF7F2]">
+      <header className="w-full px-6 py-6 md:px-12 lg:px-20 bg-[#FAF7F2] sticky top-0 z-40 backdrop-blur-md bg-[#FAF7F2]/90 border-b border-[#EFE9E1]/60 transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* LOGO */}
           <Link href="/" className="group flex items-center">
-            <span className="text-3xl font-serif font-bold tracking-tight text-[#181716] group-hover:text-[#BE944E] transition">
+            <span className="text-3xl font-serif font-bold tracking-tight text-[#181716] group-hover:text-[#BE944E] transition duration-300">
               CardVite
             </span>
           </Link>
@@ -96,17 +113,26 @@ export default function CardViteHomePage() {
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
             <Link
               href="/collections"
-              className="hover:text-[#BE944E] transition"
+              className="hover:text-[#BE944E] transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-0.5 after:bg-[#BE944E] after:transition-all"
             >
               {t("homeNavCollections")}
             </Link>
-            <Link href="/journal" className="hover:text-[#181716] transition">
+            <Link
+              href="/journal"
+              className="hover:text-[#BE944E] transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-0.5 after:bg-[#BE944E] after:transition-all"
+            >
               {t("homeNavJournal")}
             </Link>
-            <Link href="/pricing" className="hover:text-[#181716] transition">
+            <Link
+              href="/pricing"
+              className="hover:text-[#BE944E] transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-0.5 after:bg-[#BE944E] after:transition-all"
+            >
               {t("homeNavPricing")}
             </Link>
-            <Link href="/concierge" className="hover:text-[#181716] transition">
+            <Link
+              href="/concierge"
+              className="hover:text-[#BE944E] transition relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-0.5 after:bg-[#BE944E] after:transition-all"
+            >
               {t("homeNavConcierge")}
             </Link>
           </nav>
@@ -114,12 +140,14 @@ export default function CardViteHomePage() {
           {/* RIGHT ACTION */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
-            <Link
-              href="/dashboard/cards/new"
-              className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-2xs hover:scale-105 transition-all cursor-pointer"
-            >
-              {t("homeCreateBtn")}
-            </Link>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/dashboard/cards/new"
+                className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-md transition cursor-pointer"
+              >
+                {t("homeCreateBtn")}
+              </Link>
+            </motion.div>
           </div>
 
           {/* MOBILE HAMBURGER BUTTON */}
@@ -134,72 +162,90 @@ export default function CardViteHomePage() {
       </header>
 
       {/* MOBILE MENU OVERLAY */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-[#FAF7F2]/98 backdrop-blur-xl flex flex-col justify-center px-8 md:hidden">
-          <button
-            onClick={() => setMobileMenuOpen(false)}
-            className="absolute top-6 right-6 p-2 text-[#181716]"
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-50 bg-[#FAF7F2]/98 backdrop-blur-xl flex flex-col justify-center px-8 md:hidden"
           >
-            <X className="w-6 h-6" />
-          </button>
-          <div className="space-y-6 text-center">
-            <Link
-              href="/collections"
+            <button
               onClick={() => setMobileMenuOpen(false)}
-              className="block text-2xl font-serif font-bold text-[#181716]"
+              className="absolute top-6 right-6 p-2 text-[#181716]"
             >
-              {t("homeNavCollections")}
-            </Link>
-            <Link
-              href="/journal"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-2xl font-serif font-bold text-[#181716]"
-            >
-              {t("homeNavJournal")}
-            </Link>
-            <Link
-              href="/pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-2xl font-serif font-bold text-[#181716]"
-            >
-              {t("homeNavPricing")}
-            </Link>
-            <Link
-              href="/concierge"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-2xl font-serif font-bold text-[#181716]"
-            >
-              {t("homeNavConcierge")}
-            </Link>
-            <div className="pt-6 flex flex-col items-center gap-4">
-              <LanguageSwitcher />
+              <X className="w-6 h-6" />
+            </button>
+            <div className="space-y-6 text-center">
               <Link
-                href="/dashboard/cards/new"
+                href="/collections"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md"
+                className="block text-2xl font-serif font-bold text-[#181716]"
               >
-                {t("homeCreateBtn")}
+                {t("homeNavCollections")}
               </Link>
+              <Link
+                href="/journal"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-2xl font-serif font-bold text-[#181716]"
+              >
+                {t("homeNavJournal")}
+              </Link>
+              <Link
+                href="/pricing"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-2xl font-serif font-bold text-[#181716]"
+              >
+                {t("homeNavPricing")}
+              </Link>
+              <Link
+                href="/concierge"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block text-2xl font-serif font-bold text-[#181716]"
+              >
+                {t("homeNavConcierge")}
+              </Link>
+              <div className="pt-6 flex flex-col items-center gap-4">
+                <LanguageSwitcher />
+                <Link
+                  href="/dashboard/cards/new"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md"
+                >
+                  {t("homeCreateBtn")}
+                </Link>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. HERO SECTION */}
+      {/* 2. HERO SECTION VỚI MICRO-ANIMATIONS */}
       {/* ------------------------------------------------------------- */}
-      <section className="max-w-6xl mx-auto px-6 pt-4 pb-16 md:px-12 lg:px-20">
+      <section className="max-w-6xl mx-auto px-6 pt-6 pb-16 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* CỘT TRÁI: TIÊU ĐỀ & FORM */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* 2 TAGS: WEDDING & GALA */}
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#E8ECE5] text-[#556353]">
-                {t("homeTagWedding")}
-              </span>
-              <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FCECE7] text-[#A66353]">
-                {t("homeTagGala")}
-              </span>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="lg:col-span-7 space-y-6"
+          >
+            {/* LIVE PULSE STATS BADGE */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#E8ECE5] text-[#556353]">
+                  {t("homeTagWedding")}
+                </span>
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FCECE7] text-[#A66353]">
+                  {t("homeTagGala")}
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-stone-200 text-[10px] text-stone-600 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <span>1,248 thiệp gửi hôm nay</span>
+              </div>
             </div>
 
             {/* HEADLINE */}
@@ -215,8 +261,8 @@ export default function CardViteHomePage() {
               </span>
             </h1>
 
-            {/* FORM SIMULATOR */}
-            <div className="p-6 bg-white/70 backdrop-blur-xs rounded-3xl border border-[#EFE9E1] shadow-2xs space-y-4 max-w-md">
+            {/* FORM SIMULATOR TƯƠNG TÁC */}
+            <div className="p-6 bg-white/80 backdrop-blur-md rounded-3xl border border-[#EFE9E1] shadow-md space-y-4 max-w-md">
               <div>
                 <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
                   {t("homeFieldCoupleName")}
@@ -226,7 +272,7 @@ export default function CardViteHomePage() {
                   value={names}
                   onChange={(e) => setNames(e.target.value)}
                   placeholder="Sarah & James"
-                  className="w-full px-4 py-2.5 text-xs rounded-xl bg-[#F0EAE1]/70 border border-[#E2DBD0] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/40 text-[#181716] font-medium"
+                  className="w-full px-4 py-2.5 text-xs rounded-xl bg-[#F0EAE1]/70 border border-[#E2DBD0] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/40 text-[#181716] font-medium transition"
                 />
               </div>
 
@@ -240,39 +286,58 @@ export default function CardViteHomePage() {
                     { id: "Flower Gate", label: t("homeEffectFlowerGate") },
                     { id: "Gift Box", label: t("homeEffectGiftBox") },
                   ].map((eff) => (
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
                       key={eff.id}
                       type="button"
                       onClick={() => setSelectedEffect(eff.id)}
                       className={`py-2 px-2 rounded-xl border text-center transition cursor-pointer text-[11px] font-medium ${
                         selectedEffect === eff.id
-                          ? "bg-[#FAF2E4] border-[#BE944E] text-[#8C6424] font-bold shadow-2xs"
+                          ? "bg-[#FAF2E4] border-[#BE944E] text-[#8C6424] font-bold shadow-xs"
                           : "bg-white border-[#E8E2D8] text-[#181716]/70 hover:bg-[#FAF7F2]"
                       }`}
                     >
                       {eff.label}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
 
-              <Link
-                href="/dashboard/cards/new"
-                className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-[11px] font-bold uppercase tracking-widest shadow-xs transition flex items-center justify-center gap-2 cursor-pointer mt-2"
-              >
-                <span>{t("homeBtnPreview")}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/dashboard/cards/new"
+                  className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-[11px] font-bold uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                >
+                  <span>{t("homeBtnPreview")}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-200 p-3 shadow-2xl border border-stone-200/80">
-              {/* MÀN HÌNH BÊN TRONG */}
+          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP CÓ HIỆU ỨNG BAY BỔNG (LEVITATION) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="lg:col-span-5 flex justify-center"
+          >
+            <motion.div
+              animate={{
+                y: [0, -12, 0],
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-gradient-to-b from-stone-100 to-stone-300 p-3 shadow-2xl border border-stone-300"
+            >
+              {/* MÀN HÌNH BÊN TRONG CÓ THỂ CHẠM MỞ SEAL */}
               <div className="w-full h-full bg-[#FAF7F2] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center relative border border-stone-200 shadow-inner">
                 {/* Dynamic Island */}
-                <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-6" />
+                <div className="w-20 h-4 bg-[#181716] rounded-full mx-auto mb-4" />
 
                 {/* THIỆP MỜI SARAH & JAMES */}
                 <div className="my-auto space-y-3">
@@ -291,28 +356,40 @@ export default function CardViteHomePage() {
                     {t("homePhoneVenue")}
                   </p>
 
-                  <div className="pt-4">
-                    <span className="inline-block px-6 py-1.5 rounded-full border border-[#181716]/40 text-[10px] font-bold uppercase tracking-widest text-[#181716]">
-                      {t("homePhoneRsvp")}
-                    </span>
+                  {/* NÚT CON DẤU SÁP CÓ THỂ CHẠM PHÁT PHÁO HOA */}
+                  <div className="pt-3">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleWaxSealClick}
+                      className="px-5 py-2 rounded-full border border-[#BE944E] bg-[#FAF2E4] text-[#8C6424] text-[10px] font-bold uppercase tracking-widest shadow-xs flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                    >
+                      <Sparkles className="w-3 h-3 text-[#BE944E]" />
+                      <span>{sealOpened ? "ĐÃ MỞ THIỆP" : t("homePhoneRsvp")}</span>
+                    </motion.button>
                   </div>
                 </div>
 
-                <div className="text-[8px] uppercase tracking-widest text-[#181716]/40 pb-2">
-                  CardVite Digital Studio
+                <div className="text-[8px] uppercase tracking-widest text-[#181716]/40 pb-1">
+                  CardVite Interactive Studio
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. SECTION MỚI 1: 3D COVERFLOW CAROUSEL */}
-      {/* "Mẫu thiệp cưới online đẹp nhất" */}
+      {/* 3. SECTION: 3D COVERFLOW CAROUSEL (ANIMATED SLIDER) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 text-center overflow-hidden">
-        <div className="max-w-2xl mx-auto mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-2xl mx-auto mb-10"
+        >
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
             {t("homeCarouselTitle1")}{" "}
             <span className="italic font-normal text-[#BE944E]">
@@ -322,18 +399,20 @@ export default function CardViteHomePage() {
           <p className="text-xs sm:text-sm text-[#181716]/65 mt-2">
             {t("homeCarouselSub")}
           </p>
-        </div>
+        </motion.div>
 
         {/* 3D COVERFLOW CONTAINER */}
-        <div className="relative py-6 max-w-5xl mx-auto flex items-center justify-center min-h-[380px]">
+        <div className="relative py-6 max-w-5xl mx-auto flex items-center justify-center min-h-[400px]">
           {/* NÚT PREV */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={prevSlide}
             aria-label="Previous Template"
-            className="absolute left-2 sm:left-6 z-30 w-10 h-10 rounded-full bg-white/90 border border-stone-200 shadow-md flex items-center justify-center text-stone-600 hover:text-[#BE944E] hover:scale-105 transition cursor-pointer"
+            className="absolute left-2 sm:left-6 z-30 w-11 h-11 rounded-full bg-white border border-stone-200 shadow-md flex items-center justify-center text-stone-700 hover:text-[#BE944E] transition cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" />
-          </button>
+          </motion.button>
 
           {/* 5 CARDS IN 3D PERSPECTIVE */}
           <div className="flex items-center justify-center gap-2 sm:gap-4 w-full">
@@ -345,60 +424,69 @@ export default function CardViteHomePage() {
               const isHidden = !isCenter && !isLeft1 && !isRight1;
 
               return (
-                <div
+                <motion.div
                   key={card.id}
+                  layout
                   onClick={() => setCarouselIndex(idx)}
+                  whileHover={{ y: isCenter ? -6 : -2 }}
                   className={`transition-all duration-500 transform cursor-pointer rounded-3xl overflow-hidden border shadow-md flex flex-col justify-between ${
                     isHidden
-                      ? "hidden md:block opacity-30 scale-75 blur-[1px] pointer-events-none"
+                      ? "hidden md:block opacity-20 scale-75 blur-[2px] pointer-events-none"
                       : isCenter
-                      ? "z-20 scale-105 sm:scale-110 shadow-2xl border-[#BE944E] w-56 sm:w-64 aspect-[9/16] bg-white ring-4 ring-[#BE944E]/20"
+                      ? "z-20 scale-105 sm:scale-110 shadow-2xl border-[#BE944E] w-56 sm:w-64 aspect-[9/16] bg-white ring-4 ring-[#BE944E]/25"
                       : isLeft1
-                      ? "z-10 opacity-70 scale-90 -rotate-y-6 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
-                      : "z-10 opacity-70 scale-90 rotate-y-6 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
+                      ? "z-10 opacity-70 scale-90 -rotate-y-12 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
+                      : "z-10 opacity-70 scale-90 rotate-y-12 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
                   }`}
                 >
-                  {/* Mockup bên trong */}
                   <div className="relative w-full h-full p-4 flex flex-col justify-between text-center overflow-hidden bg-gradient-to-b from-[#FAF7F2] to-white">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={card.image}
                       alt={card.title}
-                      className="absolute inset-0 w-full h-full object-cover opacity-85"
+                      className="absolute inset-0 w-full h-full object-cover opacity-90 transition duration-700 hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
 
                     <div className="relative z-10 text-[9px] uppercase tracking-widest text-white/90 font-medium">
                       THE WEDDING OF
                     </div>
 
                     <div className="relative z-10 space-y-1 text-white">
+                      <span className="inline-block px-2 py-0.5 rounded-full bg-white/30 backdrop-blur-xs text-[8px] uppercase tracking-wider text-white mb-1">
+                        {card.tag}
+                      </span>
                       <h4 className="text-base sm:text-lg font-serif font-bold text-white tracking-wide">
                         {card.title}
                       </h4>
                       <p className="text-[10px] text-white/80">{card.couple}</p>
                       {isCenter && (
                         <div className="pt-2">
-                          <span className="inline-block px-3 py-1 rounded-full bg-[#BE944E] text-white text-[9px] font-bold uppercase tracking-wider shadow-sm">
-                            XÁC NHẬN THAM DỰ
-                          </span>
+                          <Link
+                            href="/collections"
+                            className="inline-block px-3.5 py-1 rounded-full bg-[#BE944E] hover:bg-[#a67e3a] text-white text-[9px] font-bold uppercase tracking-wider shadow-sm transition"
+                          >
+                            XEM MẪU NÀY
+                          </Link>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
 
           {/* NÚT NEXT */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={nextSlide}
             aria-label="Next Template"
-            className="absolute right-2 sm:right-6 z-30 w-10 h-10 rounded-full bg-white/90 border border-stone-200 shadow-md flex items-center justify-center text-stone-600 hover:text-[#BE944E] hover:scale-105 transition cursor-pointer"
+            className="absolute right-2 sm:right-6 z-30 w-11 h-11 rounded-full bg-white border border-stone-200 shadow-md flex items-center justify-center text-stone-700 hover:text-[#BE944E] transition cursor-pointer"
           >
             <ChevronRight className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
 
         {/* DOTS PAGINATION */}
@@ -409,7 +497,7 @@ export default function CardViteHomePage() {
               onClick={() => setCarouselIndex(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               className={`h-2 rounded-full transition-all cursor-pointer ${
-                carouselIndex === idx ? "w-6 bg-[#BE944E]" : "w-2 bg-stone-300"
+                carouselIndex === idx ? "w-7 bg-[#BE944E]" : "w-2 bg-stone-300"
               }`}
             />
           ))}
@@ -417,23 +505,24 @@ export default function CardViteHomePage() {
 
         {/* NÚT XEM TẤT CẢ MẪU THIỆP */}
         <div className="mt-8">
-          <Link
-            href="/collections"
-            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 shadow-2xs transition"
-          >
-            <span>{t("homeViewAllTemplates")}</span>
-            <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
-          </Link>
+          <motion.div whileHover={{ scale: 1.05 }} className="inline-block">
+            <Link
+              href="/collections"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 shadow-2xs transition"
+            >
+              <span>{t("homeViewAllTemplates")}</span>
+              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. SECTION MỚI 2: 3 BƯỚC TẠO THIỆP */}
-      {/* "Tạo thiệp cưới online trong 10 phút" */}
+      {/* 4. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* CỘT TRÁI: 3 BƯỚC HƯỚNG DẪN */}
+          {/* CỘT TRÁI: 3 BƯỚC CÓ THỂ CLICK CHUYỂN TRẠNG THÁI */}
           <div className="lg:col-span-7 space-y-8">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight leading-tight">
               {t("homeStepsTitle1")} <br />
@@ -442,11 +531,25 @@ export default function CardViteHomePage() {
               </span>
             </h2>
 
-            {/* 3 STEPS */}
-            <div className="space-y-6 max-w-lg">
+            {/* 3 STEPS INTERACTIVE TABS */}
+            <div className="space-y-4 max-w-lg">
               {/* STEP 1 */}
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+              <motion.div
+                onClick={() => setActiveStep(1)}
+                whileHover={{ x: 4 }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                  activeStep === 1
+                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
+                    : "bg-white/50 border-[#EFE9E1] hover:bg-white"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
+                    activeStep === 1
+                      ? "bg-[#BE944E] text-white border-[#BE944E]"
+                      : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
+                  }`}
+                >
                   1
                 </div>
                 <div className="space-y-1">
@@ -458,11 +561,25 @@ export default function CardViteHomePage() {
                     {t("homeStep1Desc")}
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* STEP 2 */}
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+              <motion.div
+                onClick={() => setActiveStep(2)}
+                whileHover={{ x: 4 }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                  activeStep === 2
+                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
+                    : "bg-white/50 border-[#EFE9E1] hover:bg-white"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
+                    activeStep === 2
+                      ? "bg-[#BE944E] text-white border-[#BE944E]"
+                      : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
+                  }`}
+                >
                   2
                 </div>
                 <div className="space-y-1">
@@ -474,11 +591,25 @@ export default function CardViteHomePage() {
                     {t("homeStep2Desc")}
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* STEP 3 */}
-              <div className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+              <motion.div
+                onClick={() => setActiveStep(3)}
+                whileHover={{ x: 4 }}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                  activeStep === 3
+                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
+                    : "bg-white/50 border-[#EFE9E1] hover:bg-white"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
+                    activeStep === 3
+                      ? "bg-[#BE944E] text-white border-[#BE944E]"
+                      : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
+                  }`}
+                >
                   3
                 </div>
                 <div className="space-y-1">
@@ -490,67 +621,114 @@ export default function CardViteHomePage() {
                     {t("homeStep3Desc")}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div>
-              <Link
-                href="/dashboard/cards/new"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
-              >
-                <span>{t("homeStepsBtn")}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+                <Link
+                  href="/dashboard/cards/new"
+                  className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
+                >
+                  <span>{t("homeStepsBtn")}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </motion.div>
             </div>
           </div>
 
-          {/* CỘT PHẢI: PHONE MOCKUP MẪU THIỆP XANH RÊU */}
+          {/* CỘT PHẢI: PHONE MOCKUP ĐỔI GIAO DIỆN THEO BƯỚC ĐANG CHỌN */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-[#1E2E20] p-3 shadow-2xl border-4 border-[#2D4530]">
+            <motion.div
+              key={activeStep}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-[#1E2E20] p-3 shadow-2xl border-4 border-[#2D4530]"
+            >
               <div className="w-full h-full bg-[#243627] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center text-white relative shadow-inner">
-                {/* Top dynamic bar */}
+                {/* Dynamic island bar */}
                 <div className="w-16 h-3.5 bg-[#142016] rounded-full mx-auto mb-4" />
 
-                <div className="my-auto space-y-4">
-                  <div className="w-6 h-6 rounded-full border border-white/40 mx-auto flex items-center justify-center text-[10px]">
-                    ♥
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-sm font-serif tracking-widest text-emerald-200 block">
-                      THU HÀ
+                {activeStep === 1 && (
+                  <div className="my-auto space-y-4">
+                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest">
+                      BƯỚC 1: CHỌN MẪU
                     </span>
-                    <span className="text-[10px] text-white/60 block">&</span>
-                    <span className="text-sm font-serif tracking-widest text-emerald-200 block">
-                      MINH QUÂN
-                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-700/60 mx-auto flex items-center justify-center">
+                      <Sparkles className="w-6 h-6 text-emerald-200" />
+                    </div>
+                    <h4 className="text-lg font-serif font-bold text-white">
+                      Floral Emerald
+                    </h4>
+                    <p className="text-[10px] text-emerald-100/70">
+                      Tông xanh rêu hoàng gia sang trọng
+                    </p>
                   </div>
+                )}
 
-                  <div className="text-[10px] text-white/70 pt-2 tracking-wider">
-                    20 . 10 . 2026
-                  </div>
-
-                  <div className="pt-2">
-                    <span className="inline-block px-6 py-1.5 rounded-full bg-[#4E7252] text-white text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                      MỞ THIỆP
+                {activeStep === 2 && (
+                  <div className="my-auto space-y-3">
+                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest">
+                      BƯỚC 2: ĐIỀN THÔNG TIN
                     </span>
+                    <div className="space-y-1">
+                      <span className="text-sm font-serif tracking-widest text-emerald-200 block">
+                        THU HÀ
+                      </span>
+                      <span className="text-[10px] text-white/60 block">&</span>
+                      <span className="text-sm font-serif tracking-widest text-emerald-200 block">
+                        MINH QUÂN
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-white/70 pt-1 tracking-wider">
+                      20 . 10 . 2026 • GEM Center
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {activeStep === 3 && (
+                  <div className="my-auto space-y-3">
+                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest">
+                      BƯỚC 3: GỬI THIỆP ĐÍCH DANH
+                    </span>
+                    <div className="w-10 h-10 rounded-full bg-emerald-500/30 text-emerald-300 mx-auto flex items-center justify-center">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <p className="text-[10px] text-emerald-100/90 leading-relaxed">
+                      Link riêng cho từng khách: <br />
+                      <code className="text-[9px] bg-black/40 px-2 py-0.5 rounded text-amber-200">
+                        cardvite.vn/thiep/g-8a9x
+                      </code>
+                    </p>
+                    <div className="pt-2">
+                      <span className="inline-block px-5 py-1.5 rounded-full bg-[#4E7252] text-white text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                        MỞ THIỆP
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-[8px] uppercase tracking-widest text-white/40 pb-1">
-                  CardVite Floral Luxury
+                  CardVite Realtime Demo
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 5. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID) */}
+      {/* 5. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
       {/* ------------------------------------------------------------- */}
       <section id="custom" className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center max-w-2xl mx-auto mb-12"
+        >
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
             {t("homeSectionExperienceTitle")}{" "}
             <span className="italic font-normal text-[#BE944E]">
@@ -561,21 +739,25 @@ export default function CardViteHomePage() {
           <p className="text-xs text-[#181716]/65 mt-2">
             {t("homeSectionExperienceSub")}
           </p>
-        </div>
+        </motion.div>
 
-        {/* BENTO GRID EXACT 3 TIERS */}
+        {/* BENTO GRID EXACT 3 TIERS VỚI MOTION HOVER */}
         <div className="space-y-5">
           {/* HÀNG 1: THIỆP GỬI ĐÍCH DANH (LEFT 60%) + 2 THẺ CỘT PHẢI STACK (RIGHT 40%) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* THẺ LỚN TRÁI: THIỆP GỬI ĐÍCH DANH */}
-            <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-end min-h-[340px] group hover:shadow-md transition">
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ duration: 0.3 }}
+              className="lg:col-span-7 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-end min-h-[340px] group hover:shadow-xl"
+            >
               <div
-                className="absolute inset-0 bg-cover bg-center"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{
                   backgroundImage: `url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&auto=format&fit=crop')`,
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
               <div className="relative z-10 text-white">
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
@@ -585,12 +767,16 @@ export default function CardViteHomePage() {
                   {t("homeCard1Desc")}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* CỘT PHẢI: 2 THẺ STACK NHỎ */}
             <div className="lg:col-span-5 flex flex-col gap-5">
               {/* THẺ 1: QUẢN LÝ RSVP */}
-              <div className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center group hover:shadow-md transition">
+              <motion.div
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center hover:shadow-md"
+              >
                 <div className="w-9 h-9 rounded-xl bg-[#5C7658]/10 text-[#5C7658] flex items-center justify-center mb-3">
                   <CalendarCheck2 className="w-4 h-4" strokeWidth={1.5} />
                 </div>
@@ -600,10 +786,14 @@ export default function CardViteHomePage() {
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
                   {t("homeCard2Desc")}
                 </p>
-              </div>
+              </motion.div>
 
               {/* THẺ 2: HỘP MỪNG CƯỚI VIETQR */}
-              <div className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center group hover:shadow-md transition">
+              <motion.div
+                whileHover={{ y: -3 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center hover:shadow-md"
+              >
                 <div className="w-9 h-9 rounded-xl bg-[#BE944E]/15 text-[#BE944E] flex items-center justify-center mb-3">
                   <Gift className="w-4 h-4" strokeWidth={1.5} />
                 </div>
@@ -613,14 +803,18 @@ export default function CardViteHomePage() {
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
                   {t("homeCard3Desc")}
                 </p>
-              </div>
+              </motion.div>
             </div>
           </div>
 
           {/* HÀNG 2: 2 THẺ BẰNG NHAU (50% - 50%) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* THẺ 3: MINI-GAME TƯƠNG TÁC */}
-            <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
+            <motion.div
+              whileHover={{ y: -3 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between hover:shadow-md"
+            >
               <div>
                 <div className="w-9 h-9 rounded-xl bg-[#E08269]/15 text-[#E08269] flex items-center justify-center mb-3">
                   <Gamepad2 className="w-4 h-4" strokeWidth={1.5} />
@@ -632,10 +826,14 @@ export default function CardViteHomePage() {
                   {t("homeCard4Desc")}
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* THẺ 4: ALBUM ẢNH 3D & NHẠC */}
-            <div className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between group hover:shadow-md transition">
+            <motion.div
+              whileHover={{ y: -3 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between hover:shadow-md"
+            >
               <div>
                 <div className="w-9 h-9 rounded-xl bg-[#BE944E]/15 text-[#BE944E] flex items-center justify-center mb-3">
                   <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
@@ -647,11 +845,15 @@ export default function CardViteHomePage() {
                   {t("homeCard5Desc")}
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* HÀNG 3: THẺ ĐA NGÔN NGỮ TOÀN CẦU TRÀN HÀNG + VÒNG CUNG QUỸ ĐẠO THIÊN HÀ */}
-          <div className="bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative">
+          <motion.div
+            whileHover={{ y: -3 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative"
+          >
             <div className="max-w-lg z-10">
               <div className="w-9 h-9 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center mb-3">
                 <Globe2 className="w-4 h-4" strokeWidth={1.5} />
@@ -664,7 +866,7 @@ export default function CardViteHomePage() {
               </p>
             </div>
 
-            {/* SƠ ĐỒ VÒNG CUNG QUỸ ĐẠO THIÊN HÀ */}
+            {/* SƠ ĐỒ VÒNG CUNG QUỸ ĐẠO THIÊN HÀ CÓ CHUYỂN ĐỘNG XOAY */}
             <div className="relative w-44 h-28 flex items-center justify-center shrink-0">
               <svg viewBox="0 0 160 100" className="w-full h-full">
                 <path
@@ -675,11 +877,16 @@ export default function CardViteHomePage() {
                   strokeDasharray="3 3"
                   opacity="0.6"
                 />
-                <circle cx="105" cy="22" r="4.5" fill="#BE944E" />
+                <motion.circle
+                  animate={{ cx: [105, 145, 105], cy: [22, 62, 22] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  r="4.5"
+                  fill="#BE944E"
+                />
                 <circle cx="145" cy="62" r="3.5" fill="#8C6424" />
               </svg>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
