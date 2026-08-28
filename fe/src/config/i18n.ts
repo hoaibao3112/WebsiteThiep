@@ -8,6 +8,8 @@ export const DICTIONARY = {
     homeNavPricing: "BẢNG GIÁ",
     homeNavConcierge: "LIÊN HỆ",
     homeCreateBtn: "TẠO THIỆP",
+    navLogin: "Đăng Nhập",
+    navLogout: "Đăng xuất",
 
     // Common Footer
     footerPrivacy: "Chính Sách Bảo Mật",
@@ -24,6 +26,9 @@ export const DICTIONARY = {
     homeHeroTitleEm1: "Chạm vạn cảm xúc",
     homeHeroTitle3: "chỉ trong",
     homeHeroTitleEm2: "5 phút.",
+    cardsSentToday: "thiệp gửi hôm nay",
+    homeFastSend: "Gửi nhanh mọi lúc",
+    homeVideoBadge: "Video mẫu thiệp chuyển động sắc nét chuẩn 4K 60fps",
 
     // Simulator Form
     homeFieldCoupleName: "Tên Cô Dâu & Chú Rể",
@@ -529,6 +534,8 @@ export const DICTIONARY = {
     homeNavPricing: "PRICING",
     homeNavConcierge: "CONCIERGE",
     homeCreateBtn: "CREATE",
+    navLogin: "Log In",
+    navLogout: "Log Out",
 
     // Common Footer
     footerPrivacy: "Privacy Policy",
@@ -545,6 +552,9 @@ export const DICTIONARY = {
     homeHeroTitleEm1: "Touching millions of hearts",
     homeHeroTitle3: "in just",
     homeHeroTitleEm2: "5 minutes.",
+    cardsSentToday: "invitations sent today",
+    homeFastSend: "Instant Delivery",
+    homeVideoBadge: "Ultra-sharp 4K 60fps motion invitation preview",
 
     // Simulator Form
     homeFieldCoupleName: "Bride & Groom Names",
@@ -1050,6 +1060,8 @@ export const DICTIONARY = {
     homeNavPricing: "服务价格",
     homeNavConcierge: "定制咨询",
     homeCreateBtn: "立即制作",
+    navLogin: "登录",
+    navLogout: "退出登录",
 
     // Common Footer
     footerPrivacy: "隐私政策",
@@ -1066,6 +1078,9 @@ export const DICTIONARY = {
     homeHeroTitleEm1: "触动万千心弦",
     homeHeroTitle3: "仅需",
     homeHeroTitleEm2: "5分钟。",
+    cardsSentToday: "今日已发送请柬",
+    homeFastSend: "随时极速发送",
+    homeVideoBadge: "4K 60fps 超高清唯美动态请柬展示",
 
     // Simulator Form
     homeFieldCoupleName: "新人尊名",

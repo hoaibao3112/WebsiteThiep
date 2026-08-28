@@ -557,7 +557,7 @@ export default function CardViteHomePage() {
                   onClick={logout}
                   className="text-[11px] font-bold text-stone-500 hover:text-stone-900 transition cursor-pointer"
                 >
-                  Đăng xuất
+                  {t("navLogout") || "Đăng xuất"}
                 </button>
               </div>
             ) : (
@@ -565,7 +565,7 @@ export default function CardViteHomePage() {
                 onClick={() => openAuthModal("login")}
                 className="px-4 py-2 rounded-full text-[11px] font-bold text-stone-700 hover:text-stone-900 border border-stone-300 hover:bg-white transition cursor-pointer"
               >
-                Đăng Nhập
+                {t("navLogin") || "Đăng Nhập"}
               </button>
             )}
 
@@ -734,27 +734,27 @@ export default function CardViteHomePage() {
               {/* TAGS & STATS BADGES */}
               <div className="flex flex-wrap items-center gap-3">
                 <span className="px-3.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#E4EAE2] text-[#4F634B]">
-                  WEDDING
+                  {t("homeTagWedding") || "WEDDING"}
                 </span>
                 <span className="px-3.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#FCECE7] text-[#A66353]">
-                  GALA
+                  {t("homeTagGala") || "GALA"}
                 </span>
                 <motion.div
                   whileHover={{ scale: 1.04 }}
                   className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/90 border border-stone-200/80 text-[11px] text-stone-600 shadow-2xs font-medium"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#C59E58]" />
-                  <span>1,248 thiệp gửi hôm nay</span>
+                  <span>1,248 {t("cardsSentToday") || "thiệp gửi hôm nay"}</span>
                 </motion.div>
               </div>
 
               {/* LUXURY HEADLINE */}
               <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-serif font-bold tracking-tight text-[#181716] leading-[1.14]">
-                Trao thiệp trang <br />
-                trọng — <br />
+                {t("homeHeroTitle1") || "Trao thiệp trang"} <br />
+                {t("homeHeroTitle2") || "trọng —"} <br />
                 <span className="italic font-normal text-[#C59E58] font-serif">
-                  Chạm vạn cảm xúc <br />
-                  chỉ trong 5 phút.
+                  {t("homeHeroTitleEm1") || "Chạm vạn cảm xúc"} <br />
+                  {t("homeHeroTitle3") || "chỉ trong"} {t("homeHeroTitleEm2") || "5 phút."}
                 </span>
               </h1>
 
@@ -762,15 +762,15 @@ export default function CardViteHomePage() {
               <div className="flex flex-wrap items-center gap-6 sm:gap-8 text-xs sm:text-[13px] font-medium text-stone-600 pt-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[#C59E58] font-bold">✏️</span>
-                  <span>Thiết kế tinh tế</span>
+                  <span>{t("homeCarouselPillar1Title") || "Thiết kế tinh tế"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[#C59E58] font-bold">🎛️</span>
-                  <span>Dễ dàng tùy chỉnh</span>
+                  <span>{t("homeCarouselPillar2Title") || "Dễ dàng tùy chỉnh"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-[#C59E58] font-bold">🚀</span>
-                  <span>Gửi nhanh mọi lúc</span>
+                  <span>{t("homeFastSend") || "Gửi nhanh mọi lúc"}</span>
                 </div>
               </div>
 
@@ -779,7 +779,7 @@ export default function CardViteHomePage() {
                 {/* TÊN CÔ DÂU & CHÚ RỂ */}
                 <div>
                   <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                    Tên Cô Dâu & Chú Rể
+                    {t("homeFieldCoupleName") || "Tên Cô Dâu & Chú Rể"}
                   </label>
                   <div className="relative">
                     <input
@@ -796,13 +796,13 @@ export default function CardViteHomePage() {
                 {/* HIỆU ỨNG THIỆP */}
                 <div>
                   <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                    Hiệu Ứng Thiệp
+                    {t("homeFieldEffect") || "Hiệu Ứng Thiệp"}
                   </label>
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     {[
-                      { id: "Wax Seal", label: "Wax Seal" },
-                      { id: "Flower Gate", label: "Flower Gate" },
-                      { id: "Gift Box", label: "Gift Box" },
+                      { id: "Wax Seal", label: t("homeEffectWaxSeal") || "Wax Seal" },
+                      { id: "Flower Gate", label: t("homeEffectFlowerGate") || "Flower Gate" },
+                      { id: "Gift Box", label: t("homeEffectGiftBox") || "Gift Box" },
                     ].map((eff) => (
                       <motion.button
                         whileHover={{ scale: 1.03 }}
@@ -831,7 +831,7 @@ export default function CardViteHomePage() {
                     href="/dashboard/cards/new"
                     className="w-full py-3.5 rounded-xl bg-[#181716] hover:bg-black text-[#F4ECE1] text-[11px] font-bold uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 cursor-pointer mt-2 group"
                   >
-                    <span>TẠO BẢN XEM TRƯỚC</span>
+                    <span>{t("homeBtnPreview") || "TẠO BẢN XEM TRƯỚC"}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </motion.div>
@@ -1067,7 +1067,7 @@ export default function CardViteHomePage() {
                 className="mt-6 z-20 inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/90 backdrop-blur-md border border-stone-200/80 text-xs text-stone-700 shadow-sm"
               >
                 <Sparkles className="w-4 h-4 text-[#C59E58]" />
-                <span className="font-medium">Video mẫu thiệp chuyển động sắc nét chuẩn 4K 60fps</span>
+                <span className="font-medium">{t("homeVideoBadge") || "Video mẫu thiệp chuyển động sắc nét chuẩn 4K 60fps"}</span>
               </motion.div>
             </div>
           </div>
