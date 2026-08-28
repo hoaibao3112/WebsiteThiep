@@ -53,18 +53,13 @@ export function AuthModal() {
     setShowGoogleGuide(false);
   }, [authModalTab, isAuthModalOpen]);
 
-  // Load Google Identity Services SDK
+  // Load & Initialize Google Identity Services SDK
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if (!document.getElementById("google-gsi-client")) {
-      const script = document.createElement("script");
-      script.id = "google-gsi-client";
-      script.src = "https://accounts.google.com/gsi/client";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        if (googleClientId && window.google?.accounts?.id) {
+    const initGsi = () => {
+      if (googleClientId && window.google?.accounts?.id) {
+        try {
           window.google.accounts.id.initialize({
             client_id: googleClientId,
             callback: (response: any) => {
@@ -75,15 +70,45 @@ export function AuthModal() {
                     setLoading(false);
                     if (!res.success) setErrorMessage(res.error || "Đăng nhập Google thất bại");
                   })
-                  .catch(() => setLoading(false));
+                  .catch((err) => {
+                    setLoading(false);
+                    setErrorMessage("Lỗi kết nối máy chủ khi đăng nhập Google");
+                  });
               }
             },
           });
+
+          // Render Google button nếu có container
+          const btnContainer = document.getElementById("google-btn-container");
+          if (btnContainer) {
+            btnContainer.innerHTML = "";
+            window.google.accounts.id.renderButton(btnContainer, {
+              theme: "outline",
+              size: "large",
+              type: "standard",
+              text: "signin_with",
+              shape: "pill",
+              width: 340,
+            });
+          }
+        } catch (e) {
+          console.warn("[GSI] Init error:", e);
         }
-      };
+      }
+    };
+
+    if (!document.getElementById("google-gsi-client")) {
+      const script = document.createElement("script");
+      script.id = "google-gsi-client";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initGsi;
       document.body.appendChild(script);
+    } else {
+      initGsi();
     }
-  }, [googleClientId]);
+  }, [googleClientId, isAuthModalOpen, activeTab]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -401,6 +426,10 @@ export function AuthModal() {
                     </div>
                   </div>
 
+                  {/* CONTAINER NÚT GOOGLE SIGN IN CHUẨN GIS SDK */}
+                  <div id="google-btn-container" className="w-full flex justify-center min-h-[44px]" />
+
+                  {/* NÚT GOOGLE SIGN IN DỰ PHÒNG */}
                   <button
                     type="button"
                     onClick={handleGoogleSignIn}
