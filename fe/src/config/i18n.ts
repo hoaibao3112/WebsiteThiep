@@ -85,6 +85,27 @@ export const DICTIONARY = {
     homeCard6Desc:
       "Tự động dịch nội dung thiệp dựa trên ngôn ngữ trình duyệt của khách mời, xóa nhòa khoảng cách địa lý.",
 
+    // Interactive Animation Modules
+    homeMusicTitle: "Kho Nhạc Nền Tuyển Chọn",
+    homeMusicSub: "Âm nhạc chạm đến trái tim. Nghe thử các giai điệu lãng mạn bất hủ dành cho ngày cưới.",
+    homeMusicNowPlaying: "Đang phát",
+    homeWaxStudioTitle: "Trải Nghiệm Đóng Dấu Sáp 3D",
+    homeWaxStudioSub: "Chọn màu sáp hoàng gia và chạm để phong ấn bức thư tình của bạn.",
+    homeWaxColorGold: "Hoàng Kim",
+    homeWaxColorWine: "Đỏ Rượu Vang",
+    homeWaxColorEmerald: "Xanh Emerald",
+    homeWaxColorRose: "Hồng Thạch Anh",
+    homeWaxTapPrompt: "Chạm vào con dấu để dập sáp",
+    homeWishesTitle: "Bức Tường Lời Chúc Thời Gian Thực",
+    homeWishesSub: "Hàng ngàn lời chúc phúc ấm áp đang được gửi đến các cặp đôi mỗi ngày.",
+    homeWishInputPlaceholder: "Nhập lời chúc thử nghiệm của bạn...",
+    homeSendWishBtn: "Thả Tim Lời Chúc",
+    homeQrTitle: "Hộp Mừng Cưới Thông Minh VietQR",
+    homeQrSub: "Mô phỏng trải nghiệm mừng cưới tinh tế, tự động xác nhận số tiền.",
+    homeQrSelectAmount: "Chọn số tiền mừng:",
+    homeQrScanHint: "Mã VietQR tự động điền nội dung chuyển khoản",
+    homeQrSuccessToast: "Xác nhận đã nhận mừng cưới thành công! 🎉",
+
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)
     // -------------------------------------------------------------
@@ -356,6 +377,27 @@ export const DICTIONARY = {
     homeCard6Desc:
       "Automatically translates the invitation based on each international guest's browser language, erasing borders.",
 
+    // Interactive Animation Modules
+    homeMusicTitle: "Curated Soundtrack Studio",
+    homeMusicSub: "Melodies that touch the soul. Preview timeless romantic wedding soundtracks.",
+    homeMusicNowPlaying: "Now playing",
+    homeWaxStudioTitle: "3D Wax Seal Experience Studio",
+    homeWaxStudioSub: "Select a royal wax shade and tap to seal your bespoke love letter.",
+    homeWaxColorGold: "Royal Gold",
+    homeWaxColorWine: "Vintage Wine",
+    homeWaxColorEmerald: "Emerald Leaf",
+    homeWaxColorRose: "Rose Quartz",
+    homeWaxTapPrompt: "Tap the seal to stamp the envelope",
+    homeWishesTitle: "Real-Time Floating Wishes Wall",
+    homeWishesSub: "Thousands of heartfelt blessings delivered to happy couples every day.",
+    homeWishInputPlaceholder: "Type your trial blessing message...",
+    homeSendWishBtn: "Send Love Blessing",
+    homeQrTitle: "Smart VietQR Registry Box",
+    homeQrSub: "Simulate a frictionless, elegant banking gift experience with auto-confirmation.",
+    homeQrSelectAmount: "Select gift amount:",
+    homeQrScanHint: "Dynamic VietQR automatically fills account and message",
+    homeQrSuccessToast: "Wedding gift confirmed received successfully! 🎉",
+
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)
     // -------------------------------------------------------------
@@ -626,6 +668,27 @@ export const DICTIONARY = {
     homeCard6Title: "全球多语言无缝支持",
     homeCard6Desc:
       "根据国际宾客浏览器语言自动翻译请帖内容，跨越山海传递幸福。",
+
+    // Interactive Animation Modules
+    homeMusicTitle: "精选浪漫背景音乐工坊",
+    homeMusicSub: "让旋律触动心弦。在线试听为良辰吉日定制的不朽浪漫乐章。",
+    homeMusicNowPlaying: "正在播放",
+    homeWaxStudioTitle: "3D火漆封蜡互动体验工坊",
+    homeWaxStudioSub: "选择皇家蜡印色彩，轻触为您的请柬盖上奢华火漆封印。",
+    homeWaxColorGold: "皇家鎏金",
+    homeWaxColorWine: "复古勃艮第红",
+    homeWaxColorEmerald: "祖母绿翡翠",
+    homeWaxColorRose: "玫瑰晶粉",
+    homeWaxTapPrompt: "轻触印章即可压印封蜡",
+    homeWishesTitle: "实时流动祝福心愿墙",
+    homeWishesSub: "每天有成千上万条真挚祝福在此汇聚，传递给每一对幸福新人。",
+    homeWishInputPlaceholder: "写下您的试用祝福语...",
+    homeSendWishBtn: "点赞并发送祝福",
+    homeQrTitle: "智能电子礼金二维码体验",
+    homeQrSub: "模拟安全优雅的电子礼金收付与自动确认体验。",
+    homeQrSelectAmount: "选择礼金金额：",
+    homeQrScanHint: "动态二维码自动填充转账附言与新人姓名",
+    homeQrSuccessToast: "恭喜！礼金已确认成功到账！🎉",
 
     // -------------------------------------------------------------
     // COLLECTIONS PAGE (/collections)

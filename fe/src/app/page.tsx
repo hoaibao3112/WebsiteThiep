@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -18,8 +18,15 @@ import {
   Sparkles,
   Edit3,
   Send,
-  Eye,
+  Play,
+  Pause,
+  Music,
+  Heart,
+  Volume2,
+  QrCode,
   CheckCircle2,
+  Stamp,
+  Disc,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -62,6 +69,27 @@ const CAROUSEL_CARDS = [
   },
 ];
 
+const TRACKS = [
+  { id: 1, title: "Until I Found You", artist: "Stephen Sanchez", duration: "2:57" },
+  { id: 2, title: "I Do", artist: "911 Band", duration: "3:24" },
+  { id: 3, title: "A Thousand Years", artist: "Christina Perri", duration: "4:45" },
+  { id: 4, title: "Perfect", artist: "Ed Sheeran", duration: "4:23" },
+];
+
+const SAMPLE_WISHES_1 = [
+  { name: "Lan Anh", relation: "Bạn Đại Học", wish: "Chúc hai bạn trăm năm hạnh phúc, đầu bạc răng long! ❤️", time: "2 phút trước" },
+  { name: "Hoàng Minh", relation: "Đồng Nghiệp", wish: "Mãi mãi ngọt ngào và thấu hiểu nhau như ngày đầu nhé! ✨", time: "5 phút trước" },
+  { name: "Bác Sáu", relation: "Gia Đình", wish: "Chúc hai cháu xây dựng tổ ấm viên mãn, phát tài phát lộc!", time: "12 phút trước" },
+  { name: "Jessica Nguyen", relation: "Best Friend", wish: "Wishing you both a lifetime of unconditional love & joy! 🥂", time: "15 phút trước" },
+];
+
+const SAMPLE_WISHES_2 = [
+  { name: "Đức Trọng", relation: "Bạn Thân Chú Rể", wish: "Cuối cùng anh bạn thân cũng có người rước! Mừng cho 2 đứa! 🎉", time: "18 phút trước" },
+  { name: "Phương Thảo", relation: "Em Gái", wish: "Chị gái xinh đẹp nhất của em hôm nay rạng rỡ quá chừng! 💖", time: "25 phút trước" },
+  { name: "Quốc Bảo", relation: "Anh Họ", wish: "Chúc mừng tân lang tân nương, sớm sinh quý tử nhé!", time: "30 phút trước" },
+  { name: "David Chen", relation: "Colleague", wish: "Congratulations! Best wishes on your wonderful journey ahead! 🌟", time: "42 phút trước" },
+];
+
 export default function CardViteHomePage() {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -76,6 +104,23 @@ export default function CardViteHomePage() {
 
   // Active step trong quy trình 3 bước
   const [activeStep, setActiveStep] = useState(1);
+
+  // State cho Audio Visualizer
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [activeTrack, setActiveTrack] = useState(TRACKS[0]);
+
+  // State cho Wax Seal Studio
+  const [waxColor, setWaxColor] = useState<"gold" | "wine" | "emerald" | "rose">("gold");
+  const [isStamping, setIsStamping] = useState(false);
+  const [stampedCount, setStampedCount] = useState(128);
+
+  // State cho Live Wishes Wall
+  const [userWish, setUserWish] = useState("");
+  const [wishesList, setWishesList] = useState(SAMPLE_WISHES_1);
+
+  // State cho VietQR Simulator
+  const [qrAmount, setQrAmount] = useState("500.000đ");
+  const [qrSuccess, setQrSuccess] = useState(false);
 
   const nextSlide = () => {
     setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
@@ -93,6 +138,50 @@ export default function CardViteHomePage() {
       origin: { y: 0.6 },
       colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#E08269"],
     });
+  };
+
+  const handleStampWax = () => {
+    setIsStamping(true);
+    setTimeout(() => {
+      setIsStamping(false);
+      setStampedCount((prev) => prev + 1);
+      confetti({
+        particleCount: 60,
+        spread: 80,
+        origin: { y: 0.7 },
+        colors: waxColor === "gold" ? ["#D4AF37", "#FFD700"] : waxColor === "wine" ? ["#8B0000", "#DC143C"] : waxColor === "emerald" ? ["#2E8B57", "#3CB371"] : ["#FF69B4", "#FFB6C1"],
+      });
+    }, 450);
+  };
+
+  const handleSendTrialWish = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userWish.trim()) return;
+    const newEntry = {
+      name: "Bạn (Vừa Gửi)",
+      relation: "Khách Quý",
+      wish: userWish.trim(),
+      time: "Vừa xong",
+    };
+    setWishesList([newEntry, ...wishesList]);
+    setUserWish("");
+    confetti({
+      particleCount: 40,
+      spread: 50,
+      origin: { y: 0.8 },
+      colors: ["#E08269", "#FF69B4", "#BE944E"],
+    });
+  };
+
+  const handleSimulatePayment = () => {
+    setQrSuccess(true);
+    confetti({
+      particleCount: 80,
+      spread: 90,
+      origin: { y: 0.5 },
+      colors: ["#10B981", "#34D399", "#BE944E"],
+    });
+    setTimeout(() => setQrSuccess(false), 5000);
   };
 
   return (
@@ -221,7 +310,7 @@ export default function CardViteHomePage() {
       </AnimatePresence>
 
       {/* ------------------------------------------------------------- */}
-      {/* 2. HERO SECTION VỚI MICRO-ANIMATIONS */}
+      {/* 2. HERO SECTION */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 pt-6 pb-16 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -261,7 +350,7 @@ export default function CardViteHomePage() {
               </span>
             </h1>
 
-            {/* FORM SIMULATOR TƯƠNG TÁC */}
+            {/* FORM SIMULATOR */}
             <div className="p-6 bg-white/80 backdrop-blur-md rounded-3xl border border-[#EFE9E1] shadow-md space-y-4 max-w-md">
               <div>
                 <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
@@ -316,7 +405,7 @@ export default function CardViteHomePage() {
             </div>
           </motion.div>
 
-          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP CÓ HIỆU ỨNG BAY BỔNG (LEVITATION) */}
+          {/* CỘT PHẢI: SLEEK STANDING PHONE MOCKUP */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -380,7 +469,193 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. SECTION: 3D COVERFLOW CAROUSEL (ANIMATED SLIDER) */}
+      {/* 3. MỤC ANIMATION MỚI: AUDIO EQUALIZER & MUSIC STUDIO */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-12 md:px-12 lg:px-20">
+        <div className="bg-[#242322] rounded-[36px] p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+          {/* Subtle Ambient Background Glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-[#BE944E]/15 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* CỘT TRÁI: ĐĨA VINYL XOAY 360 & SÓNG ÂM EQUALIZER */}
+            <div className="lg:col-span-5 flex flex-col sm:flex-row items-center gap-6">
+              {/* ĐĨA VINYL XOAY */}
+              <motion.div
+                animate={{ rotate: isPlaying ? 360 : 0 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-stone-900 via-stone-800 to-black p-2 border-2 border-stone-700 shadow-2xl flex items-center justify-center relative shrink-0"
+              >
+                <div className="w-full h-full rounded-full border border-stone-600/50 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-[#BE944E] flex items-center justify-center shadow-inner">
+                    <Disc className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* THÔNG TIN BÀI HÁT & SÓNG ÂM NHẢY MÚA */}
+              <div className="space-y-2 text-center sm:text-left">
+                <span className="text-[10px] uppercase tracking-widest text-[#BE944E] font-bold block">
+                  {t("homeMusicNowPlaying")}
+                </span>
+                <h4 className="text-lg font-serif font-bold text-white tracking-wide">
+                  {activeTrack.title}
+                </h4>
+                <p className="text-xs text-stone-400">{activeTrack.artist} • {activeTrack.duration}</p>
+
+                {/* SÓNG ÂM EQUALIZER ANIMATION (10 BARS) */}
+                <div className="flex items-end gap-1 h-7 pt-2 justify-center sm:justify-start">
+                  {[12, 24, 16, 28, 20, 14, 26, 18, 22, 12].map((height, i) => (
+                    <motion.span
+                      key={i}
+                      animate={isPlaying ? { height: [height * 0.4, height, height * 0.3] } : { height: 4 }}
+                      transition={{ duration: 0.6 + (i % 3) * 0.2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-1 rounded-full bg-[#BE944E]"
+                      style={{ minHeight: "4px" }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CỘT PHẢI: BỘ CHỌN DANH SÁCH BÀI HÁT */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
+                    {t("homeMusicTitle")}
+                  </h3>
+                  <p className="text-xs text-stone-400 mt-1">
+                    {t("homeMusicSub")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  aria-label="Toggle playback"
+                  className="w-12 h-12 rounded-full bg-[#BE944E] hover:bg-[#a67e3a] text-white flex items-center justify-center shadow-lg transition hover:scale-105 shrink-0 cursor-pointer"
+                >
+                  {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                </button>
+              </div>
+
+              {/* TRACKS GRID */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {TRACKS.map((track) => (
+                  <motion.div
+                    key={track.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setActiveTrack(track);
+                      setIsPlaying(true);
+                    }}
+                    className={`p-3.5 rounded-2xl border transition cursor-pointer flex items-center justify-between ${
+                      activeTrack.id === track.id
+                        ? "bg-white/15 border-[#BE944E] text-white shadow-md ring-1 ring-[#BE944E]"
+                        : "bg-white/5 border-white/10 text-stone-300 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Music className="w-4 h-4 text-[#BE944E] shrink-0" />
+                      <div>
+                        <span className="text-xs font-semibold block">{track.title}</span>
+                        <span className="text-[10px] text-stone-400">{track.artist}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-stone-400">{track.duration}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 4. MỤC ANIMATION MỚI: 3D WAX SEAL STUDIO INTERACTIVE */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20 text-center">
+        <div className="max-w-2xl mx-auto mb-10">
+          <div className="inline-block px-3 py-1 rounded-full bg-[#FAF2E4] text-[#8C6424] text-[10px] font-bold uppercase tracking-widest mb-2 border border-[#E8DBD0]">
+            INTERACTIVE 3D STUDIO
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
+            {t("homeWaxStudioTitle")}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#181716]/65 mt-2">
+            {t("homeWaxStudioSub")}
+          </p>
+        </div>
+
+        {/* WORKSHOP DESK */}
+        <div className="max-w-3xl mx-auto bg-white rounded-[36px] p-8 sm:p-12 border border-[#EFE9E1] shadow-xl flex flex-col items-center">
+          {/* COLOR SWATCHES */}
+          <div className="flex items-center gap-4 mb-8">
+            {[
+              { id: "gold", name: t("homeWaxColorGold"), bg: "bg-[#C19A5B]", border: "border-[#8C6424]" },
+              { id: "wine", name: t("homeWaxColorWine"), bg: "bg-[#7A1F2D]", border: "border-[#520B16]" },
+              { id: "emerald", name: t("homeWaxColorEmerald"), bg: "bg-[#2D4530]", border: "border-[#1E2E20]" },
+              { id: "rose", name: t("homeWaxColorRose"), bg: "bg-[#D98A8A]", border: "border-[#A65B5B]" },
+            ].map((col) => (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                key={col.id}
+                onClick={() => setWaxColor(col.id as any)}
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer border ${
+                  waxColor === col.id
+                    ? "bg-[#FAF7F2] border-stone-800 text-stone-900 shadow-sm"
+                    : "bg-white border-stone-200 text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                <span className={`w-3.5 h-3.5 rounded-full ${col.bg} border ${col.border}`} />
+                <span className="text-[11px]">{col.name}</span>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* 3D ENVELOPE WITH STAMP ACTION */}
+          <div className="relative w-72 sm:w-80 aspect-[16/11] bg-[#F2ECE4] rounded-2xl p-4 shadow-lg border border-[#E0D8CE] flex flex-col justify-center items-center overflow-hidden">
+            {/* Diagonal Envelope Flap */}
+            <div className="absolute top-0 inset-x-0 h-1/2 border-b border-stone-300/80 bg-gradient-to-b from-[#EAE2D8] to-[#DFD6CB] clip-path-triangle opacity-90" />
+
+            <span className="text-[10px] uppercase tracking-widest text-stone-500 font-serif mb-4 z-10">
+              INVITATION TO CELEBRATE
+            </span>
+
+            {/* THE WAX SEAL BUTTON */}
+            <motion.button
+              onClick={handleStampWax}
+              animate={isStamping ? { scale: [1, 0.82, 1.15, 1], rotate: [0, -6, 6, 0] } : { scale: 1 }}
+              transition={{ duration: 0.45 }}
+              whileHover={{ scale: 1.12 }}
+              whileTap={{ scale: 0.9 }}
+              className={`z-20 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center cursor-pointer border-2 transition-colors ${
+                waxColor === "gold"
+                  ? "bg-gradient-to-tr from-[#94702D] via-[#C19A5B] to-[#E5C384] border-[#7D5A1A] text-amber-950"
+                  : waxColor === "wine"
+                  ? "bg-gradient-to-tr from-[#520B16] via-[#7A1F2D] to-[#A33D4D] border-[#3B060E] text-rose-100"
+                  : waxColor === "emerald"
+                  ? "bg-gradient-to-tr from-[#172619] via-[#2D4530] to-[#476B4B] border-[#0E1A10] text-emerald-100"
+                  : "bg-gradient-to-tr from-[#8E4444] via-[#D98A8A] to-[#F2B6B6] border-[#692C2C] text-pink-950"
+              }`}
+            >
+              <Stamp className="w-7 h-7 stroke-[1.75]" />
+            </motion.button>
+
+            <span className="text-[10px] text-stone-400 mt-4 z-10 font-medium">
+              {t("homeWaxTapPrompt")}
+            </span>
+          </div>
+
+          <div className="mt-6 text-xs text-stone-500 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#BE944E]" />
+            <span>Đã có <strong>{stampedCount}</strong> bức thiệp được niêm phong sáp hôm nay</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 5. 3D COVERFLOW CAROUSEL (MẪU THIỆP ĐẸP NHẤT) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 text-center overflow-hidden">
         <motion.div
@@ -518,7 +793,180 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
+      {/* 6. MỤC ANIMATION MỚI: BỨC TƯỜNG LỜI CHÚC FLOATING WISHES */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20 overflow-hidden">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
+            {t("homeWishesTitle")}
+          </h2>
+          <p className="text-xs sm:text-sm text-[#181716]/65 mt-2">
+            {t("homeWishesSub")}
+          </p>
+        </div>
+
+        {/* DẢI LỜI CHÚC TRÔI DẠNG MARQUEE 1 */}
+        <div className="space-y-4">
+          <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+            {wishesList.map((item, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ scale: 1.03, y: -2 }}
+                className="bg-white rounded-2xl p-4 border border-[#EFE9E1] shadow-2xs shrink-0 w-72 sm:w-80 flex flex-col justify-between"
+              >
+                <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                  &ldquo;{item.wish}&rdquo;
+                </p>
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 text-[10px]">
+                  <span className="font-bold text-[#BE944E]">{item.name} • {item.relation}</span>
+                  <span className="text-stone-400">{item.time}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* DẢI LỜI CHÚC TRÔI DẠNG MARQUEE 2 */}
+          <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+            {SAMPLE_WISHES_2.map((item, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ scale: 1.03, y: -2 }}
+                className="bg-white rounded-2xl p-4 border border-[#EFE9E1] shadow-2xs shrink-0 w-72 sm:w-80 flex flex-col justify-between"
+              >
+                <p className="text-xs text-stone-700 leading-relaxed font-medium">
+                  &ldquo;{item.wish}&rdquo;
+                </p>
+                <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 text-[10px]">
+                  <span className="font-bold text-[#BE944E]">{item.name} • {item.relation}</span>
+                  <span className="text-stone-400">{item.time}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* FORM THỬ GỬI LỜI CHÚC */}
+        <div className="max-w-xl mx-auto mt-8">
+          <form onSubmit={handleSendTrialWish} className="flex gap-2">
+            <input
+              type="text"
+              value={userWish}
+              onChange={(e) => setUserWish(e.target.value)}
+              placeholder={t("homeWishInputPlaceholder")}
+              className="flex-1 px-4 py-3 text-xs rounded-xl bg-white border border-[#E8E2D8] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/40 text-stone-800 shadow-2xs"
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              className="px-5 py-3 rounded-xl bg-[#BE944E] hover:bg-[#a67e3a] text-white text-xs font-bold uppercase tracking-wider shadow-md flex items-center gap-1.5 shrink-0 cursor-pointer"
+            >
+              <Heart className="w-4 h-4 fill-white" />
+              <span>{t("homeSendWishBtn")}</span>
+            </motion.button>
+          </form>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 7. MỤC ANIMATION MỚI: VIETQR BOX MỪNG CƯỚI SIMULATOR */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
+        <div className="bg-gradient-to-br from-[#FAF7F2] to-[#F0EAE1] rounded-[36px] p-8 sm:p-12 border border-[#EFE9E1] shadow-lg grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* CỘT TRÁI: THÔNG TIN & CHỌN MỨC TIỀN */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-block px-3 py-1 rounded-full bg-[#E8ECE5] text-[#556353] text-[10px] font-bold uppercase tracking-widest">
+              VIETQR NAPAS247 INTEGRATION
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
+              {t("homeQrTitle")}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#181716]/65 leading-relaxed">
+              {t("homeQrSub")}
+            </p>
+
+            {/* CHỌN SỐ TIỀN */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-stone-600 block">
+                {t("homeQrSelectAmount")}
+              </span>
+              <div className="flex flex-wrap gap-2.5">
+                {["200.000đ", "500.000đ", "1.000.000đ", "2.000.000đ"].map((amt) => (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    key={amt}
+                    type="button"
+                    onClick={() => {
+                      setQrAmount(amt);
+                      setQrSuccess(false);
+                    }}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                      qrAmount === amt
+                        ? "bg-[#7D6331] text-white border-[#7D6331] shadow-md"
+                        : "bg-white text-stone-700 border-stone-200 hover:bg-stone-50"
+                    }`}
+                  >
+                    {amt}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleSimulatePayment}
+                className="px-7 py-3.5 rounded-xl bg-[#181716] hover:bg-black text-white text-xs font-bold uppercase tracking-widest shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <QrCode className="w-4 h-4 text-[#BE944E]" />
+                <span>MÔ PHỎNG QUÉT MÃ MỪNG CƯỚI</span>
+              </motion.button>
+            </div>
+
+            {qrSuccess && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2.5 shadow-xs"
+              >
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>{t("homeQrSuccessToast")}</span>
+              </motion.div>
+            )}
+          </div>
+
+          {/* CỘT PHẢI: THẺ QR BANKING NỔI BẬT */}
+          <div className="lg:col-span-5 flex justify-center">
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="w-64 sm:w-72 bg-white rounded-3xl p-6 border border-[#E8E2D8] shadow-xl text-center space-y-3"
+            >
+              <span className="text-[10px] uppercase font-bold tracking-widest text-[#BE944E] block">
+                MỪNG CƯỚI TÂN LANG & TÂN NƯƠNG
+              </span>
+              <div className="w-36 h-36 mx-auto bg-stone-100 rounded-2xl p-2.5 border border-stone-200 flex items-center justify-center relative overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CardVite-Wedding-Gift-${qrAmount}`}
+                  alt="VietQR Demo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="text-xs">
+                <span className="font-bold text-stone-900 text-base">{qrAmount}</span>
+                <p className="text-[10px] text-stone-500 mt-0.5">
+                  {t("homeQrScanHint")}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 8. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
       {/* ------------------------------------------------------------- */}
       <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -719,7 +1167,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 5. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
+      {/* 9. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
       {/* ------------------------------------------------------------- */}
       <section id="custom" className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <motion.div
@@ -891,7 +1339,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 6. FOOTER */}
+      {/* 10. FOOTER */}
       {/* ------------------------------------------------------------- */}
       <footer className="border-t border-[#EFE9E1] bg-white py-10 px-6 md:px-12 lg:px-20 mt-12">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
