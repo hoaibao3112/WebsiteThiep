@@ -11,9 +11,53 @@ import {
   Gamepad2,
   Image as ImageIcon,
   Globe2,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Edit3,
+  Send,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+
+const CAROUSEL_CARDS = [
+  {
+    id: 1,
+    title: "Vườn Ngọc",
+    couple: "Minh Khôi & Ngọc Hân",
+    image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop",
+    color: "#E8ECE5",
+  },
+  {
+    id: 2,
+    title: "Hoa Lụa Nâu",
+    couple: "Văn Long & Thu Hà",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop",
+    color: "#F0EAE1",
+  },
+  {
+    id: 3,
+    title: "Hoa Mộc Hồng",
+    couple: "Tuấn Anh & Mai Phương",
+    image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=500&auto=format&fit=crop",
+    color: "#FAF2E4",
+    isCenter: true,
+  },
+  {
+    id: 4,
+    title: "Hồng Xanh",
+    couple: "Minh Đức & Thu Hà",
+    image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=500&auto=format&fit=crop",
+    color: "#E8ECE5",
+  },
+  {
+    id: 5,
+    title: "Minimalism Nâu",
+    couple: "Hoàng Nam & Thảo Vy",
+    image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=500&auto=format&fit=crop",
+    color: "#F0EAE1",
+  },
+];
 
 export default function CardViteHomePage() {
   const { t } = useLanguage();
@@ -22,6 +66,17 @@ export default function CardViteHomePage() {
   // Bộ điều khiển Simulator
   const [names, setNames] = useState("Sarah & James");
   const [selectedEffect, setSelectedEffect] = useState("Wax Seal");
+
+  // State cho 3D Carousel
+  const [carouselIndex, setCarouselIndex] = useState(2); // Center is index 2
+
+  const nextSlide = () => {
+    setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
+  };
+
+  const prevSlide = () => {
+    setCarouselIndex((prev) => (prev - 1 + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length);
+  };
 
   return (
     <div className="min-h-screen w-full bg-[#FAF7F2] text-[#181716] font-sans antialiased overflow-x-hidden selection:bg-[#BE944E]/20">
@@ -37,11 +92,11 @@ export default function CardViteHomePage() {
             </span>
           </Link>
 
-          {/* DESKTOP NAV LINKS: 4 CHỨC NĂNG CHÍNH */}
+          {/* DESKTOP NAV LINKS */}
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
             <Link
               href="/collections"
-              className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5"
+              className="hover:text-[#BE944E] transition"
             >
               {t("homeNavCollections")}
             </Link>
@@ -253,7 +308,246 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ */}
+      {/* 3. SECTION MỚI 1: 3D COVERFLOW CAROUSEL */}
+      {/* "Mẫu thiệp cưới online đẹp nhất" */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-16 text-center overflow-hidden">
+        <div className="max-w-2xl mx-auto mb-10">
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
+            {t("homeCarouselTitle1")}{" "}
+            <span className="italic font-normal text-[#BE944E]">
+              {t("homeCarouselTitleEm")}
+            </span>
+          </h2>
+          <p className="text-xs sm:text-sm text-[#181716]/65 mt-2">
+            {t("homeCarouselSub")}
+          </p>
+        </div>
+
+        {/* 3D COVERFLOW CONTAINER */}
+        <div className="relative py-6 max-w-5xl mx-auto flex items-center justify-center min-h-[380px]">
+          {/* NÚT PREV */}
+          <button
+            onClick={prevSlide}
+            aria-label="Previous Template"
+            className="absolute left-2 sm:left-6 z-30 w-10 h-10 rounded-full bg-white/90 border border-stone-200 shadow-md flex items-center justify-center text-stone-600 hover:text-[#BE944E] hover:scale-105 transition cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          {/* 5 CARDS IN 3D PERSPECTIVE */}
+          <div className="flex items-center justify-center gap-2 sm:gap-4 w-full">
+            {CAROUSEL_CARDS.map((card, idx) => {
+              const offset = (idx - carouselIndex + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length;
+              const isCenter = offset === 0;
+              const isLeft1 = offset === CAROUSEL_CARDS.length - 1;
+              const isRight1 = offset === 1;
+              const isHidden = !isCenter && !isLeft1 && !isRight1;
+
+              return (
+                <div
+                  key={card.id}
+                  onClick={() => setCarouselIndex(idx)}
+                  className={`transition-all duration-500 transform cursor-pointer rounded-3xl overflow-hidden border shadow-md flex flex-col justify-between ${
+                    isHidden
+                      ? "hidden md:block opacity-30 scale-75 blur-[1px] pointer-events-none"
+                      : isCenter
+                      ? "z-20 scale-105 sm:scale-110 shadow-2xl border-[#BE944E] w-56 sm:w-64 aspect-[9/16] bg-white ring-4 ring-[#BE944E]/20"
+                      : isLeft1
+                      ? "z-10 opacity-70 scale-90 -rotate-y-6 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
+                      : "z-10 opacity-70 scale-90 rotate-y-6 w-44 sm:w-52 aspect-[9/16] bg-white/80 border-stone-200"
+                  }`}
+                >
+                  {/* Mockup bên trong */}
+                  <div className="relative w-full h-full p-4 flex flex-col justify-between text-center overflow-hidden bg-gradient-to-b from-[#FAF7F2] to-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={card.image}
+                      alt={card.title}
+                      className="absolute inset-0 w-full h-full object-cover opacity-85"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30" />
+
+                    <div className="relative z-10 text-[9px] uppercase tracking-widest text-white/90 font-medium">
+                      THE WEDDING OF
+                    </div>
+
+                    <div className="relative z-10 space-y-1 text-white">
+                      <h4 className="text-base sm:text-lg font-serif font-bold text-white tracking-wide">
+                        {card.title}
+                      </h4>
+                      <p className="text-[10px] text-white/80">{card.couple}</p>
+                      {isCenter && (
+                        <div className="pt-2">
+                          <span className="inline-block px-3 py-1 rounded-full bg-[#BE944E] text-white text-[9px] font-bold uppercase tracking-wider shadow-sm">
+                            XÁC NHẬN THAM DỰ
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* NÚT NEXT */}
+          <button
+            onClick={nextSlide}
+            aria-label="Next Template"
+            className="absolute right-2 sm:right-6 z-30 w-10 h-10 rounded-full bg-white/90 border border-stone-200 shadow-md flex items-center justify-center text-stone-600 hover:text-[#BE944E] hover:scale-105 transition cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* DOTS PAGINATION */}
+        <div className="flex items-center justify-center gap-2 mt-6">
+          {CAROUSEL_CARDS.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCarouselIndex(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-2 rounded-full transition-all cursor-pointer ${
+                carouselIndex === idx ? "w-6 bg-[#BE944E]" : "w-2 bg-stone-300"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* NÚT XEM TẤT CẢ MẪU THIỆP */}
+        <div className="mt-8">
+          <Link
+            href="/collections"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-stone-300 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 shadow-2xs transition"
+          >
+            <span>{t("homeViewAllTemplates")}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+          </Link>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 4. SECTION MỚI 2: 3 BƯỚC TẠO THIỆP */}
+      {/* "Tạo thiệp cưới online trong 10 phút" */}
+      {/* ------------------------------------------------------------- */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* CỘT TRÁI: 3 BƯỚC HƯỚNG DẪN */}
+          <div className="lg:col-span-7 space-y-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight leading-tight">
+              {t("homeStepsTitle1")} <br />
+              <span className="italic font-normal text-[#BE944E]">
+                {t("homeStepsTitleEm")}
+              </span>
+            </h2>
+
+            {/* 3 STEPS */}
+            <div className="space-y-6 max-w-lg">
+              {/* STEP 1 */}
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+                  1
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-[#BE944E]" />
+                    <span>{t("homeStep1Title")}</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    {t("homeStep1Desc")}
+                  </p>
+                </div>
+              </div>
+
+              {/* STEP 2 */}
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+                  2
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
+                    <Edit3 className="w-3.5 h-3.5 text-[#BE944E]" />
+                    <span>{t("homeStep2Title")}</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    {t("homeStep2Desc")}
+                  </p>
+                </div>
+              </div>
+
+              {/* STEP 3 */}
+              <div className="flex items-start gap-4">
+                <div className="w-8 h-8 rounded-full bg-[#FAF2E4] text-[#8C6424] font-bold text-xs flex items-center justify-center shrink-0 border border-[#E8DBD0]">
+                  3
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
+                    <Send className="w-3.5 h-3.5 text-[#BE944E]" />
+                    <span>{t("homeStep3Title")}</span>
+                  </h3>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    {t("homeStep3Desc")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Link
+                href="/dashboard/cards/new"
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest shadow-md transition"
+              >
+                <span>{t("homeStepsBtn")}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          {/* CỘT PHẢI: PHONE MOCKUP MẪU THIỆP XANH RÊU */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-[#1E2E20] p-3 shadow-2xl border-4 border-[#2D4530]">
+              <div className="w-full h-full bg-[#243627] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center text-white relative shadow-inner">
+                {/* Top dynamic bar */}
+                <div className="w-16 h-3.5 bg-[#142016] rounded-full mx-auto mb-4" />
+
+                <div className="my-auto space-y-4">
+                  <div className="w-6 h-6 rounded-full border border-white/40 mx-auto flex items-center justify-center text-[10px]">
+                    ♥
+                  </div>
+
+                  <div className="space-y-1">
+                    <span className="text-sm font-serif tracking-widest text-emerald-200 block">
+                      THU HÀ
+                    </span>
+                    <span className="text-[10px] text-white/60 block">&</span>
+                    <span className="text-sm font-serif tracking-widest text-emerald-200 block">
+                      MINH QUÂN
+                    </span>
+                  </div>
+
+                  <div className="text-[10px] text-white/70 pt-2 tracking-wider">
+                    20 . 10 . 2026
+                  </div>
+
+                  <div className="pt-2">
+                    <span className="inline-block px-6 py-1.5 rounded-full bg-[#4E7252] text-white text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                      MỞ THIỆP
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-[8px] uppercase tracking-widest text-white/40 pb-1">
+                  CardVite Floral Luxury
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 5. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID) */}
       {/* ------------------------------------------------------------- */}
       <section id="custom" className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
@@ -390,7 +684,7 @@ export default function CardViteHomePage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 4. FOOTER */}
+      {/* 6. FOOTER */}
       {/* ------------------------------------------------------------- */}
       <footer className="border-t border-[#EFE9E1] bg-white py-10 px-6 md:px-12 lg:px-20 mt-12">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
@@ -401,14 +695,14 @@ export default function CardViteHomePage() {
           </div>
 
           <div className="flex items-center gap-6 font-medium">
-            <Link href="#" className="hover:text-[#181716]">Privacy Policy</Link>
-            <Link href="#" className="hover:text-[#181716]">Terms of Service</Link>
-            <Link href="#" className="hover:text-[#181716]">Cookies</Link>
-            <Link href="#" className="hover:text-[#181716]">Accessibility</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerPrivacy")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerTerms")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerSustainability")}</Link>
+            <Link href="#" className="hover:text-[#181716]">{t("footerAccessibility")}</Link>
           </div>
 
           <div>
-            <span>© 2024 CardVite. All rights reserved.</span>
+            <span>{t("footerCopyright")}</span>
           </div>
         </div>
       </footer>

@@ -46,6 +46,21 @@ export const DICTIONARY = {
     homeSectionExperienceSub:
       "Kết hợp nghệ thuật thiệp giấy truyền thống với công nghệ hiện đại, mang đến trải nghiệm hoàn hảo cho ngày trọng đại.",
 
+    // 3D Carousel & 3-Step Process (Home)
+    homeCarouselTitle1: "Mẫu thiệp cưới online",
+    homeCarouselTitleEm: "đẹp nhất",
+    homeCarouselSub: "Khám phá những mẫu thiệp cưới được thiết kế tinh tế và hiện đại.",
+    homeViewAllTemplates: "Xem tất cả mẫu thiệp",
+    homeStepsTitle1: "Tạo thiệp cưới online",
+    homeStepsTitleEm: "trong 10 phút",
+    homeStep1Title: "Chọn mẫu",
+    homeStep1Desc: "Duyệt kho thiệp và chọn mẫu yêu thích phù hợp phong cách.",
+    homeStep2Title: "Điền thông tin",
+    homeStep2Desc: "Cập nhật tên, ngày giờ, địa điểm, ảnh và nhạc nền của bạn.",
+    homeStep3Title: "Gửi thiệp",
+    homeStep3Desc: "Nhận link thiệp cưới và gửi đến quan khách ngay lập tức.",
+    homeStepsBtn: "Bắt đầu tạo thiệp",
+
     homeCard1Title: "Thiệp Gửi Đích Danh Từng Khách Mời",
     homeCard1Desc:
       "Cá nhân hóa từng lời mời với tên khách được in trang trọng, tạo cảm giác được trân trọng tuyệt đối.",
@@ -302,6 +317,21 @@ export const DICTIONARY = {
     homeSectionExperienceSub:
       "Blending traditional paper invitation artistry with modern technology, crafting the ultimate experience for your special day.",
 
+    // 3D Carousel & 3-Step Process (Home)
+    homeCarouselTitle1: "Most Beautiful Online",
+    homeCarouselTitleEm: "Wedding Cards",
+    homeCarouselSub: "Discover exquisitely crafted modern wedding invitations.",
+    homeViewAllTemplates: "View All Templates",
+    homeStepsTitle1: "Create Your Digital Invitation",
+    homeStepsTitleEm: "in 10 minutes",
+    homeStep1Title: "Choose a Design",
+    homeStep1Desc: "Browse our curated repository and select a style that fits you.",
+    homeStep2Title: "Fill in Details",
+    homeStep2Desc: "Customize couple names, schedules, locations, gallery & music.",
+    homeStep3Title: "Send Out Cards",
+    homeStep3Desc: "Generate individual links and share instantly with guests.",
+    homeStepsBtn: "Start Creating Now",
+
     homeCard1Title: "Personalized Guest Invitations",
     homeCard1Desc:
       "Every guest receives an exclusive personal link with their name elegantly rendered, inspiring deep heartfelt appreciation.",
@@ -557,6 +587,21 @@ export const DICTIONARY = {
     homeSectionExperienceSuffix: "礼遇体验",
     homeSectionExperienceSub:
       "将传统纸质请柬的典雅美学与现代科技完美融合，为您的良辰吉日赋予无可替代的仪式感。",
+
+    // 3D Carousel & 3-Step Process (Home)
+    homeCarouselTitle1: "精选至臻",
+    homeCarouselTitleEm: "唯美电子请柬",
+    homeCarouselSub: "探索现代极简与东方美学完美交融的顶级婚礼请柬。",
+    homeViewAllTemplates: "查看所有精选模版",
+    homeStepsTitle1: "制作专属电子请柬",
+    homeStepsTitleEm: "仅需10分钟",
+    homeStep1Title: "挑选心仪模版",
+    homeStep1Desc: "浏览丰富的设计模版库，选择契合您婚礼风格的唯美设计。",
+    homeStep2Title: "完善请帖信息",
+    homeStep2Desc: "填写新人尊名、吉日吉时、宴会地点，上传浪漫婚纱照与音乐。",
+    homeStep3Title: "一键发送宾客",
+    homeStep3Desc: "生成独立尊称链接，通过微信/社交软件即刻传递至亲朋好友。",
+    homeStepsBtn: "立即开始制作",
 
     homeCard1Title: "专属实名定制请柬",
     homeCard1Desc:
