@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { redis } from "../lib/redis";
+import { checkRateLimit } from "../lib/rate-limiter";
 import { RsvpSubmitInput } from "../lib/validators/rsvp.schema";
 import { rsvpNotificationQueue } from "../queues/rsvp-notification.queue";
 
@@ -16,16 +16,12 @@ export class RsvpService {
 
     // 1. Rate limiting bằng Redis: 1 IP chỉ được gửi tối đa 5 lần trong 5 phút
     if (meta?.ipAddress) {
-      const rateLimitKey = `ratelimit:rsvp:${meta.ipAddress}:${cardId}`;
-      const count = await redis.incr(rateLimitKey);
-      if (count === 1) {
-        await redis.expire(rateLimitKey, 300); // 5 phút
-      }
-      if (count > 5) {
-        throw new Error(
-          "Bạn đã gửi xác nhận quá nhiều lần. Vui lòng thử lại sau 5 phút!"
-        );
-      }
+      await checkRateLimit(
+        `ratelimit:rsvp:${meta.ipAddress}:${cardId}`,
+        5,
+        300,
+        "Bạn đã gửi xác nhận quá nhiều lần. Vui lòng thử lại sau 5 phút!"
+      );
     }
 
     // 2. Kiểm tra thiệp tồn tại & đang hoạt động
@@ -98,11 +94,11 @@ export class RsvpService {
    * Lấy thống kê RSVP cho Dashboard của Host
    */
   static async getRsvpStats(userId: string, cardId: string) {
-    // Multi-tenant check
+    // Multi-tenant check: Chỉ chủ sở hữu thiệp mới xem được thống kê
     const card = await prisma.card.findFirst({
       where: { id: cardId, userId },
     });
-    if (!card) throw new Error("Không có quyền truy cập thiệp này");
+    if (!card) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền truy cập");
 
     const [totalAttending, totalDeclined, totalUndecided, totalGuestsCount, responses] =
       await Promise.all([

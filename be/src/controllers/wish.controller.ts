@@ -22,9 +22,9 @@ export class WishController {
 
   static async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const { cardId } = req.params;
+      const cardId = req.params.cardId as string;
       const limit = Number(req.query.limit) || 20;
-      const cursor = req.query.cursor as string | undefined;
+      const cursor = typeof req.query.cursor === "string" ? req.query.cursor : undefined;
 
       const data = await WishService.listWishes(cardId, limit, cursor);
       res.status(200).json({ success: true, data });

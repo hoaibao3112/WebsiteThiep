@@ -3,6 +3,7 @@ import { AuthService, TokenPayload } from "../services/auth.service";
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;
+  userId?: string;
 }
 
 export function authGuard(
@@ -22,7 +23,7 @@ export function authGuard(
     const token = authHeader.split(" ")[1];
     const decoded = AuthService.verifyToken(token);
     req.user = decoded;
-    (req as any).userId = decoded.userId;
+    req.userId = decoded.userId;
 
     next();
   } catch (error) {

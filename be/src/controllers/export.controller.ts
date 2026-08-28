@@ -9,10 +9,15 @@ export class ExportController {
     next: NextFunction
   ) {
     try {
-      const userId = req.user?.userId;
-      if (!userId) throw new Error("Chưa đăng nhập");
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(500).json({
+          success: false,
+          error: "Thiếu thông tin xác thực - lỗi hệ thống",
+        });
+      }
 
-      const { cardId } = req.params;
+      const cardId = req.params.cardId as string;
       const buffer = await ExportService.exportRsvpToExcel(userId, cardId);
 
       res.setHeader(

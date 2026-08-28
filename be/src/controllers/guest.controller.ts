@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { GuestImportService } from "../services/guest-import.service";
+import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { z } from "zod";
 
 const ImportGuestsSchema = z.object({
@@ -14,10 +15,17 @@ const ImportGuestsSchema = z.object({
 });
 
 export class GuestController {
-  static async import(req: Request, res: Response, next: NextFunction) {
+  static async import(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).userId || "mock-user-id";
-      const { cardId } = req.params;
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(500).json({
+          success: false,
+          error: "Thiếu thông tin xác thực - lỗi hệ thống",
+        });
+      }
+
+      const cardId = req.params.cardId as string;
       const validated = ImportGuestsSchema.parse(req.body);
 
       const result = await GuestImportService.importGuests(
@@ -36,11 +44,17 @@ export class GuestController {
     }
   }
 
-  static async list(req: Request, res: Response, next: NextFunction) {
+  static async list(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).userId || "mock-user-id";
-      const { cardId } = req.params;
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(500).json({
+          success: false,
+          error: "Thiếu thông tin xác thực - lỗi hệ thống",
+        });
+      }
 
+      const cardId = req.params.cardId as string;
       const guests = await GuestImportService.listGuests(userId, cardId);
       res.status(200).json({ success: true, data: guests });
     } catch (error: any) {

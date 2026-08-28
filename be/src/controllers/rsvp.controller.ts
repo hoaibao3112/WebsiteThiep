@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { RsvpService } from "../services/rsvp.service";
 import { RsvpSubmitSchema } from "../lib/validators/rsvp.schema";
+import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export class RsvpController {
   static async submit(req: Request, res: Response, next: NextFunction) {
@@ -25,11 +26,17 @@ export class RsvpController {
     }
   }
 
-  static async getStats(req: Request, res: Response, next: NextFunction) {
+  static async getStats(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).userId || "mock-user-id";
-      const { cardId } = req.params;
+      const userId = req.userId;
+      if (!userId) {
+        return res.status(500).json({
+          success: false,
+          error: "Thiếu thông tin xác thực - lỗi hệ thống",
+        });
+      }
 
+      const cardId = req.params.cardId as string;
       const stats = await RsvpService.getRsvpStats(userId, cardId);
       res.status(200).json({ success: true, data: stats });
     } catch (error: any) {
