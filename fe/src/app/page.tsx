@@ -13,8 +13,10 @@ import {
   Globe2,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CardViteHomePage() {
+  const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Bộ điều khiển Simulator
@@ -41,19 +43,19 @@ export default function CardViteHomePage() {
               href="#collections"
               className="text-[#BE944E] border-b-2 border-[#BE944E] pb-0.5"
             >
-              COLLECTIONS
+              {t("homeNavCollections")}
             </Link>
             <Link href="#custom" className="hover:text-[#181716] transition">
-              CUSTOM
+              {t("homeNavCustom")}
             </Link>
             <Link href="#rsvp" className="hover:text-[#181716] transition">
-              RSVP
+              {t("homeNavRsvp")}
             </Link>
             <Link href="#gallery" className="hover:text-[#181716] transition">
-              GALLERY
+              {t("homeNavGallery")}
             </Link>
             <Link href="#concierge" className="hover:text-[#181716] transition">
-              CONCIERGE
+              {t("homeNavConcierge")}
             </Link>
           </nav>
 
@@ -64,7 +66,7 @@ export default function CardViteHomePage() {
               href="/dashboard/cards/new"
               className="inline-flex items-center justify-center px-6 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-2xs hover:scale-105 transition-all cursor-pointer"
             >
-              CREATE
+              {t("homeCreateBtn")}
             </Link>
           </div>
 
@@ -94,28 +96,28 @@ export default function CardViteHomePage() {
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              Collections
+              {t("homeNavCollections")}
             </Link>
             <Link
               href="#custom"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              Custom
+              {t("homeNavCustom")}
             </Link>
             <Link
               href="#rsvp"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              RSVP
+              {t("homeNavRsvp")}
             </Link>
             <Link
               href="#gallery"
               onClick={() => setMobileMenuOpen(false)}
               className="block text-2xl font-serif font-bold text-[#181716]"
             >
-              Gallery
+              {t("homeNavGallery")}
             </Link>
             <div className="pt-6 flex flex-col items-center gap-4">
               <LanguageSwitcher />
@@ -124,7 +126,7 @@ export default function CardViteHomePage() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md"
               >
-                Create
+                {t("homeCreateBtn")}
               </Link>
             </div>
           </div>
@@ -141,28 +143,31 @@ export default function CardViteHomePage() {
             {/* 2 TAGS: WEDDING & GALA */}
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#E8ECE5] text-[#556353]">
-                WEDDING
+                {t("homeTagWedding")}
               </span>
               <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FCECE7] text-[#A66353]">
-                GALA
+                {t("homeTagGala")}
               </span>
             </div>
 
             {/* HEADLINE */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-[#181716] leading-[1.12]">
-              Trao thiệp trang <br />
-              trọng — <br />
+              {t("homeHeroTitle1")} <br />
+              {t("homeHeroTitle2") && <>{t("homeHeroTitle2")} <br /></>}
               <span className="italic font-normal text-[#BE944E]">
-                Chạm vạn cảm xúc
+                {t("homeHeroTitleEm1")}
               </span> <br />
-              chỉ trong <span className="italic font-normal text-[#BE944E]">5 phút</span>.
+              {t("homeHeroTitle3")}{" "}
+              <span className="italic font-normal text-[#BE944E]">
+                {t("homeHeroTitleEm2")}
+              </span>
             </h1>
 
             {/* FORM SIMULATOR */}
             <div className="p-6 bg-white/70 backdrop-blur-xs rounded-3xl border border-[#EFE9E1] shadow-2xs space-y-4 max-w-md">
               <div>
                 <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
-                  Tên Cô Dâu & Chú Rể
+                  {t("homeFieldCoupleName")}
                 </label>
                 <input
                   type="text"
@@ -175,21 +180,25 @@ export default function CardViteHomePage() {
 
               <div>
                 <label className="block text-[11px] font-semibold text-[#181716]/60 mb-1.5">
-                  Hiệu Ứng Thiệp
+                  {t("homeFieldEffect")}
                 </label>
                 <div className="grid grid-cols-3 gap-2 text-xs">
-                  {["Wax Seal", "Flower Gate", "Gift Box"].map((eff) => (
+                  {[
+                    { id: "Wax Seal", label: t("homeEffectWaxSeal") },
+                    { id: "Flower Gate", label: t("homeEffectFlowerGate") },
+                    { id: "Gift Box", label: t("homeEffectGiftBox") },
+                  ].map((eff) => (
                     <button
-                      key={eff}
+                      key={eff.id}
                       type="button"
-                      onClick={() => setSelectedEffect(eff)}
+                      onClick={() => setSelectedEffect(eff.id)}
                       className={`py-2 px-2 rounded-xl border text-center transition cursor-pointer text-[11px] font-medium ${
-                        selectedEffect === eff
+                        selectedEffect === eff.id
                           ? "bg-[#FAF2E4] border-[#BE944E] text-[#8C6424] font-bold shadow-2xs"
                           : "bg-white border-[#E8E2D8] text-[#181716]/70 hover:bg-[#FAF7F2]"
                       }`}
                     >
-                      {eff}
+                      {eff.label}
                     </button>
                   ))}
                 </div>
@@ -199,7 +208,7 @@ export default function CardViteHomePage() {
                 href="/dashboard/cards/new"
                 className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-[11px] font-bold uppercase tracking-widest shadow-xs transition flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
-                <span>TẠO BẢN XEM TRƯỚC</span>
+                <span>{t("homeBtnPreview")}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -216,7 +225,7 @@ export default function CardViteHomePage() {
                 {/* THIỆP MỜI SARAH & JAMES */}
                 <div className="my-auto space-y-3">
                   <span className="text-[9px] uppercase tracking-[0.25em] text-[#181716]/60 font-medium block">
-                    YOU ARE INVITED
+                    {t("homePhoneInvited")}
                   </span>
 
                   <h3 className="text-2xl font-serif font-bold text-[#181716] tracking-tight">
@@ -226,13 +235,13 @@ export default function CardViteHomePage() {
                   <div className="w-8 h-px bg-[#BE944E] mx-auto my-2" />
 
                   <p className="text-[10px] text-[#181716]/70 leading-relaxed">
-                    September 14th, 2024 <br />
-                    Villa Balbiano, Lake Como
+                    {t("homePhoneDate")} <br />
+                    {t("homePhoneVenue")}
                   </p>
 
                   <div className="pt-4">
                     <span className="inline-block px-6 py-1.5 rounded-full border border-[#181716]/40 text-[10px] font-bold uppercase tracking-widest text-[#181716]">
-                      RSVP
+                      {t("homePhoneRsvp")}
                     </span>
                   </div>
                 </div>
@@ -252,10 +261,14 @@ export default function CardViteHomePage() {
       <section id="custom" className="max-w-6xl mx-auto px-6 py-16 md:px-12 lg:px-20">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716]">
-            Trải Nghiệm <span className="italic font-normal text-[#BE944E]">Thượng Lưu</span> Số
+            {t("homeSectionExperienceTitle")}{" "}
+            <span className="italic font-normal text-[#BE944E]">
+              {t("homeSectionExperienceEm")}
+            </span>{" "}
+            {t("homeSectionExperienceSuffix")}
           </h2>
           <p className="text-xs text-[#181716]/65 mt-2">
-            Kết hợp nghệ thuật thiệp giấy truyền thống với công nghệ hiện đại, mang đến trải nghiệm hoàn hảo cho ngày trọng đại.
+            {t("homeSectionExperienceSub")}
           </p>
         </div>
 
@@ -265,7 +278,6 @@ export default function CardViteHomePage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             {/* THẺ LỚN TRÁI: THIỆP GỬI ĐÍCH DANH */}
             <div className="lg:col-span-7 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-end min-h-[340px] group hover:shadow-md transition">
-              {/* Background Mockup Bàn Cẩm Thạch & Sáp Nến Hoa Cỏ */}
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
@@ -276,10 +288,10 @@ export default function CardViteHomePage() {
 
               <div className="relative z-10 text-white">
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
-                  Thiệp Gửi Đích Danh Từng Khách Mời
+                  {t("homeCard1Title")}
                 </h3>
                 <p className="text-xs text-white/80 mt-1.5 max-w-md leading-relaxed">
-                  Cá nhân hóa từng lời mời với tên khách được in trang trọng, tạo cảm giác được trân trọng tuyệt đối.
+                  {t("homeCard1Desc")}
                 </p>
               </div>
             </div>
@@ -292,10 +304,10 @@ export default function CardViteHomePage() {
                   <CalendarCheck2 className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-base font-serif font-bold text-[#181716]">
-                  Quản Lý RSVP & Chốt Bàn
+                  {t("homeCard2Title")}
                 </h3>
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
-                  Tự động hóa việc xác nhận tham dự và sắp xếp chỗ ngồi thông minh.
+                  {t("homeCard2Desc")}
                 </p>
               </div>
 
@@ -305,10 +317,10 @@ export default function CardViteHomePage() {
                   <Gift className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-base font-serif font-bold text-[#181716]">
-                  Hộp Mừng Cưới VietQR
+                  {t("homeCard3Title")}
                 </h3>
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
-                  Tích hợp mã QR thanh toán tinh tế, tiện lợi cho khách mời từ xa.
+                  {t("homeCard3Desc")}
                 </p>
               </div>
             </div>
@@ -323,10 +335,10 @@ export default function CardViteHomePage() {
                   <Gamepad2 className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-base font-serif font-bold text-[#181716]">
-                  Mini–Game Tương Tác
+                  {t("homeCard4Title")}
                 </h3>
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
-                  Gắn kết khách mời trước sự kiện với các trò chơi nhỏ thú vị.
+                  {t("homeCard4Desc")}
                 </p>
               </div>
             </div>
@@ -338,10 +350,10 @@ export default function CardViteHomePage() {
                   <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-base font-serif font-bold text-[#181716]">
-                  Album Ảnh 3D & Nhạc
+                  {t("homeCard5Title")}
                 </h3>
                 <p className="text-xs text-[#181716]/65 mt-1 leading-relaxed">
-                  Trình diễn bộ ảnh cưới ấn tượng trên nền nhạc yêu thích.
+                  {t("homeCard5Desc")}
                 </p>
               </div>
             </div>
@@ -354,17 +366,16 @@ export default function CardViteHomePage() {
                 <Globe2 className="w-4 h-4" strokeWidth={1.5} />
               </div>
               <h3 className="text-xl font-serif font-bold text-[#181716]">
-                Đa Ngôn Ngữ Toàn Cầu
+                {t("homeCard6Title")}
               </h3>
               <p className="text-xs text-[#181716]/65 mt-1.5 leading-relaxed">
-                Tự động dịch nội dung thiệp dựa trên ngôn ngữ trình duyệt của khách mời, xóa nhòa khoảng cách địa lý.
+                {t("homeCard6Desc")}
               </p>
             </div>
 
             {/* SƠ ĐỒ VÒNG CUNG QUỸ ĐẠO THIÊN HÀ */}
             <div className="relative w-44 h-28 flex items-center justify-center shrink-0">
               <svg viewBox="0 0 160 100" className="w-full h-full">
-                {/* Vòng cung đứt nét */}
                 <path
                   d="M 10 90 A 70 70 0 0 1 150 90"
                   fill="none"
@@ -373,9 +384,7 @@ export default function CardViteHomePage() {
                   strokeDasharray="3 3"
                   opacity="0.6"
                 />
-                {/* Node 1 */}
                 <circle cx="105" cy="22" r="4.5" fill="#BE944E" />
-                {/* Node 2 */}
                 <circle cx="145" cy="62" r="3.5" fill="#8C6424" />
               </svg>
             </div>

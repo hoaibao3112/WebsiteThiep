@@ -2,6 +2,68 @@ export type SupportedLanguage = "vi" | "en" | "zh";
 
 export const DICTIONARY = {
   vi: {
+    // Navigation
+    homeNavCollections: "COLLECTIONS",
+    homeNavCustom: "CUSTOM",
+    homeNavRsvp: "RSVP",
+    homeNavGallery: "GALLERY",
+    homeNavConcierge: "CONCIERGE",
+    homeCreateBtn: "CREATE",
+
+    // Hero Section
+    homeTagWedding: "WEDDING",
+    homeTagGala: "GALA",
+    homeHeroTitle1: "Trao thiệp trang",
+    homeHeroTitle2: "trọng —",
+    homeHeroTitleEm1: "Chạm vạn cảm xúc",
+    homeHeroTitle3: "chỉ trong",
+    homeHeroTitleEm2: "5 phút.",
+
+    // Simulator Form
+    homeFieldCoupleName: "Tên Cô Dâu & Chú Rể",
+    homeFieldEffect: "Hiệu Ứng Thiệp",
+    homeEffectWaxSeal: "Wax Seal",
+    homeEffectFlowerGate: "Flower Gate",
+    homeEffectGiftBox: "Gift Box",
+    homeBtnPreview: "TẠO BẢN XEM TRƯỚC",
+
+    // Phone Mockup
+    homePhoneInvited: "YOU ARE INVITED",
+    homePhoneDate: "September 14th, 2024",
+    homePhoneVenue: "Villa Balbiano, Lake Como",
+    homePhoneRsvp: "RSVP",
+
+    // Bento Grid: Trải Nghiệm Thượng Lưu Số
+    homeSectionExperienceTitle: "Trải Nghiệm",
+    homeSectionExperienceEm: "Thượng Lưu",
+    homeSectionExperienceSuffix: "Số",
+    homeSectionExperienceSub:
+      "Kết hợp nghệ thuật thiệp giấy truyền thống với công nghệ hiện đại, mang đến trải nghiệm hoàn hảo cho ngày trọng đại.",
+
+    homeCard1Title: "Thiệp Gửi Đích Danh Từng Khách Mời",
+    homeCard1Desc:
+      "Cá nhân hóa từng lời mời với tên khách được in trang trọng, tạo cảm giác được trân trọng tuyệt đối.",
+
+    homeCard2Title: "Quản Lý RSVP & Chốt Bàn",
+    homeCard2Desc:
+      "Tự động hóa việc xác nhận tham dự và sắp xếp chỗ ngồi thông minh.",
+
+    homeCard3Title: "Hộp Mừng Cưới VietQR",
+    homeCard3Desc:
+      "Tích hợp mã QR thanh toán tinh tế, tiện lợi cho khách mời từ xa.",
+
+    homeCard4Title: "Mini–Game Tương Tác",
+    homeCard4Desc:
+      "Gắn kết khách mời trước sự kiện với các trò chơi nhỏ thú vị.",
+
+    homeCard5Title: "Album Ảnh 3D & Nhạc",
+    homeCard5Desc:
+      "Trình diễn bộ ảnh cưới ấn tượng trên nền nhạc yêu thích.",
+
+    homeCard6Title: "Đa Ngôn Ngữ Toàn Cầu",
+    homeCard6Desc:
+      "Tự động dịch nội dung thiệp dựa trên ngôn ngữ trình duyệt của khách mời, xóa nhòa khoảng cách địa lý.",
+
     // Envelope & Opening
     openCard: "Mở Thiệp",
     tapToOpen: "Chạm vào con dấu để mở",
@@ -95,6 +157,68 @@ export const DICTIONARY = {
   },
 
   en: {
+    // Navigation
+    homeNavCollections: "COLLECTIONS",
+    homeNavCustom: "CUSTOM",
+    homeNavRsvp: "RSVP",
+    homeNavGallery: "GALLERY",
+    homeNavConcierge: "CONCIERGE",
+    homeCreateBtn: "CREATE",
+
+    // Hero Section
+    homeTagWedding: "WEDDING",
+    homeTagGala: "GALA",
+    homeHeroTitle1: "Delivering elegant",
+    homeHeroTitle2: "invitations —",
+    homeHeroTitleEm1: "Touching millions of hearts",
+    homeHeroTitle3: "in just",
+    homeHeroTitleEm2: "5 minutes.",
+
+    // Simulator Form
+    homeFieldCoupleName: "Bride & Groom Names",
+    homeFieldEffect: "Invitation Effect",
+    homeEffectWaxSeal: "Wax Seal",
+    homeEffectFlowerGate: "Flower Gate",
+    homeEffectGiftBox: "Gift Box",
+    homeBtnPreview: "GENERATE PREVIEW",
+
+    // Phone Mockup
+    homePhoneInvited: "YOU ARE INVITED",
+    homePhoneDate: "September 14th, 2024",
+    homePhoneVenue: "Villa Balbiano, Lake Como",
+    homePhoneRsvp: "RSVP",
+
+    // Bento Grid: Trải Nghiệm Thượng Lưu Số
+    homeSectionExperienceTitle: "A Modern",
+    homeSectionExperienceEm: "Luxury",
+    homeSectionExperienceSuffix: "Experience",
+    homeSectionExperienceSub:
+      "Blending traditional paper invitation artistry with modern technology, crafting the ultimate experience for your special day.",
+
+    homeCard1Title: "Personalized Guest Invitations",
+    homeCard1Desc:
+      "Every guest receives an exclusive personal link with their name elegantly rendered, inspiring deep heartfelt appreciation.",
+
+    homeCard2Title: "RSVP Tracking & Seating Planner",
+    homeCard2Desc:
+      "Automate attendance confirmations and seamlessly organize table seating arrangements.",
+
+    homeCard3Title: "Smart VietQR Registry Box",
+    homeCard3Desc:
+      "Integrated seamless QR banking registry, convenient for distant family and friends.",
+
+    homeCard4Title: "Interactive Mini–Games",
+    homeCard4Desc:
+      "Engage your guests ahead of the big day with delightful guessing and party games.",
+
+    homeCard5Title: "3D Photo Gallery & Music",
+    homeCard5Desc:
+      "Showcase your breathtaking wedding portraits set against your favorite background soundtrack.",
+
+    homeCard6Title: "Global Multi-Language Support",
+    homeCard6Desc:
+      "Automatically translates the invitation based on each international guest's browser language, erasing borders.",
+
     // Envelope & Opening
     openCard: "Open Invitation",
     tapToOpen: "Tap the wax seal to open",
@@ -188,6 +312,68 @@ export const DICTIONARY = {
   },
 
   zh: {
+    // Navigation
+    homeNavCollections: "精选模板",
+    homeNavCustom: "定制设计",
+    homeNavRsvp: "出席回执",
+    homeNavGallery: "相册展示",
+    homeNavConcierge: "专属顾问",
+    homeCreateBtn: "立即制作",
+
+    // Hero Section
+    homeTagWedding: "婚礼盛典",
+    homeTagGala: "高端宴会",
+    homeHeroTitle1: "传递至臻请柬 —",
+    homeHeroTitle2: "",
+    homeHeroTitleEm1: "触动万千心弦",
+    homeHeroTitle3: "仅需",
+    homeHeroTitleEm2: "5分钟。",
+
+    // Simulator Form
+    homeFieldCoupleName: "新人尊名",
+    homeFieldEffect: "开帖特效",
+    homeEffectWaxSeal: "火漆封蜡",
+    homeEffectFlowerGate: "浪漫花门",
+    homeEffectGiftBox: "奢华礼盒",
+    homeBtnPreview: "生成预览效果",
+
+    // Phone Mockup
+    homePhoneInvited: "诚挚邀请您的莅临",
+    homePhoneDate: "2024年9月14日",
+    homePhoneVenue: "科莫湖巴尔比亚诺别墅",
+    homePhoneRsvp: "回复请帖",
+
+    // Bento Grid: Trải Nghiệm Thượng Lưu Số
+    homeSectionExperienceTitle: "尽享",
+    homeSectionExperienceEm: "数字化高端",
+    homeSectionExperienceSuffix: "礼遇体验",
+    homeSectionExperienceSub:
+      "将传统纸质请柬的典雅美学与现代科技完美融合，为您的良辰吉日赋予无可替代的仪式感。",
+
+    homeCard1Title: "专属实名定制请柬",
+    homeCard1Desc:
+      "为每位贵宾生成独立专属链接并带有尊称，彰显对宾客的至高礼遇与尊重。",
+
+    homeCard2Title: "RSVP回执与席位智能安排",
+    homeCard2Desc:
+      "自动化统计宾客出席人数，轻松对接酒店与婚宴席位规划。",
+
+    homeCard3Title: "智能电子礼金二维码",
+    homeCard3Desc:
+      "无缝集成安全便捷的二维码礼金通道，方便远道而来的亲友表达心意。",
+
+    homeCard4Title: "趣味互动小游戏",
+    homeCard4Desc:
+      "仪式前通过精彩互动小游戏拉近与宾客的距离，增添欢乐气氛。",
+
+    homeCard5Title: "3D动态相册与背景音乐",
+    homeCard5Desc:
+      "在悠扬的定制浪漫旋律中，生动呈现新人唯美婚纱大片。",
+
+    homeCard6Title: "全球多语言无缝支持",
+    homeCard6Desc:
+      "根据国际宾客浏览器语言自动翻译请帖内容，跨越山海传递幸福。",
+
     // Envelope & Opening
     openCard: "打开请柬",
     tapToOpen: "轻触火漆印章开启",
