@@ -60,6 +60,8 @@ export const UpsertCardSchema = z.object({
     .optional(),
 
   telegramChatId: z.string().optional(),
+  photos: z.array(z.any()).optional(),
+  events: z.array(z.any()).optional(),
 
   // Payload đa danh mục
   data: CategoryDataSchema,

@@ -9,10 +9,11 @@ const ParentInfoSchema = z.object({
 });
 
 const PersonBioSchema = z.object({
-  fullName: z.string().min(2, "Họ tên không được để trống"),
+  fullName: z.string().min(1, "Họ tên không được để trống"),
   shortName: z.string().optional(),
   avatarUrl: z.string().url("Avatar không hợp lệ").optional().or(z.literal("")),
   birthOrder: z.string().optional(), // "Trưởng nam", "Út nữ"...
+  phone: z.string().optional(),
   parents: ParentInfoSchema.optional(),
   story: z.string().optional(),
 });
@@ -26,11 +27,15 @@ const LoveStoryMilestoneSchema = z.object({
 
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
+  heroSubtitle: z.string().optional(),
+  invitationTitle: z.string().optional(),
+  coverPhotoUrl: z.string().optional().or(z.literal("")),
   groom: PersonBioSchema,
   bride: PersonBioSchema,
   greeting: z.string().optional(),
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
-  events: z.array(EventSchema).min(1, "Cần ít nhất 1 sự kiện cưới (Lễ hoặc Tiệc)"),
+  events: z.array(EventSchema).optional().default([]),
+  photos: z.array(z.any()).optional().default([]),
 });
 
 export type WeddingData = z.infer<typeof WeddingDataSchema>;

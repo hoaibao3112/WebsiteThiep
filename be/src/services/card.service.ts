@@ -10,6 +10,18 @@ export class CardService {
   static async upsertCard(userId: string, input: UpsertCardInput, cardId?: string) {
     const { data: categoryData, events = [], ...cardSettings } = input as any;
 
+    const photosList = Array.isArray(input.photos) && input.photos.length > 0
+      ? input.photos
+      : Array.isArray(categoryData?.photos)
+      ? categoryData.photos
+      : [];
+
+    const eventsList = Array.isArray(input.events) && input.events.length > 0
+      ? input.events
+      : Array.isArray(categoryData?.events)
+      ? categoryData.events
+      : [];
+
     // 1. Kiểm tra gói dịch vụ (Plan)
     const plan = await prisma.plan.findUnique({
       where: { id: cardSettings.planId },
@@ -29,9 +41,9 @@ export class CardService {
     }
 
     // 3. [HIGH] Enforce Plan Limits: Kiểm tra giới hạn số lượng ảnh
-    if (Array.isArray(categoryData?.photos) && categoryData.photos.length > plan.maxPhotos) {
+    if (photosList.length > plan.maxPhotos) {
       throw new Error(
-        `Gói dịch vụ "${plan.name}" chỉ cho phép tối đa ${plan.maxPhotos} ảnh. Bạn đang gửi ${categoryData.photos.length} ảnh.`
+        `Gói dịch vụ "${plan.name}" chỉ cho phép tối đa ${plan.maxPhotos} ảnh. Bạn đang gửi ${photosList.length} ảnh.`
       );
     }
 
@@ -47,16 +59,6 @@ export class CardService {
 
       if (!existingCard) {
         throw new Error("Thiệp không tồn tại hoặc bạn không có quyền chỉnh sửa");
-      }
-
-      // Kiểm tra tổng số ảnh hiện có trong database nếu có thêm ảnh
-      if (Array.isArray(categoryData?.photos)) {
-        const photoCount = categoryData.photos.length;
-        if (photoCount > plan.maxPhotos) {
-          throw new Error(
-            `Gói dịch vụ "${plan.name}" chỉ cho phép tối đa ${plan.maxPhotos} ảnh. Vui lòng nâng cấp gói VIP.`
-          );
-        }
       }
 
       return prisma.$transaction(async (tx) => {
@@ -96,41 +98,37 @@ export class CardService {
         });
 
         // Cập nhật danh sách sự kiện nếu có
-        if (Array.isArray(categoryData?.events)) {
-          await tx.cardEvent.deleteMany({ where: { cardId } });
-          if (categoryData.events.length > 0) {
-            await tx.cardEvent.createMany({
-              data: categoryData.events.map((e: any, index: number) => ({
-                cardId,
-                eventName: e.eventName,
-                eventDate: new Date(e.eventDate),
-                lunarDate: e.lunarDate,
-                venueName: e.venueName,
-                address: e.address,
-                mapUrl: e.mapUrl,
-                latitude: e.latitude,
-                longitude: e.longitude,
-                sortOrder: index,
-              })),
-            });
-          }
+        await tx.cardEvent.deleteMany({ where: { cardId } });
+        if (eventsList.length > 0) {
+          await tx.cardEvent.createMany({
+            data: eventsList.map((e: any, index: number) => ({
+              cardId,
+              eventName: e.eventName || "Sự Kiện",
+              eventDate: new Date(e.eventDate),
+              lunarDate: e.lunarDate,
+              venueName: e.venueName || "Địa điểm tổ chức",
+              address: e.address || "Địa chỉ",
+              mapUrl: e.mapUrl,
+              latitude: e.latitude,
+              longitude: e.longitude,
+              sortOrder: index,
+            })),
+          });
         }
 
         // Cập nhật gallery ảnh nếu có
-        if (Array.isArray(categoryData?.photos)) {
-          await tx.cardPhoto.deleteMany({ where: { cardId } });
-          if (categoryData.photos.length > 0) {
-            await tx.cardPhoto.createMany({
-              data: categoryData.photos.map((p: any, index: number) => ({
-                cardId,
-                url: p.url || p,
-                thumbUrl: p.thumbUrl || null,
-                caption: p.caption || null,
-                isCover: index === 0,
-                sortOrder: index,
-              })),
-            });
-          }
+        await tx.cardPhoto.deleteMany({ where: { cardId } });
+        if (photosList.length > 0) {
+          await tx.cardPhoto.createMany({
+            data: photosList.map((p: any, index: number) => ({
+              cardId,
+              url: p.url || p,
+              thumbUrl: p.thumbUrl || null,
+              caption: p.caption || null,
+              isCover: index === 0,
+              sortOrder: index,
+            })),
+          });
         }
 
         return updated;
@@ -171,15 +169,15 @@ export class CardService {
       });
 
       // Tạo các sự kiện
-      if (Array.isArray(categoryData?.events) && categoryData.events.length > 0) {
+      if (eventsList.length > 0) {
         await tx.cardEvent.createMany({
-          data: categoryData.events.map((e: any, index: number) => ({
+          data: eventsList.map((e: any, index: number) => ({
             cardId: newCard.id,
-            eventName: e.eventName,
+            eventName: e.eventName || "Sự Kiện",
             eventDate: new Date(e.eventDate),
             lunarDate: e.lunarDate,
-            venueName: e.venueName,
-            address: e.address,
+            venueName: e.venueName || "Địa điểm tổ chức",
+            address: e.address || "Địa chỉ",
             mapUrl: e.mapUrl,
             latitude: e.latitude,
             longitude: e.longitude,
@@ -189,9 +187,9 @@ export class CardService {
       }
 
       // Tạo ảnh gallery
-      if (Array.isArray(categoryData?.photos) && categoryData.photos.length > 0) {
+      if (photosList.length > 0) {
         await tx.cardPhoto.createMany({
-          data: categoryData.photos.map((p: any, index: number) => ({
+          data: photosList.map((p: any, index: number) => ({
             cardId: newCard.id,
             url: p.url || p,
             thumbUrl: p.thumbUrl || null,
