@@ -112,12 +112,10 @@ const WEDDING_TRACKS = [
   },
 ];
 
-export default function CardViteHomePage() {
+function AuthQueryHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
-  const { user, logout, openAuthModal } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, openAuthModal } = useAuth();
 
   // Tự động mở modal đăng nhập nếu có query ?auth=login VÀ người dùng chưa đăng nhập
   useEffect(() => {
@@ -130,6 +128,15 @@ export default function CardViteHomePage() {
       }
     }
   }, [searchParams, openAuthModal, user, router]);
+
+  return null;
+}
+
+export default function CardViteHomePage() {
+  const router = useRouter();
+  const { t } = useLanguage();
+  const { user, logout, openAuthModal } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleCreateCardClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -522,6 +529,9 @@ export default function CardViteHomePage() {
 
   return (
     <div className="min-h-screen w-full bg-[#FAF7F2] text-[#181716] font-sans antialiased overflow-x-hidden selection:bg-[#BE944E]/20">
+      <Suspense fallback={null}>
+        <AuthQueryHandler />
+      </Suspense>
       {/* ------------------------------------------------------------- */}
       {/* 1. HEADER & NAVBAR */}
       {/* ------------------------------------------------------------- */}

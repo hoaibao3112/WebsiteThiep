@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Playfair_Display, Inter, Outfit, Quicksand } from "next/font/google";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
@@ -51,7 +52,9 @@ export default function RootLayout({
         <AuthProvider>
           <LanguageProvider>
             {children}
-            <AuthModal />
+            <Suspense fallback={null}>
+              <AuthModal />
+            </Suspense>
           </LanguageProvider>
         </AuthProvider>
       </body>
