@@ -52,6 +52,7 @@ import {
   FolderPlus,
   Loader2,
   X,
+  RefreshCw,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -222,10 +223,12 @@ function CardBuilderContent() {
 
   // Birthday state
   const [celebrantName, setCelebrantName] = useState("");
+  const [celebrantAvatarUrl, setCelebrantAvatarUrl] = useState("");
   const [age, setAge] = useState<number | string>("");
 
   // Newborn state
   const [babyName, setBabyName] = useState("");
+  const [babyAvatarUrl, setBabyAvatarUrl] = useState("");
   const [nickname, setNickname] = useState("");
   const [ceremonyType, setCeremonyType] = useState<"ANNOUNCEMENT_ONLY" | "FULL_MONTH" | "ONE_YEAR">("FULL_MONTH");
   const [weight, setWeight] = useState("");
@@ -252,7 +255,10 @@ function CardBuilderContent() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGroom, setUploadingGroom] = useState(false);
   const [uploadingBride, setUploadingBride] = useState(false);
+  const [uploadingCelebrant, setUploadingCelebrant] = useState(false);
+  const [uploadingBaby, setUploadingBaby] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingStoryIdx, setUploadingStoryIdx] = useState<number | null>(null);
 
   // Background Music Studio
   const [selectedMusicSrc, setSelectedMusicSrc] = useState(MUSIC_OPTIONS[0].src);
@@ -278,7 +284,7 @@ function CardBuilderContent() {
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
 
-  // File Upload Handlers (Tương thích cả Laptop và iPhone/Android)
+  // File Upload Handlers (100% upload trực tiếp từ máy)
   const handleUploadCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -338,10 +344,15 @@ function CardBuilderContent() {
   const handleUploadStoryFile = async (idx: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = await uploadSingleImage(file);
-    const updated = [...loveStory];
-    updated[idx].imageUrl = url;
-    setLoveStory(updated);
+    try {
+      setUploadingStoryIdx(idx);
+      const url = await uploadSingleImage(file);
+      const updated = [...loveStory];
+      updated[idx].imageUrl = url;
+      setLoveStory(updated);
+    } finally {
+      setUploadingStoryIdx(null);
+    }
   };
 
   // Cuộn preview khi chuyển step để người dùng nhìn thấy phần đang sửa
@@ -467,6 +478,7 @@ function CardBuilderContent() {
         ? {
             cardCategory: "BIRTHDAY",
             celebrantName: celebrantName.trim() || "Tên Chủ Tiệc",
+            avatarUrl: celebrantAvatarUrl.trim() || undefined,
             age: Number(age) || 18,
             events: [],
           }
@@ -474,6 +486,7 @@ function CardBuilderContent() {
             cardCategory: "NEWBORN",
             babyName: babyName.trim() || "Tên Bé Yêu",
             nickname: nickname.trim() || "Bé Cưng",
+            avatarUrl: babyAvatarUrl.trim() || undefined,
             gender: "GIRL",
             birthDate: new Date(),
             weight: weight.trim() || "3.2 kg",
@@ -545,10 +558,15 @@ function CardBuilderContent() {
               loveStory: loveStory.filter((s) => s.title.trim() !== ""),
             }
           : category === "BIRTHDAY"
-          ? { celebrantName: celebrantName.trim(), age: Number(age) || 18 }
+          ? {
+              celebrantName: celebrantName.trim(),
+              avatarUrl: celebrantAvatarUrl.trim(),
+              age: Number(age) || 18,
+            }
           : {
               babyName: babyName.trim(),
               nickname: nickname.trim(),
+              avatarUrl: babyAvatarUrl.trim(),
               gender: "BOY",
               birthDate: new Date(),
               weight: weight.trim(),
@@ -730,7 +748,7 @@ function CardBuilderContent() {
                     Cài đặt ảnh bìa, nhân vật chính & thông điệp
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Hỗ trợ tải trực tiếp ảnh từ máy tính hoặc thư viện ảnh iPhone/Android.
+                    Chọn ảnh trực tiếp từ máy tính hoặc thư viện ảnh trên điện thoại.
                   </p>
                 </div>
 
@@ -816,19 +834,57 @@ function CardBuilderContent() {
                       </div>
                     </div>
 
-                    {/* UPLOAD ẢNH BÌA CHÍNH TỪ LAPTOP / IPHONE */}
+                    {/* UPLOAD ẢNH BÌA CHÍNH (HOÀN TOÀN TỪ THIẾT BỊ) */}
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-700 mb-1.5">
-                        Ảnh Bìa Thiệp Chính (Hero Arch Cover)
+                        Ảnh Bìa Thiệp Chính (Hero Arch Cover Photo)
                       </label>
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                        <label className="px-3.5 py-2 rounded-xl bg-white border border-amber-300 hover:border-[#BE944E] text-[#966E29] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:bg-[#FAF5EE] transition">
-                          {uploadingCover ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#BE944E]" />
-                          ) : (
-                            <Upload className="w-3.5 h-3.5 text-[#BE944E]" />
-                          )}
-                          <span>{uploadingCover ? "Đang tải ảnh lên..." : "📁 Tải ảnh từ Laptop / iPhone"}</span>
+
+                      {coverPhotoUrl ? (
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-amber-200 shadow-2xs">
+                          <div className="w-16 h-20 rounded-xl overflow-hidden bg-stone-100 shrink-0 border border-stone-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={coverPhotoUrl} alt="Cover" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 space-y-1.5">
+                            <span className="text-xs font-bold text-stone-800 block">Đã chọn ảnh bìa thành công</span>
+                            <div className="flex items-center gap-2">
+                              <label className="px-3 py-1.5 rounded-lg bg-amber-50 text-[#966E29] border border-amber-300 text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-amber-100 transition">
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Đổi ảnh khác</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleUploadCoverFile}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setCoverPhotoUrl("")}
+                                className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold flex items-center gap-1 hover:bg-rose-100 transition cursor-pointer"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Xóa ảnh</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="p-5 rounded-2xl border-2 border-dashed border-amber-300 hover:border-[#BE944E] bg-white text-center flex flex-col items-center justify-center cursor-pointer shadow-2xs hover:bg-[#FAF5EE] transition">
+                          <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-[#BE944E] mb-1.5">
+                            {uploadingCover ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <Upload className="w-5 h-5" />
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-[#966E29]">
+                            {uploadingCover ? "Đang xử lý tải ảnh lên..." : "📁 Bấm vào đây để chọn ảnh bìa từ thiết bị"}
+                          </span>
+                          <span className="text-[10px] text-stone-400 mt-0.5">
+                            Hỗ trợ tải từ Laptop hoặc thư viện ảnh iPhone / Android
+                          </span>
                           <input
                             type="file"
                             accept="image/*"
@@ -837,26 +893,7 @@ function CardBuilderContent() {
                             className="hidden"
                           />
                         </label>
-
-                        <div className="flex-1 relative">
-                          <input
-                            type="text"
-                            value={coverPhotoUrl}
-                            onChange={(e) => setCoverPhotoUrl(e.target.value)}
-                            placeholder="Hoặc dán đường dẫn ảnh URL..."
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
-                          />
-                          {coverPhotoUrl && (
-                            <button
-                              type="button"
-                              onClick={() => setCoverPhotoUrl("")}
-                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -865,7 +902,7 @@ function CardBuilderContent() {
                 {category === "WEDDING" && (
                   <div className="space-y-4">
                     {/* NHÀ TRAI */}
-                    <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
+                    <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3.5">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#BE944E]" />
                         <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
@@ -876,16 +913,45 @@ function CardBuilderContent() {
                       {/* UPLOAD AVATAR CHÚ RỂ */}
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-700 mb-1.5">
-                          Ảnh đại diện Chú Rể (Avatar)
+                          Ảnh chân dung Chú Rể (Avatar)
                         </label>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                          <label className="px-3.5 py-2 rounded-xl bg-white border border-amber-300 hover:border-[#BE944E] text-[#966E29] text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:bg-[#FAF5EE] transition">
+                        {groomAvatarUrl ? (
+                          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-stone-200 shadow-2xs">
+                            <div className="w-12 h-14 rounded-xl overflow-hidden bg-stone-100 shrink-0 border">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={groomAvatarUrl} alt="Groom" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <label className="px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 border text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-stone-200 transition">
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Đổi ảnh</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleUploadGroomAvatarFile}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setGroomAvatarUrl("")}
+                                className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold flex items-center gap-1 hover:bg-rose-100 transition"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Xóa</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="p-3.5 rounded-xl border-2 border-dashed border-stone-300 hover:border-[#BE944E] bg-white text-center flex items-center justify-center gap-2 cursor-pointer transition">
                             {uploadingGroom ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#BE944E]" />
+                              <Loader2 className="w-4 h-4 animate-spin text-[#BE944E]" />
                             ) : (
-                              <Upload className="w-3.5 h-3.5 text-[#BE944E]" />
+                              <Upload className="w-4 h-4 text-[#BE944E]" />
                             )}
-                            <span>{uploadingGroom ? "Đang tải ảnh..." : "📁 Tải ảnh Chú Rể"}</span>
+                            <span className="text-xs font-bold text-stone-700">
+                              {uploadingGroom ? "Đang tải ảnh..." : "📁 Tải ảnh chân dung Chú Rể"}
+                            </span>
                             <input
                               type="file"
                               accept="image/*"
@@ -894,26 +960,7 @@ function CardBuilderContent() {
                               className="hidden"
                             />
                           </label>
-
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              value={groomAvatarUrl}
-                              onChange={(e) => setGroomAvatarUrl(e.target.value)}
-                              placeholder="Hoặc dán URL ảnh..."
-                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
-                            />
-                            {groomAvatarUrl && (
-                              <button
-                                type="button"
-                                onClick={() => setGroomAvatarUrl("")}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
@@ -989,7 +1036,7 @@ function CardBuilderContent() {
                     </div>
 
                     {/* NHÀ GÁI */}
-                    <div className="p-4 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3">
+                    <div className="p-4 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3.5">
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                         <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
@@ -1000,16 +1047,45 @@ function CardBuilderContent() {
                       {/* UPLOAD AVATAR CÔ DÂU */}
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-700 mb-1.5">
-                          Ảnh đại diện Cô Dâu (Avatar)
+                          Ảnh chân dung Cô Dâu (Avatar)
                         </label>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                          <label className="px-3.5 py-2 rounded-xl bg-white border border-rose-300 hover:border-rose-500 text-rose-700 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:bg-rose-50 transition">
+                        {brideAvatarUrl ? (
+                          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-stone-200 shadow-2xs">
+                            <div className="w-12 h-14 rounded-xl overflow-hidden bg-stone-100 shrink-0 border">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={brideAvatarUrl} alt="Bride" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <label className="px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 border text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-stone-200 transition">
+                                <RefreshCw className="w-3 h-3" />
+                                <span>Đổi ảnh</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleUploadBrideAvatarFile}
+                                  className="hidden"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => setBrideAvatarUrl("")}
+                                className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold flex items-center gap-1 hover:bg-rose-100 transition"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Xóa</span>
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="p-3.5 rounded-xl border-2 border-dashed border-stone-300 hover:border-rose-400 bg-white text-center flex items-center justify-center gap-2 cursor-pointer transition">
                             {uploadingBride ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-500" />
+                              <Loader2 className="w-4 h-4 animate-spin text-rose-500" />
                             ) : (
-                              <Upload className="w-3.5 h-3.5 text-rose-500" />
+                              <Upload className="w-4 h-4 text-rose-500" />
                             )}
-                            <span>{uploadingBride ? "Đang tải ảnh..." : "📁 Tải ảnh Cô Dâu"}</span>
+                            <span className="text-xs font-bold text-stone-700">
+                              {uploadingBride ? "Đang tải ảnh..." : "📁 Tải ảnh chân dung Cô Dâu"}
+                            </span>
                             <input
                               type="file"
                               accept="image/*"
@@ -1018,26 +1094,7 @@ function CardBuilderContent() {
                               className="hidden"
                             />
                           </label>
-
-                          <div className="flex-1 relative">
-                            <input
-                              type="text"
-                              value={brideAvatarUrl}
-                              onChange={(e) => setBrideAvatarUrl(e.target.value)}
-                              placeholder="Hoặc dán URL ảnh..."
-                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
-                            />
-                            {brideAvatarUrl && (
-                              <button
-                                type="button"
-                                onClick={() => setBrideAvatarUrl("")}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
@@ -1341,7 +1398,7 @@ function CardBuilderContent() {
                     Lịch trình, Album ảnh cưới, Timeline tình yêu & VietQR
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Tất cả các mục bên dưới sẽ được dựng thành các phân đoạn trang trọng trên thiệp.
+                    Tải trực tiếp ảnh kỷ niệm và album từ thiết bị một cách trực quan.
                   </p>
                 </div>
 
@@ -1532,7 +1589,7 @@ function CardBuilderContent() {
                               },
                             ]);
                           }}
-                          className="text-xs text-[#BE944E] font-bold hover:underline"
+                          className="text-xs text-[#BE944E] font-bold hover:underline cursor-pointer"
                         >
                           + Bấm vào đây để thêm mốc kỷ niệm đầu tiên
                         </button>
@@ -1546,7 +1603,7 @@ function CardBuilderContent() {
                               <button
                                 type="button"
                                 onClick={() => setLoveStory(loveStory.filter((_, i) => i !== idx))}
-                                className="text-stone-400 hover:text-rose-500 p-1"
+                                className="text-stone-400 hover:text-rose-500 p-1 cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -1598,32 +1655,57 @@ function CardBuilderContent() {
                               />
                             </div>
 
-                            {/* UPLOAD ẢNH MỐC KỶ NIỆM */}
+                            {/* UPLOAD ẢNH MỐC KỶ NIỆM (TRỰC TIẾP TỪ THIẾT BỊ) */}
                             <div>
                               <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ảnh Mốc Kỷ Niệm</label>
-                              <div className="flex items-center gap-2">
-                                <label className="px-2.5 py-1.5 rounded-lg bg-white border border-stone-200 hover:border-[#BE944E] text-[#966E29] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs">
-                                  <Upload className="w-3 h-3 text-[#BE944E]" />
-                                  <span>Tải ảnh từ máy</span>
+                              {story.imageUrl ? (
+                                <div className="flex items-center gap-3 p-2 rounded-xl bg-white border border-stone-200">
+                                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 shrink-0 border">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={story.imageUrl} alt="Story" className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <label className="px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 border text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-stone-200 transition">
+                                      <RefreshCw className="w-3 h-3" />
+                                      <span>Đổi ảnh</span>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleUploadStoryFile(idx, e)}
+                                        className="hidden"
+                                      />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = [...loveStory];
+                                        updated[idx].imageUrl = "";
+                                        setLoveStory(updated);
+                                      }}
+                                      className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold flex items-center gap-1 hover:bg-rose-100 transition"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                      <span>Xóa</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <label className="px-3 py-2 rounded-xl bg-white border border-dashed border-stone-300 hover:border-[#BE944E] text-[#966E29] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs transition">
+                                  {uploadingStoryIdx === idx ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Upload className="w-3.5 h-3.5 text-[#BE944E]" />
+                                  )}
+                                  <span>{uploadingStoryIdx === idx ? "Đang tải ảnh..." : "📁 Tải ảnh mốc kỷ niệm từ máy"}</span>
                                   <input
                                     type="file"
                                     accept="image/*"
                                     onChange={(e) => handleUploadStoryFile(idx, e)}
+                                    disabled={uploadingStoryIdx === idx}
                                     className="hidden"
                                   />
                                 </label>
-                                <input
-                                  type="text"
-                                  value={story.imageUrl || ""}
-                                  onChange={(e) => {
-                                    const updated = [...loveStory];
-                                    updated[idx].imageUrl = e.target.value;
-                                    setLoveStory(updated);
-                                  }}
-                                  placeholder="Hoặc dán URL ảnh..."
-                                  className="flex-1 px-2.5 py-1.5 text-[11px] rounded-lg bg-white border border-stone-200 font-mono text-stone-600 truncate"
-                                />
-                              </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -1632,7 +1714,7 @@ function CardBuilderContent() {
                   </div>
                 )}
 
-                {/* 3. ALBUM ẢNH CƯỚI (HỖ TRỢ CHỌN NHIỀU ẢNH MULTIPLE UPLOAD) */}
+                {/* 3. ALBUM ẢNH CƯỚI (100% TẢI TRỰC TIẾP TỪ THIẾT BỊ) */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
@@ -1646,7 +1728,7 @@ function CardBuilderContent() {
                       ) : (
                         <FolderPlus className="w-3.5 h-3.5" />
                       )}
-                      <span>{uploadingGallery ? "Đang tải ảnh..." : "📸 Tải ảnh từ Laptop / iPhone"}</span>
+                      <span>{uploadingGallery ? "Đang tải..." : "📸 Tải ảnh từ Laptop / iPhone"}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -1659,14 +1741,14 @@ function CardBuilderContent() {
                   </div>
 
                   {photos.length === 0 ? (
-                    <label className="p-7 rounded-2xl border-2 border-dashed border-stone-200 hover:border-[#BE944E] text-center space-y-2 bg-stone-50/50 flex flex-col items-center justify-center cursor-pointer transition">
-                      <div className="w-10 h-10 rounded-full bg-white border border-[#EAE0CD] flex items-center justify-center text-[#BE944E] shadow-2xs">
+                    <label className="p-8 rounded-2xl border-2 border-dashed border-stone-200 hover:border-[#BE944E] text-center space-y-2 bg-stone-50/50 flex flex-col items-center justify-center cursor-pointer transition">
+                      <div className="w-11 h-11 rounded-full bg-white border border-[#EAE0CD] flex items-center justify-center text-[#BE944E] shadow-2xs">
                         <Upload className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-stone-800">Bấm vào đây để chọn ảnh từ thiết bị</p>
+                        <p className="text-xs font-bold text-stone-800">Bấm vào đây để chọn ảnh từ máy</p>
                         <p className="text-[10px] text-stone-500 mt-0.5">
-                          Hỗ trợ chọn nhiều ảnh cùng lúc trên cả Laptop và iPhone / Android
+                          Hỗ trợ chọn nhiều ảnh cùng lúc trên Laptop và iPhone / Android
                         </p>
                       </div>
                       <input
@@ -1684,16 +1766,12 @@ function CardBuilderContent() {
                         {photos.map((item, idx) => (
                           <div key={item.id || idx} className="rounded-2xl border border-stone-200 bg-white p-2 space-y-1.5 relative group shadow-2xs">
                             <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 relative flex items-center justify-center">
-                              {item.url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-[11px] text-stone-400 font-mono">Dán link ảnh</span>
-                              )}
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
                               <button
                                 type="button"
                                 onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
-                                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
@@ -1706,8 +1784,8 @@ function CardBuilderContent() {
                                 updated[idx].caption = e.target.value;
                                 setPhotos(updated);
                               }}
-                              placeholder="Chú thích ảnh..."
-                              className="w-full px-2 py-1 text-[10px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate"
+                              placeholder="Nhập chú thích..."
+                              className="w-full px-2 py-1 text-[10px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                             />
                           </div>
                         ))}
@@ -1716,7 +1794,7 @@ function CardBuilderContent() {
                       <div className="flex items-center justify-between pt-1">
                         <label className="text-xs text-[#BE944E] font-bold flex items-center gap-1 cursor-pointer hover:underline">
                           <Plus className="w-3.5 h-3.5" />
-                          <span>Thêm thêm ảnh khác...</span>
+                          <span>Thêm ảnh khác từ thiết bị...</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1726,7 +1804,7 @@ function CardBuilderContent() {
                             className="hidden"
                           />
                         </label>
-                        <span className="text-[11px] font-mono text-stone-400">Đã chọn {photos.length} ảnh</span>
+                        <span className="text-[11px] font-mono text-stone-400">Đã tải {photos.length} ảnh</span>
                       </div>
                     </div>
                   )}
@@ -1901,7 +1979,7 @@ function CardBuilderContent() {
                         <span className="font-semibold text-stone-800">5. Album Ảnh Cưới 4K</span>
                       </div>
                       <span className="text-stone-500 text-[11px]">
-                        {photos.length > 0 ? `${photos.length} bức ảnh` : "Chưa thêm"}
+                        {photos.length > 0 ? `${photos.length} bức ảnh đã tải` : "Chưa tải"}
                       </span>
                     </div>
 
