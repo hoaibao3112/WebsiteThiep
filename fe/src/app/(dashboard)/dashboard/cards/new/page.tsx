@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useRef } from "react";
+import React, { useState, Suspense, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,6 @@ import {
   Smartphone,
   Tablet,
   Laptop,
-  Save,
   Check,
   Plus,
   Trash2,
@@ -32,21 +31,28 @@ import {
   Palette,
   Eye,
   ArrowLeft,
-  Share2,
-  Sliders,
-  ChevronRight,
-  BookOpen,
-  HelpCircle,
-  QrCode,
+  ArrowRight,
   Sparkle,
   Layers,
   Wand2,
+  BookOpen,
+  CheckCircle2,
+  CheckCircle,
+  HelpCircle,
+  QrCode,
+  ShieldCheck,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export default function NewCardBuilderPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-sm text-stone-500 font-serif">Đang khởi tạo Visual Studio Builder...</div>}>
+    <Suspense
+      fallback={
+        <div className="p-12 text-center text-sm text-stone-500 font-serif">
+          Đang khởi tạo Visual Studio Builder...
+        </div>
+      }
+    >
       <CardBuilderContent />
     </Suspense>
   );
@@ -130,13 +136,40 @@ const COLOR_PRESETS = [
   { name: "Plum Tím Quý Phái", hex: "#6B3074" },
 ];
 
+const WIZARD_STEPS = [
+  {
+    number: 1,
+    title: "Thông Tin & Cặp Đôi",
+    desc: "Loại thiệp & Nhân vật chính",
+    icon: Heart,
+  },
+  {
+    number: 2,
+    title: "Mẫu & Phong Cách",
+    desc: "Theme, Tông màu & Nhạc nền",
+    icon: Palette,
+  },
+  {
+    number: 3,
+    title: "Chi Tiết Tiệc & Mừng Cưới",
+    desc: "Lịch trình, Album ảnh, VietQR",
+    icon: Calendar,
+  },
+  {
+    number: 4,
+    title: "Kiểm Tra & Xuất Bản",
+    desc: "Tổng quan & Xuất bản thiệp",
+    icon: Sparkles,
+  },
+];
+
 function CardBuilderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialCategory = (searchParams.get("category") as CardCategory) || "WEDDING";
 
-  // Tab điều hướng chính trong studio builder
-  const [activeTab, setActiveTab] = useState<"theme" | "couple" | "story" | "events" | "gallery" | "music" | "banking" | "rsvp">("theme");
+  // WIZARD STEP STATE (1 -> 4)
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
 
   // State cấu hình cơ bản
@@ -243,6 +276,7 @@ function CardBuilderContent() {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [testPlayingSrc, setTestPlayingSrc] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const previewViewportRef = useRef<HTMLDivElement | null>(null);
 
   // VietQR Banking Box
   const [bankCodeGroom, setBankCodeGroom] = useState("MB");
@@ -256,10 +290,26 @@ function CardBuilderContent() {
   // RSVP Configuration
   const [isRsvpEnabled, setIsRsvpEnabled] = useState(true);
   const [rsvpDeadline, setRsvpDeadline] = useState("2026-10-10");
-  const [rsvpCustomNote, setRsvpCustomNote] = useState("Sự hiện diện của bạn là niềm vinh hạnh lớn của gia đình chúng tôi.");
+  const [rsvpCustomNote, setRsvpCustomNote] = useState(
+    "Sự hiện diện của bạn là niềm vinh hạnh lớn của gia đình chúng tôi."
+  );
 
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
+
+  // Cuộn preview khi chuyển step
+  useEffect(() => {
+    if (!previewViewportRef.current) return;
+    if (currentStep === 1) {
+      previewViewportRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (currentStep === 2) {
+      previewViewportRef.current.scrollTo({ top: 200, behavior: "smooth" });
+    } else if (currentStep === 3) {
+      previewViewportRef.current.scrollTo({ top: 600, behavior: "smooth" });
+    } else if (currentStep === 4) {
+      previewViewportRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [currentStep]);
 
   // Audio preview helper
   const handleToggleTestMusic = (src: string) => {
@@ -344,8 +394,8 @@ function CardBuilderContent() {
   const handleSaveCard = async () => {
     setSaving(true);
     confetti({
-      particleCount: 80,
-      spread: 80,
+      particleCount: 100,
+      spread: 90,
       origin: { y: 0.5 },
       colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#10B981"],
     });
@@ -361,8 +411,16 @@ function CardBuilderContent() {
       musicUrl: selectedMusicSrc,
       isAutoPlay,
       greetingMessage,
-      bankingPrimary: { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom },
-      bankingSecondary: { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride },
+      bankingPrimary: {
+        bankCode: bankCodeGroom,
+        accountNumber: accNumGroom,
+        accountName: accNameGroom,
+      },
+      bankingSecondary: {
+        bankCode: bankCodeBride,
+        accountNumber: accNumBride,
+        accountName: accNameBride,
+      },
       photos,
       data: {
         cardCategory: category,
@@ -401,7 +459,7 @@ function CardBuilderContent() {
     };
 
     try {
-      const res = await ApiClient.request("/cards", {
+      await ApiClient.request("/cards", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -413,7 +471,7 @@ function CardBuilderContent() {
       }, 1200);
     } catch {
       setSaving(false);
-      // Mode demo
+      // Fallback
       router.push(`/thiep/${slug}`);
     }
   };
@@ -437,11 +495,11 @@ function CardBuilderContent() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-serif font-bold text-base sm:text-lg text-stone-900 tracking-tight flex items-center gap-1.5">
-                <span>CardVite Visual Studio</span>
+                <span>Tạo Thiệp Mới (Studio Wizard)</span>
                 <span className="text-amber-500 text-xs">✦</span>
               </h1>
               <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[10px] font-bold uppercase tracking-wider">
-                Luxury Edition
+                Bước {currentStep}/4
               </span>
             </div>
           </div>
@@ -453,7 +511,9 @@ function CardBuilderContent() {
             type="button"
             onClick={() => setPreviewDevice("mobile")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-              previewDevice === "mobile" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+              previewDevice === "mobile"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-800"
             }`}
           >
             <Smartphone className="w-3.5 h-3.5" />
@@ -463,7 +523,9 @@ function CardBuilderContent() {
             type="button"
             onClick={() => setPreviewDevice("tablet")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-              previewDevice === "tablet" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+              previewDevice === "tablet"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-800"
             }`}
           >
             <Tablet className="w-3.5 h-3.5" />
@@ -473,7 +535,9 @@ function CardBuilderContent() {
             type="button"
             onClick={() => setPreviewDevice("desktop")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-              previewDevice === "desktop" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+              previewDevice === "desktop"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-800"
             }`}
           >
             <Laptop className="w-3.5 h-3.5" />
@@ -481,7 +545,7 @@ function CardBuilderContent() {
           </button>
         </div>
 
-        {/* RIGHT: PUBLISH & PREVIEW ACTIONS */}
+        {/* RIGHT: SAVE & PUBLISH */}
         <div className="flex items-center gap-3">
           <motion.button
             whileHover={{ scale: 1.03 }}
@@ -496,84 +560,358 @@ function CardBuilderContent() {
         </div>
       </header>
 
-      {/* 2-COLUMN WORKSPACE: LEFT CONTROL TABS + RIGHT LIVE MOCKUP */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* ======================================================== */}
-        {/* CỘT TRÁI: THANH TÍNH NĂNG TABS + FORM CHỈNH SỬA CHI TIẾT */}
-        {/* ======================================================== */}
-        <div className="w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-64px)] shadow-xs">
-          {/* HORIZONTAL FEATURE TABS NAVIGATION */}
-          <div className="flex items-center gap-1 px-4 py-2.5 border-b border-stone-100 overflow-x-auto no-scrollbar bg-[#FAF8F5]">
-            {[
-              { key: "theme", label: "Giao Diện", icon: <Palette className="w-3.5 h-3.5" /> },
-              { key: "couple", label: "Cặp Đôi", icon: <Heart className="w-3.5 h-3.5" /> },
-              { key: "story", label: "Câu Chuyện", icon: <BookOpen className="w-3.5 h-3.5" /> },
-              { key: "events", label: "Lịch Trình", icon: <Calendar className="w-3.5 h-3.5" /> },
-              { key: "gallery", label: "Album Ảnh", icon: <ImageIcon className="w-3.5 h-3.5" /> },
-              { key: "music", label: "Nhạc Nền", icon: <Music className="w-3.5 h-3.5" /> },
-              { key: "banking", label: "Mừng Cưới", icon: <Gift className="w-3.5 h-3.5" /> },
-              { key: "rsvp", label: "RSVP", icon: <Users className="w-3.5 h-3.5" /> },
-            ].map((tab) => (
+      {/* STEP PROGRESS BAR */}
+      <div className="bg-white border-b border-[#EAE2D6] px-4 sm:px-8 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+          {WIZARD_STEPS.map((step) => {
+            const Icon = step.icon;
+            const isCompleted = currentStep > step.number;
+            const isCurrent = currentStep === step.number;
+
+            return (
               <button
-                key={tab.key}
+                key={step.number}
                 type="button"
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition cursor-pointer ${
-                  activeTab === tab.key
-                    ? "bg-[#BE944E] text-white shadow-xs"
-                    : "text-stone-600 hover:bg-stone-200/60 hover:text-stone-900"
+                onClick={() => setCurrentStep(step.number)}
+                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-2xl transition text-left cursor-pointer shrink-0 ${
+                  isCurrent
+                    ? "bg-[#FAF5EE] border border-[#BE944E]/40 text-stone-900 shadow-2xs"
+                    : isCompleted
+                    ? "text-stone-700 hover:bg-stone-50"
+                    : "text-stone-400 hover:text-stone-600"
                 }`}
               >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+                <div
+                  className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold transition ${
+                    isCurrent
+                      ? "bg-[#BE944E] text-white shadow-xs"
+                      : isCompleted
+                      ? "bg-emerald-500 text-white"
+                      : "bg-stone-100 text-stone-500"
+                  }`}
+                >
+                  {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : step.number}
+                </div>
 
-          {/* TAB CONTENT SCROLLABLE PANEL */}
+                <div>
+                  <div className="text-xs font-bold leading-tight flex items-center gap-1">
+                    <span>{step.title}</span>
+                    {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[#BE944E]" />}
+                  </div>
+                  <div className="text-[10px] text-stone-500 hidden sm:block">
+                    {step.desc}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2-COLUMN WORKSPACE: LEFT WIZARD FORM + RIGHT LIVE MOCKUP */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* ======================================================== */}
+        {/* CỘT TRÁI: FORM ĐIỀN THEO BƯỚC (WIZARD STEP FORM) */}
+        {/* ======================================================== */}
+        <div className="w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-128px)] shadow-xs">
+          {/* SCROLLABLE STEP FORM */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {/* ---------------------------------------------------- */}
-            {/* TAB 1: GIAO DIỆN, MÀU SẮC, HIỆU ỨNG */}
+            {/* BƯỚC 1: LOẠI THIỆP & THÔNG TIN CẶP ĐÔI / CHỦ TIỆC */}
             {/* ---------------------------------------------------- */}
-            {activeTab === "theme" && (
+            {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                    <Palette className="w-4 h-4 text-[#BE944E]" />
-                    <span>Chọn Danh Mục & Phong Cách</span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5EE] text-[#966E29] border border-[#EAE0CD] text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Heart className="w-3.5 h-3.5" />
+                    <span>Bước 1: Loại thiệp & Cặp đôi</span>
+                  </div>
+                  <h3 className="text-base font-bold text-stone-900">
+                    Chọn loại thiệp & Nhập thông tin chính
                   </h3>
-                  <p className="text-xs text-stone-500">
-                    Tùy biến bộ nhận diện, tông màu hoàng gia và hiệu ứng mở phong bì.
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Các thông tin này sẽ được đồng bộ trực tiếp lên thiệp mẫu ở khung xem trước bên phải.
                   </p>
                 </div>
 
-                {/* Danh mục */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { key: "WEDDING", label: "Thiệp Cưới", icon: <Heart className="w-4 h-4" /> },
-                    { key: "BIRTHDAY", label: "Sinh Nhật", icon: <Cake className="w-4 h-4" /> },
-                    { key: "NEWBORN", label: "Thôi Nôi / Báo Hỷ", icon: <Baby className="w-4 h-4" /> },
-                  ].map((c) => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      onClick={() => setCategory(c.key as CardCategory)}
-                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
-                        category === c.key
-                          ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-md"
-                          : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
-                      }`}
-                    >
-                      {c.icon}
-                      <span>{c.label}</span>
-                    </button>
-                  ))}
+                {/* Chọn danh mục */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+                    1. Danh mục sự kiện
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: "WEDDING", label: "Thiệp Cưới", icon: <Heart className="w-4 h-4" /> },
+                      { key: "BIRTHDAY", label: "Sinh Nhật", icon: <Cake className="w-4 h-4" /> },
+                      { key: "NEWBORN", label: "Thôi Nôi / Báo Hỷ", icon: <Baby className="w-4 h-4" /> },
+                    ].map((c) => (
+                      <button
+                        key={c.key}
+                        type="button"
+                        onClick={() => setCategory(c.key as CardCategory)}
+                        className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
+                          category === c.key
+                            ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-md"
+                            : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
+                        }`}
+                      >
+                        {c.icon}
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Đường dẫn Slug */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    2. Đường dẫn thiệp (Link Slug)
+                  </label>
+                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5">
+                    <span className="text-stone-400 font-mono">cardvite.vn/thiep/</span>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                      className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
+                    />
+                  </div>
+                </div>
+
+                {/* THÔNG TIN RIÊNG THEO DANH MỤC */}
+                {category === "WEDDING" && (
+                  <div className="space-y-4">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      3. Thông tin Cô Dâu, Chú Rể & Hai Bên Gia Đình
+                    </label>
+
+                    {/* NHÀ TRAI */}
+                    <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                          Nhà Trai • Chú Rể
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            Tên Chú Rể (Đầy đủ)
+                          </label>
+                          <input
+                            type="text"
+                            value={groomName}
+                            onChange={(e) => setGroomName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            Tên Thân Mật
+                          </label>
+                          <input
+                            type="text"
+                            value={groomShort}
+                            onChange={(e) => setGroomShort(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2.5">
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
+                          <input
+                            type="text"
+                            value={groomBirthOrder}
+                            onChange={(e) => setGroomBirthOrder(e.target.value)}
+                            placeholder="Trưởng Nam"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
+                          <input
+                            type="text"
+                            value={groomFather}
+                            onChange={(e) => setGroomFather(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
+                          <input
+                            type="text"
+                            value={groomMother}
+                            onChange={(e) => setGroomMother(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* NHÀ GÁI */}
+                    <div className="p-4 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-rose-500" />
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                          Nhà Gái • Cô Dâu
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            Tên Cô Dâu (Đầy đủ)
+                          </label>
+                          <input
+                            type="text"
+                            value={brideName}
+                            onChange={(e) => setBrideName(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            Tên Thân Mật
+                          </label>
+                          <input
+                            type="text"
+                            value={brideShort}
+                            onChange={(e) => setBrideShort(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2.5">
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
+                          <input
+                            type="text"
+                            value={brideBirthOrder}
+                            onChange={(e) => setBrideBirthOrder(e.target.value)}
+                            placeholder="Út Nữ"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
+                          <input
+                            type="text"
+                            value={brideFather}
+                            onChange={(e) => setBrideFather(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
+                          <input
+                            type="text"
+                            value={brideMother}
+                            onChange={(e) => setBrideMother(e.target.value)}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {category === "BIRTHDAY" && (
+                  <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      Thông Tin Chủ Tiệc Sinh Nhật
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Họ và Tên</label>
+                        <input
+                          type="text"
+                          value={celebrantName}
+                          onChange={(e) => setCelebrantName(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tuổi</label>
+                        <input
+                          type="number"
+                          value={age}
+                          onChange={(e) => setAge(Number(e.target.value))}
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {category === "NEWBORN" && (
+                  <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      Thông Tin Bé Yêu
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Bé</label>
+                        <input
+                          type="text"
+                          value={babyName}
+                          onChange={(e) => setBabyName(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Biệt danh ở nhà</label>
+                        <input
+                          type="text"
+                          value={nickname}
+                          onChange={(e) => setNickname(e.target.value)}
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* LỜI NGỎ */}
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    4. Lời ngỏ & Thông điệp gửi khách mời
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={greetingMessage}
+                    onChange={(e) => setGreetingMessage(e.target.value)}
+                    className="w-full p-3 text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ---------------------------------------------------- */}
+            {/* BƯỚC 2: MẪU THIẾT KẾ, MÀU SẮC & NHẠC NỀN */}
+            {/* ---------------------------------------------------- */}
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5EE] text-[#966E29] border border-[#EAE0CD] text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Palette className="w-3.5 h-3.5" />
+                    <span>Bước 2: Mẫu & Phong Cách Nghệ Thuật</span>
+                  </div>
+                  <h3 className="text-base font-bold text-stone-900">
+                    Tùy biến Mẫu giao diện, Tone màu & Âm nhạc
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Chọn phong cách quý phái phù hợp với chủ đề hôn lễ của bạn.
+                  </p>
                 </div>
 
                 {/* Mẫu thiệp Preset */}
                 <div>
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2.5">
-                    Bộ Sưu Tập Mẫu Thiệp Đẹp Nhất
+                    1. Bộ sưu tập mẫu thiệp cao cấp
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {TEMPLATE_PRESETS.map((tpl) => (
@@ -612,10 +950,10 @@ function CardBuilderContent() {
                   </div>
                 </div>
 
-                {/* Màu chủ đạo & Preset */}
+                {/* Màu chủ đạo */}
                 <div className="space-y-3 p-4 rounded-2xl bg-stone-50 border border-stone-200">
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                    Màu Sắc Hoàng Gia Chủ Đạo
+                    2. Tone màu hoàng gia chủ đạo
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {COLOR_PRESETS.map((clr) => (
@@ -645,10 +983,10 @@ function CardBuilderContent() {
                   </div>
                 </div>
 
-                {/* Hiệu ứng Mở Phong Bì & Hiệu ứng Rơi */}
+                {/* Hiệu ứng Mở Phong Bì & Rơi */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1.5">Hiệu Ứng Phong Bì</label>
+                    <label className="block text-xs font-bold text-stone-700 mb-1.5">3. Hiệu ứng mở phong bì</label>
                     <select
                       value={openingEffect}
                       onChange={(e) => setOpeningEffect(e.target.value as any)}
@@ -656,19 +994,19 @@ function CardBuilderContent() {
                     >
                       <option value="WAX_SEAL">Sáp Niêm Phong Vàng (Wax Seal)</option>
                       <option value="GATE_OPEN">Cổng Hoa Mở (Flower Gate)</option>
-                      <option value="NONE">Mở Trực Tiếp (Không nắp)</option>
+                      <option value="NONE">Mở Trực Tiếp</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1.5">Hiệu Ứng Rơi</label>
+                    <label className="block text-xs font-bold text-stone-700 mb-1.5">4. Hiệu ứng rơi lãng mạn</label>
                     <select
                       value={fallingEffect}
                       onChange={(e) => setFallingEffect(e.target.value as any)}
                       className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-stone-200 font-medium"
                     >
                       <option value="PETAL">Cánh Hoa Hồng Bay</option>
-                      <option value="HEART">Trái Tim Tình Yêu</option>
+                      <option value="HEART">Trái Tim Yêu Thương</option>
                       <option value="SNOW">Tuyết Rơi Lãng Mạn</option>
                       <option value="CONFETTI">Kim Tuyến Pháo Hoa</option>
                       <option value="BALLOON">Bóng Bay Rực Rỡ</option>
@@ -677,719 +1015,498 @@ function CardBuilderContent() {
                   </div>
                 </div>
 
-                {/* Đường dẫn Slug */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    Đường Dẫn Truy Cập Thiệp (Slug URL)
-                  </label>
-                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5">
-                    <span className="text-stone-400 font-mono">cardvite.vn/thiep/</span>
-                    <input
-                      type="text"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                      className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
-                    />
+                {/* Nhạc nền */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      5. Kho nhạc nền tuyển chọn
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-stone-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isAutoPlay}
+                        onChange={(e) => setIsAutoPlay(e.target.checked)}
+                        className="accent-[#BE944E]"
+                      />
+                      <span>Tự động phát</span>
+                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    {MUSIC_OPTIONS.map((track) => {
+                      const isSelected = selectedMusicSrc === track.src;
+                      const isPlayingThis = testPlayingSrc === track.src;
+                      return (
+                        <div
+                          key={track.src}
+                          className={`p-3 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
+                            isSelected
+                              ? "bg-amber-50/60 border-[#BE944E] ring-2 ring-[#BE944E]/20 shadow-xs"
+                              : "bg-white border-stone-200 hover:border-stone-300"
+                          }`}
+                          onClick={() => setSelectedMusicSrc(track.src)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleTestMusic(track.src);
+                              }}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center transition ${
+                                isPlayingThis
+                                  ? "bg-[#BE944E] text-white"
+                                  : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+                              }`}
+                              title="Nghe thử"
+                            >
+                              {isPlayingThis ? <Pause className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
+                            </button>
+
+                            <div>
+                              <h4 className="text-xs font-bold text-stone-900">{track.title}</h4>
+                              <span className="text-[10px] text-stone-500">{track.artist}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-stone-400">{track.duration}</span>
+                            <div
+                              className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                isSelected ? "border-[#BE944E] bg-[#BE944E] text-white" : "border-stone-300"
+                              }`}
+                            >
+                              {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             )}
 
             {/* ---------------------------------------------------- */}
-            {/* TAB 2: THÔNG TIN CẶP ĐÔI & GIA ĐÌNH HAI BÊN */}
+            {/* BƯỚC 3: CHI TIẾT TIỆC, ALBUM & MỪNG CƯỚI VIETQR */}
             {/* ---------------------------------------------------- */}
-            {activeTab === "couple" && (
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                    <Heart className="w-4 h-4 text-[#BE944E]" />
-                    <span>Thông Tin Cô Dâu & Chú Rể</span>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5EE] text-[#966E29] border border-[#EAE0CD] text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>Bước 3: Chi Tiết Tiệc, Album & Hộp Mừng Cưới</span>
+                  </div>
+                  <h3 className="text-base font-bold text-stone-900">
+                    Lịch trình, Album ảnh cưới & VietQR Mừng Cưới
                   </h3>
-                  <p className="text-xs text-stone-500">
-                    Điền đầy đủ tên tuổi và thông tin phụ mẫu hai bên gia đình.
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Cung cấp đầy đủ thời gian, địa điểm, hình ảnh và tài khoản ngân hàng để khách tiện mừng cưới.
                   </p>
                 </div>
 
-                {/* THÔNG TIN NHÀ TRAI / CHÚ RỂ */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
-                    <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                      Nhà Trai • Chú Rể
-                    </h4>
+                {/* 1. LỊCH TRÌNH TIỆC */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      1. Lịch trình các buổi lễ & Tiệc mừng
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEvents([
+                          ...events,
+                          {
+                            id: `event-${Date.now()}`,
+                            eventName: "Tiệc Cưới Báo Hỷ",
+                            eventDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+                            lunarDate: "Ngày 17 Tháng 09 Năm Bính Ngọ",
+                            venueName: "Trung tâm Hội nghị Tiệc Cưới",
+                            address: "Địa chỉ tổ chức tiệc cưới",
+                            mapUrl: "https://maps.google.com",
+                          },
+                        ]);
+                      }}
+                      className="px-2.5 py-1 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Thêm Buổi Lễ</span>
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chú Rể (Đầy đủ)</label>
-                      <input
-                        type="text"
-                        value={groomName}
-                        onChange={(e) => setGroomName(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Thân Mật</label>
-                      <input
-                        type="text"
-                        value={groomShort}
-                        onChange={(e) => setGroomShort(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                  </div>
+                  <div className="space-y-3">
+                    {events.map((ev, idx) => (
+                      <div key={ev.id || idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#BE944E] flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
+                            <span>Buổi Lễ 0{idx + 1}</span>
+                          </span>
+                          {events.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setEvents(events.filter((_, i) => i !== idx))}
+                              className="text-stone-400 hover:text-rose-500 p-1"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
 
-                  <div className="grid grid-cols-3 gap-2.5">
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
-                      <input
-                        type="text"
-                        value={groomBirthOrder}
-                        onChange={(e) => setGroomBirthOrder(e.target.value)}
-                        placeholder="Trưởng Nam"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
-                      <input
-                        type="text"
-                        value={groomFather}
-                        onChange={(e) => setGroomFather(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
-                      <input
-                        type="text"
-                        value={groomMother}
-                        onChange={(e) => setGroomMother(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Sự Kiện</label>
+                            <input
+                              type="text"
+                              value={ev.eventName}
+                              onChange={(e) => {
+                                const updated = [...events];
+                                updated[idx].eventName = e.target.value;
+                                setEvents(updated);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Thời Gian (Dương Lịch)</label>
+                            <input
+                              type="datetime-local"
+                              value={typeof ev.eventDate === "string" ? ev.eventDate : new Date(ev.eventDate).toISOString().slice(0, 16)}
+                              onChange={(e) => {
+                                const updated = [...events];
+                                updated[idx].eventDate = e.target.value;
+                                setEvents(updated);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Địa Điểm / Sảnh</label>
+                            <input
+                              type="text"
+                              value={ev.venueName}
+                              onChange={(e) => {
+                                const updated = [...events];
+                                updated[idx].venueName = e.target.value;
+                                setEvents(updated);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch</label>
+                            <input
+                              type="text"
+                              value={ev.lunarDate || ""}
+                              onChange={(e) => {
+                                const updated = [...events];
+                                updated[idx].lunarDate = e.target.value;
+                                setEvents(updated);
+                              }}
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-stone-600 mb-1">Địa Chỉ Chi Tiết</label>
+                          <input
+                            type="text"
+                            value={ev.address}
+                            onChange={(e) => {
+                              const updated = [...events];
+                              updated[idx].address = e.target.value;
+                              setEvents(updated);
+                            }}
+                            className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* THÔNG TIN NHÀ GÁI / CÔ DÂU */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3.5">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                      Nhà Gái • Cô Dâu
-                    </h4>
+                {/* 2. ALBUM ẢNH CƯỚI */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      2. Album ảnh cưới kỷ niệm
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPhotos([
+                          ...photos,
+                          {
+                            id: `p-${Date.now()}`,
+                            url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
+                            caption: "Khoảnh khắc hạnh phúc mới",
+                          },
+                        ]);
+                      }}
+                      className="px-2.5 py-1 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Thêm Ảnh</span>
+                    </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Cô Dâu (Đầy đủ)</label>
-                      <input
-                        type="text"
-                        value={brideName}
-                        onChange={(e) => setBrideName(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Thân Mật</label>
-                      <input
-                        type="text"
-                        value={brideShort}
-                        onChange={(e) => setBrideShort(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2.5">
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
-                      <input
-                        type="text"
-                        value={brideBirthOrder}
-                        onChange={(e) => setBrideBirthOrder(e.target.value)}
-                        placeholder="Út Nữ"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
-                      <input
-                        type="text"
-                        value={brideFather}
-                        onChange={(e) => setBrideFather(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
-                      <input
-                        type="text"
-                        value={brideMother}
-                        onChange={(e) => setBrideMother(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* LỜI NGỎ / THÔNG ĐIỆP GỬI KHÁCH */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    Lời Ngỏ & Trích Dẫn Yêu Thương
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={greetingMessage}
-                    onChange={(e) => setGreetingMessage(e.target.value)}
-                    className="w-full p-3 text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* ---------------------------------------------------- */}
-            {/* TAB 3: CÂU CHUYỆN TÌNH YÊU (LOVE STORY TIMELINE) */}
-            {/* ---------------------------------------------------- */}
-            {activeTab === "story" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                      <BookOpen className="w-4 h-4 text-[#BE944E]" />
-                      <span>Love Story Timeline</span>
-                    </h3>
-                    <p className="text-xs text-stone-500">
-                      Ghi dấu những cột mốc ngọt ngào từ ngày đầu gặp gỡ đến ngày chung đôi.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLoveStory([
-                        ...loveStory,
-                        {
-                          title: "Kỷ Niệm Mới",
-                          date: "20 . 10 . 2025",
-                          description: "Khoảnh khắc đáng nhớ cùng nhau sẻ chia.",
-                          imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
-                        },
-                      ]);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Thêm Mốc</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {loveStory.map((item, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 relative group">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-[#BE944E] bg-white px-2.5 py-0.5 rounded-full border border-stone-200">
-                          Cột mốc 0{idx + 1}
-                        </span>
-                        {loveStory.length > 1 && (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {photos.map((item, idx) => (
+                      <div key={item.id || idx} className="rounded-2xl border border-stone-200 bg-white p-2 space-y-1.5 relative group shadow-2xs">
+                        <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
                           <button
                             type="button"
-                            onClick={() => setLoveStory(loveStory.filter((_, i) => i !== idx))}
-                            className="text-stone-400 hover:text-rose-500 p-1"
+                            onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
+                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] font-semibold text-stone-500 mb-1">Tiêu Đề Kỷ Niệm</label>
-                          <input
-                            type="text"
-                            value={item.title}
-                            onChange={(e) => {
-                              const updated = [...loveStory];
-                              updated[idx].title = e.target.value;
-                              setLoveStory(updated);
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                          />
                         </div>
-                        <div>
-                          <label className="block text-[10px] font-semibold text-stone-500 mb-1">Thời Gian</label>
-                          <input
-                            type="text"
-                            value={item.date}
-                            onChange={(e) => {
-                              const updated = [...loveStory];
-                              updated[idx].date = e.target.value;
-                              setLoveStory(updated);
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-semibold text-stone-500 mb-1">Nội Dung Chia Sẻ</label>
-                        <textarea
-                          rows={2}
-                          value={item.description}
-                          onChange={(e) => {
-                            const updated = [...loveStory];
-                            updated[idx].description = e.target.value;
-                            setLoveStory(updated);
-                          }}
-                          className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ---------------------------------------------------- */}
-            {/* TAB 4: LỊCH TRÌNH & ĐỊA ĐIỂM (EVENTS & SCHEDULE) */}
-            {/* ---------------------------------------------------- */}
-            {activeTab === "events" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                      <Calendar className="w-4 h-4 text-[#BE944E]" />
-                      <span>Lịch Trình & Địa Điểm Tổ Chức</span>
-                    </h3>
-                    <p className="text-xs text-stone-500">
-                      Cài đặt các buổi lễ cưới, tiệc mừng và tích hợp chỉ đường Google Maps.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEvents([
-                        ...events,
-                        {
-                          id: `event-${Date.now()}`,
-                          eventName: "Tiệc Cưới Báo Hỷ",
-                          eventDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-                          lunarDate: "Ngày 17 Tháng 09 Năm Bính Ngọ",
-                          venueName: "Trung tâm Hội nghị Tiệc Cưới",
-                          address: "Địa chỉ tổ chức tiệc cưới",
-                          mapUrl: "https://maps.google.com",
-                        },
-                      ]);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Thêm Buổi Lễ</span>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {events.map((ev, idx) => (
-                    <div key={ev.id || idx} className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#BE944E] flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
-                          <span>Buổi Lễ 0{idx + 1}</span>
-                        </span>
-                        {events.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => setEvents(events.filter((_, i) => i !== idx))}
-                            className="text-stone-400 hover:text-rose-500 p-1"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Sự Kiện / Buổi Lễ</label>
-                          <input
-                            type="text"
-                            value={ev.eventName}
-                            onChange={(e) => {
-                              const updated = [...events];
-                              updated[idx].eventName = e.target.value;
-                              setEvents(updated);
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Thời Gian (Dương Lịch)</label>
-                          <input
-                            type="datetime-local"
-                            value={typeof ev.eventDate === "string" ? ev.eventDate : new Date(ev.eventDate).toISOString().slice(0, 16)}
-                            onChange={(e) => {
-                              const updated = [...events];
-                              updated[idx].eventDate = e.target.value;
-                              setEvents(updated);
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Địa Điểm / Sảnh Cưới</label>
-                          <input
-                            type="text"
-                            value={ev.venueName}
-                            onChange={(e) => {
-                              const updated = [...events];
-                              updated[idx].venueName = e.target.value;
-                              setEvents(updated);
-                            }}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch (Hiển thị thiệp)</label>
-                          <input
-                            type="text"
-                            value={ev.lunarDate || ""}
-                            onChange={(e) => {
-                              const updated = [...events];
-                              updated[idx].lunarDate = e.target.value;
-                              setEvents(updated);
-                            }}
-                            placeholder="Ngày 16 Tháng 09 Năm Bính Ngọ"
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Địa Chỉ Chi Tiết</label>
                         <input
                           type="text"
-                          value={ev.address}
+                          value={item.url}
                           onChange={(e) => {
-                            const updated = [...events];
-                            updated[idx].address = e.target.value;
-                            setEvents(updated);
+                            const updated = [...photos];
+                            updated[idx].url = e.target.value;
+                            setPhotos(updated);
                           }}
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                          placeholder="Link ảnh URL"
+                          className="w-full px-2 py-1 text-[10px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. MỪNG CƯỚI VIETQR */}
+                <div className="space-y-3">
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                    3. Hộp Mừng Cưới VietQR Napas247
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Nhà Trai */}
+                    <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2.5">
+                      <span className="text-[11px] font-bold text-stone-800 uppercase block">
+                        Tài Khoản Chú Rể (Nhà Trai)
+                      </span>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Ngân hàng</label>
+                        <input
+                          type="text"
+                          value={bankCodeGroom}
+                          onChange={(e) => setBankCodeGroom(e.target.value)}
+                          placeholder="MB, VCB, ACB..."
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Số tài khoản</label>
+                        <input
+                          type="text"
+                          value={accNumGroom}
+                          onChange={(e) => setAccNumGroom(e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Tên chủ TK</label>
+                        <input
+                          type="text"
+                          value={accNameGroom}
+                          onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-bold"
                         />
                       </div>
                     </div>
-                  ))}
+
+                    {/* Nhà Gái */}
+                    <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2.5">
+                      <span className="text-[11px] font-bold text-stone-800 uppercase block">
+                        Tài Khoản Cô Dâu (Nhà Gái)
+                      </span>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Ngân hàng</label>
+                        <input
+                          type="text"
+                          value={bankCodeBride}
+                          onChange={(e) => setBankCodeBride(e.target.value)}
+                          placeholder="VCB, Vietinbank..."
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Số tài khoản</label>
+                        <input
+                          type="text"
+                          value={accNumBride}
+                          onChange={(e) => setAccNumBride(e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-0.5">Tên chủ TK</label>
+                        <input
+                          type="text"
+                          value={accNameBride}
+                          onChange={(e) => setAccNameBride(e.target.value.toUpperCase())}
+                          className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-bold"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* ---------------------------------------------------- */}
-            {/* TAB 5: ALBUM ẢNH CƯỚI & VIDEO */}
+            {/* BƯỚC 4: KIỂM TRA TOÀN DIỆN & XUẤT BẢN THIỆP */}
             {/* ---------------------------------------------------- */}
-            {activeTab === "gallery" && (
+            {currentStep === 4 && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                      <ImageIcon className="w-4 h-4 text-[#BE944E]" />
-                      <span>Album Ảnh Cưới & Video Pre-Wedding</span>
-                    </h3>
-                    <p className="text-xs text-stone-500">
-                      Tải lên bộ sưu tập ảnh cưới sắc nét chất lượng cao 4K.
-                    </p>
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider mb-2">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Bước 4: Kiểm Tra Toàn Diện & Xuất Bản</span>
                   </div>
+                  <h3 className="text-base font-bold text-stone-900">
+                    Sẵn sàng chia sẻ thiệp cưới online
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Kiểm tra checklist các mục dưới đây và xem lại giao diện bên phải trước khi xuất bản.
+                  </p>
+                </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPhotos([
-                        ...photos,
-                        {
-                          id: `p-${Date.now()}`,
-                          url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
-                          caption: "Khoảnh khắc hạnh phúc mới",
-                        },
-                      ]);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                {/* CHECKLIST ĐỘ HOÀN THIỆN */}
+                <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#EAE2D6] space-y-3.5 shadow-2xs">
+                  <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center justify-between">
+                    <span>Checklist Các Mục Trên Thiệp</span>
+                    <span className="text-emerald-600 font-mono font-bold text-xs">100% Hoàn Thiện</span>
+                  </h4>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">1. Thông tin Cặp Đôi & Phụ Mẫu</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px]">
+                        {groomShort} & {brideShort}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">2. Mẫu Thiệp & Tông Màu</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px] flex items-center gap-1">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: primaryColor }} />
+                        {primaryColor}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">3. Lịch Trình & Địa Điểm Tiệc</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px]">{events.length} buổi lễ</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">4. Album Ảnh Cưới 4K</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px]">{photos.length} bức ảnh</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">5. Hộp Mừng Cưới VietQR Napas247</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px] font-mono">Đã thiết lập</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <span className="font-semibold text-stone-800">6. Nhạc Nền Du Dương</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px]">Auto play sẵn sàng</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* NÚT XUẤT BẢN LỚN */}
+                <div className="space-y-3 pt-2">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSaveCard}
+                    disabled={saving}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white font-serif font-bold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 cursor-pointer transition"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Thêm Ảnh</span>
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {photos.map((item, idx) => (
-                    <div key={item.id || idx} className="rounded-2xl border border-stone-200 bg-white p-2.5 space-y-2 relative group shadow-2xs">
-                      <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
-                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={item.url}
-                        onChange={(e) => {
-                          const updated = [...photos];
-                          updated[idx].url = e.target.value;
-                          setPhotos(updated);
-                        }}
-                        placeholder="Link ảnh URL"
-                        className="w-full px-2 py-1 text-[11px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Video Pre-Wedding */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                    Video Phim Cưới / Pre-Wedding (YouTube Link)
-                  </label>
-                  <input
-                    type="text"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700"
-                  />
+                    <Sparkles className="w-4 h-4" />
+                    <span>{saving ? "Đang xử lý xuất bản..." : "Xuất Bản Thiệp Ngay ✨"}</span>
+                  </motion.button>
+                  <p className="text-[11px] text-center text-stone-500">
+                    Sau khi xuất bản, bạn sẽ nhận được đường dẫn riêng để gửi bạn bè và mã QR in ấn.
+                  </p>
                 </div>
               </div>
             )}
+          </div>
 
-            {/* ---------------------------------------------------- */}
-            {/* TAB 6: KHO NHẠC NỀN TUYỂN CHỌN */}
-            {/* ---------------------------------------------------- */}
-            {activeTab === "music" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                    <Music className="w-4 h-4 text-[#BE944E]" />
-                    <span>Kho Nhạc Nền Cưới Tuyển Chọn</span>
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Chọn bản tình ca lãng mạn phát khi khách mở thiệp cưới.
-                  </p>
-                </div>
+          {/* BOTTOM STEP CONTROLS (QUAY LẠI / TIẾP THEO) */}
+          <div className="p-4 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+              disabled={currentStep === 1}
+              className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition ${
+                currentStep === 1
+                  ? "text-stone-300 cursor-not-allowed"
+                  : "text-stone-700 bg-white border border-stone-200 hover:bg-stone-100 cursor-pointer shadow-2xs"
+              }`}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Quay lại</span>
+            </button>
 
-                <div className="space-y-3">
-                  {MUSIC_OPTIONS.map((track) => {
-                    const isSelected = selectedMusicSrc === track.src;
-                    const isPlayingThis = testPlayingSrc === track.src;
-                    return (
-                      <div
-                        key={track.src}
-                        className={`p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
-                          isSelected
-                            ? "bg-amber-50/60 border-[#BE944E] ring-2 ring-[#BE944E]/20 shadow-xs"
-                            : "bg-white border-stone-200 hover:border-stone-300"
-                        }`}
-                        onClick={() => setSelectedMusicSrc(track.src)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleTestMusic(track.src);
-                            }}
-                            className={`w-9 h-9 rounded-full flex items-center justify-center transition shadow-xs ${
-                              isPlayingThis ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-                            }`}
-                            title="Nghe thử"
-                          >
-                            {isPlayingThis ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 ml-0.5" />}
-                          </button>
+            <div className="flex items-center gap-1 text-xs font-mono text-stone-400">
+              <span>{currentStep}</span>
+              <span>/</span>
+              <span>4</span>
+            </div>
 
-                          <div>
-                            <h4 className="text-xs font-bold text-stone-900">{track.title}</h4>
-                            <span className="text-[11px] text-stone-500">{track.artist}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-mono text-stone-400">{track.duration}</span>
-                          <div
-                            className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                              isSelected ? "border-[#BE944E] bg-[#BE944E] text-white" : "border-stone-300"
-                            }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Tùy chọn tự động phát */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-stone-800 block">Tự Động Phát Nhạc (Auto Play)</span>
-                    <span className="text-[11px] text-stone-500">Phát giai điệu khi khách mở phong bì</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={isAutoPlay}
-                    onChange={(e) => setIsAutoPlay(e.target.checked)}
-                    className="w-4 h-4 accent-[#BE944E] cursor-pointer"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* ---------------------------------------------------- */}
-            {/* TAB 7: MỪNG CƯỚI VIETQR & QUÀ TẶNG */}
-            {/* ---------------------------------------------------- */}
-            {activeTab === "banking" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                    <Gift className="w-4 h-4 text-[#BE944E]" />
-                    <span>Hộp Mừng Cưới VietQR & Gửi Quà</span>
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Tích hợp mã QR Napas247 tiện lợi để khách ở xa có thể gửi lời chúc và quà mừng.
-                  </p>
-                </div>
-
-                {/* TÀI KHOẢN NHÀ TRAI */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
-                  <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
-                    1. Tài Khoản Chú Rể (Nhà Trai)
-                  </span>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input
-                        type="text"
-                        value={bankCodeGroom}
-                        onChange={(e) => setBankCodeGroom(e.target.value)}
-                        placeholder="MB, VCB, ACB, Techcombank..."
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input
-                        type="text"
-                        value={accNumGroom}
-                        onChange={(e) => setAccNumGroom(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ Tài Khoản (Không dấu)</label>
-                    <input
-                      type="text"
-                      value={accNameGroom}
-                      onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-bold"
-                    />
-                  </div>
-                </div>
-
-                {/* TÀI KHOẢN NHÀ GÁI */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
-                  <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
-                    2. Tài Khoản Cô Dâu (Nhà Gái)
-                  </span>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input
-                        type="text"
-                        value={bankCodeBride}
-                        onChange={(e) => setBankCodeBride(e.target.value)}
-                        placeholder="VCB, Vietinbank, TPBank..."
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input
-                        type="text"
-                        value={accNumBride}
-                        onChange={(e) => setAccNumBride(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ Tài Khoản (Không dấu)</label>
-                    <input
-                      type="text"
-                      value={accNameBride}
-                      onChange={(e) => setAccNameBride(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-bold"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ---------------------------------------------------- */}
-            {/* TAB 8: MỜI ĐÍCH DANH & RSVP */}
-            {/* ---------------------------------------------------- */}
-            {activeTab === "rsvp" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
-                    <Users className="w-4 h-4 text-[#BE944E]" />
-                    <span>Mời Đích Danh & Quản Lý RSVP</span>
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Thu thập phản hồi số lượng khách tham dự để đặt bàn tiệc chuẩn xác.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-stone-800 block">Kích Hoạt Form Xác Nhận RSVP</span>
-                    <span className="text-[11px] text-stone-500">Cho phép khách bấm xác nhận & gửi lời chúc</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={isRsvpEnabled}
-                    onChange={(e) => setIsRsvpEnabled(e.target.checked)}
-                    className="w-4 h-4 accent-[#BE944E] cursor-pointer"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Hạn Chót Xác Nhận Tham Dự</label>
-                    <input
-                      type="date"
-                      value={rsvpDeadline}
-                      onChange={(e) => setRsvpDeadline(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">Ghi Chú Đón Tiếp</label>
-                    <textarea
-                      rows={2}
-                      value={rsvpCustomNote}
-                      onChange={(e) => setRsvpCustomNote(e.target.value)}
-                      className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200"
-                    />
-                  </div>
-                </div>
-              </div>
+            {currentStep < 4 ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep((prev) => Math.min(4, prev + 1))}
+                className="px-5 py-2 rounded-xl bg-[#BE944E] hover:bg-[#A9813E] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <span>Tiếp theo: Bước {currentStep + 1}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSaveCard}
+                disabled={saving}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+              >
+                <span>Hoàn tất & Xuất bản</span>
+                <Sparkles className="w-3.5 h-3.5" />
+              </button>
             )}
           </div>
         </div>
@@ -1422,7 +1539,10 @@ function CardBuilderContent() {
             )}
 
             {/* SCREEN VIEWPORT */}
-            <div className="w-full h-full bg-[#FAF8F5] rounded-[38px] overflow-y-auto overflow-x-hidden relative shadow-inner">
+            <div
+              ref={previewViewportRef}
+              className="w-full h-full bg-[#FAF8F5] rounded-[38px] overflow-y-auto overflow-x-hidden relative shadow-inner"
+            >
               {category === "WEDDING" && <WeddingView card={previewCard} />}
               {category === "BIRTHDAY" && <BirthdayView card={previewCard} />}
               {category === "NEWBORN" && <NewbornView card={previewCard} />}
