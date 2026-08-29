@@ -69,7 +69,7 @@ export default function MyCardsPage() {
               title="Về Trang Chủ"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/logo.png" alt="Logo" className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105" />
+              <img src="/images/logo.png" alt="Logo" className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
             </Link>
             <span className="text-stone-300">/</span>
             <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">

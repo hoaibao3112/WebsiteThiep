@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
           {/* BRAND WITH LOGO */}
           <Link href="/" className="flex items-center group" title="Trang Chủ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+            <img src="/images/logo.png" alt="Logo" className="h-11 sm:h-13 w-auto object-contain transition-transform group-hover:scale-105" />
           </Link>
 
           {/* CONTACT & SOCIAL BUTTONS */}

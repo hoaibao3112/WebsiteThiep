@@ -67,11 +67,11 @@ export default function JournalPage() {
       {/* ------------------------------------------------------------- */}
       {/* 1. HEADER */}
       {/* ------------------------------------------------------------- */}
-      <header className="w-full px-6 py-6 md:px-12 lg:px-20 bg-[#FAF7F2]">
+      <header className="w-full px-6 py-4 md:px-12 lg:px-20 bg-[#FAF7F2]">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center group" title="Trang Chủ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo" className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105" />
+            <img src="/images/logo.png" alt="Logo" className="h-12 sm:h-14 md:h-15 w-auto object-contain transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
