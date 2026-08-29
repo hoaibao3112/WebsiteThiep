@@ -967,7 +967,7 @@ export default function CardViteHomePage() {
                   {/* SCREEN DISPLAY - PHONE SHOWCASE WITH USER VIDEO */}
                   <div className="w-full h-full bg-[#181716] rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between border border-[#F0EAE1]">
                     {/* HIDDEN HERO AUDIO ELEMENT */}
-                    <audio ref={heroAudioRef} src="/music/mot-nha.mp3" loop preload="auto" />
+                    <audio ref={heroAudioRef} src="/music/beautiful-in-white.mp3" loop preload="auto" />
 
                     {/* FULLSCREEN USER MP4 VIDEO (MUTED & AUTOPLAY) */}
                     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -1046,7 +1046,7 @@ export default function CardViteHomePage() {
                               className="mt-2 px-3 py-1 rounded-full bg-red-600/90 text-white font-bold text-xs tracking-wider shadow-lg border border-red-300/40 flex items-center gap-1.5"
                             >
                               <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-spin" />
-                              <span>Đang phát: Một Nhà</span>
+                              <span>Đang phát: Beautiful In White</span>
                             </motion.div>
                           </motion.div>
                         </motion.div>
@@ -1098,7 +1098,7 @@ export default function CardViteHomePage() {
                           whileHover={{ scale: 1.12, rotate: 5 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={handleToggleHeroSeal}
-                          title={isHeroMusicPlaying ? "Bấm để tắt nhạc & ẩn trái tim" : "Bấm để vẽ trái tim đỏ & phát bài hát Một Đời"}
+                          title={isHeroMusicPlaying ? "Bấm để tắt nhạc & ẩn trái tim" : "Bấm để vẽ trái tim đỏ & phát bài hát Beautiful In White"}
                           className={`absolute z-20 w-13 h-13 rounded-full bg-gradient-to-br from-[#F5D77F] via-[#D4A038] to-[#996F20] shadow-[0_6px_18px_rgba(212,160,56,0.6),inset_0_2px_4px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.3)] border-2 border-[#FFF2D0] flex items-center justify-center cursor-pointer transition-all ${
                             isHeroMusicPlaying ? "ring-4 ring-red-500/80 animate-pulse" : ""
                           }`}
