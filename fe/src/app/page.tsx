@@ -943,60 +943,78 @@ export default function CardViteHomePage() {
                   {/* Glossy Screen Reflection */}
                   <div className="absolute inset-0 rounded-[44px] bg-gradient-to-tr from-transparent via-white/25 to-transparent pointer-events-none z-30" />
 
-                  {/* SCREEN DISPLAY - WEDDING CARD FINE ART CANVAS */}
-                  <div className="w-full h-full bg-[#FCFAF6] rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between border border-[#F0EAE1]">
+                  {/* SCREEN DISPLAY - PHONE SHOWCASE WITH USER VIDEO */}
+                  <div className="w-full h-full bg-[#181716] rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between border border-[#F0EAE1]">
+                    {/* FULLSCREEN USER MP4 VIDEO (MUTED & AUTOPLAY) */}
+                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        className="w-full h-full object-cover"
+                      >
+                        <source src="/wedding-showcase.mp4" type="video/mp4" />
+                      </video>
+                      {/* Subtle Vignette / Gradient Overlay to enhance text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+                    </div>
+
                     {/* DYNAMIC ISLAND */}
                     <div className="relative z-20 pt-2.5 px-6 flex items-center justify-center">
-                      <div className="w-18 h-4 bg-black rounded-full mx-auto shadow-sm flex items-center justify-end pr-1.5">
+                      <div className="w-18 h-4 bg-black rounded-full mx-auto shadow-sm flex items-center justify-end pr-1.5 border border-white/10">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       </div>
                     </div>
 
                     {/* VINTAGE FLORAL ACCENT (TOP RIGHT) */}
-                    <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-40">
+                    <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-40 z-10">
                       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M100 0C80 20 60 5 40 25C20 45 35 65 15 85C5 95 0 100 0 100" stroke="#C59E58" strokeWidth="1.2" />
-                        <circle cx="70" cy="20" r="10" fill="#F7EFE3" stroke="#C59E58" strokeWidth="0.8" />
-                        <circle cx="45" cy="40" r="8" fill="#F7EFE3" stroke="#C59E58" strokeWidth="0.8" />
+                        <path d="M100 0C80 20 60 5 40 25C20 45 35 65 15 85C5 95 0 100 0 100" stroke="#F3E5C8" strokeWidth="1.2" />
+                        <circle cx="70" cy="20" r="10" fill="#FAF4E8" fillOpacity="0.2" stroke="#F3E5C8" strokeWidth="0.8" />
+                        <circle cx="45" cy="40" r="8" fill="#FAF4E8" fillOpacity="0.2" stroke="#F3E5C8" strokeWidth="0.8" />
                       </svg>
                     </div>
 
                     {/* NỘI DUNG TẤM THIỆP CHÍNH */}
-                    <div className="relative z-10 px-4 pt-3 pb-2 text-center flex-1 flex flex-col justify-center items-center">
-                      {/* HEADER TEXT */}
-                      <p className="text-[9px] uppercase tracking-[0.28em] text-stone-500 font-semibold mb-2 font-sans">
-                        THE WEDDING OF
-                      </p>
-
-                      {/* TÊN CÔ DÂU & CHÚ RỂ */}
-                      <div className="my-1">
-                        <h2 className="font-serif text-2xl sm:text-[28px] font-bold text-[#181716] tracking-tight leading-tight">
-                          {names.split("&")[0]?.trim() || "Sarah"}
-                        </h2>
-                        <span className="font-serif italic text-lg text-[#C59E58] block my-0.5">&</span>
-                        <h2 className="font-serif text-2xl sm:text-[28px] font-bold text-[#181716] tracking-tight leading-tight">
-                          {names.split("&")[1]?.trim() || "James"}
-                        </h2>
-                      </div>
-
-                      {/* SAVE THE DATE & NGÀY CƯỚI */}
-                      <div className="mt-2 space-y-0.5">
-                        <p className="text-[8px] uppercase tracking-[0.25em] text-stone-400 font-bold">
-                          SAVE THE DATE
+                    <div className="relative z-10 px-3 pt-2 pb-2 text-center flex-1 flex flex-col justify-center items-center">
+                      <div className="w-full bg-white/75 backdrop-blur-md rounded-2xl py-3 px-2 border border-white/60 shadow-lg flex flex-col items-center">
+                        {/* HEADER TEXT */}
+                        <p className="text-[9px] uppercase tracking-[0.28em] text-stone-600 font-bold mb-1 font-sans">
+                          THE WEDDING OF
                         </p>
-                        <p className="text-xs font-serif font-bold text-stone-800 tracking-wider">
-                          20 . 10 . 2025
-                        </p>
+
+                        {/* TÊN CÔ DÂU & CHÚ RỂ */}
+                        <div className="my-0.5">
+                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-[#181716] tracking-tight leading-tight">
+                            {names.split("&")[0]?.trim() || "Sarah"}
+                          </h2>
+                          <span className="font-serif italic text-base text-[#C59E58] block my-0.5">&</span>
+                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-[#181716] tracking-tight leading-tight">
+                            {names.split("&")[1]?.trim() || "James"}
+                          </h2>
+                        </div>
+
+                        {/* SAVE THE DATE & NGÀY CƯỚI */}
+                        <div className="mt-1 space-y-0.5">
+                          <p className="text-[8px] uppercase tracking-[0.25em] text-stone-500 font-bold">
+                            SAVE THE DATE
+                          </p>
+                          <p className="text-xs font-serif font-bold text-stone-900 tracking-wider">
+                            20 . 10 . 2025
+                          </p>
+                        </div>
                       </div>
 
                       {/* WHITE SILK RIBBON THẮT NƠ NGANG VỚI GOLD WAX SEAL */}
-                      <div className="relative w-full my-3 flex items-center justify-center">
+                      <div className="relative w-full my-2.5 flex items-center justify-center">
                         {/* Silk Ribbon Band */}
-                        <div className="w-full h-8 bg-gradient-to-r from-transparent via-[#F7F2EA] to-transparent shadow-xs flex items-center justify-center relative">
+                        <div className="w-full h-8 bg-gradient-to-r from-transparent via-[#F7F2EA]/90 to-transparent shadow-xs flex items-center justify-center relative">
                           <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-[#E8DEC8] to-transparent" />
                           
                           {/* Ribbon Fold / Drapes */}
-                          <div className="absolute inset-x-8 top-0 bottom-0 bg-white/70 backdrop-blur-2xs shadow-2xs border-y border-[#EFE8DD]" />
+                          <div className="absolute inset-x-8 top-0 bottom-0 bg-white/80 backdrop-blur-xs shadow-2xs border-y border-[#EFE8DD]" />
                         </div>
 
                         {/* 3D GOLD METALLIC WAX SEAL STAMP */}
@@ -1005,12 +1023,12 @@ export default function CardViteHomePage() {
                           whileTap={{ scale: 0.95 }}
                           onClick={handleHeroCardClick}
                           title="Bấm để mở phong bì / dấu sáp"
-                          className="absolute z-20 w-14 h-14 rounded-full bg-gradient-to-br from-[#E8C87A] via-[#C99C48] to-[#996F20] shadow-[0_6px_16px_rgba(153,111,32,0.4),inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)] border-2 border-[#FAF1DA] flex items-center justify-center cursor-pointer transition-transform"
+                          className="absolute z-20 w-13 h-13 rounded-full bg-gradient-to-br from-[#E8C87A] via-[#C99C48] to-[#996F20] shadow-[0_6px_16px_rgba(153,111,32,0.5),inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)] border-2 border-[#FAF1DA] flex items-center justify-center cursor-pointer transition-transform"
                         >
                           {/* Wax Edge Imperfection Detail */}
-                          <div className="w-10 h-10 rounded-full border border-[#FAF1DA]/60 flex items-center justify-center shadow-inner">
+                          <div className="w-9 h-9 rounded-full border border-[#FAF1DA]/60 flex items-center justify-center shadow-inner">
                             {/* Olive Branch / Botanical Emblem */}
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M12 2C12 2 11 8 6 10C1 12 4 17 4 17C4 17 9 14 11 9C12 7 12 2 12 2Z" fill="#FFEFC7" fillOpacity="0.9" />
                               <path d="M12 2C12 2 13 8 18 10C23 12 20 17 20 17C20 17 15 14 13 9C12 7 12 2 12 2Z" fill="#FFEFC7" fillOpacity="0.9" />
                               <path d="M12 2V22" stroke="#FFEFC7" strokeWidth="1.5" strokeLinecap="round" />
@@ -1030,7 +1048,7 @@ export default function CardViteHomePage() {
                     </div>
 
                     {/* BOTTOM BAR: CARDVITE VIDEO SHOWCASE & MUSIC BUTTON */}
-                    <div className="relative z-20 px-4 py-3 bg-gradient-to-t from-white/90 via-white/70 to-transparent border-t border-[#F0EAE1]/80 flex items-center justify-between">
+                    <div className="relative z-20 px-4 py-2.5 bg-white/85 backdrop-blur-md border-t border-white/50 flex items-center justify-between shadow-xs">
                       <div className="text-left">
                         <span className="text-[8px] uppercase font-bold tracking-widest text-[#BE944E] block">
                           CARDVITE VIDEO SHOWCASE
