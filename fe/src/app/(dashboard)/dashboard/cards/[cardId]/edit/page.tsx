@@ -106,14 +106,25 @@ const TEMPLATE_PRESETS = [
 ];
 
 const MUSIC_OPTIONS = [
-  { title: "Lễ Đường (Wedding Anthem)", artist: "Nhạc Cưới Tình Yêu", duration: "3:45", src: "/music/le-duong.mp3" },
-  { title: "Until I Found You", artist: "Stephen Sanchez", duration: "2:57", src: "/music/until-i-found-you.mp3" },
-  { title: "I Do", artist: "911 Band", duration: "3:24", src: "/music/i-do.mp3" },
-  { title: "A Thousand Years", artist: "Christina Perri", duration: "4:45", src: "/music/a-thousand-years.mp3" },
-  { title: "Perfect", artist: "Ed Sheeran", duration: "4:23", src: "/music/perfect.mp3" },
-  { title: "Beautiful in White (Violin & Piano Solo)", artist: "Shane Filan (Westlife)", duration: "3:30", src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=wedding-violin-piano-10874.mp3" },
-  { title: "Marry You (Acoustic Guitar Romance)", artist: "Bruno Mars Tribute", duration: "3:15", src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=romantic-acoustic-guitar-wedding-122718.mp3" },
-  { title: "Sweet Love Story (Cello & Piano)", artist: "Romantic Wedding Orchestra", duration: "3:20", src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=sweet-love-story-piano-18237.mp3" },
+  // NHẠC CƯỚI VIỆT NAM
+  { title: "Ngày Đầu Tiên", artist: "Đức Phúc", duration: "3:40", category: "VN", badge: "Hot Nhất", src: "/music/ngay-dau-tien.mp3" },
+  { title: "Lễ Đường (Wedding Anthem)", artist: "Nhạc Cưới Tình Yêu", duration: "3:45", category: "VN", badge: "Yêu Thích", src: "/music/le-duong.mp3" },
+  { title: "Một Nhà", artist: "Da LAB", duration: "3:18", category: "VN", badge: "Vui Tươi", src: "/music/mot-nha.mp3" },
+  { title: "Cưới Nhau Đi (Yes I Do)", artist: "Bùi Anh Tuấn & Hiền Hồ", duration: "3:48", category: "VN", badge: "Lãng Mạn", src: "/music/i-do.mp3" },
+  { title: "Hơn Cả Yêu", artist: "Đức Phúc", duration: "4:05", category: "VN", badge: "Ngọt Ngào", src: "/music/until-i-found-you.mp3" },
+  { title: "Ánh Nắng Của Anh", artist: "Đức Phúc", duration: "4:20", category: "VN", badge: "Acoustic", src: "/music/perfect.mp3" },
+  { title: "Cầu Hôn", artist: "Văn Mai Hương", duration: "3:55", category: "VN", badge: "Tình Cảm", src: "/music/a-thousand-years.mp3" },
+  { title: "Ta Là Của Nhau", artist: "Đông Nhi & Ông Cao Thắng", duration: "4:12", category: "VN", badge: "Hạnh Phúc", src: "/music/i-do.mp3" },
+  // NHẠC CƯỚI QUỐC TẾ
+  { title: "Beautiful In White", artist: "Shane Filan (Westlife)", duration: "3:30", category: "INT", badge: "Hoàng Gia", src: "/music/beautiful-in-white.mp3" },
+  { title: "Everytime We Touch (Slow Acoustic)", artist: "Cascada Acoustic", duration: "3:16", category: "INT", badge: "Lãng Mạn", src: "/music/everytime-we-touch.mp3" },
+  { title: "Like My Father", artist: "Jax", duration: "3:02", category: "INT", badge: "Ý Nghĩa", src: "/music/like-my-father.mp3" },
+  { title: "Until I Found You", artist: "Stephen Sanchez", duration: "2:57", category: "INT", badge: "Trending", src: "/music/until-i-found-you.mp3" },
+  { title: "I Do", artist: "911 Band", duration: "3:24", category: "INT", badge: "Kinh Điển", src: "/music/i-do.mp3" },
+  { title: "A Thousand Years", artist: "Christina Perri", duration: "4:45", category: "INT", badge: "Bất Hủ", src: "/music/a-thousand-years.mp3" },
+  { title: "Perfect", artist: "Ed Sheeran", duration: "4:23", category: "INT", badge: "Du Dương", src: "/music/perfect.mp3" },
+  { title: "Marry You (Acoustic Guitar Romance)", artist: "Bruno Mars Tribute", duration: "3:15", category: "INT", badge: "Rộn Ràng", src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=romantic-acoustic-guitar-wedding-122718.mp3" },
+  { title: "Sweet Love Story (Cello & Piano)", artist: "Romantic Wedding Orchestra", duration: "3:20", category: "INT", badge: "Quý Phái", src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=sweet-love-story-piano-18237.mp3" },
 ];
 
 const COLOR_PRESETS = [

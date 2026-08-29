@@ -112,52 +112,142 @@ const TEMPLATE_PRESETS = [
 
 // Danh sách Nhạc Nền Cưới Có Sẵn
 const MUSIC_OPTIONS = [
+  // NHẠC CƯỚI VIỆT NAM
+  {
+    title: "Ngày Đầu Tiên",
+    artist: "Đức Phúc",
+    duration: "3:40",
+    category: "VN",
+    badge: "Hot Nhất",
+    src: "/music/ngay-dau-tien.mp3",
+  },
   {
     title: "Lễ Đường (Wedding Anthem)",
     artist: "Nhạc Cưới Tình Yêu",
     duration: "3:45",
+    category: "VN",
+    badge: "Yêu Thích",
     src: "/music/le-duong.mp3",
+  },
+  {
+    title: "Một Nhà",
+    artist: "Da LAB",
+    duration: "3:18",
+    category: "VN",
+    badge: "Vui Tươi",
+    src: "/music/mot-nha.mp3",
+  },
+  {
+    title: "Cưới Nhau Đi (Yes I Do)",
+    artist: "Bùi Anh Tuấn & Hiền Hồ",
+    duration: "3:48",
+    category: "VN",
+    badge: "Lãng Mạn",
+    src: "/music/i-do.mp3",
+  },
+  {
+    title: "Hơn Cả Yêu",
+    artist: "Đức Phúc",
+    duration: "4:05",
+    category: "VN",
+    badge: "Ngọt Ngào",
+    src: "/music/until-i-found-you.mp3",
+  },
+  {
+    title: "Ánh Nắng Của Anh",
+    artist: "Đức Phúc",
+    duration: "4:20",
+    category: "VN",
+    badge: "Acoustic",
+    src: "/music/perfect.mp3",
+  },
+  {
+    title: "Cầu Hôn",
+    artist: "Văn Mai Hương",
+    duration: "3:55",
+    category: "VN",
+    badge: "Tình Cảm",
+    src: "/music/a-thousand-years.mp3",
+  },
+  {
+    title: "Ta Là Của Nhau",
+    artist: "Đông Nhi & Ông Cao Thắng",
+    duration: "4:12",
+    category: "VN",
+    badge: "Hạnh Phúc",
+    src: "/music/i-do.mp3",
+  },
+  // NHẠC CƯỚI QUỐC TẾ
+  {
+    title: "Beautiful In White",
+    artist: "Shane Filan (Westlife)",
+    duration: "3:30",
+    category: "INT",
+    badge: "Hoàng Gia",
+    src: "/music/beautiful-in-white.mp3",
+  },
+  {
+    title: "Everytime We Touch (Slow Acoustic)",
+    artist: "Cascada Acoustic",
+    duration: "3:16",
+    category: "INT",
+    badge: "Lãng Mạn",
+    src: "/music/everytime-we-touch.mp3",
+  },
+  {
+    title: "Like My Father",
+    artist: "Jax",
+    duration: "3:02",
+    category: "INT",
+    badge: "Ý Nghĩa",
+    src: "/music/like-my-father.mp3",
   },
   {
     title: "Until I Found You",
     artist: "Stephen Sanchez",
     duration: "2:57",
+    category: "INT",
+    badge: "Trending",
     src: "/music/until-i-found-you.mp3",
   },
   {
     title: "I Do",
     artist: "911 Band",
     duration: "3:24",
+    category: "INT",
+    badge: "Kinh Điển",
     src: "/music/i-do.mp3",
   },
   {
     title: "A Thousand Years",
     artist: "Christina Perri",
     duration: "4:45",
+    category: "INT",
+    badge: "Bất Hủ",
     src: "/music/a-thousand-years.mp3",
   },
   {
     title: "Perfect",
     artist: "Ed Sheeran",
     duration: "4:23",
+    category: "INT",
+    badge: "Du Dương",
     src: "/music/perfect.mp3",
-  },
-  {
-    title: "Beautiful in White (Violin & Piano Solo)",
-    artist: "Shane Filan (Westlife)",
-    duration: "3:30",
-    src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=wedding-violin-piano-10874.mp3",
   },
   {
     title: "Marry You (Acoustic Guitar Romance)",
     artist: "Bruno Mars Tribute",
     duration: "3:15",
+    category: "INT",
+    badge: "Rộn Ràng",
     src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=romantic-acoustic-guitar-wedding-122718.mp3",
   },
   {
     title: "Sweet Love Story (Cello & Piano)",
     artist: "Romantic Wedding Orchestra",
     duration: "3:20",
+    category: "INT",
+    badge: "Quý Phái",
     src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=sweet-love-story-piano-18237.mp3",
   },
 ];
@@ -286,6 +376,7 @@ function CardBuilderContent() {
 
   // Background Music Studio
   const [selectedMusicSrc, setSelectedMusicSrc] = useState(MUSIC_OPTIONS[0].src);
+  const [musicCategoryFilter, setMusicCategoryFilter] = useState<"ALL" | "VN" | "INT">("ALL");
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [testPlayingSrc, setTestPlayingSrc] = useState<string | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -1337,7 +1428,7 @@ function CardBuilderContent() {
                 </div>
 
                 {/* Nhạc nền */}
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
                       5. Kho nhạc nền tuyển chọn
@@ -1353,13 +1444,58 @@ function CardBuilderContent() {
                     </label>
                   </div>
 
-                  <div className="space-y-2">
-                    {MUSIC_OPTIONS.map((track) => {
+                  {/* BỘ LỌC PHÂN LOẠI NHẠC */}
+                  <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-xl border border-stone-200 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setMusicCategoryFilter("ALL")}
+                      className={`flex-1 py-1.5 rounded-lg font-bold text-center transition cursor-pointer ${
+                        musicCategoryFilter === "ALL"
+                          ? "bg-white text-stone-900 shadow-2xs"
+                          : "text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      Tất Cả ({MUSIC_OPTIONS.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMusicCategoryFilter("VN")}
+                      className={`flex-1 py-1.5 rounded-lg font-bold text-center transition cursor-pointer flex items-center justify-center gap-1 ${
+                        musicCategoryFilter === "VN"
+                          ? "bg-white text-[#966E29] shadow-2xs"
+                          : "text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      <span>🇻🇳 Nhạc Việt</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+                        {MUSIC_OPTIONS.filter((m) => m.category === "VN").length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMusicCategoryFilter("INT")}
+                      className={`flex-1 py-1.5 rounded-lg font-bold text-center transition cursor-pointer flex items-center justify-center gap-1 ${
+                        musicCategoryFilter === "INT"
+                          ? "bg-white text-indigo-700 shadow-2xs"
+                          : "text-stone-500 hover:text-stone-800"
+                      }`}
+                    >
+                      <span>🌍 Quốc Tế</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-800">
+                        {MUSIC_OPTIONS.filter((m) => m.category === "INT").length}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+                    {MUSIC_OPTIONS.filter(
+                      (track) => musicCategoryFilter === "ALL" || track.category === musicCategoryFilter
+                    ).map((track) => {
                       const isSelected = selectedMusicSrc === track.src;
                       const isPlayingThis = testPlayingSrc === track.src;
                       return (
                         <div
-                          key={track.src}
+                          key={track.title}
                           className={`p-3 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
                             isSelected
                               ? "bg-amber-50/60 border-[#BE944E] ring-2 ring-[#BE944E]/20 shadow-xs"
@@ -1367,14 +1503,14 @@ function CardBuilderContent() {
                           }`}
                           onClick={() => setSelectedMusicSrc(track.src)}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleToggleTestMusic(track.src);
                               }}
-                              className={`w-8 h-8 rounded-full flex items-center justify-center transition ${
+                              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition ${
                                 isPlayingThis
                                   ? "bg-[#BE944E] text-white"
                                   : "bg-stone-100 text-stone-700 hover:bg-stone-200"
@@ -1384,13 +1520,26 @@ function CardBuilderContent() {
                               {isPlayingThis ? <Pause className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 ml-0.5" />}
                             </button>
 
-                            <div>
-                              <h4 className="text-xs font-bold text-stone-900">{track.title}</h4>
-                              <span className="text-[10px] text-stone-500">{track.artist}</span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="text-xs font-bold text-stone-900 truncate">{track.title}</h4>
+                                {track.badge && (
+                                  <span
+                                    className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full uppercase tracking-wider shrink-0 ${
+                                      track.category === "VN"
+                                        ? "bg-amber-100 text-amber-800"
+                                        : "bg-indigo-100 text-indigo-800"
+                                    }`}
+                                  >
+                                    {track.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-stone-500 block truncate">{track.artist}</span>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 shrink-0">
                             <span className="text-[10px] font-mono text-stone-400">{track.duration}</span>
                             <div
                               className={`w-4 h-4 rounded-full border flex items-center justify-center ${
