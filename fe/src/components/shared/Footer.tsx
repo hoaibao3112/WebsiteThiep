@@ -14,12 +14,9 @@ export const Footer: React.FC = () => {
         {/* TOP ROW: BRAND & SOCIAL / CONTACT LINKS */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-[#EFE9E1]/80">
           {/* BRAND WITH LOGO */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center group" title="Trang Chủ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo CardVite" className="h-9 w-auto object-contain transition-transform group-hover:scale-105" />
-            <span className="text-2xl font-serif font-bold text-[#181716] group-hover:text-[#BE944E] transition">
-              CardVite
-            </span>
+            <img src="/images/logo.png" alt="Logo" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
           </Link>
 
           {/* CONTACT & SOCIAL BUTTONS */}

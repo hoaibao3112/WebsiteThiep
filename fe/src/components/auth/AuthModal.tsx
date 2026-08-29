@@ -346,10 +346,7 @@ export function AuthModal() {
           {/* HEADER BRAND */}
           <div className="text-center mb-5 space-y-1 flex flex-col items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo CardVite" className="h-10 w-auto object-contain mb-1" />
-            <h2 className="text-2xl font-serif font-bold text-[#2A231C] tracking-tight">
-              CardVite
-            </h2>
+            <img src="/images/logo.png" alt="Logo" className="h-12 w-auto object-contain mb-1" />
             <p className="text-xs text-stone-500">
               Nền tảng tạo thiệp cưới & sự kiện trực tuyến cao cấp
             </p>

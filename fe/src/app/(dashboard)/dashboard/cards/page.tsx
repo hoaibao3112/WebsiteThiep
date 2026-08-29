@@ -65,14 +65,11 @@ export default function MyCardsPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex items-center gap-2.5 text-stone-700 hover:text-stone-900 transition group"
+              className="flex items-center text-stone-700 hover:text-stone-900 transition group"
               title="Về Trang Chủ"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/logo.png" alt="Logo CardVite" className="h-8 w-auto object-contain transition-transform group-hover:scale-105" />
-              <span className="font-serif font-bold text-lg text-stone-900 tracking-tight">
-                CardVite
-              </span>
+              <img src="/images/logo.png" alt="Logo" className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105" />
             </Link>
             <span className="text-stone-300">/</span>
             <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
