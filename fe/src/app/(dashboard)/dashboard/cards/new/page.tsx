@@ -130,6 +130,22 @@ const MUSIC_OPTIONS = [
     src: "/music/le-duong.mp3",
   },
   {
+    title: "Xin Má Rước Dâu",
+    artist: "Diệu Kiên",
+    duration: "3:16",
+    category: "VN",
+    badge: "Rộn Ràng",
+    src: "/music/xin-ma-ruoc-dau.mp3",
+  },
+  {
+    title: "Hơn Cả Yêu",
+    artist: "Đức Phúc",
+    duration: "4:05",
+    category: "VN",
+    badge: "Ngọt Ngào",
+    src: "/music/hon-ca-yeu.mp3",
+  },
+  {
     title: "Một Nhà",
     artist: "Da LAB",
     duration: "3:18",
@@ -144,14 +160,6 @@ const MUSIC_OPTIONS = [
     category: "VN",
     badge: "Lãng Mạn",
     src: "/music/i-do.mp3",
-  },
-  {
-    title: "Hơn Cả Yêu",
-    artist: "Đức Phúc",
-    duration: "4:05",
-    category: "VN",
-    badge: "Ngọt Ngào",
-    src: "/music/until-i-found-you.mp3",
   },
   {
     title: "Ánh Nắng Của Anh",
@@ -179,12 +187,28 @@ const MUSIC_OPTIONS = [
   },
   // NHẠC CƯỚI QUỐC TẾ
   {
+    title: "Die With A Smile",
+    artist: "Lady Gaga & Bruno Mars",
+    duration: "4:11",
+    category: "INT",
+    badge: "Siêu Hit",
+    src: "/music/die-with-a-smile.mp3",
+  },
+  {
     title: "Beautiful In White",
     artist: "Shane Filan (Westlife)",
     duration: "3:30",
     category: "INT",
     badge: "Hoàng Gia",
     src: "/music/beautiful-in-white.mp3",
+  },
+  {
+    title: "Marry You",
+    artist: "Bruno Mars",
+    duration: "3:50",
+    category: "INT",
+    badge: "Rộn Ràng",
+    src: "/music/marry-you.mp3",
   },
   {
     title: "Everytime We Touch (Slow Acoustic)",
@@ -233,14 +257,6 @@ const MUSIC_OPTIONS = [
     category: "INT",
     badge: "Du Dương",
     src: "/music/perfect.mp3",
-  },
-  {
-    title: "Marry You (Acoustic Guitar Romance)",
-    artist: "Bruno Mars Tribute",
-    duration: "3:15",
-    category: "INT",
-    badge: "Rộn Ràng",
-    src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=romantic-acoustic-guitar-wedding-122718.mp3",
   },
   {
     title: "Sweet Love Story (Cello & Piano)",
