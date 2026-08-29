@@ -36,29 +36,7 @@ export default function MyCardsPage() {
     if (res.success && Array.isArray(res.data)) {
       setCards(res.data);
     } else {
-      // Dữ liệu mẫu demo nếu chưa kết nối backend
-      setCards([
-        {
-          id: "demo-card-1",
-          slug: "quan-va-ha-wedding",
-          cardCategory: "WEDDING",
-          status: "ACTIVE",
-          plan: { code: "VIP", name: "Gói VIP" },
-          viewCount: 1420,
-          createdAt: new Date(),
-          _count: { rsvpResponses: 86, wishes: 42, guests: 120 },
-        },
-        {
-          id: "demo-card-2",
-          slug: "thoi-noi-be-dau",
-          cardCategory: "NEWBORN",
-          status: "ACTIVE",
-          plan: { code: "BASIC", name: "Gói Tiêu Chuẩn" },
-          viewCount: 380,
-          createdAt: new Date(),
-          _count: { rsvpResponses: 25, wishes: 18, guests: 35 },
-        },
-      ]);
+      setCards([]);
     }
     setLoading(false);
   };

@@ -47,8 +47,9 @@ export default function RsvpDashboardPage() {
   }, [cardId]);
 
   const handleExportExcel = () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     window.open(
-      `http://localhost:5000/api/cards/${cardId}/export-excel`,
+      `${apiBase}/cards/${cardId}/export-excel`,
       "_blank"
     );
   };
