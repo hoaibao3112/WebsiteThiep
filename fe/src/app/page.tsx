@@ -943,8 +943,23 @@ export default function CardViteHomePage() {
                   {/* Glossy Screen Reflection */}
                   <div className="absolute inset-0 rounded-[44px] bg-gradient-to-tr from-transparent via-white/25 to-transparent pointer-events-none z-30" />
 
-                  {/* SCREEN DISPLAY - WEDDING CARD FINE ART CANVAS */}
+                  {/* SCREEN DISPLAY - WEDDING CARD FINE ART CANVAS WITH BACKGROUND VIDEO */}
                   <div className="w-full h-full bg-[#FCFAF6] rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between border border-[#F0EAE1]">
+                    {/* CINEMATIC WEDDING VIDEO BACKGROUND LOOP */}
+                    <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                      <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover scale-110 filter brightness-[1.03] contrast-[0.98]"
+                      >
+                        <source src="/hero-wedding.webm" type="video/webm" />
+                      </video>
+                      {/* Frosted Champagne Luxury Soft Overlay for typography contrast & elegance */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-[#FCFAF6]/60 to-white/75 backdrop-blur-[1px]" />
+                    </div>
+
                     {/* DYNAMIC ISLAND */}
                     <div className="relative z-20 pt-2.5 px-6 flex items-center justify-center">
                       <div className="w-18 h-4 bg-black rounded-full mx-auto shadow-sm flex items-center justify-end pr-1.5">
@@ -953,7 +968,7 @@ export default function CardViteHomePage() {
                     </div>
 
                     {/* VINTAGE FLORAL ACCENT (TOP RIGHT) */}
-                    <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-40">
+                    <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none opacity-40 z-10">
                       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M100 0C80 20 60 5 40 25C20 45 35 65 15 85C5 95 0 100 0 100" stroke="#C59E58" strokeWidth="1.2" />
                         <circle cx="70" cy="20" r="10" fill="#F7EFE3" stroke="#C59E58" strokeWidth="0.8" />
