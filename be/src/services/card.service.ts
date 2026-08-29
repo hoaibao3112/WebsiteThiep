@@ -60,6 +60,21 @@ export class CardService {
       }
 
       return prisma.$transaction(async (tx) => {
+        // Kiểm tra nếu đổi slug mà slug mới đã bị thiệp khác sử dụng
+        if (cardSettings.slug !== existingCard.slug) {
+          const slugConflict = await tx.card.findFirst({
+            where: {
+              slug: cardSettings.slug,
+              id: { not: cardId },
+            },
+          });
+          if (slugConflict) {
+            throw new Error(
+              `Đường dẫn "${cardSettings.slug}" đã được sử dụng bởi một thiệp khác. Vui lòng chọn đường dẫn khác.`
+            );
+          }
+        }
+
         // Cập nhật card
         const updated = await tx.card.update({
           where: { id: cardId },

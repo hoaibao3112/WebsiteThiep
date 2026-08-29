@@ -33,6 +33,9 @@ export async function dispatchTelegramNotification(
       ? "❌ RẤT TIẾC KHÔNG THỂ ĐẾN"
       : "❓ CHƯA CHẮC CHẮN";
 
+  const appUrl = (process.env.APP_URL || "https://cardvite.vn").replace(/\/$/, "");
+  const cardLink = `${appUrl}/thiep/${data.cardSlug}`;
+
   const message = `
 💌 <b>CÓ PHẢN HỒI RSVP MỚI!</b>
 ----------------------------------
@@ -41,9 +44,9 @@ export async function dispatchTelegramNotification(
 🎯 <b>Trạng thái:</b> ${statusIcon}
 👥 <b>Số người:</b> ${data.guestCount} người
 💬 <b>Lời nhắn:</b> ${data.note || "Không có"}
-🔗 <b>Link thiệp:</b> /thiep/${data.cardSlug}
+🔗 <b>Link thiệp:</b> <a href="${cardLink}">${cardLink}</a>
 ----------------------------------
-<i>Hệ thống quản lý thiệp cưới online</i>
+<i>Hệ thống quản lý thiệp cưới online CardVite</i>
   `.trim();
 
   try {

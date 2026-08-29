@@ -161,11 +161,17 @@ export class OrderService {
         },
       });
 
-      // Kích hoạt thời hạn gói cho Card
+      // Kích hoạt / Gia hạn thời hạn gói cho Card (Cộng dồn nếu thiệp vẫn còn hạn)
       const durationDays = order.plan.durationDays;
-      const expiredAt = durationDays
-        ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000)
-        : null;
+      let expiredAt: Date | null = null;
+
+      if (durationDays) {
+        const now = new Date();
+        const currentExpiredAt = order.card.expiredAt;
+        const baseDate =
+          currentExpiredAt && currentExpiredAt > now ? currentExpiredAt : now;
+        expiredAt = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
+      }
 
       await tx.card.update({
         where: { id: order.cardId },

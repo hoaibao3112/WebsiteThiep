@@ -21,13 +21,17 @@ export class GuestImportService {
   }
 
   /**
-   * Thêm danh sách khách mời hàng loạt (Bulk Insert)
+   * Thêm danh sách khách mời hàng loạt (Bulk Insert tối ưu)
    */
   static async importGuests(
     userId: string,
     cardId: string,
     guests: GuestInputItem[]
   ) {
+    if (!guests || guests.length === 0) {
+      return [];
+    }
+
     const card = await prisma.card.findFirst({
       where: { id: cardId, userId },
       select: { id: true, slug: true },
@@ -35,26 +39,49 @@ export class GuestImportService {
 
     if (!card) throw new Error("Thiệp không tồn tại hoặc bạn không có quyền");
 
-    const createdGuests = [];
-    for (const g of guests) {
-      const guestCode = this.generateGuestCode();
-      const customUrl = `/thiep/${card.slug}?g=${guestCode}`;
+    const appUrl = (process.env.APP_URL || "https://cardvite.vn").replace(/\/$/, "");
 
-      const created = await prisma.guest.create({
-        data: {
-          cardId,
-          guestCode,
-          fullName: g.fullName.trim(),
-          salutation: g.salutation?.trim() || "Bạn",
-          group: g.group?.trim(),
-          phone: g.phone?.trim(),
-          customUrl,
-        },
-      });
-      createdGuests.push(created);
-    }
+    // 1. Lấy danh sách guestCode hiện có của thiệp để chống trùng lặp
+    const existingGuests = await prisma.guest.findMany({
+      where: { cardId },
+      select: { guestCode: true },
+    });
+    const usedCodes = new Set(existingGuests.map((g) => g.guestCode));
 
-    return createdGuests;
+    // 2. Sinh mã code độc bản cho từng khách
+    const guestRecords = guests.map((g) => {
+      let guestCode = this.generateGuestCode();
+      while (usedCodes.has(guestCode)) {
+        guestCode = this.generateGuestCode();
+      }
+      usedCodes.add(guestCode);
+
+      const customUrl = `${appUrl}/thiep/${card.slug}?g=${guestCode}`;
+
+      return {
+        cardId,
+        guestCode,
+        fullName: g.fullName.trim(),
+        salutation: g.salutation?.trim() || "Bạn",
+        group: g.group?.trim() || null,
+        phone: g.phone?.trim() || null,
+        customUrl,
+      };
+    });
+
+    // 3. Thực hiện Bulk Insert trong 1 query duy nhất
+    await prisma.guest.createMany({
+      data: guestRecords,
+    });
+
+    // 4. Trả về danh sách khách mời vừa tạo
+    return prisma.guest.findMany({
+      where: {
+        cardId,
+        guestCode: { in: guestRecords.map((r) => r.guestCode) },
+      },
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   /**

@@ -106,7 +106,14 @@ export class ExportService {
     };
     guestHeaderRow.alignment = { vertical: "middle", horizontal: "center" };
 
+    const appUrl = (process.env.APP_URL || "https://cardvite.vn").replace(/\/$/, "");
+
     card.guests.forEach((g, idx) => {
+      let finalUrl = g.customUrl;
+      if (!finalUrl || finalUrl.startsWith("/")) {
+        finalUrl = `${appUrl}${finalUrl || `/thiep/${card.slug}?g=${g.guestCode}`}`;
+      }
+
       guestSheet.addRow({
         index: idx + 1,
         guestCode: g.guestCode,
@@ -114,7 +121,7 @@ export class ExportService {
         fullName: g.fullName,
         group: g.group || "Chung",
         phone: g.phone || "---",
-        customUrl: g.customUrl || `/thiep/${card.slug}?g=${g.guestCode}`,
+        customUrl: finalUrl,
       });
     });
 
