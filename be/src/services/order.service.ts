@@ -49,9 +49,9 @@ export class OrderService {
     });
 
     // 3. Sinh VietQR động chuẩn Napas 247
-    const bankCode = process.env.BANK_CODE || "MB";
-    const bankAccount = process.env.BANK_ACCOUNT || "0988888888";
-    const bankAccountName = process.env.BANK_ACCOUNT_NAME || "NGUYEN VAN A";
+    const bankCode = process.env.BANK_CODE || "VCB";
+    const bankAccount = process.env.BANK_ACCOUNT || "1034829596";
+    const bankAccountName = process.env.BANK_ACCOUNT_NAME || "TRAN HOAI BAO";
 
     const qrUrl = generateVietQrUrl({
       bankCode,

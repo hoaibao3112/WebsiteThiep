@@ -9,9 +9,12 @@ import {
   MapPin,
   ArrowRight,
   CheckCircle2,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { ApiClient } from "@/lib/api";
 
 export default function ConciergePage() {
   const { t } = useLanguage();
@@ -22,17 +25,46 @@ export default function ConciergePage() {
   const [favoriteTemplate, setFavoriteTemplate] = useState("Không chọn");
   const [notes, setNotes] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFullName("");
-      setPhone("");
-      setEmail("");
-      setNotes("");
-    }, 4000);
+    if (!fullName.trim() || !phone.trim()) {
+      setErrorMsg("Vui lòng điền đầy đủ họ tên và số điện thoại liên hệ.");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const res = await ApiClient.request<{ success: boolean; message: string }>("/concierge/submit", {
+        method: "POST",
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          servicePackage,
+          favoriteTemplate,
+          notes: notes.trim(),
+        }),
+      });
+
+      if (res.success) {
+        setSubmitted(true);
+        setFullName("");
+        setPhone("");
+        setEmail("");
+        setNotes("");
+      } else {
+        setErrorMsg(res.message || "Không thể gửi yêu cầu lúc này. Vui lòng thử lại.");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Lỗi kết nối máy chủ. Vui lòng thử lại sau.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -262,14 +294,32 @@ export default function ConciergePage() {
                   />
                 </div>
 
+                {/* ERROR ALERT */}
+                {errorMsg && (
+                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                    <span>{errorMsg}</span>
+                  </div>
+                )}
+
                 {/* SUBMIT BUTTON */}
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full py-3.5 rounded-xl bg-[#7D6331] hover:bg-[#685226] text-white text-xs font-bold uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    disabled={loading}
+                    className="w-full py-3.5 rounded-xl bg-[#7D6331] hover:bg-[#685226] disabled:bg-stone-400 text-white text-xs font-bold uppercase tracking-widest transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
                   >
-                    <span>{t("btnSubmitConcierge")}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Đang gửi yêu cầu...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{t("btnSubmitConcierge")}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

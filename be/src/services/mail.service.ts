@@ -96,7 +96,6 @@ export class MailService {
       });
       console.log(`[MailService] Đã gửi OTP thành công tới ${email}`);
     } else {
-      // Fallback log chỉ được phép chạy khi không phải production
       if (!isProduction) {
         console.log(`\n======================================================`);
         console.log(`[DEV OTP FALLBACK] Gửi tới: ${email}`);
@@ -106,4 +105,114 @@ export class MailService {
       }
     }
   }
+
+  /**
+   * Gửi thông báo đăng ký thuê thiết kế riêng (Concierge) về Gmail của Admin/Chủ website
+   */
+  static async sendConciergeBookingEmail(data: {
+    fullName: string;
+    phone: string;
+    email?: string;
+    servicePackage?: string;
+    favoriteTemplate?: string;
+    notes?: string;
+  }): Promise<void> {
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || process.env.SMTP_USER || "tranhaobao3112004@gmail.com";
+    const subject = `[CardVite Concierge] Khách hàng mới đăng ký thuê thiết kế: ${data.fullName} (${data.phone})`;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #FAF7F2; margin: 0; padding: 25px 15px; color: #181716; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; padding: 35px 30px; border: 1px solid #EFE9E1; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+          .header { text-align: center; border-bottom: 2px solid #F2E8D7; padding-bottom: 20px; margin-bottom: 25px; }
+          .logo { font-family: Georgia, serif; font-size: 26px; font-weight: bold; color: #8C6424; letter-spacing: 1px; }
+          .badge { display: inline-block; background: #FFF4DC; color: #8C6424; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 20px; margin-top: 8px; border: 1px solid #E6D0A6; }
+          .title { font-size: 18px; font-weight: 700; color: #181716; margin: 15px 0 5px 0; text-align: center; }
+          .table-info { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          .table-info td { padding: 12px 14px; border-bottom: 1px solid #F5EFE6; font-size: 13px; }
+          .table-info td.label { font-weight: 600; color: #666666; width: 35%; background: #FAF7F2; border-radius: 8px 0 0 8px; }
+          .table-info td.value { font-weight: 700; color: #181716; }
+          .btn-group { text-align: center; margin-top: 30px; }
+          .btn-zalo { display: inline-block; background: #0068FF; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 12px 24px; border-radius: 30px; margin-right: 10px; }
+          .btn-phone { display: inline-block; background: #2D5A3B; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 13px; padding: 12px 24px; border-radius: 30px; }
+          .footer { font-size: 11px; color: #999999; text-align: center; margin-top: 30px; border-top: 1px solid #EFE9E1; padding-top: 15px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">CardVite Concierge</div>
+            <div class="badge">🔔 YÊU CẦU THIẾT KẾ RIÊNG MỚI</div>
+            <div class="title">Thông Tin Khách Hàng Đăng Ký</div>
+          </div>
+
+          <table class="table-info">
+            <tr>
+              <td class="label">👤 Họ và Tên:</td>
+              <td class="value">${data.fullName}</td>
+            </tr>
+            <tr>
+              <td class="label">📞 Số điện thoại / Zalo:</td>
+              <td class="value" style="color: #0068FF; font-size: 15px;">${data.phone}</td>
+            </tr>
+            <tr>
+              <td class="label">✉️ Email:</td>
+              <td class="value">${data.email || "(Khách không cung cấp)"}</td>
+            </tr>
+            <tr>
+              <td class="label">📦 Gói Dịch Vụ:</td>
+              <td class="value" style="color: #8C6424;">${data.servicePackage || "Bespoke (Thiết Kế Độc Bản)"}</td>
+            </tr>
+            <tr>
+              <td class="label">🎨 Mẫu Yêu Thích:</td>
+              <td class="value">${data.favoriteTemplate || "Không chọn"}</td>
+            </tr>
+            <tr>
+              <td class="label">📝 Ghi Chú & Yêu Cầu:</td>
+              <td class="value" style="font-weight: 500; line-height: 1.5;">${data.notes || "(Không có ghi chú thêm)"}</td>
+            </tr>
+            <tr>
+              <td class="label">⏰ Thời Gian Gửi:</td>
+              <td class="value" style="font-size: 12px; color: #777777;">${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</td>
+            </tr>
+          </table>
+
+          <div class="btn-group">
+            <a href="https://zalo.me/${data.phone.replace(/[^0-9]/g, "")}" target="_blank" class="btn-zalo">💬 Nhắn Zalo Khách</a>
+            <a href="tel:${data.phone.replace(/[^0-9]/g, "")}" class="btn-phone">📞 Gọi Điện Ngay</a>
+          </div>
+
+          <div class="footer">
+            Hệ thống thông báo tự động từ CardVite Platform.<br/>
+            © ${new Date().getFullYear()} CardVite. All rights reserved.
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const transporter = getTransporter();
+    const fromAddress = process.env.SMTP_FROM || `"CardVite Concierge" <no-reply@cardvite.vn>`;
+
+    if (transporter) {
+      await transporter.sendMail({
+        from: fromAddress,
+        to: adminEmail,
+        subject,
+        html,
+      });
+      console.log(`[MailService] Đã gửi email thông báo Concierge thành công tới ${adminEmail}`);
+    } else {
+      console.log(`\n======================================================`);
+      console.log(`[DEV CONCIERGE NOTIFICATION] Gửi tới Admin: ${adminEmail}`);
+      console.log(`[KHÁCH HÀNG] ${data.fullName} - ${data.phone}`);
+      console.log(`[GÓI THIẾT KẾ] ${data.servicePackage}`);
+      console.log(`[GHI CHÚ] ${data.notes}`);
+      console.log(`======================================================\n`);
+    }
+  }
 }
+

@@ -8,6 +8,7 @@ import { OrderController } from "../controllers/order.controller";
 import { GuestController } from "../controllers/guest.controller";
 import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
+import { ConciergeController } from "../controllers/concierge.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 
 const upload = multer({
@@ -16,6 +17,9 @@ const upload = multer({
 });
 
 export const apiRouter = Router();
+
+// --- CONCIERGE / THIẾT KẾ RIÊNG ---
+apiRouter.post("/concierge/submit", ConciergeController.submit); // Đăng ký thuê thiết kế riêng (gửi email về Gmail admin)
 
 // --- AUTH ROUTES ---
 apiRouter.post("/auth/send-otp", AuthController.sendOtp); // Gửi mã OTP xác thực qua Email

@@ -49,10 +49,10 @@ export default function BillingPage() {
       setOrderData({
         orderCode: mockCode,
         amount: plan.price,
-        bankCode: "MB",
-        bankAccount: "0988888888",
-        bankAccountName: "NGUYEN VAN A",
-        qrUrl: `https://img.vietqr.io/image/MB-0988888888-compact2.png?amount=${plan.price}&addInfo=${mockCode}&accountName=NGUYEN%20VAN%20A`,
+        bankCode: "VCB",
+        bankAccount: "1034829596",
+        bankAccountName: "TRAN HOAI BAO",
+        qrUrl: `https://img.vietqr.io/image/VCB-1034829596-compact2.png?amount=${plan.price}&addInfo=${mockCode}&accountName=TRAN%20HOAI%20BAO`,
       });
     }
   };

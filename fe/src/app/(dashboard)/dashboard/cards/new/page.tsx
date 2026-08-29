@@ -399,9 +399,9 @@ function CardBuilderContent() {
   const previewViewportRef = useRef<HTMLDivElement | null>(null);
 
   // VietQR Banking Box
-  const [bankCodeGroom, setBankCodeGroom] = useState("");
-  const [accNumGroom, setAccNumGroom] = useState("");
-  const [accNameGroom, setAccNameGroom] = useState("");
+  const [bankCodeGroom, setBankCodeGroom] = useState("VCB");
+  const [accNumGroom, setAccNumGroom] = useState("1034829596");
+  const [accNameGroom, setAccNameGroom] = useState("TRAN HOAI BAO");
 
   const [bankCodeBride, setBankCodeBride] = useState("");
   const [accNumBride, setAccNumBride] = useState("");

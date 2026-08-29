@@ -3175,25 +3175,47 @@ export default function CardViteHomePage() {
             <motion.div
               whileHover={{ y: -8, scale: 1.02 }}
               transition={{ duration: 0.3 }}
-              className="w-64 sm:w-72 bg-white rounded-3xl p-6 border border-[#E8E2D8] shadow-2xl text-center space-y-3 relative group"
+              className="w-72 sm:w-80 bg-white rounded-3xl p-5 sm:p-6 border border-[#E8E2D8] shadow-2xl text-center space-y-3.5 relative group"
             >
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#BE944E] block">
-                MỪNG CƯỚI TÂN LANG & TÂN NƯƠNG
-              </span>
-              <div className="w-36 h-36 mx-auto bg-stone-100 rounded-2xl p-2.5 border border-stone-200 flex items-center justify-center relative overflow-hidden group-hover:border-[#BE944E]/60 transition">
+              {/* Header Ngân Hàng */}
+              <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-[#BE944E]">
+                  MỪNG CƯỚI VIETQR
+                </span>
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                  Vietcombank
+                </span>
+              </div>
+
+              {/* KHUNG HIỂN THỊ MÃ QR THẬT CỦA BẠN */}
+              <div className="w-48 h-48 mx-auto bg-[#FDFBF7] rounded-2xl p-2 border-2 border-[#E8E2D8] flex items-center justify-center relative overflow-hidden group-hover:border-[#BE944E]/80 transition shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CardVite-Wedding-Gift-${qrAmount}`}
-                  alt="VietQR Demo"
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  src="/images/vietqr-tran-hoai-bao.png"
+                  alt="VietQR Vietcombank TRAN HOAI BAO"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 rounded-lg"
                 />
               </div>
-              <div className="text-xs">
-                <span className="font-bold text-stone-900 text-base">{qrAmount}</span>
-                <p className="text-[10px] text-stone-500 mt-0.5">
-                  {t("homeQrScanHint")}
-                </p>
+
+              {/* THÔNG TIN CHỦ TÀI KHOẢN */}
+              <div className="bg-stone-50 rounded-xl p-2.5 border border-stone-200/70 text-left space-y-1">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-stone-500 text-[11px]">Chủ tài khoản:</span>
+                  <span className="font-bold text-stone-900">TRAN HOAI BAO</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-stone-500 text-[11px]">Số tài khoản:</span>
+                  <span className="font-mono font-bold text-emerald-800 tracking-wider">1034829596</span>
+                </div>
+                <div className="flex justify-between items-center text-xs pt-1 border-t border-stone-200/50">
+                  <span className="text-stone-500 text-[11px]">Mừng chúc:</span>
+                  <span className="font-bold text-[#BE944E]">{qrAmount}</span>
+                </div>
               </div>
+
+              <p className="text-[10px] text-stone-500 leading-tight">
+                {t("homeQrScanHint")}
+              </p>
             </motion.div>
           </div>
         </motion.div>
