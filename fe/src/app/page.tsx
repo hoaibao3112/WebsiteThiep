@@ -287,6 +287,27 @@ export default function CardViteHomePage() {
   const [selectedHeroTemplate, setSelectedHeroTemplate] = useState<"vuon-ngoc" | "hoa-lua" | "co-dien">("vuon-ngoc");
   const [sealOpened, setSealOpened] = useState(false);
   const [isHeroMusicPlaying, setIsHeroMusicPlaying] = useState(false);
+  const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const heroAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleToggleHeroSeal = () => {
+    if (heroAudioRef.current) {
+      if (isHeroMusicPlaying) {
+        heroAudioRef.current.pause();
+        setIsHeroMusicPlaying(false);
+        setShowHeartAnimation(false);
+      } else {
+        heroAudioRef.current.currentTime = 0;
+        heroAudioRef.current.play().catch(() => {});
+        setIsHeroMusicPlaying(true);
+        setShowHeartAnimation(true);
+      }
+    } else {
+      setIsHeroMusicPlaying(!isHeroMusicPlaying);
+      setShowHeartAnimation(!isHeroMusicPlaying);
+    }
+  };
+
   const [activeStoryIdx, setActiveStoryIdx] = useState(1);
 
   // State điều khiển Orbiting, Tự Động Chuyển Cảnh & Zoom Mục Cặp Đôi
@@ -945,6 +966,9 @@ export default function CardViteHomePage() {
 
                   {/* SCREEN DISPLAY - PHONE SHOWCASE WITH USER VIDEO */}
                   <div className="w-full h-full bg-[#181716] rounded-[36px] overflow-hidden relative shadow-inner flex flex-col justify-between border border-[#F0EAE1]">
+                    {/* HIDDEN HERO AUDIO ELEMENT */}
+                    <audio ref={heroAudioRef} src="/music/mot-nha.mp3" loop preload="auto" />
+
                     {/* FULLSCREEN USER MP4 VIDEO (MUTED & AUTOPLAY) */}
                     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                       <video
@@ -957,8 +981,8 @@ export default function CardViteHomePage() {
                       >
                         <source src="/wedding-showcase.mp4" type="video/mp4" />
                       </video>
-                      {/* Subtle Vignette / Gradient Overlay to enhance text readability */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none" />
+                      {/* Very soft gradient vignette so video stays vibrant and clearly visible */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50 pointer-events-none" />
                     </div>
 
                     {/* DYNAMIC ISLAND */}
@@ -977,31 +1001,83 @@ export default function CardViteHomePage() {
                       </svg>
                     </div>
 
-                    {/* NỘI DUNG TẤM THIỆP CHÍNH */}
+                    {/* HIỆU ỨNG TRÁI TIM TO MÀU ĐỎ PHÁT SÁNG KHI ẤN NÚT SÁP */}
+                    <AnimatePresence>
+                      {showHeartAnimation && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.3 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.3 }}
+                          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                          className="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none bg-black/40 backdrop-blur-[2px]"
+                        >
+                          {/* Pulsing Giant Red Glowing Heart */}
+                          <motion.div
+                            animate={{
+                              scale: [1, 1.15, 1, 1.12, 1],
+                              rotate: [0, -2, 2, -1, 0],
+                            }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1.4,
+                              ease: "easeInOut",
+                            }}
+                            className="relative flex flex-col items-center"
+                          >
+                            <svg
+                              className="w-28 h-28 drop-shadow-[0_0_25px_rgba(239,68,68,0.95)]"
+                              viewBox="0 0 24 24"
+                              fill="url(#redHeartGradient)"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <defs>
+                                <linearGradient id="redHeartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" stopColor="#FF1E56" />
+                                  <stop offset="50%" stopColor="#FF4B4B" />
+                                  <stop offset="100%" stopColor="#D90429" />
+                                </linearGradient>
+                              </defs>
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+
+                            <motion.div
+                              initial={{ y: 10, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              className="mt-2 px-3 py-1 rounded-full bg-red-600/90 text-white font-bold text-xs tracking-wider shadow-lg border border-red-300/40 flex items-center gap-1.5"
+                            >
+                              <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-spin" />
+                              <span>Đang phát: Một Nhà</span>
+                            </motion.div>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* NỘI DUNG TẤM THIỆP MỜ MỜ (TRANSLUCENT FROSTED GLASS) THẤY RÕ VIDEO */}
                     <div className="relative z-10 px-3 pt-2 pb-2 text-center flex-1 flex flex-col justify-center items-center">
-                      <div className="w-full bg-white/75 backdrop-blur-md rounded-2xl py-3 px-2 border border-white/60 shadow-lg flex flex-col items-center">
+                      <div className="w-full bg-black/25 backdrop-blur-[2.5px] rounded-2xl py-3 px-2 border border-white/20 shadow-2xl flex flex-col items-center">
                         {/* HEADER TEXT */}
-                        <p className="text-[9px] uppercase tracking-[0.28em] text-stone-600 font-bold mb-1 font-sans">
+                        <p className="text-[9px] uppercase tracking-[0.3em] text-[#F5E6C8] font-bold mb-1 font-sans drop-shadow-md">
                           THE WEDDING OF
                         </p>
 
                         {/* TÊN CÔ DÂU & CHÚ RỂ */}
                         <div className="my-0.5">
-                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-[#181716] tracking-tight leading-tight">
+                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-white tracking-tight leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
                             {names.split("&")[0]?.trim() || "Sarah"}
                           </h2>
-                          <span className="font-serif italic text-base text-[#C59E58] block my-0.5">&</span>
-                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-[#181716] tracking-tight leading-tight">
+                          <span className="font-serif italic text-base text-[#F5D77F] block my-0.5 drop-shadow-md">&</span>
+                          <h2 className="font-serif text-2xl sm:text-[26px] font-bold text-white tracking-tight leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
                             {names.split("&")[1]?.trim() || "James"}
                           </h2>
                         </div>
 
                         {/* SAVE THE DATE & NGÀY CƯỚI */}
                         <div className="mt-1 space-y-0.5">
-                          <p className="text-[8px] uppercase tracking-[0.25em] text-stone-500 font-bold">
+                          <p className="text-[8px] uppercase tracking-[0.25em] text-[#EAD8B8] font-bold drop-shadow-sm">
                             SAVE THE DATE
                           </p>
-                          <p className="text-xs font-serif font-bold text-stone-900 tracking-wider">
+                          <p className="text-xs font-serif font-bold text-white tracking-wider drop-shadow-md">
                             20 . 10 . 2025
                           </p>
                         </div>
@@ -1010,28 +1086,28 @@ export default function CardViteHomePage() {
                       {/* WHITE SILK RIBBON THẮT NƠ NGANG VỚI GOLD WAX SEAL */}
                       <div className="relative w-full my-2.5 flex items-center justify-center">
                         {/* Silk Ribbon Band */}
-                        <div className="w-full h-8 bg-gradient-to-r from-transparent via-[#F7F2EA]/90 to-transparent shadow-xs flex items-center justify-center relative">
-                          <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-[#E8DEC8] to-transparent" />
+                        <div className="w-full h-8 bg-gradient-to-r from-transparent via-white/40 to-transparent shadow-xs flex items-center justify-center relative">
+                          <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-200/60 to-transparent" />
                           
                           {/* Ribbon Fold / Drapes */}
-                          <div className="absolute inset-x-8 top-0 bottom-0 bg-white/80 backdrop-blur-xs shadow-2xs border-y border-[#EFE8DD]" />
+                          <div className="absolute inset-x-8 top-0 bottom-0 bg-white/30 backdrop-blur-2xs shadow-2xs border-y border-white/30" />
                         </div>
 
-                        {/* 3D GOLD METALLIC WAX SEAL STAMP */}
+                        {/* 3D GOLD METALLIC WAX SEAL STAMP (BẤM ĐỂ PHÁT NHẠC VÀ VẼ TRÁI TIM ĐỎ) */}
                         <motion.button
-                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          whileHover={{ scale: 1.12, rotate: 5 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={handleHeroCardClick}
-                          title="Bấm để mở phong bì / dấu sáp"
-                          className="absolute z-20 w-13 h-13 rounded-full bg-gradient-to-br from-[#E8C87A] via-[#C99C48] to-[#996F20] shadow-[0_6px_16px_rgba(153,111,32,0.5),inset_0_2px_4px_rgba(255,255,255,0.6),inset_0_-2px_4px_rgba(0,0,0,0.3)] border-2 border-[#FAF1DA] flex items-center justify-center cursor-pointer transition-transform"
+                          onClick={handleToggleHeroSeal}
+                          title={isHeroMusicPlaying ? "Bấm để tắt nhạc & ẩn trái tim" : "Bấm để vẽ trái tim đỏ & phát bài hát Một Đời"}
+                          className={`absolute z-20 w-13 h-13 rounded-full bg-gradient-to-br from-[#F5D77F] via-[#D4A038] to-[#996F20] shadow-[0_6px_18px_rgba(212,160,56,0.6),inset_0_2px_4px_rgba(255,255,255,0.7),inset_0_-2px_4px_rgba(0,0,0,0.3)] border-2 border-[#FFF2D0] flex items-center justify-center cursor-pointer transition-all ${
+                            isHeroMusicPlaying ? "ring-4 ring-red-500/80 animate-pulse" : ""
+                          }`}
                         >
                           {/* Wax Edge Imperfection Detail */}
                           <div className="w-9 h-9 rounded-full border border-[#FAF1DA]/60 flex items-center justify-center shadow-inner">
-                            {/* Olive Branch / Botanical Emblem */}
+                            {/* Heart / Olive Botanical Emblem */}
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M12 2C12 2 11 8 6 10C1 12 4 17 4 17C4 17 9 14 11 9C12 7 12 2 12 2Z" fill="#FFEFC7" fillOpacity="0.9" />
-                              <path d="M12 2C12 2 13 8 18 10C23 12 20 17 20 17C20 17 15 14 13 9C12 7 12 2 12 2Z" fill="#FFEFC7" fillOpacity="0.9" />
-                              <path d="M12 2V22" stroke="#FFEFC7" strokeWidth="1.5" strokeLinecap="round" />
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#FFEFC7" fillOpacity="0.95" />
                             </svg>
                           </div>
                         </motion.button>
@@ -1041,34 +1117,34 @@ export default function CardViteHomePage() {
                     {/* VINTAGE FLORAL ACCENT (BOTTOM LEFT) */}
                     <div className="absolute bottom-12 left-0 w-24 h-24 pointer-events-none opacity-40">
                       <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 100C20 80 5 60 25 40C45 20 65 35 85 15C95 5 100 0 100 0" stroke="#C59E58" strokeWidth="1.2" />
-                        <circle cx="30" cy="80" r="10" fill="#F7EFE3" stroke="#C59E58" strokeWidth="0.8" />
-                        <circle cx="55" cy="60" r="8" fill="#F7EFE3" stroke="#C59E58" strokeWidth="0.8" />
+                        <path d="M0 100C20 80 5 60 25 40C45 20 65 35 85 15C95 5 100 0 100 0" stroke="#F3E5C8" strokeWidth="1.2" />
+                        <circle cx="30" cy="80" r="10" fill="#FAF4E8" fillOpacity="0.2" stroke="#F3E5C8" strokeWidth="0.8" />
+                        <circle cx="55" cy="60" r="8" fill="#FAF4E8" fillOpacity="0.2" stroke="#F3E5C8" strokeWidth="0.8" />
                       </svg>
                     </div>
 
                     {/* BOTTOM BAR: CARDVITE VIDEO SHOWCASE & MUSIC BUTTON */}
-                    <div className="relative z-20 px-4 py-2.5 bg-white/85 backdrop-blur-md border-t border-white/50 flex items-center justify-between shadow-xs">
+                    <div className="relative z-20 px-4 py-2.5 bg-black/40 backdrop-blur-md border-t border-white/20 flex items-center justify-between shadow-xs">
                       <div className="text-left">
-                        <span className="text-[8px] uppercase font-bold tracking-widest text-[#BE944E] block">
+                        <span className="text-[8px] uppercase font-bold tracking-widest text-[#F5D77F] block">
                           CARDVITE VIDEO SHOWCASE
                         </span>
-                        <h4 className="text-xs font-serif font-bold text-stone-900 tracking-wide">
+                        <h4 className="text-xs font-serif font-bold text-white tracking-wide drop-shadow-sm">
                           {names || "Sarah & James"}
                         </h4>
                       </div>
 
-                      {/* AUDIO BUTTON */}
+                      {/* AUDIO TOGGLE BUTTON */}
                       <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsHeroMusicPlaying(!isHeroMusicPlaying)}
+                        onClick={handleToggleHeroSeal}
                         className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs ${
                           isHeroMusicPlaying
-                            ? "bg-[#C59E58] text-white animate-spin"
-                            : "bg-[#F0EBE1] text-stone-700 hover:bg-[#E8E1D3]"
+                            ? "bg-red-500 text-white animate-spin ring-2 ring-red-300"
+                            : "bg-white/20 text-white hover:bg-white/30"
                         }`}
-                        title="Nghe nhạc nền thiệp"
+                        title={isHeroMusicPlaying ? "Tắt nhạc" : "Bật nhạc"}
                       >
                         <Music className="w-3.5 h-3.5" />
                       </motion.button>
