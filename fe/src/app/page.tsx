@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
@@ -112,9 +113,32 @@ const WEDDING_TRACKS = [
 ];
 
 export default function CardViteHomePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useLanguage();
   const { user, logout, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Tự động mở modal đăng nhập nếu có query ?auth=login VÀ người dùng chưa đăng nhập
+  useEffect(() => {
+    if (searchParams.get("auth") === "login") {
+      if (!user) {
+        openAuthModal("login");
+      } else {
+        const redirectPath = searchParams.get("redirect") || "/dashboard/cards";
+        router.push(redirectPath);
+      }
+    }
+  }, [searchParams, openAuthModal, user, router]);
+
+  const handleCreateCardClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    if (user) {
+      router.push("/dashboard/cards/new");
+    } else {
+      openAuthModal("login");
+    }
+  };
 
   const CAROUSEL_CARDS = [
     {
@@ -570,12 +594,12 @@ export default function CardViteHomePage() {
             )}
 
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link
-                href="/dashboard/cards/new"
+              <button
+                onClick={handleCreateCardClick}
                 className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#C19A5B] hover:bg-[#b0894a] text-white text-[11px] font-bold tracking-widest uppercase shadow-md transition cursor-pointer"
               >
                 {t("homeCreateBtn")}
-              </Link>
+              </button>
             </motion.div>
           </div>
 
@@ -636,13 +660,15 @@ export default function CardViteHomePage() {
               </Link>
               <div className="pt-6 flex flex-col items-center gap-4">
                 <LanguageSwitcher />
-                <Link
-                  href="/dashboard/cards/new"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md"
+                <button
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    handleCreateCardClick(e);
+                  }}
+                  className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md cursor-pointer"
                 >
                   {t("homeCreateBtn")}
-                </Link>
+                </button>
               </div>
             </div>
           </motion.div>
@@ -827,13 +853,13 @@ export default function CardViteHomePage() {
 
                 {/* NÚT TẠO BẢN XEM TRƯỚC */}
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    href="/dashboard/cards/new"
+                  <button
+                    onClick={handleCreateCardClick}
                     className="w-full py-3.5 rounded-xl bg-[#181716] hover:bg-black text-[#F4ECE1] text-[11px] font-bold uppercase tracking-widest shadow-md transition flex items-center justify-center gap-2 cursor-pointer mt-2 group"
                   >
                     <span>{t("homeBtnPreview") || "TẠO BẢN XEM TRƯỚC"}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                  </button>
                 </motion.div>
               </div>
             </motion.div>

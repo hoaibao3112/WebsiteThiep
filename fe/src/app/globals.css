@@ -87,3 +87,12 @@
 .animate-fade-rise-delay-2 {
   animation: fade-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
 }
+
+/* HIDE SCROLLBAR UTILITY */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

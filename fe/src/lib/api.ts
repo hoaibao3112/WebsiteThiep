@@ -9,12 +9,15 @@ export class ApiClient {
   static setToken(token: string) {
     if (typeof window !== "undefined") {
       localStorage.setItem("auth_token", token);
+      // Đồng bộ cookie để Next.js server middleware đọc được phiên đăng nhập
+      document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=604800; SameSite=Lax`;
     }
   }
 
   static clearToken() {
     if (typeof window !== "undefined") {
       localStorage.removeItem("auth_token");
+      document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
     }
   }
 
@@ -23,8 +26,12 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string; message?: string }> {
     const token = this.getToken();
+
+    // Auto-detect FormData: let the browser set Content-Type with the correct boundary
+    const isFormData = options.body instanceof FormData;
+
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers as Record<string, string>),
     };
 

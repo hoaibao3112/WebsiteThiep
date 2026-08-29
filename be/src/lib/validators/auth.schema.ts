@@ -23,8 +23,8 @@ export type SendOtpInput = z.infer<typeof SendOtpSchema>;
 export const VerifyOtpRegisterSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   otp: z.string().length(6, "Mã OTP phải có đúng 6 chữ số"),
-  name: z.string().min(2, "Tên người dùng tối thiểu 2 ký tự"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  name: z.string().optional(),
+  password: z.string().min(6).optional(),
   phone: z.string().optional(),
 });
 

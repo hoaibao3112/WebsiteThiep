@@ -11,6 +11,14 @@ import {
 } from "../lib/validators/auth.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
+function getClientIp(req: Request): string {
+  return (
+    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+    req.ip ||
+    "127.0.0.1"
+  );
+}
+
 export class AuthController {
   /**
    * 2 & 6. Gửi mã OTP xác thực qua Email
@@ -18,7 +26,7 @@ export class AuthController {
   static async sendOtp(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = SendOtpSchema.parse(req.body);
-      const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.ip || "127.0.0.1";
+      const clientIp = getClientIp(req);
 
       const result = await OtpService.sendRegisterOtp(validated.email, clientIp);
 
@@ -71,7 +79,8 @@ export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = RegisterSchema.parse(req.body);
-      const result = await AuthService.register(validated);
+      const clientIp = getClientIp(req);
+      const result = await AuthService.register(validated, clientIp);
       res.status(201).json({
         success: true,
         message: "Đăng ký tài khoản thành công!",
@@ -85,7 +94,8 @@ export class AuthController {
   static async login(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = LoginSchema.parse(req.body);
-      const result = await AuthService.login(validated);
+      const clientIp = getClientIp(req);
+      const result = await AuthService.login(validated, clientIp);
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công!",

@@ -26,7 +26,7 @@ interface AuthContextType {
   openAuthModal: (tab?: "login" | "register") => void;
   closeAuthModal: () => void;
   sendRegisterOtp: (email: string) => Promise<{ success: boolean; error?: string; cooldown?: number }>;
-  registerWithOtp: (payload: { email: string; otp: string; name: string; password: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
+  registerWithOtp: (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   googleLogin: (idToken: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -42,14 +42,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
 
-  const openAuthModal = (tab: "login" | "register" = "login") => {
+  const openAuthModal = React.useCallback((tab: "login" | "register" = "login") => {
     setAuthModalTab(tab);
     setIsAuthModalOpen(true);
-  };
+  }, []);
 
-  const closeAuthModal = () => {
+  const closeAuthModal = React.useCallback(() => {
     setIsAuthModalOpen(false);
-  };
+  }, []);
 
   const refreshUser = async () => {
     const savedToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: res.error || "Không thể gửi mã OTP" };
   };
 
-  const registerWithOtp = async (payload: { email: string; otp: string; name: string; password: string; phone?: string }) => {
+  const registerWithOtp = async (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => {
     const res = await ApiClient.request<{ user: AuthUser; token: string }>("/auth/verify-otp-register", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -143,11 +143,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: res.error || "Đăng nhập Google không thành công" };
   };
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     ApiClient.clearToken();
     setUser(null);
     setToken(null);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

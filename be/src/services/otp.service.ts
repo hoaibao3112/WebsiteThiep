@@ -17,15 +17,6 @@ export class OtpService {
   static async sendRegisterOtp(email: string, clientIp: string): Promise<{ cooldown: number }> {
     const normalizedEmail = email.toLowerCase().trim();
 
-    // 6. [REQUIRED] Check email tồn tại TRƯỚC khi cho gửi OTP đăng ký
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (existingUser) {
-      throw new Error("Email này đã được đăng ký trong hệ thống. Vui lòng chọn Đăng Nhập!");
-    }
-
     // 2. [CRITICAL] Rate limit theo IP (chống spam mail/harassment)
     if (clientIp) {
       await checkRateLimit(
