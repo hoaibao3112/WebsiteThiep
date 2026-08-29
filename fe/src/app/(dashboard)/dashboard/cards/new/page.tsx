@@ -172,7 +172,7 @@ function CardBuilderContent() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
 
-  // State cấu hình cơ bản
+  // State cấu hình cơ bản (Không set dữ liệu cứng)
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATE_PRESETS[0].id);
   const [slug, setSlug] = useState(`thiep-${Date.now().toString().slice(-6)}`);
@@ -180,96 +180,53 @@ function CardBuilderContent() {
   const [fontFamily, setFontFamily] = useState("Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
   const [fallingEffect, setFallingEffect] = useState<"PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">("PETAL");
-  const [greetingMessage, setGreetingMessage] = useState(
-    "Tình yêu không phải là nhìn nhau, mà là cùng nhìn về một hướng. Trân trọng kính mời bạn đến chung vui cùng chúng tôi."
-  );
+  const [greetingMessage, setGreetingMessage] = useState("");
 
-  // Wedding Couples & Family State
-  const [groomName, setGroomName] = useState("Trần Minh Quân");
-  const [groomShort, setGroomShort] = useState("Minh Quân");
-  const [groomFather, setGroomFather] = useState("Trần Văn Hùng");
-  const [groomMother, setGroomMother] = useState("Lê Thị Mai");
-  const [groomBirthOrder, setGroomBirthOrder] = useState("Trưởng Nam");
+  // Wedding Couples & Family State (Ban đầu rỗng để người dùng tự nhập)
+  const [groomName, setGroomName] = useState("");
+  const [groomShort, setGroomShort] = useState("");
+  const [groomFather, setGroomFather] = useState("");
+  const [groomMother, setGroomMother] = useState("");
+  const [groomBirthOrder, setGroomBirthOrder] = useState("");
 
-  const [brideName, setBrideName] = useState("Nguyễn Thu Hà");
-  const [brideShort, setBrideShort] = useState("Thu Hà");
-  const [brideFather, setBrideFather] = useState("Nguyễn Văn Dũng");
-  const [brideMother, setBrideMother] = useState("Phạm Thu Cúc");
-  const [brideBirthOrder, setBrideBirthOrder] = useState("Út Nữ");
+  const [brideName, setBrideName] = useState("");
+  const [brideShort, setBrideShort] = useState("");
+  const [brideFather, setBrideFather] = useState("");
+  const [brideMother, setBrideMother] = useState("");
+  const [brideBirthOrder, setBrideBirthOrder] = useState("");
 
-  // Love Story Timeline
-  const [loveStory, setLoveStory] = useState([
-    {
-      title: "Lần Đầu Gặp Gỡ",
-      date: "14 . 02 . 2022",
-      description: "Một chiều mưa cà phê tại góc phố quen, ánh mắt chạm nhau mở đầu cho bản tình ca.",
-      imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
-    },
-    {
-      title: "Lời Hẹn Ước Dưới Hoàng Hôn",
-      date: "24 . 12 . 2024",
-      description: "Chuyến đi Đà Lạt mộng mơ và chiếc nhẫn cầu hôn đong đầy lời hứa trăm năm.",
-      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
-    },
-  ]);
+  // Love Story Timeline (Ban đầu rỗng)
+  const [loveStory, setLoveStory] = useState<
+    { title: string; date: string; description: string; imageUrl: string }[]
+  >([]);
 
-  // Birthday state
-  const [celebrantName, setCelebrantName] = useState("Hoàng Bảo Nam");
-  const [age, setAge] = useState(25);
+  // Birthday state (Ban đầu rỗng)
+  const [celebrantName, setCelebrantName] = useState("");
+  const [age, setAge] = useState<number | string>("");
 
-  // Newborn state
-  const [babyName, setBabyName] = useState("Nguyễn Tuệ Nhi");
-  const [nickname, setNickname] = useState("Bé Đậu");
+  // Newborn state (Ban đầu rỗng)
+  const [babyName, setBabyName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [ceremonyType, setCeremonyType] = useState<"ANNOUNCEMENT_ONLY" | "FULL_MONTH" | "ONE_YEAR">("FULL_MONTH");
-  const [weight, setWeight] = useState("3.4 kg");
-  const [height, setHeight] = useState("51 cm");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
 
-  // Events / Schedule
+  // Events / Schedule (1 mốc mặc định ban đầu để người dùng điền)
   const [events, setEvents] = useState<EventItem[]>([
     {
       id: "event-1",
-      eventName: "Lễ Vu Quy (Nhà Gái)",
+      eventName: "",
       eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      lunarDate: "Ngày 15 Tháng 09 Năm Bính Ngọ",
-      venueName: "Tư Gia Nhà Gái",
-      address: "123 Điện Biên Phủ, Phường Đa Kao, Quận 1, TP. Hồ Chí Minh",
-      mapUrl: "https://maps.google.com",
-    },
-    {
-      id: "event-2",
-      eventName: "Lễ Thành Hôn & Tiệc Cưới",
-      eventDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-      lunarDate: "Ngày 16 Tháng 09 Năm Bính Ngọ",
-      venueName: "Trung tâm Hội nghị Tiệc cưới GEM Center (Sảnh Grand Ballroom)",
-      address: "Số 8 Nguyễn Bỉnh Khiêm, Đa Kao, Quận 1, TP. Hồ Chí Minh",
-      mapUrl: "https://maps.google.com",
+      lunarDate: "",
+      venueName: "",
+      address: "",
+      mapUrl: "",
     },
   ]);
 
-  // Photos Gallery
-  const [photos, setPhotos] = useState<PhotoItem[]>([
-    {
-      id: "p-1",
-      url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
-      caption: "Khoảnh khắc lãng mạn tại bãi biển",
-    },
-    {
-      id: "p-2",
-      url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop",
-      caption: "Nụ cười hạnh phúc ngày đính hôn",
-    },
-    {
-      id: "p-3",
-      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop",
-      caption: "Ánh nhìn đong đầy yêu thương",
-    },
-    {
-      id: "p-4",
-      url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&auto=format&fit=crop",
-      caption: "Cùng nhau đi qua năm tháng",
-    },
-  ]);
-  const [videoUrl, setVideoUrl] = useState("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  // Photos Gallery (Ban đầu rỗng)
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [videoUrl, setVideoUrl] = useState("");
 
   // Background Music Studio
   const [selectedMusicSrc, setSelectedMusicSrc] = useState(MUSIC_OPTIONS[0].src);
@@ -278,21 +235,19 @@ function CardBuilderContent() {
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewViewportRef = useRef<HTMLDivElement | null>(null);
 
-  // VietQR Banking Box
-  const [bankCodeGroom, setBankCodeGroom] = useState("MB");
-  const [accNumGroom, setAccNumGroom] = useState("0988888888");
-  const [accNameGroom, setAccNameGroom] = useState("TRAN MINH QUAN");
+  // VietQR Banking Box (Ban đầu rỗng)
+  const [bankCodeGroom, setBankCodeGroom] = useState("");
+  const [accNumGroom, setAccNumGroom] = useState("");
+  const [accNameGroom, setAccNameGroom] = useState("");
 
-  const [bankCodeBride, setBankCodeBride] = useState("VCB");
-  const [accNumBride, setAccNumBride] = useState("9988776655");
-  const [accNameBride, setAccNameBride] = useState("NGUYEN THU HA");
+  const [bankCodeBride, setBankCodeBride] = useState("");
+  const [accNumBride, setAccNumBride] = useState("");
+  const [accNameBride, setAccNameBride] = useState("");
 
   // RSVP Configuration
   const [isRsvpEnabled, setIsRsvpEnabled] = useState(true);
-  const [rsvpDeadline, setRsvpDeadline] = useState("2026-10-10");
-  const [rsvpCustomNote, setRsvpCustomNote] = useState(
-    "Sự hiện diện của bạn là niềm vinh hạnh lớn của gia đình chúng tôi."
-  );
+  const [rsvpDeadline, setRsvpDeadline] = useState("");
+  const [rsvpCustomNote, setRsvpCustomNote] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
@@ -324,7 +279,34 @@ function CardBuilderContent() {
     }
   };
 
-  // Build live preview card object
+  // Build live preview card object (Hiển thị mượt mà với placeholder nếu chưa điền)
+  const validEvents = events.filter((e) => e.eventName || e.venueName || e.address);
+  const effectiveEvents =
+    validEvents.length > 0
+      ? validEvents.map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
+      : [
+          {
+            id: "preview-event-1",
+            eventName: "Lễ Thành Hôn & Tiệc Cưới",
+            eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            lunarDate: "Ngày 16 Tháng 09 Năm Bính Ngọ",
+            venueName: "Trung Tâm Hội Nghị Tiệc Cưới",
+            address: "Địa chỉ tổ chức sự kiện",
+            mapUrl: "https://maps.google.com",
+          },
+        ];
+
+  const effectivePhotos =
+    photos.length > 0
+      ? photos
+      : [
+          {
+            id: "placeholder-p1",
+            url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
+            caption: "Khoảnh khắc hạnh phúc",
+          },
+        ];
+
   const previewCard: CardDetail = {
     id: "preview-card-id",
     slug,
@@ -336,37 +318,48 @@ function CardBuilderContent() {
     primaryColor,
     fontFamily,
     musicUrl: selectedMusicSrc,
-    greetingMessage,
-    bankingPrimary: {
-      bankCode: bankCodeGroom,
-      accountNumber: accNumGroom,
-      accountName: accNameGroom,
-    },
-    bankingSecondary: {
-      bankCode: bankCodeBride,
-      accountNumber: accNumBride,
-      accountName: accNameBride,
-    },
-    events: events.map((e) => ({
-      ...e,
-      eventDate: new Date(e.eventDate),
-    })),
-    photos,
+    greetingMessage:
+      greetingMessage.trim() ||
+      "Tình yêu không phải là nhìn nhau, mà là cùng nhìn về một hướng. Trân trọng kính mời bạn đến chung vui cùng chúng tôi.",
+    bankingPrimary:
+      bankCodeGroom || accNumGroom
+        ? {
+            bankCode: bankCodeGroom || "MB",
+            accountNumber: accNumGroom || "...",
+            accountName: accNameGroom || "CHÚ RỂ",
+          }
+        : undefined,
+    bankingSecondary:
+      bankCodeBride || accNumBride
+        ? {
+            bankCode: bankCodeBride || "VCB",
+            accountNumber: accNumBride || "...",
+            accountName: accNameBride || "CÔ DÂU",
+          }
+        : undefined,
+    events: effectiveEvents,
+    photos: effectivePhotos,
     categoryData:
       category === "WEDDING"
         ? {
             cardCategory: "WEDDING",
             groom: {
-              fullName: groomName,
-              shortName: groomShort,
-              birthOrder: groomBirthOrder,
-              parents: { fatherName: groomFather, motherName: groomMother },
+              fullName: groomName.trim() || "Tên Chú Rể",
+              shortName: groomShort.trim() || groomName.trim() || "Chú Rể",
+              birthOrder: groomBirthOrder.trim() || "Trưởng Nam",
+              parents: {
+                fatherName: groomFather.trim() || "Họ Tên Cha",
+                motherName: groomMother.trim() || "Họ Tên Mẹ",
+              },
             },
             bride: {
-              fullName: brideName,
-              shortName: brideShort,
-              birthOrder: brideBirthOrder,
-              parents: { fatherName: brideFather, motherName: brideMother },
+              fullName: brideName.trim() || "Tên Cô Dâu",
+              shortName: brideShort.trim() || brideName.trim() || "Cô Dâu",
+              birthOrder: brideBirthOrder.trim() || "Út Nữ",
+              parents: {
+                fatherName: brideFather.trim() || "Họ Tên Cha",
+                motherName: brideMother.trim() || "Họ Tên Mẹ",
+              },
             },
             loveStory,
             events: [],
@@ -374,18 +367,18 @@ function CardBuilderContent() {
         : category === "BIRTHDAY"
         ? {
             cardCategory: "BIRTHDAY",
-            celebrantName,
-            age,
+            celebrantName: celebrantName.trim() || "Tên Chủ Tiệc",
+            age: Number(age) || 18,
             events: [],
           }
         : {
             cardCategory: "NEWBORN",
-            babyName,
-            nickname,
+            babyName: babyName.trim() || "Tên Bé Yêu",
+            nickname: nickname.trim() || "Bé Cưng",
             gender: "GIRL",
             birthDate: new Date(),
-            weight,
-            height,
+            weight: weight.trim() || "3.2 kg",
+            height: height.trim() || "50 cm",
             ceremonyType,
             events: [],
           },
@@ -410,49 +403,49 @@ function CardBuilderContent() {
       fontFamily,
       musicUrl: selectedMusicSrc,
       isAutoPlay,
-      greetingMessage,
-      bankingPrimary: {
-        bankCode: bankCodeGroom,
-        accountNumber: accNumGroom,
-        accountName: accNameGroom,
-      },
-      bankingSecondary: {
-        bankCode: bankCodeBride,
-        accountNumber: accNumBride,
-        accountName: accNameBride,
-      },
+      greetingMessage: greetingMessage.trim(),
+      bankingPrimary:
+        bankCodeGroom || accNumGroom
+          ? { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom }
+          : undefined,
+      bankingSecondary:
+        bankCodeBride || accNumBride
+          ? { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride }
+          : undefined,
       photos,
       data: {
         cardCategory: category,
-        events: events.map((e) => ({
-          ...e,
-          eventDate: new Date(e.eventDate),
-        })),
+        events: events
+          .filter((e) => e.eventName.trim() !== "")
+          .map((e) => ({
+            ...e,
+            eventDate: new Date(e.eventDate),
+          })),
         ...(category === "WEDDING"
           ? {
               groom: {
-                fullName: groomName,
-                shortName: groomShort,
-                birthOrder: groomBirthOrder,
-                parents: { fatherName: groomFather, motherName: groomMother },
+                fullName: groomName.trim(),
+                shortName: groomShort.trim(),
+                birthOrder: groomBirthOrder.trim(),
+                parents: { fatherName: groomFather.trim(), motherName: groomMother.trim() },
               },
               bride: {
-                fullName: brideName,
-                shortName: brideShort,
-                birthOrder: brideBirthOrder,
-                parents: { fatherName: brideFather, motherName: brideMother },
+                fullName: brideName.trim(),
+                shortName: brideShort.trim(),
+                birthOrder: brideBirthOrder.trim(),
+                parents: { fatherName: brideFather.trim(), motherName: brideMother.trim() },
               },
               loveStory,
             }
           : category === "BIRTHDAY"
-          ? { celebrantName, age }
+          ? { celebrantName: celebrantName.trim(), age: Number(age) || 18 }
           : {
-              babyName,
-              nickname,
+              babyName: babyName.trim(),
+              nickname: nickname.trim(),
               gender: "BOY",
               birthDate: new Date(),
-              weight,
-              height,
+              weight: weight.trim(),
+              height: height.trim(),
               ceremonyType,
             }),
       },
@@ -630,7 +623,7 @@ function CardBuilderContent() {
                     Chọn loại thiệp & Nhập thông tin chính
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Các thông tin này sẽ được đồng bộ trực tiếp lên thiệp mẫu ở khung xem trước bên phải.
+                    Điền các thông tin thực tế của bạn để hiển thị trực quan trên thiệp xem trước bên phải.
                   </p>
                 </div>
 
@@ -673,6 +666,7 @@ function CardBuilderContent() {
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                      placeholder="VD: minh-quan-thu-ha-2026"
                       className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
                     />
                   </div>
@@ -703,18 +697,20 @@ function CardBuilderContent() {
                             type="text"
                             value={groomName}
                             onChange={(e) => setGroomName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                            placeholder="VD: Trần Minh Quân"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Thân Mật
+                            Tên Thân Mật (Gọi tắt)
                           </label>
                           <input
                             type="text"
                             value={groomShort}
                             onChange={(e) => setGroomShort(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                            placeholder="VD: Minh Quân"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
                       </div>
@@ -736,6 +732,7 @@ function CardBuilderContent() {
                             type="text"
                             value={groomFather}
                             onChange={(e) => setGroomFather(e.target.value)}
+                            placeholder="VD: Trần Văn Hùng"
                             className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
                           />
                         </div>
@@ -745,6 +742,7 @@ function CardBuilderContent() {
                             type="text"
                             value={groomMother}
                             onChange={(e) => setGroomMother(e.target.value)}
+                            placeholder="VD: Lê Thị Mai"
                             className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
                           />
                         </div>
@@ -769,18 +767,20 @@ function CardBuilderContent() {
                             type="text"
                             value={brideName}
                             onChange={(e) => setBrideName(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                            placeholder="VD: Nguyễn Thu Hà"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Thân Mật
+                            Tên Thân Mật (Gọi tắt)
                           </label>
                           <input
                             type="text"
                             value={brideShort}
                             onChange={(e) => setBrideShort(e.target.value)}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                            placeholder="VD: Thu Hà"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
                       </div>
@@ -802,6 +802,7 @@ function CardBuilderContent() {
                             type="text"
                             value={brideFather}
                             onChange={(e) => setBrideFather(e.target.value)}
+                            placeholder="VD: Nguyễn Văn Dũng"
                             className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
                           />
                         </div>
@@ -811,6 +812,7 @@ function CardBuilderContent() {
                             type="text"
                             value={brideMother}
                             onChange={(e) => setBrideMother(e.target.value)}
+                            placeholder="VD: Phạm Thu Cúc"
                             className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
                           />
                         </div>
@@ -831,6 +833,7 @@ function CardBuilderContent() {
                           type="text"
                           value={celebrantName}
                           onChange={(e) => setCelebrantName(e.target.value)}
+                          placeholder="VD: Hoàng Bảo Nam"
                           className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -839,7 +842,8 @@ function CardBuilderContent() {
                         <input
                           type="number"
                           value={age}
-                          onChange={(e) => setAge(Number(e.target.value))}
+                          onChange={(e) => setAge(e.target.value)}
+                          placeholder="VD: 25"
                           className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -859,6 +863,7 @@ function CardBuilderContent() {
                           type="text"
                           value={babyName}
                           onChange={(e) => setBabyName(e.target.value)}
+                          placeholder="VD: Nguyễn Tuệ Nhi"
                           className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -868,6 +873,7 @@ function CardBuilderContent() {
                           type="text"
                           value={nickname}
                           onChange={(e) => setNickname(e.target.value)}
+                          placeholder="VD: Bé Đậu"
                           className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -884,6 +890,7 @@ function CardBuilderContent() {
                     rows={3}
                     value={greetingMessage}
                     onChange={(e) => setGreetingMessage(e.target.value)}
+                    placeholder="Nhập thông điệp gửi tới khách mời hoặc câu trích dẫn tình yêu..."
                     className="w-full p-3 text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
                   />
                 </div>
@@ -1118,12 +1125,12 @@ function CardBuilderContent() {
                           ...events,
                           {
                             id: `event-${Date.now()}`,
-                            eventName: "Tiệc Cưới Báo Hỷ",
-                            eventDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
-                            lunarDate: "Ngày 17 Tháng 09 Năm Bính Ngọ",
-                            venueName: "Trung tâm Hội nghị Tiệc Cưới",
-                            address: "Địa chỉ tổ chức tiệc cưới",
-                            mapUrl: "https://maps.google.com",
+                            eventName: "",
+                            eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+                            lunarDate: "",
+                            venueName: "",
+                            address: "",
+                            mapUrl: "",
                           },
                         ]);
                       }}
@@ -1164,7 +1171,8 @@ function CardBuilderContent() {
                                 updated[idx].eventName = e.target.value;
                                 setEvents(updated);
                               }}
-                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                              placeholder="VD: Lễ Thành Hôn / Vu Quy"
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                             />
                           </div>
                           <div>
@@ -1193,11 +1201,12 @@ function CardBuilderContent() {
                                 updated[idx].venueName = e.target.value;
                                 setEvents(updated);
                               }}
-                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
+                              placeholder="VD: Trung tâm Tiệc Cưới GEM Center"
+                              className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch</label>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch (Hiển thị)</label>
                             <input
                               type="text"
                               value={ev.lunarDate || ""}
@@ -1206,6 +1215,7 @@ function CardBuilderContent() {
                                 updated[idx].lunarDate = e.target.value;
                                 setEvents(updated);
                               }}
+                              placeholder="VD: Ngày 16 Tháng 09 Năm Bính Ngọ"
                               className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
                             />
                           </div>
@@ -1221,7 +1231,8 @@ function CardBuilderContent() {
                               updated[idx].address = e.target.value;
                               setEvents(updated);
                             }}
-                            className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200"
+                            placeholder="VD: 123 Điện Biên Phủ, Phường Đa Kao, Quận 1, TP.HCM"
+                            className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
                       </div>
@@ -1242,8 +1253,8 @@ function CardBuilderContent() {
                           ...photos,
                           {
                             id: `p-${Date.now()}`,
-                            url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
-                            caption: "Khoảnh khắc hạnh phúc mới",
+                            url: "",
+                            caption: "",
                           },
                         ]);
                       }}
@@ -1254,34 +1265,60 @@ function CardBuilderContent() {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {photos.map((item, idx) => (
-                      <div key={item.id || idx} className="rounded-2xl border border-stone-200 bg-white p-2 space-y-1.5 relative group shadow-2xs">
-                        <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
-                          <button
-                            type="button"
-                            onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
-                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                  {photos.length === 0 ? (
+                    <div className="p-6 rounded-2xl border-2 border-dashed border-stone-200 text-center space-y-1.5 bg-stone-50/50">
+                      <ImageIcon className="w-6 h-6 text-stone-400 mx-auto" />
+                      <p className="text-xs text-stone-500 font-medium">Chưa có ảnh nào trong album</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPhotos([
+                            {
+                              id: `p-${Date.now()}`,
+                              url: "",
+                              caption: "",
+                            },
+                          ]);
+                        }}
+                        className="text-xs text-[#BE944E] font-bold hover:underline"
+                      >
+                        + Bấm vào đây để thêm ảnh đầu tiên
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {photos.map((item, idx) => (
+                        <div key={item.id || idx} className="rounded-2xl border border-stone-200 bg-white p-2 space-y-1.5 relative group shadow-2xs">
+                          <div className="w-full aspect-[4/3] rounded-xl overflow-hidden bg-stone-100 relative flex items-center justify-center">
+                            {item.url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={item.url} alt="Photo" className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[11px] text-stone-400 font-mono">Dán link ảnh</span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setPhotos(photos.filter((_, i) => i !== idx))}
+                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={item.url}
+                            onChange={(e) => {
+                              const updated = [...photos];
+                              updated[idx].url = e.target.value;
+                              setPhotos(updated);
+                            }}
+                            placeholder="Dán đường dẫn ảnh URL..."
+                            className="w-full px-2 py-1 text-[10px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate"
+                          />
                         </div>
-                        <input
-                          type="text"
-                          value={item.url}
-                          onChange={(e) => {
-                            const updated = [...photos];
-                            updated[idx].url = e.target.value;
-                            setPhotos(updated);
-                          }}
-                          placeholder="Link ảnh URL"
-                          className="w-full px-2 py-1 text-[10px] rounded-lg bg-stone-50 border border-stone-200 text-stone-600 truncate"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. MỪNG CƯỚI VIETQR */}
@@ -1302,7 +1339,7 @@ function CardBuilderContent() {
                           type="text"
                           value={bankCodeGroom}
                           onChange={(e) => setBankCodeGroom(e.target.value)}
-                          placeholder="MB, VCB, ACB..."
+                          placeholder="VD: MB, VCB, ACB..."
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -1312,6 +1349,7 @@ function CardBuilderContent() {
                           type="text"
                           value={accNumGroom}
                           onChange={(e) => setAccNumGroom(e.target.value)}
+                          placeholder="VD: 0988888888"
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
                         />
                       </div>
@@ -1321,6 +1359,7 @@ function CardBuilderContent() {
                           type="text"
                           value={accNameGroom}
                           onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())}
+                          placeholder="VD: TRAN MINH QUAN"
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-bold"
                         />
                       </div>
@@ -1337,7 +1376,7 @@ function CardBuilderContent() {
                           type="text"
                           value={bankCodeBride}
                           onChange={(e) => setBankCodeBride(e.target.value)}
-                          placeholder="VCB, Vietinbank..."
+                          placeholder="VD: VCB, Vietinbank..."
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
                         />
                       </div>
@@ -1347,6 +1386,7 @@ function CardBuilderContent() {
                           type="text"
                           value={accNumBride}
                           onChange={(e) => setAccNumBride(e.target.value)}
+                          placeholder="VD: 9988776655"
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold"
                         />
                       </div>
@@ -1356,6 +1396,7 @@ function CardBuilderContent() {
                           type="text"
                           value={accNameBride}
                           onChange={(e) => setAccNameBride(e.target.value.toUpperCase())}
+                          placeholder="VD: NGUYEN THU HA"
                           className="w-full px-2.5 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-bold"
                         />
                       </div>
@@ -1387,17 +1428,21 @@ function CardBuilderContent() {
                 <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#EAE2D6] space-y-3.5 shadow-2xs">
                   <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center justify-between">
                     <span>Checklist Các Mục Trên Thiệp</span>
-                    <span className="text-emerald-600 font-mono font-bold text-xs">100% Hoàn Thiện</span>
+                    <span className="text-emerald-600 font-mono font-bold text-xs">
+                      {groomName && brideName ? "100% Hoàn Thiện" : "Đang Soạn Thảo"}
+                    </span>
                   </h4>
 
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle
+                          className={`w-4 h-4 ${groomName || brideName ? "text-emerald-500" : "text-stone-300"}`}
+                        />
                         <span className="font-semibold text-stone-800">1. Thông tin Cặp Đôi & Phụ Mẫu</span>
                       </div>
                       <span className="text-stone-500 text-[11px]">
-                        {groomShort} & {brideShort}
+                        {groomName ? groomName : "Chưa nhập"} & {brideName ? brideName : "Chưa nhập"}
                       </span>
                     </div>
 
@@ -1414,26 +1459,38 @@ function CardBuilderContent() {
 
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle
+                          className={`w-4 h-4 ${validEvents.length > 0 ? "text-emerald-500" : "text-stone-300"}`}
+                        />
                         <span className="font-semibold text-stone-800">3. Lịch Trình & Địa Điểm Tiệc</span>
                       </div>
-                      <span className="text-stone-500 text-[11px]">{events.length} buổi lễ</span>
+                      <span className="text-stone-500 text-[11px]">
+                        {validEvents.length > 0 ? `${validEvents.length} buổi lễ` : "Chưa nhập"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle
+                          className={`w-4 h-4 ${photos.length > 0 ? "text-emerald-500" : "text-stone-300"}`}
+                        />
                         <span className="font-semibold text-stone-800">4. Album Ảnh Cưới 4K</span>
                       </div>
-                      <span className="text-stone-500 text-[11px]">{photos.length} bức ảnh</span>
+                      <span className="text-stone-500 text-[11px]">
+                        {photos.length > 0 ? `${photos.length} bức ảnh` : "Chưa thêm"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <CheckCircle
+                          className={`w-4 h-4 ${bankCodeGroom || bankCodeBride ? "text-emerald-500" : "text-stone-300"}`}
+                        />
                         <span className="font-semibold text-stone-800">5. Hộp Mừng Cưới VietQR Napas247</span>
                       </div>
-                      <span className="text-stone-500 text-[11px] font-mono">Đã thiết lập</span>
+                      <span className="text-stone-500 text-[11px] font-mono">
+                        {bankCodeGroom || bankCodeBride ? "Đã thiết lập" : "Chưa nhập"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
