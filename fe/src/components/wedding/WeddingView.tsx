@@ -60,8 +60,9 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   const brideShortName = data.bride?.shortName || "Ngọc Hân";
 
   const coverPhoto =
+    data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    data.groom.avatarUrl ||
+    data.groom?.avatarUrl ||
     "https://images.unsplash.com/photo-1519741497674-611481863552?w=1000&auto=format&fit=crop";
 
   return (
@@ -104,7 +105,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           >
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#BE944E]" />
             <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em]">
-              SAVE OUR SPECIAL DAY
+              {data.heroSubtitle || "SAVE OUR SPECIAL DAY"}
             </span>
             <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#BE944E]" />
           </motion.div>
@@ -175,7 +176,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           </div>
 
           <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#6D4C33] tracking-tight mb-2.5 sm:mb-3">
-            {t("invitationLetter") || "Thư Mời Thành Hôn"}
+            {data.invitationTitle || t("invitationLetter") || "Thư Mời Thành Hôn"}
           </h2>
 
           {/* PERSONALIZED GUEST BADGE */}
@@ -231,10 +232,14 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
               <p className="text-[10px] sm:text-[11px] text-[#8C6D53] italic mt-0.5">
                 {data.groom?.birthOrder || t("eldestSon")}
               </p>
-              {data.groom.parents && (
+              {data.groom.parents && (data.groom.parents.fatherName || data.groom.parents.motherName) && (
                 <div className="text-[9.5px] sm:text-[11px] text-stone-500 mt-2 pt-2 border-t border-[#EAE0D2] w-full leading-tight sm:leading-snug">
-                  <p><span className="text-stone-400">{t("father")}:</span> {data.groom.parents.fatherName || "Nguyễn Văn Hùng"}</p>
-                  <p className="mt-0.5"><span className="text-stone-400">{t("mother")}:</span> {data.groom.parents.motherName || "Trần Thị Mai"}</p>
+                  {data.groom.parents.fatherName && (
+                    <p><span className="text-stone-400">{t("father")}:</span> {data.groom.parents.fatherName}</p>
+                  )}
+                  {data.groom.parents.motherName && (
+                    <p className="mt-0.5"><span className="text-stone-400">{t("mother")}:</span> {data.groom.parents.motherName}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -261,10 +266,14 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
               <p className="text-[10px] sm:text-[11px] text-[#8C6D53] italic mt-0.5">
                 {data.bride?.birthOrder || t("youngestDaughter")}
               </p>
-              {data.bride.parents && (
+              {data.bride.parents && (data.bride.parents.fatherName || data.bride.parents.motherName) && (
                 <div className="text-[9.5px] sm:text-[11px] text-stone-500 mt-2 pt-2 border-t border-[#EAE0D2] w-full leading-tight sm:leading-snug">
-                  <p><span className="text-stone-400">{t("father")}:</span> {data.bride.parents.fatherName || "Lê Quốc Bảo"}</p>
-                  <p className="mt-0.5"><span className="text-stone-400">{t("mother")}:</span> {data.bride.parents.motherName || "Phạm Thu Cúc"}</p>
+                  {data.bride.parents.fatherName && (
+                    <p><span className="text-stone-400">{t("father")}:</span> {data.bride.parents.fatherName}</p>
+                  )}
+                  {data.bride.parents.motherName && (
+                    <p className="mt-0.5"><span className="text-stone-400">{t("mother")}:</span> {data.bride.parents.motherName}</p>
+                  )}
                 </div>
               )}
             </div>

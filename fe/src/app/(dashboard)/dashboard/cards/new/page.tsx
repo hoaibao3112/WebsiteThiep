@@ -41,6 +41,12 @@ import {
   HelpCircle,
   QrCode,
   ShieldCheck,
+  Camera,
+  Compass,
+  Clock,
+  Phone,
+  Bookmark,
+  Scroll,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -140,7 +146,7 @@ const WIZARD_STEPS = [
   {
     number: 1,
     title: "Thông Tin & Cặp Đôi",
-    desc: "Loại thiệp & Nhân vật chính",
+    desc: "Ảnh bìa, Chú rể & Cô dâu",
     icon: Heart,
   },
   {
@@ -151,14 +157,14 @@ const WIZARD_STEPS = [
   },
   {
     number: 3,
-    title: "Chi Tiết Tiệc & Mừng Cưới",
-    desc: "Lịch trình, Album ảnh, VietQR",
+    title: "Lịch Trình, Story & Quà",
+    desc: "Tiệc cưới, Chuyện tình yêu, VietQR",
     icon: Calendar,
   },
   {
     number: 4,
     title: "Kiểm Tra & Xuất Bản",
-    desc: "Tổng quan & Xuất bản thiệp",
+    desc: "Checklist tổng quan & Xuất bản",
     icon: Sparkles,
   },
 ];
@@ -172,7 +178,7 @@ function CardBuilderContent() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
 
-  // State cấu hình cơ bản (Không set dữ liệu cứng)
+  // State cấu hình cơ bản (Không set cứng dữ liệu, để người dùng tự do điền)
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATE_PRESETS[0].id);
   const [slug, setSlug] = useState(`thiep-${Date.now().toString().slice(-6)}`);
@@ -180,38 +186,47 @@ function CardBuilderContent() {
   const [fontFamily, setFontFamily] = useState("Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
   const [fallingEffect, setFallingEffect] = useState<"PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">("PETAL");
+
+  // Hero & Header Section Fields
+  const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [invitationTitle, setInvitationTitle] = useState("");
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [greetingMessage, setGreetingMessage] = useState("");
 
-  // Wedding Couples & Family State (Ban đầu rỗng để người dùng tự nhập)
+  // Wedding Couples & Family State
+  const [groomAvatarUrl, setGroomAvatarUrl] = useState("");
   const [groomName, setGroomName] = useState("");
   const [groomShort, setGroomShort] = useState("");
   const [groomFather, setGroomFather] = useState("");
   const [groomMother, setGroomMother] = useState("");
   const [groomBirthOrder, setGroomBirthOrder] = useState("");
+  const [groomPhone, setGroomPhone] = useState("");
 
+  const [brideAvatarUrl, setBrideAvatarUrl] = useState("");
   const [brideName, setBrideName] = useState("");
   const [brideShort, setBrideShort] = useState("");
   const [brideFather, setBrideFather] = useState("");
   const [brideMother, setBrideMother] = useState("");
   const [brideBirthOrder, setBrideBirthOrder] = useState("");
+  const [bridePhone, setBridePhone] = useState("");
 
-  // Love Story Timeline (Ban đầu rỗng)
+  // Love Story Timeline (Our Journey)
   const [loveStory, setLoveStory] = useState<
     { title: string; date: string; description: string; imageUrl: string }[]
   >([]);
 
-  // Birthday state (Ban đầu rỗng)
+  // Birthday state
   const [celebrantName, setCelebrantName] = useState("");
   const [age, setAge] = useState<number | string>("");
 
-  // Newborn state (Ban đầu rỗng)
+  // Newborn state
   const [babyName, setBabyName] = useState("");
   const [nickname, setNickname] = useState("");
   const [ceremonyType, setCeremonyType] = useState<"ANNOUNCEMENT_ONLY" | "FULL_MONTH" | "ONE_YEAR">("FULL_MONTH");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
 
-  // Events / Schedule (1 mốc mặc định ban đầu để người dùng điền)
+  // Events / Schedule
   const [events, setEvents] = useState<EventItem[]>([
     {
       id: "event-1",
@@ -224,7 +239,7 @@ function CardBuilderContent() {
     },
   ]);
 
-  // Photos Gallery (Ban đầu rỗng)
+  // Photos Gallery & Video Pre-Wedding
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [videoUrl, setVideoUrl] = useState("");
 
@@ -235,7 +250,7 @@ function CardBuilderContent() {
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewViewportRef = useRef<HTMLDivElement | null>(null);
 
-  // VietQR Banking Box (Ban đầu rỗng)
+  // VietQR Banking Box
   const [bankCodeGroom, setBankCodeGroom] = useState("");
   const [accNumGroom, setAccNumGroom] = useState("");
   const [accNameGroom, setAccNameGroom] = useState("");
@@ -252,15 +267,15 @@ function CardBuilderContent() {
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
 
-  // Cuộn preview khi chuyển step
+  // Cuộn preview khi chuyển step để người dùng nhìn thấy phần đang sửa
   useEffect(() => {
     if (!previewViewportRef.current) return;
     if (currentStep === 1) {
       previewViewportRef.current.scrollTo({ top: 0, behavior: "smooth" });
     } else if (currentStep === 2) {
-      previewViewportRef.current.scrollTo({ top: 200, behavior: "smooth" });
+      previewViewportRef.current.scrollTo({ top: 180, behavior: "smooth" });
     } else if (currentStep === 3) {
-      previewViewportRef.current.scrollTo({ top: 600, behavior: "smooth" });
+      previewViewportRef.current.scrollTo({ top: 620, behavior: "smooth" });
     } else if (currentStep === 4) {
       previewViewportRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -279,8 +294,8 @@ function CardBuilderContent() {
     }
   };
 
-  // Build live preview card object (Hiển thị mượt mà với placeholder nếu chưa điền)
-  const validEvents = events.filter((e) => e.eventName || e.venueName || e.address);
+  // Build live preview card object
+  const validEvents = events.filter((e) => e.eventName.trim() || e.venueName.trim() || e.address.trim());
   const effectiveEvents =
     validEvents.length > 0
       ? validEvents.map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
@@ -291,7 +306,7 @@ function CardBuilderContent() {
             eventDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
             lunarDate: "Ngày 16 Tháng 09 Năm Bính Ngọ",
             venueName: "Trung Tâm Hội Nghị Tiệc Cưới",
-            address: "Địa chỉ tổ chức sự kiện",
+            address: "Địa chỉ tổ chức tiệc mừng",
             mapUrl: "https://maps.google.com",
           },
         ];
@@ -343,25 +358,32 @@ function CardBuilderContent() {
       category === "WEDDING"
         ? {
             cardCategory: "WEDDING",
+            heroSubtitle: heroSubtitle.trim() || "SAVE OUR SPECIAL DAY",
+            invitationTitle: invitationTitle.trim() || "Thư Mời Thành Hôn",
+            coverPhotoUrl: coverPhotoUrl.trim() || undefined,
             groom: {
               fullName: groomName.trim() || "Tên Chú Rể",
               shortName: groomShort.trim() || groomName.trim() || "Chú Rể",
+              avatarUrl: groomAvatarUrl.trim() || undefined,
               birthOrder: groomBirthOrder.trim() || "Trưởng Nam",
+              phone: groomPhone.trim() || undefined,
               parents: {
-                fatherName: groomFather.trim() || "Họ Tên Cha",
-                motherName: groomMother.trim() || "Họ Tên Mẹ",
+                fatherName: groomFather.trim() || undefined,
+                motherName: groomMother.trim() || undefined,
               },
             },
             bride: {
               fullName: brideName.trim() || "Tên Cô Dâu",
               shortName: brideShort.trim() || brideName.trim() || "Cô Dâu",
+              avatarUrl: brideAvatarUrl.trim() || undefined,
               birthOrder: brideBirthOrder.trim() || "Út Nữ",
+              phone: bridePhone.trim() || undefined,
               parents: {
-                fatherName: brideFather.trim() || "Họ Tên Cha",
-                motherName: brideMother.trim() || "Họ Tên Mẹ",
+                fatherName: brideFather.trim() || undefined,
+                motherName: brideMother.trim() || undefined,
               },
             },
-            loveStory,
+            loveStory: loveStory.filter((s) => s.title.trim() !== ""),
             events: [],
           }
         : category === "BIRTHDAY"
@@ -415,6 +437,9 @@ function CardBuilderContent() {
       photos,
       data: {
         cardCategory: category,
+        heroSubtitle: heroSubtitle.trim(),
+        invitationTitle: invitationTitle.trim(),
+        coverPhotoUrl: coverPhotoUrl.trim(),
         events: events
           .filter((e) => e.eventName.trim() !== "")
           .map((e) => ({
@@ -426,16 +451,20 @@ function CardBuilderContent() {
               groom: {
                 fullName: groomName.trim(),
                 shortName: groomShort.trim(),
+                avatarUrl: groomAvatarUrl.trim(),
                 birthOrder: groomBirthOrder.trim(),
+                phone: groomPhone.trim(),
                 parents: { fatherName: groomFather.trim(), motherName: groomMother.trim() },
               },
               bride: {
                 fullName: brideName.trim(),
                 shortName: brideShort.trim(),
+                avatarUrl: brideAvatarUrl.trim(),
                 birthOrder: brideBirthOrder.trim(),
+                phone: bridePhone.trim(),
                 parents: { fatherName: brideFather.trim(), motherName: brideMother.trim() },
               },
-              loveStory,
+              loveStory: loveStory.filter((s) => s.title.trim() !== ""),
             }
           : category === "BIRTHDAY"
           ? { celebrantName: celebrantName.trim(), age: Number(age) || 18 }
@@ -606,32 +635,33 @@ function CardBuilderContent() {
         {/* ======================================================== */}
         {/* CỘT TRÁI: FORM ĐIỀN THEO BƯỚC (WIZARD STEP FORM) */}
         {/* ======================================================== */}
-        <div className="w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-128px)] shadow-xs">
+        <div className="w-full lg:w-[520px] xl:w-[580px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-128px)] shadow-xs">
           {/* SCROLLABLE STEP FORM */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
             {/* ---------------------------------------------------- */}
-            {/* BƯỚC 1: LOẠI THIỆP & THÔNG TIN CẶP ĐÔI / CHỦ TIỆC */}
+            {/* BƯỚC 1: TIÊU ĐỀ, ẢNH BÌA, CẶP ĐÔI & LỜI NGỎ */}
             {/* ---------------------------------------------------- */}
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5EE] text-[#966E29] border border-[#EAE0CD] text-[11px] font-bold uppercase tracking-wider mb-2">
                     <Heart className="w-3.5 h-3.5" />
-                    <span>Bước 1: Loại thiệp & Cặp đôi</span>
+                    <span>Bước 1: Ảnh Bìa, Cặp Đôi & Lời Ngỏ</span>
                   </div>
                   <h3 className="text-base font-bold text-stone-900">
-                    Chọn loại thiệp & Nhập thông tin chính
+                    Cài đặt ảnh bìa, nhân vật chính & thông điệp
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Điền các thông tin thực tế của bạn để hiển thị trực quan trên thiệp xem trước bên phải.
+                    Mọi thay đổi ở đây sẽ xuất hiện trực tiếp trên phần đầu thiệp (Hero & Profile).
                   </p>
                 </div>
 
-                {/* Chọn danh mục */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
-                    1. Danh mục sự kiện
+                {/* 1. Chọn danh mục & Link Slug */}
+                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3.5">
+                  <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
+                    1. Danh mục & Đường dẫn thiệp
                   </label>
+                  
                   <div className="grid grid-cols-3 gap-2">
                     {[
                       { key: "WEDDING", label: "Thiệp Cưới", icon: <Heart className="w-4 h-4" /> },
@@ -642,10 +672,10 @@ function CardBuilderContent() {
                         key={c.key}
                         type="button"
                         onClick={() => setCategory(c.key as CardCategory)}
-                        className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition cursor-pointer ${
                           category === c.key
-                            ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-md"
-                            : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
+                            ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-sm"
+                            : "bg-white border-stone-200 text-stone-700 hover:bg-stone-100"
                         }`}
                       >
                         {c.icon}
@@ -653,45 +683,105 @@ function CardBuilderContent() {
                       </button>
                     ))}
                   </div>
-                </div>
 
-                {/* Đường dẫn Slug */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    2. Đường dẫn thiệp (Link Slug)
-                  </label>
-                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5">
-                    <span className="text-stone-400 font-mono">cardvite.vn/thiep/</span>
-                    <input
-                      type="text"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                      placeholder="VD: minh-quan-thu-ha-2026"
-                      className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
-                    />
+                  <div>
+                    <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                      Đường dẫn riêng (Slug Link)
+                    </label>
+                    <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-white px-3 py-2">
+                      <span className="text-stone-400 font-mono">cardvite.vn/thiep/</span>
+                      <input
+                        type="text"
+                        value={slug}
+                        onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                        placeholder="VD: minh-quan-thu-ha-2026"
+                        className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* THÔNG TIN RIÊNG THEO DANH MỤC */}
+                {/* 2. Ảnh bìa chính & Tiêu đề Hero */}
+                {category === "WEDDING" && (
+                  <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/70 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-[#BE944E]" />
+                        <span>2. Ảnh Bìa Thiệp & Tiêu Đề Đầu Trang (Hero Banner)</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Huy hiệu Hero (Dòng trên cùng)
+                        </label>
+                        <input
+                          type="text"
+                          value={heroSubtitle}
+                          onChange={(e) => setHeroSubtitle(e.target.value)}
+                          placeholder="VD: SAVE OUR SPECIAL DAY"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Tiêu đề Thư mời
+                        </label>
+                        <input
+                          type="text"
+                          value={invitationTitle}
+                          onChange={(e) => setInvitationTitle(e.target.value)}
+                          placeholder="VD: Thư Mời Thành Hôn / Vu Quy"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                        Link Ảnh Bìa Chính (Hero Arch Cover)
+                      </label>
+                      <input
+                        type="text"
+                        value={coverPhotoUrl}
+                        onChange={(e) => setCoverPhotoUrl(e.target.value)}
+                        placeholder="Dán link ảnh bìa chính (URL https://...)"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. THÔNG TIN CHÚ RỂ & NHÀ TRAI */}
                 {category === "WEDDING" && (
                   <div className="space-y-4">
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      3. Thông tin Cô Dâu, Chú Rể & Hai Bên Gia Đình
-                    </label>
-
                     {/* NHÀ TRAI */}
                     <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#BE944E]" />
                         <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                          Nhà Trai • Chú Rể
+                          3. Thông tin Chú Rể (Nhà Trai)
                         </h4>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Ảnh đại diện Chú Rể (Avatar URL)
+                        </label>
+                        <input
+                          type="text"
+                          value={groomAvatarUrl}
+                          onChange={(e) => setGroomAvatarUrl(e.target.value)}
+                          placeholder="Dán đường dẫn ảnh chân dung chú rể (URL https://...)"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                        />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Chú Rể (Đầy đủ)
+                            Họ Tên Chú Rể (Đầy đủ)
                           </label>
                           <input
                             type="text"
@@ -703,7 +793,7 @@ function CardBuilderContent() {
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Thân Mật (Gọi tắt)
+                            Tên Thân Mật (Gọi tắt trên đầu thiệp)
                           </label>
                           <input
                             type="text"
@@ -747,21 +837,45 @@ function CardBuilderContent() {
                           />
                         </div>
                       </div>
+
+                      <div>
+                        <label className="block text-[10px] text-stone-500 mb-1">Số điện thoại liên hệ (Nhà Trai)</label>
+                        <input
+                          type="text"
+                          value={groomPhone}
+                          onChange={(e) => setGroomPhone(e.target.value)}
+                          placeholder="VD: 0988 888 888"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
+                        />
+                      </div>
                     </div>
 
                     {/* NHÀ GÁI */}
                     <div className="p-4 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-rose-500" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
                         <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
-                          Nhà Gái • Cô Dâu
+                          4. Thông tin Cô Dâu (Nhà Gái)
                         </h4>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                          Ảnh đại diện Cô Dâu (Avatar URL)
+                        </label>
+                        <input
+                          type="text"
+                          value={brideAvatarUrl}
+                          onChange={(e) => setBrideAvatarUrl(e.target.value)}
+                          placeholder="Dán đường dẫn ảnh chân dung cô dâu (URL https://...)"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                        />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Cô Dâu (Đầy đủ)
+                            Họ Tên Cô Dâu (Đầy đủ)
                           </label>
                           <input
                             type="text"
@@ -773,7 +887,7 @@ function CardBuilderContent() {
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                            Tên Thân Mật (Gọi tắt)
+                            Tên Thân Mật (Gọi tắt trên đầu thiệp)
                           </label>
                           <input
                             type="text"
@@ -817,81 +931,32 @@ function CardBuilderContent() {
                           />
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
 
-                {category === "BIRTHDAY" && (
-                  <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      Thông Tin Chủ Tiệc Sinh Nhật
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Họ và Tên</label>
+                        <label className="block text-[10px] text-stone-500 mb-1">Số điện thoại liên hệ (Nhà Gái)</label>
                         <input
                           type="text"
-                          value={celebrantName}
-                          onChange={(e) => setCelebrantName(e.target.value)}
-                          placeholder="VD: Hoàng Bảo Nam"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tuổi</label>
-                        <input
-                          type="number"
-                          value={age}
-                          onChange={(e) => setAge(e.target.value)}
-                          placeholder="VD: 25"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                          value={bridePhone}
+                          onChange={(e) => setBridePhone(e.target.value)}
+                          placeholder="VD: 0977 777 777"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
                         />
                       </div>
                     </div>
                   </div>
                 )}
 
-                {category === "NEWBORN" && (
-                  <div className="p-4 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3">
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      Thông Tin Bé Yêu
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Bé</label>
-                        <input
-                          type="text"
-                          value={babyName}
-                          onChange={(e) => setBabyName(e.target.value)}
-                          placeholder="VD: Nguyễn Tuệ Nhi"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-semibold text-stone-600 mb-1">Biệt danh ở nhà</label>
-                        <input
-                          type="text"
-                          value={nickname}
-                          onChange={(e) => setNickname(e.target.value)}
-                          placeholder="VD: Bé Đậu"
-                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* LỜI NGỎ */}
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    4. Lời ngỏ & Thông điệp gửi khách mời
+                {/* 4. LỜI NGỎ GỬI KHÁCH */}
+                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                  <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
+                    5. Lời ngỏ & Thông điệp gửi khách mời
                   </label>
                   <textarea
                     rows={3}
                     value={greetingMessage}
                     onChange={(e) => setGreetingMessage(e.target.value)}
                     placeholder="Nhập thông điệp gửi tới khách mời hoặc câu trích dẫn tình yêu..."
-                    className="w-full p-3 text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
+                    className="w-full p-3 text-xs rounded-xl bg-white border border-stone-200 leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
                   />
                 </div>
               </div>
@@ -1095,28 +1160,29 @@ function CardBuilderContent() {
             )}
 
             {/* ---------------------------------------------------- */}
-            {/* BƯỚC 3: CHI TIẾT TIỆC, ALBUM & MỪNG CƯỚI VIETQR */}
+            {/* BƯỚC 3: LỊCH TRÌNH, ALBUM, CHUYỆN TÌNH YÊU & VIETQR */}
             {/* ---------------------------------------------------- */}
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5EE] text-[#966E29] border border-[#EAE0CD] text-[11px] font-bold uppercase tracking-wider mb-2">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>Bước 3: Chi Tiết Tiệc, Album & Hộp Mừng Cưới</span>
+                    <span>Bước 3: Lịch Trình, Chuyện Tình Yêu, Album & Quà</span>
                   </div>
                   <h3 className="text-base font-bold text-stone-900">
-                    Lịch trình, Album ảnh cưới & VietQR Mừng Cưới
+                    Lịch trình, Album ảnh cưới, Timeline tình yêu & VietQR
                   </h3>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Cung cấp đầy đủ thời gian, địa điểm, hình ảnh và tài khoản ngân hàng để khách tiện mừng cưới.
+                    Tất cả các mục bên dưới sẽ được dựng thành các phân đoạn trang trọng trên thiệp.
                   </p>
                 </div>
 
                 {/* 1. LỊCH TRÌNH TIỆC */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      1. Lịch trình các buổi lễ & Tiệc mừng
+                    <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[#BE944E]" />
+                      <span>1. Lịch trình các buổi lễ & Tiệc mừng</span>
                     </label>
                     <button
                       type="button"
@@ -1162,7 +1228,7 @@ function CardBuilderContent() {
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Sự Kiện</label>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Buổi Lễ</label>
                             <input
                               type="text"
                               value={ev.eventName}
@@ -1171,7 +1237,7 @@ function CardBuilderContent() {
                                 updated[idx].eventName = e.target.value;
                                 setEvents(updated);
                               }}
-                              placeholder="VD: Lễ Thành Hôn / Vu Quy"
+                              placeholder="VD: Lễ Thành Hôn / Vu Quy / Tiệc Cưới"
                               className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                             />
                           </div>
@@ -1192,7 +1258,7 @@ function CardBuilderContent() {
 
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Địa Điểm / Sảnh</label>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tên Địa Điểm / Sảnh Cưới</label>
                             <input
                               type="text"
                               value={ev.venueName}
@@ -1201,12 +1267,12 @@ function CardBuilderContent() {
                                 updated[idx].venueName = e.target.value;
                                 setEvents(updated);
                               }}
-                              placeholder="VD: Trung tâm Tiệc Cưới GEM Center"
+                              placeholder="VD: Trung tâm GEM Center (Sảnh Grand)"
                               className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                             />
                           </div>
                           <div>
-                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch (Hiển thị)</label>
+                            <label className="block text-[10px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch (Hiển thị thiệp)</label>
                             <input
                               type="text"
                               value={ev.lunarDate || ""}
@@ -1235,16 +1301,147 @@ function CardBuilderContent() {
                             className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
                           />
                         </div>
+
+                        <div>
+                          <label className="block text-[10px] font-semibold text-stone-600 mb-1">Link Chỉ Đường Google Maps</label>
+                          <input
+                            type="text"
+                            value={ev.mapUrl || ""}
+                            onChange={(e) => {
+                              const updated = [...events];
+                              updated[idx].mapUrl = e.target.value;
+                              setEvents(updated);
+                            }}
+                            placeholder="https://maps.google.com/..."
+                            className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-600 focus:outline-none focus:ring-1 focus:ring-[#BE944E]"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* 2. ALBUM ẢNH CƯỚI */}
+                {/* 2. CHUYỆN TÌNH YÊU (LOVE STORY TIMELINE) */}
+                {category === "WEDDING" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <Scroll className="w-3.5 h-3.5 text-[#BE944E]" />
+                        <span>2. Chuyện Tình Yêu (Love Story Timeline)</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLoveStory([
+                            ...loveStory,
+                            {
+                              title: "",
+                              date: "",
+                              description: "",
+                              imageUrl: "",
+                            },
+                          ]);
+                        }}
+                        className="px-2.5 py-1 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Thêm Mốc Kỷ Niệm</span>
+                      </button>
+                    </div>
+
+                    {loveStory.length === 0 ? (
+                      <div className="p-4 rounded-2xl border-2 border-dashed border-stone-200 text-center space-y-1 bg-stone-50/50">
+                        <p className="text-xs text-stone-500">Chưa có câu chuyện nào được thêm.</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLoveStory([
+                              {
+                                title: "Lần Đầu Gặp Gỡ",
+                                date: "14 . 02 . 2022",
+                                description: "Một chiều mưa cà phê tại góc phố quen, ánh mắt chạm nhau mở đầu cho bản tình ca.",
+                                imageUrl: "",
+                              },
+                            ]);
+                          }}
+                          className="text-xs text-[#BE944E] font-bold hover:underline"
+                        >
+                          + Bấm vào đây để thêm mốc kỷ niệm đầu tiên
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {loveStory.map((story, idx) => (
+                          <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-[#BE944E]">Mốc Kỷ Niệm #{idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={() => setLoveStory(loveStory.filter((_, i) => i !== idx))}
+                                className="text-stone-400 hover:text-rose-500 p-1"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[10px] font-semibold text-stone-600 mb-1">Thời Gian (VD: 14 . 02 . 2022)</label>
+                                <input
+                                  type="text"
+                                  value={story.date}
+                                  onChange={(e) => {
+                                    const updated = [...loveStory];
+                                    updated[idx].date = e.target.value;
+                                    setLoveStory(updated);
+                                  }}
+                                  placeholder="14 . 02 . 2022"
+                                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-semibold text-stone-600 mb-1">Tiêu Đề Kỷ Niệm</label>
+                                <input
+                                  type="text"
+                                  value={story.title}
+                                  onChange={(e) => {
+                                    const updated = [...loveStory];
+                                    updated[idx].title = e.target.value;
+                                    setLoveStory(updated);
+                                  }}
+                                  placeholder="VD: Lần Đầu Gặp Gỡ"
+                                  className="w-full px-3 py-1.5 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-semibold text-stone-600 mb-1">Lời Chia Sẻ Ngắn</label>
+                              <textarea
+                                rows={2}
+                                value={story.description}
+                                onChange={(e) => {
+                                  const updated = [...loveStory];
+                                  updated[idx].description = e.target.value;
+                                  setLoveStory(updated);
+                                }}
+                                placeholder="Viết vài dòng kỷ niệm đáng nhớ..."
+                                className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 3. ALBUM ẢNH CƯỚI */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                      2. Album ảnh cưới kỷ niệm
+                    <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-[#BE944E]" />
+                      <span>3. Album ảnh cưới kỷ niệm (4K Gallery)</span>
                     </label>
                     <button
                       type="button"
@@ -1266,7 +1463,7 @@ function CardBuilderContent() {
                   </div>
 
                   {photos.length === 0 ? (
-                    <div className="p-6 rounded-2xl border-2 border-dashed border-stone-200 text-center space-y-1.5 bg-stone-50/50">
+                    <div className="p-5 rounded-2xl border-2 border-dashed border-stone-200 text-center space-y-1.5 bg-stone-50/50">
                       <ImageIcon className="w-6 h-6 text-stone-400 mx-auto" />
                       <p className="text-xs text-stone-500 font-medium">Chưa có ảnh nào trong album</p>
                       <button
@@ -1321,10 +1518,11 @@ function CardBuilderContent() {
                   )}
                 </div>
 
-                {/* 3. MỪNG CƯỚI VIETQR */}
+                {/* 4. MỪNG CƯỚI VIETQR */}
                 <div className="space-y-3">
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
-                    3. Hộp Mừng Cưới VietQR Napas247
+                  <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Gift className="w-3.5 h-3.5 text-[#BE944E]" />
+                    <span>4. Hộp Mừng Cưới VietQR Napas247 & Quà Tặng</span>
                   </label>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1472,9 +1670,21 @@ function CardBuilderContent() {
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
                         <CheckCircle
+                          className={`w-4 h-4 ${loveStory.length > 0 ? "text-emerald-500" : "text-stone-300"}`}
+                        />
+                        <span className="font-semibold text-stone-800">4. Chuyện Tình Yêu (Love Story)</span>
+                      </div>
+                      <span className="text-stone-500 text-[11px]">
+                        {loveStory.length > 0 ? `${loveStory.length} mốc kỷ niệm` : "Chưa có"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle
                           className={`w-4 h-4 ${photos.length > 0 ? "text-emerald-500" : "text-stone-300"}`}
                         />
-                        <span className="font-semibold text-stone-800">4. Album Ảnh Cưới 4K</span>
+                        <span className="font-semibold text-stone-800">5. Album Ảnh Cưới 4K</span>
                       </div>
                       <span className="text-stone-500 text-[11px]">
                         {photos.length > 0 ? `${photos.length} bức ảnh` : "Chưa thêm"}
@@ -1486,7 +1696,7 @@ function CardBuilderContent() {
                         <CheckCircle
                           className={`w-4 h-4 ${bankCodeGroom || bankCodeBride ? "text-emerald-500" : "text-stone-300"}`}
                         />
-                        <span className="font-semibold text-stone-800">5. Hộp Mừng Cưới VietQR Napas247</span>
+                        <span className="font-semibold text-stone-800">6. Hộp Mừng Cưới VietQR Napas247</span>
                       </div>
                       <span className="text-stone-500 text-[11px] font-mono">
                         {bankCodeGroom || bankCodeBride ? "Đã thiết lập" : "Chưa nhập"}
@@ -1496,7 +1706,7 @@ function CardBuilderContent() {
                     <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-stone-200/80">
                       <div className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        <span className="font-semibold text-stone-800">6. Nhạc Nền Du Dương</span>
+                        <span className="font-semibold text-stone-800">7. Nhạc Nền Du Dương</span>
                       </div>
                       <span className="text-stone-500 text-[11px]">Auto play sẵn sàng</span>
                     </div>

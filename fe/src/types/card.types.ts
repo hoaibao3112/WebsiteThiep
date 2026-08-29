@@ -25,11 +25,15 @@ export interface PhotoItem {
 
 export interface WeddingDataPayload {
   cardCategory: "WEDDING";
+  heroSubtitle?: string;
+  invitationTitle?: string;
+  coverPhotoUrl?: string;
   groom: {
     fullName: string;
     shortName?: string;
     avatarUrl?: string;
     birthOrder?: string;
+    phone?: string;
     parents?: {
       fatherName?: string;
       motherName?: string;
@@ -43,6 +47,7 @@ export interface WeddingDataPayload {
     shortName?: string;
     avatarUrl?: string;
     birthOrder?: string;
+    phone?: string;
     parents?: {
       fatherName?: string;
       motherName?: string;
