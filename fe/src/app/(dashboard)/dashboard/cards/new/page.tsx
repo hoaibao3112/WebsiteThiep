@@ -113,6 +113,12 @@ const TEMPLATE_PRESETS = [
 // Danh sách Nhạc Nền Cưới Có Sẵn
 const MUSIC_OPTIONS = [
   {
+    title: "Lễ Đường (Wedding Anthem)",
+    artist: "Nhạc Cưới Tình Yêu",
+    duration: "3:45",
+    src: "/music/le-duong.mp3",
+  },
+  {
     title: "Until I Found You",
     artist: "Stephen Sanchez",
     duration: "2:57",
@@ -135,6 +141,24 @@ const MUSIC_OPTIONS = [
     artist: "Ed Sheeran",
     duration: "4:23",
     src: "/music/perfect.mp3",
+  },
+  {
+    title: "Beautiful in White (Violin & Piano Solo)",
+    artist: "Shane Filan (Westlife)",
+    duration: "3:30",
+    src: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=wedding-violin-piano-10874.mp3",
+  },
+  {
+    title: "Marry You (Acoustic Guitar Romance)",
+    artist: "Bruno Mars Tribute",
+    duration: "3:15",
+    src: "https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=romantic-acoustic-guitar-wedding-122718.mp3",
+  },
+  {
+    title: "Sweet Love Story (Cello & Piano)",
+    artist: "Romantic Wedding Orchestra",
+    duration: "3:20",
+    src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=sweet-love-story-piano-18237.mp3",
   },
 ];
 
