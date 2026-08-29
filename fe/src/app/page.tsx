@@ -559,8 +559,10 @@ export default function CardViteHomePage() {
       <header className="w-full px-6 py-6 md:px-12 lg:px-20 bg-[#FAF7F2] sticky top-0 z-40 backdrop-blur-md bg-[#FAF7F2]/90 border-b border-[#EFE9E1]/60 transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* LOGO */}
-          <Link href="/" className="group flex items-center">
-            <span className="text-3xl font-serif font-bold tracking-tight text-[#181716] group-hover:text-[#BE944E] transition duration-300">
+          <Link href="/" className="group flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/logo.png" alt="Logo CardVite" className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105" />
+            <span className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#181716] group-hover:text-[#BE944E] transition duration-300">
               CardVite
             </span>
           </Link>
