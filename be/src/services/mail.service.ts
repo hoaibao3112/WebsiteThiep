@@ -117,7 +117,7 @@ export class MailService {
     favoriteTemplate?: string;
     notes?: string;
   }): Promise<void> {
-    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || process.env.SMTP_USER || "tranhaobao3112004@gmail.com";
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || process.env.SMTP_USER || "baohoaitran3112@gmail.com";
     const subject = `[CardVite Concierge] Khách hàng mới đăng ký thuê thiết kế: ${data.fullName} (${data.phone})`;
     const html = `
       <!DOCTYPE html>

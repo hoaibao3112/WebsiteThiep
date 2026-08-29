@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { Footer } from "@/components/shared/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateDetailModal, TemplateModalData } from "@/components/shared/TemplateDetailModal";
 
@@ -688,18 +689,7 @@ export default function CollectionsPage() {
       {/* ------------------------------------------------------------- */}
       {/* 7. FOOTER */}
       {/* ------------------------------------------------------------- */}
-      <footer className="relative z-10 border-t border-[#EFE9E1] bg-white py-10 px-6 md:px-12 lg:px-20">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
-          <span className="text-2xl font-serif font-bold text-[#181716]">CardVite</span>
-          <div className="flex items-center gap-6 font-medium">
-            <Link href="#" className="hover:text-[#181716]">{t("footerPrivacy")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerTerms")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerSustainability")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerAccessibility")}</Link>
-          </div>
-          <span>{t("footerCopyright")}</span>
-        </div>
-      </footer>
+      <Footer />
 
       {/* QUICK VIEW TEMPLATE DETAIL MODAL */}
       <TemplateDetailModal

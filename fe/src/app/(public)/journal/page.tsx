@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
+import { Footer } from "@/components/shared/Footer";
 
 interface Article {
   id: string;
@@ -225,18 +226,7 @@ export default function JournalPage() {
       {/* ------------------------------------------------------------- */}
       {/* 6. FOOTER */}
       {/* ------------------------------------------------------------- */}
-      <footer className="border-t border-[#EFE9E1] bg-white py-10 px-6 md:px-12 lg:px-20">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-[#181716]/65">
-          <span className="text-2xl font-serif font-bold text-[#181716]">CardVite</span>
-          <div className="flex items-center gap-6 font-medium">
-            <Link href="#" className="hover:text-[#181716]">{t("footerPrivacy")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerTerms")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerSustainability")}</Link>
-            <Link href="#" className="hover:text-[#181716]">{t("footerAccessibility")}</Link>
-          </div>
-          <span>{t("footerCopyright")}</span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
