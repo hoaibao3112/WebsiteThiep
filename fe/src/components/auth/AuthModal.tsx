@@ -17,6 +17,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 declare global {
   interface Window {
@@ -25,6 +26,7 @@ declare global {
 }
 
 export function AuthModal() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -36,6 +38,7 @@ export function AuthModal() {
     sendRegisterOtp,
     googleLogin,
   } = useAuth();
+
 
   // Tab chính: "login" | "register"
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -348,7 +351,9 @@ export function AuthModal() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/images/logo.png" alt="Logo" className="h-12 w-auto object-contain mb-1" />
             <p className="text-xs text-stone-500">
-              Nền tảng tạo thiệp cưới & sự kiện trực tuyến cao cấp
+              {activeTab === "login"
+                ? (t("authModalLoginSubtitle") || "Đăng nhập để quản lý thiệp cưới của bạn")
+                : (t("authModalRegisterSubtitle") || "Tạo thiệp cưới cao cấp nhanh chóng")}
             </p>
           </div>
 
@@ -366,7 +371,7 @@ export function AuthModal() {
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              Đăng Nhập
+              {t("authTabLogin") || "Đăng Nhập"}
             </button>
             <button
               onClick={() => {
@@ -381,7 +386,7 @@ export function AuthModal() {
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              Đăng Ký Mới
+              {t("authTabRegister") || "Đăng Ký"}
             </button>
           </div>
 
@@ -415,7 +420,7 @@ export function AuthModal() {
             <form onSubmit={handleLoginSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                  Địa chỉ Email / Gmail
+                  {t("authFieldEmail") || "Địa chỉ Email"}
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -425,7 +430,7 @@ export function AuthModal() {
                     autoFocus
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vidu@gmail.com"
+                    placeholder={t("authFieldEmailPlaceholder") || "vidu@gmail.com"}
                     className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
                   />
                 </div>
@@ -433,7 +438,7 @@ export function AuthModal() {
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                  Mật khẩu
+                  {t("authFieldPassword") || "Mật khẩu"}
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -442,7 +447,7 @@ export function AuthModal() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu..."
+                    placeholder={t("authFieldPasswordPlaceholder") || "Nhập mật khẩu..."}
                     className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
                   />
                   <button
@@ -460,7 +465,7 @@ export function AuthModal() {
                 disabled={loading}
                 className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-xs font-bold uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>ĐĂNG NHẬP</span>}
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <span>{t("authBtnLogin") || "ĐĂNG NHẬP"}</span>}
               </button>
 
               {/* DIVIDER */}
@@ -470,7 +475,7 @@ export function AuthModal() {
                 </div>
                 <div className="relative flex justify-center text-[10px] uppercase">
                   <span className="bg-[#FAF7F2] px-3 text-stone-400 font-bold tracking-wider">
-                    Hoặc đăng nhập với
+                    {t("authOrGoogle") || "Hoặc tiếp tục với Google"}
                   </span>
                 </div>
               </div>
@@ -503,7 +508,7 @@ export function AuthModal() {
                         d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
                       />
                     </svg>
-                    <span>Tiếp tục với Google</span>
+                    <span>Google</span>
                   </button>
                 )}
               </div>
@@ -517,7 +522,7 @@ export function AuthModal() {
             <form onSubmit={handleSendRegisterOtp} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                  Địa chỉ Email / Gmail của bạn
+                  {t("authFieldEmail") || "Địa chỉ Email của bạn"}
                 </label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -527,7 +532,7 @@ export function AuthModal() {
                     autoFocus
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vidu@gmail.com"
+                    placeholder={t("authFieldEmailPlaceholder") || "vidu@gmail.com"}
                     className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
                   />
                 </div>
@@ -542,7 +547,7 @@ export function AuthModal() {
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <span>NHẬN MÃ OTP ĐĂNG KÝ</span>
+                    <span>{t("authBtnGetOtp") || "NHẬN MÃ OTP ĐĂNG KÝ"}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
@@ -555,7 +560,7 @@ export function AuthModal() {
                 </div>
                 <div className="relative flex justify-center text-[10px] uppercase">
                   <span className="bg-[#FAF7F2] px-3 text-stone-400 font-bold tracking-wider">
-                    Hoặc đăng ký nhanh với
+                    {t("authOrGoogle") || "Hoặc tiếp tục với Google"}
                   </span>
                 </div>
               </div>
@@ -588,7 +593,7 @@ export function AuthModal() {
                         d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
                       />
                     </svg>
-                    <span>Đăng ký nhanh với Google</span>
+                    <span>Google</span>
                   </button>
                 )}
               </div>
@@ -602,7 +607,7 @@ export function AuthModal() {
             <form onSubmit={handleOtpStepSubmit} className="space-y-4">
               <div className="text-center space-y-1">
                 <span className="text-xs text-stone-500 block">
-                  Nhập mã xác thực 6 số gửi về Gmail:
+                  {t("authOtpTitle") || "Nhập mã xác thực 6 số gửi về Gmail:"}
                 </span>
                 <span className="text-xs font-bold text-[#8C6424] block font-mono bg-amber-50/80 px-3 py-1 rounded-full mx-auto max-w-xs truncate border border-amber-200/50">
                   {email}
@@ -633,7 +638,7 @@ export function AuthModal() {
                 disabled={otpValues.some((d) => !d)}
                 className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-xs font-bold uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <span>TIẾP TỤC TẠO MẬT KHẨU →</span>
+                <span>{t("authBtnGetOtp") ? "TIẾP TỤC →" : "TIẾP TỤC TẠO MẬT KHẨU →"}</span>
               </button>
 
               <div className="flex items-center justify-between text-[11px] pt-1">
@@ -655,7 +660,7 @@ export function AuthModal() {
                   onClick={handleResendOtp}
                   className="text-[#8C6424] font-bold hover:underline disabled:text-stone-400 disabled:no-underline cursor-pointer"
                 >
-                  {countdown > 0 ? `Gửi lại sau ${countdown}s` : "Gửi lại OTP"}
+                  {countdown > 0 ? `${t("authResendIn") || "Gửi lại sau"} ${countdown}s` : (t("authResendOtp") || "Gửi lại OTP")}
                 </button>
               </div>
             </form>
@@ -672,13 +677,13 @@ export function AuthModal() {
                   <span>Xác thực OTP thành công</span>
                 </div>
                 <p className="text-xs text-stone-600">
-                  Tạo mật khẩu cho tài khoản <strong>{email}</strong>
+                  {t("authCreatePasswordTitle") || "Tạo mật khẩu cho tài khoản"} <strong>{email}</strong>
                 </p>
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                  Mật khẩu mới (tối thiểu 6 ký tự)
+                  {t("authPasswordRule") || "Mật khẩu mới (tối thiểu 6 ký tự)"}
                 </label>
                 <div className="relative">
                   <KeyRound className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -688,7 +693,7 @@ export function AuthModal() {
                     autoFocus
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu của bạn..."
+                    placeholder={t("authFieldPasswordPlaceholder") || "Nhập mật khẩu của bạn..."}
                     className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
                   />
                   <button
@@ -709,7 +714,7 @@ export function AuthModal() {
                 {loading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
-                  <span>HOÀN TẤT ĐĂNG KÝ & BẮT ĐẦU</span>
+                  <span>{t("authBtnCompleteRegister") || "HOÀN TẤT ĐĂNG KÝ & BẮT ĐẦU"}</span>
                 )}
               </button>
 
@@ -724,6 +729,7 @@ export function AuthModal() {
               </div>
             </form>
           )}
+
         </motion.div>
       </div>
     </AnimatePresence>

@@ -124,34 +124,42 @@ export default function ConciergePage() {
           {/* CỘT TRÁI: KÊNH LIÊN HỆ NHANH (4 PILL BOXES) */}
           <div className="lg:col-span-5 space-y-4">
             {/* CARD 1: ZALO */}
-            <div className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition">
-              <div className="w-11 h-11 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+            <a
+              href="https://zalo.me/0373170367"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition group block"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-stone-100 group-hover:bg-[#FAF5EE] flex items-center justify-center text-stone-700 group-hover:text-[#BE944E] shrink-0 transition">
                 <MessageSquare className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
                   {t("zaloSupport")}
                 </span>
-                <span className="text-sm font-bold text-stone-900 mt-0.5 block">
-                  090 123 4567
+                <span className="text-sm font-bold text-stone-900 group-hover:text-[#BE944E] mt-0.5 block transition">
+                  0373 170 367
                 </span>
               </div>
-            </div>
+            </a>
 
             {/* CARD 2: HOTLINE */}
-            <div className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition">
-              <div className="w-11 h-11 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
+            <a
+              href="tel:0373170367"
+              className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition group block"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-stone-100 group-hover:bg-[#FAF5EE] flex items-center justify-center text-stone-700 group-hover:text-[#BE944E] shrink-0 transition">
                 <Phone className="w-5 h-5" strokeWidth={1.5} />
               </div>
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
                   {t("hotlineSupport")}
                 </span>
-                <span className="text-sm font-bold text-stone-900 mt-0.5 block">
-                  1800 8888
+                <span className="text-sm font-bold text-stone-900 group-hover:text-[#BE944E] mt-0.5 block transition">
+                  0373 170 367
                 </span>
               </div>
-            </div>
+            </a>
 
             {/* CARD 3: EMAIL */}
             <div className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition">

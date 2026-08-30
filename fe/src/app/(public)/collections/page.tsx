@@ -499,7 +499,7 @@ export default function CollectionsPage() {
           className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#F5EEDF] border border-[#D9C4A1] text-[#8C6424] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] shadow-2xs"
         >
           <Sparkle className="w-3 h-3 fill-[#8C6424]" />
-          <span>BỘ SƯU TẬP CAO CẤP</span>
+          <span>{t("collectionsBadge") || "BỘ SƯU TẬP CAO CẤP"}</span>
           <Sparkle className="w-3 h-3 fill-[#8C6424]" />
         </motion.div>
 
@@ -510,7 +510,7 @@ export default function CollectionsPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-3xl sm:text-5xl lg:text-[54px] font-serif font-bold text-[#2A231C] tracking-tight leading-tight"
         >
-          Kho Mẫu Thiệp Đa Danh Mục
+          {t("collectionsTitle") || "Kho Mẫu Thiệp Đa Danh Mục"}
         </motion.h1>
 
         {/* DESCRIPTION */}
@@ -520,8 +520,7 @@ export default function CollectionsPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-xs sm:text-sm text-stone-600 max-w-2xl mx-auto leading-relaxed"
         >
-          Khám phá hàng trăm thiết kế thiệp cưới, đầy tháng, sinh nhật và sự kiện độc quyền.
-          Được chế tác với sự tinh tế trong từng pixel, tối giản nhưng đậm chất nghệ thuật, hoàn hảo để lưu giữ khoảnh khắc của bạn.
+          {t("collectionsDesc") || "Khám phá hàng trăm thiết kế thiệp cưới, đầy tháng, sinh nhật và sự kiện độc quyền. Được chế tác với sự tinh tế trong từng pixel, tối giản nhưng đậm chất nghệ thuật, hoàn hảo để lưu giữ khoảnh khắc của bạn."}
         </motion.p>
       </section>
 
@@ -553,7 +552,7 @@ export default function CollectionsPage() {
           {/* TIER 2: STYLES SUB-FILTER CHIPS */}
           <div className="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-stone-100 px-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0 mr-1 hidden sm:inline">
-              Phong cách:
+              {t("stylePrefix") || "Phong cách:"}
             </span>
             {styles.map((s) => {
               const isActive = selectedStyle === s.id;
@@ -602,7 +601,7 @@ export default function CollectionsPage() {
               className="relative group inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#FFFBF2] to-[#FAF3E3] border border-[#D9C4A1] text-xs font-bold uppercase tracking-[0.2em] text-[#8C6424] shadow-[0_4px_16px_rgba(190,148,78,0.15)] hover:shadow-[0_8px_24px_rgba(190,148,78,0.25)] transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#BE944E] group-hover:rotate-12 transition-transform" />
-              <span>XEM THÊM 240+ MẪU</span>
+              <span>{t("viewMoreTemplates") || "XEM THÊM 240+ MẪU"}</span>
               <ChevronDown className="w-4 h-4 text-[#BE944E] group-hover:translate-y-0.5 transition-transform" />
 
               {/* Glowing aura */}
@@ -659,13 +658,13 @@ export default function CollectionsPage() {
 
           <div className="relative z-10 space-y-5 max-w-lg mx-auto">
             <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-400/30">
-              Thiết Kế Độc Bản
+              {t("badgeUniqueDesign") || "Thiết Kế Độc Bản"}
             </span>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-stone-100">
               {t("ctaBannerTitle") || "Bắt đầu tạo thiệp ngay hôm nay"}
             </h2>
             <p className="text-xs text-stone-300 leading-relaxed">
-              Trải nghiệm phong bì sáp 3D, album ảnh cưới và quản lý RSVP chuyên nghiệp cho sự kiện của bạn.
+              {t("ctaBannerSubtitle") || "Trải nghiệm phong bì sáp 3D, album ảnh cưới và quản lý RSVP chuyên nghiệp cho sự kiện của bạn."}
             </p>
             <div>
               <button
@@ -682,6 +681,7 @@ export default function CollectionsPage() {
           </div>
         </div>
       </section>
+
 
       {/* ------------------------------------------------------------- */}
       {/* 7. FOOTER */}

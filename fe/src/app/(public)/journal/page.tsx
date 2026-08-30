@@ -77,14 +77,53 @@ export default function JournalPage() {
   const [subscribed, setSubscribed] = useState(false);
 
   const categories = [
-    { id: "all", label: "Tất cả" },
-    { id: "wedding", label: "Xu hướng cưới" },
-    { id: "ritual", label: "Nghi thức tinh hoa" },
-    { id: "invite", label: "Lời mời chuẩn" },
-    { id: "compare", label: "So sánh thiệp số" },
+    { id: "all", label: t("journalCatAll") || "Tất cả" },
+    { id: "wedding", label: t("journalCatWedding") || "Xu hướng cưới" },
+    { id: "ritual", label: t("journalCatRitual") || "Nghi thức tinh hoa" },
+    { id: "invite", label: t("journalCatInvite") || "Lời mời chuẩn" },
+    { id: "compare", label: t("journalCatCompare") || "So sánh thiệp số" },
   ];
 
-  const filteredArticles = ARTICLES.filter((art) => {
+  const articles: Article[] = [
+    {
+      id: "1",
+      category: "wedding",
+      tag: t("journalArticle1Tag") || "XU HƯỚNG",
+      date: t("journalArticle1Date") || "15 THG 10, 2024",
+      readTime: t("journalArticle1ReadTime") || "4 PHÚT ĐỌC",
+      title: t("journalArticle1Title") || "Top 5 Màu Sắc Chủ Đạo Cho Mùa Cưới 2026",
+      excerpt:
+        t("journalArticle1Excerpt") ||
+        "Từ sắc Nude ấm áp đến Xanh Sage tinh tế, sự chuyển dịch của bảng màu phản ánh cá tính và kỉ niệm của bạn.",
+      imageUrl: "/images/journal-card-balloon.jpg",
+    },
+    {
+      id: "2",
+      category: "compare",
+      tag: t("journalArticle2Tag") || "SO SÁNH",
+      date: t("journalArticle2Date") || "12 THG 10, 2024",
+      readTime: t("journalArticle2ReadTime") || "6 PHÚT ĐỌC",
+      title: t("journalArticle2Title") || "Thiệp Kỹ Thuật Số và Thiệp Giấy Truyền Thống",
+      excerpt:
+        t("journalArticle2Excerpt") ||
+        "Phân tích chi tiết ưu và nhược điểm, giúp bạn đưa ra lựa chọn phù hợp nhất cho ngày trọng đại của mình.",
+      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
+    },
+    {
+      id: "3",
+      category: "invite",
+      tag: t("journalArticle3Tag") || "LỜI MỜI",
+      date: t("journalArticle3Date") || "08 THG 10, 2024",
+      readTime: t("journalArticle3ReadTime") || "5 PHÚT ĐỌC",
+      title: t("journalArticle3Title") || "Nghệ Thuật Viết Lời Mời: Từ Trưởng Bối Đến Bạn Bè",
+      excerpt:
+        t("journalArticle3Excerpt") ||
+        "Làm sao để lời mời vừa trang trọng, vừa gần gũi và truyền tải trọn vẹn ý nghĩa ngày cưới?",
+      imageUrl: "/images/journal-card-beach.jpg",
+    },
+  ];
+
+  const filteredArticles = articles.filter((art) => {
     return selectedCategory === "all" || art.category === selectedCategory;
   });
 
@@ -177,21 +216,21 @@ export default function JournalPage() {
           >
             {/* Top Category Tag */}
             <div className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#8C6B38]">
-              KHÁM PHÁ & CẢM HỨNG
+              {t("journalHeroTag") || "KHÁM PHÁ & CẢM HỨNG"}
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-serif font-bold text-[#181716] tracking-tight leading-[1.15]">
-              Cẩm Nang & <br />
-              Cảm Hứng <br />
+              {t("journalHeroTitle1") || "Cẩm Nang &"} <br />
+              {t("journalHeroTitle2") || "Cảm Hứng"} <br />
               <span className="italic font-normal font-serif text-[#C4974E]">
-                Tổ Chức Tiệc
+                {t("journalHeroTitleEm") || "Tổ Chức Tiệc"}
               </span>
             </h1>
 
             {/* Subtitle Description */}
             <p className="text-xs sm:text-sm text-stone-600/90 max-w-md leading-relaxed">
-              Khám phá xu hướng thiết kế thiệp mời mới nhất, nghệ thuật viết lời mời tinh tế và cẩm nang toàn diện cho những sự kiện trọng đại của bạn.
+              {t("journalHeroDesc") || "Khám phá xu hướng thiết kế thiệp mời mới nhất, nghệ thuật viết lời mời tinh tế và cẩm nang toàn diện cho những sự kiện trọng đại của bạn."}
             </p>
 
             {/* CTA Button */}
@@ -201,7 +240,7 @@ export default function JournalPage() {
                   href="#articles"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider shadow-[0_8px_25px_rgba(190,148,78,0.38)] transition"
                 >
-                  <span>Khám phá ngay</span>
+                  <span>{t("journalHeroBtn") || "Khám phá ngay"}</span>
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </motion.div>
@@ -241,10 +280,10 @@ export default function JournalPage() {
             </div>
             <div>
               <div className="text-xs font-bold text-stone-800 font-sans">
-                Cập nhật mỗi tuần
+                {t("journalPillar1Title") || "Cập nhật mỗi tuần"}
               </div>
               <div className="text-[11px] text-stone-500 mt-0.5">
-                Xu hướng mới nhất
+                {t("journalPillar1Desc") || "Xu hướng mới nhất"}
               </div>
             </div>
           </div>
@@ -256,10 +295,10 @@ export default function JournalPage() {
             </div>
             <div>
               <div className="text-xs font-bold text-stone-800 font-sans">
-                Nội dung chọn lọc
+                {t("journalPillar2Title") || "Nội dung chọn lọc"}
               </div>
               <div className="text-[11px] text-stone-500 mt-0.5">
-                Đẹp & chuyên sâu
+                {t("journalPillar2Desc") || "Đẹp & chuyên sâu"}
               </div>
             </div>
           </div>
@@ -271,10 +310,10 @@ export default function JournalPage() {
             </div>
             <div>
               <div className="text-xs font-bold text-stone-800 font-sans">
-                Dễ đọc – Dễ áp dụng
+                {t("journalPillar3Title") || "Dễ đọc – Dễ áp dụng"}
               </div>
               <div className="text-[11px] text-stone-500 mt-0.5">
-                Thực tế & hữu ích
+                {t("journalPillar3Desc") || "Thực tế & hữu ích"}
               </div>
             </div>
           </div>
@@ -286,10 +325,10 @@ export default function JournalPage() {
             </div>
             <div>
               <div className="text-xs font-bold text-stone-800 font-sans">
-                Truyền cảm hứng
+                {t("journalPillar4Title") || "Truyền cảm hứng"}
               </div>
               <div className="text-[11px] text-stone-500 mt-0.5">
-                Cho ngày trọng đại
+                {t("journalPillar4Desc") || "Cho ngày trọng đại"}
               </div>
             </div>
           </div>
@@ -369,7 +408,7 @@ export default function JournalPage() {
                 {/* Read Link */}
                 <div className="pt-4 mt-auto">
                   <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#BE944E] group-hover:text-[#966C2A] transition">
-                    <span>ĐỌC BÀI VIẾT</span>
+                    <span>{t("readArticleBtn") || "ĐỌC BÀI VIẾT"}</span>
                     <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
@@ -399,24 +438,24 @@ export default function JournalPage() {
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/95 backdrop-blur-xs text-[10px] font-bold uppercase tracking-wider text-stone-800 shadow-2xs">
-              NGHI THỨC
+              {t("journalFeaturedTag") || "NGHI THỨC"}
             </span>
           </div>
 
           {/* Content Right */}
           <div className="lg:col-span-7 p-8 sm:p-12 space-y-4">
             <div className="flex items-center gap-2 text-[10px] text-stone-400 font-semibold tracking-wider uppercase">
-              <span>01 THG 10, 2024</span>
+              <span>{t("journalFeaturedDate") || "01 THG 10, 2024"}</span>
               <span>•</span>
-              <span>8 PHÚT ĐỌC</span>
+              <span>{t("journalFeaturedReadTime") || "8 PHÚT ĐỌC"}</span>
             </div>
 
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#181716] leading-snug group-hover:text-[#BE944E] transition">
-              Ý Nghĩa Sâu Sắc Của 12 Vật Phẩm Trong Lễ Thôi Nôi
+              {t("journalFeaturedTitle") || "Ý Nghĩa Sâu Sắc Của 12 Vật Phẩm Trong Lễ Thôi Nôi"}
             </h3>
 
             <p className="text-xs sm:text-sm text-stone-500 leading-relaxed max-w-xl">
-              Khám phá nguồn gốc và hàm ý ý nghĩa tâm linh đằng sau mỗi món đồ truyền thống, giúp bạn chuẩn bị lễ thôi nôi cho bé một cách chu đáo và trọn vẹn.
+              {t("journalFeaturedDesc") || "Khám phá nguồn gốc và hàm ý ý nghĩa tâm linh đằng sau mỗi món đồ truyền thống, giúp bạn chuẩn bị lễ thôi nôi cho bé một cách chu đáo và trọn vẹn."}
             </p>
 
             <div className="pt-2">
@@ -425,7 +464,7 @@ export default function JournalPage() {
                   href="#"
                   className="inline-flex items-center gap-2 px-7 py-2.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider shadow-[0_6px_20px_rgba(190,148,78,0.35)] transition"
                 >
-                  <span>ĐỌC BÀI VIẾT</span>
+                  <span>{t("readArticleBtn") || "ĐỌC BÀI VIẾT"}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </motion.div>
@@ -458,17 +497,17 @@ export default function JournalPage() {
           {/* Center Newsletter Form */}
           <div className="flex-1 max-w-xl text-center space-y-4">
             <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#181716]">
-              Không bỏ lỡ những xu hướng cưới mới nhất
+              {t("journalNewsletterTitle") || "Không bỏ lỡ những xu hướng cưới mới nhất"}
             </h3>
             <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto leading-relaxed">
-              Đăng ký nhận bản tin để cập nhật bài viết mới, mẹo hay và ưu đãi độc quyền.
+              {t("journalNewsletterDesc") || "Đăng ký nhận bản tin để cập nhật bài viết mới, mẹo hay và ưu đãi độc quyền."}
             </p>
 
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center justify-center gap-2 max-w-md mx-auto pt-1">
               <input
                 type="email"
                 required
-                placeholder="Nhập email của bạn..."
+                placeholder={t("journalNewsletterPlaceholder") || "Nhập email của bạn..."}
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 className="w-full sm:flex-1 px-5 py-2.5 rounded-full bg-white border border-[#EAE0CD] text-xs text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 shadow-2xs"
@@ -477,20 +516,20 @@ export default function JournalPage() {
                 type="submit"
                 className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#C4974E] hover:bg-[#A87B32] text-white text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer whitespace-nowrap"
               >
-                ĐĂNG KÝ NGAY
+                {t("journalNewsletterBtn") || "ĐĂNG KÝ NGAY"}
               </button>
             </form>
 
             {subscribed && (
               <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-600 font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Cảm ơn bạn đã đăng ký nhận bản tin CardVite Journal!</span>
+                <span>{t("journalNewsletterSuccess") || "Cảm ơn bạn đã đăng ký nhận bản tin CardVite Journal!"}</span>
               </div>
             )}
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-400 pt-1 font-medium">
               <Lock className="w-3 h-3 text-[#BE944E]" />
-              <span>Chúng tôi tôn trọng quyền riêng tư của bạn.</span>
+              <span>{t("journalNewsletterPrivacy") || "Chúng tôi tôn trọng quyền riêng tư của bạn."}</span>
             </div>
           </div>
 
@@ -505,6 +544,7 @@ export default function JournalPage() {
           </div>
         </motion.div>
       </section>
+
 
       {/* ------------------------------------------------------------- */}
       {/* 7. FOOTER */}
