@@ -29,7 +29,7 @@ interface AuthContextType {
   registerWithOtp: (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   googleLogin: (idToken: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -52,26 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshUser = async () => {
-    const savedToken = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-    if (!savedToken) {
-      setUser(null);
-      setToken(null);
-      setIsLoading(false);
-      return;
-    }
-
+    // Không cần kiểm tra localStorage nữa
+    // HTTPƯOnly cookie sẽ tự động được gửi bởi credentials: 'include'
     try {
       const res = await ApiClient.request<AuthUser>("/auth/me");
       if (res.success && res.data) {
         setUser(res.data);
-        setToken(savedToken);
       } else {
-        ApiClient.clearToken();
+        await ApiClient.clearToken();
         setUser(null);
         setToken(null);
       }
-    } catch (e) {
-      ApiClient.clearToken();
+    } catch {
+      await ApiClient.clearToken();
       setUser(null);
       setToken(null);
     } finally {
@@ -102,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      ApiClient.setToken(res.data.token);
+      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
       setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
@@ -118,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      ApiClient.setToken(res.data.token);
+      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
       setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
@@ -134,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      ApiClient.setToken(res.data.token);
+      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
       setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
@@ -143,8 +136,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: res.error || "Đăng nhập Google không thành công" };
   };
 
-  const logout = React.useCallback(() => {
-    ApiClient.clearToken();
+  const logout = React.useCallback(async () => {
+    await ApiClient.clearToken(); // Xóa HTTPOnly cookie
     setUser(null);
     setToken(null);
   }, []);

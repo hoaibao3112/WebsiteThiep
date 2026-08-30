@@ -1,6 +1,8 @@
 /**
  * Notification Service - Gửi thông báo Telegram Bot & Zalo ZNS
  */
+import { logger } from "../lib/logger";
+import { telegramCircuit } from "../lib/circuit-breaker";
 
 export interface RsvpNotificationData {
   cardSlug: string;
@@ -20,9 +22,7 @@ export async function dispatchTelegramNotification(
   const chatId = data.telegramChatId;
 
   if (!botToken || !chatId) {
-    console.log(
-      `[Notification] Telegram skipped: Missing BOT_TOKEN or ChatId (${chatId})`
-    );
+    logger.info({ chatId }, "[Notification] Telegram skipped: Missing BOT_TOKEN or ChatId");
     return false;
   }
 
@@ -50,27 +50,30 @@ export async function dispatchTelegramNotification(
   `.trim();
 
   try {
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: "HTML",
-      }),
+    return await telegramCircuit.execute(async () => {
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: "HTML",
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        const err = new Error(`Telegram API error: ${errBody}`);
+        logger.error({ chatId, errBody }, "[Notification] Telegram send failed");
+        throw err; // Để circuit breaker đếm failure
+      }
+
+      logger.info({ chatId }, "[Notification] Telegram sent successfully");
+      return true;
     });
-
-    if (!res.ok) {
-      const errBody = await res.text();
-      console.error("[Notification] Telegram send failed:", errBody);
-      return false;
-    }
-
-    console.log(`[Notification] Telegram sent successfully to chat ${chatId}`);
-    return true;
   } catch (error) {
-    console.error("[Notification] Telegram send error:", error);
+    logger.error({ error }, "[Notification] Telegram send error (circuit may be OPEN)");
     return false;
   }
 }

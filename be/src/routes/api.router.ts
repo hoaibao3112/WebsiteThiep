@@ -10,6 +10,18 @@ import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
 import { authGuard } from "../middlewares/auth.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  SendOtpSchema,
+  RegisterWithOtpSchema,
+  LoginSchema,
+  GoogleLoginSchema,
+  UpdateProfileSchema,
+  RsvpSchema,
+  WishSchema,
+  CreateOrderSchema,
+  ConciergeSchema,
+} from "../schemas";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -19,16 +31,16 @@ const upload = multer({
 export const apiRouter = Router();
 
 // --- CONCIERGE / THIẾT KẾ RIÊNG ---
-apiRouter.post("/concierge/submit", ConciergeController.submit); // Đăng ký thuê thiết kế riêng (gửi email về Gmail admin)
+apiRouter.post("/concierge/submit", validate(ConciergeSchema), ConciergeController.submit);
 
 // --- AUTH ROUTES ---
-apiRouter.post("/auth/send-otp", AuthController.sendOtp); // Gửi mã OTP xác thực qua Email
-apiRouter.post("/auth/verify-otp-register", AuthController.registerWithOtp); // Đăng ký tài khoản với mã OTP
-apiRouter.post("/auth/google", AuthController.googleLogin); // Đăng nhập / Đăng ký qua Google OAuth
-apiRouter.post("/auth/register", AuthController.register);
-apiRouter.post("/auth/login", AuthController.login);
+apiRouter.post("/auth/send-otp", validate(SendOtpSchema), AuthController.sendOtp);
+apiRouter.post("/auth/verify-otp-register", validate(RegisterWithOtpSchema), AuthController.registerWithOtp);
+apiRouter.post("/auth/google", validate(GoogleLoginSchema), AuthController.googleLogin);
+apiRouter.post("/auth/register", validate(LoginSchema), AuthController.register);
+apiRouter.post("/auth/login", validate(LoginSchema), AuthController.login);
 apiRouter.get("/auth/me", authGuard, AuthController.getMe);
-apiRouter.put("/auth/profile", authGuard, AuthController.updateProfile);
+apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthController.updateProfile);
 
 // --- MEDIA UPLOAD ---
 apiRouter.post(
@@ -47,18 +59,18 @@ apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xu�
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP
 
 // --- RSVP ROUTES ---
-apiRouter.post("/rsvp", RsvpController.submit); // Khách gửi xác nhận tham gia (Public)
-apiRouter.get("/rsvp/:cardId/stats", authGuard, RsvpController.getStats); // Host xem thống kê RSVP
+apiRouter.post("/rsvp", validate(RsvpSchema), RsvpController.submit);
+apiRouter.get("/rsvp/:cardId/stats", authGuard, RsvpController.getStats);
 
 // --- WISHES ROUTES ---
-apiRouter.post("/wishes", WishController.submit); // Khách gửi lời chúc (Public)
-apiRouter.get("/wishes/:cardId", WishController.list); // Danh sách lời chúc phân trang (Public)
+apiRouter.post("/wishes", validate(WishSchema), WishController.submit);
+apiRouter.get("/wishes/:cardId", WishController.list);
 
 // --- GUEST MANAGEMENT ---
 apiRouter.post("/cards/:cardId/guests/import", authGuard, GuestController.import); // Nhập danh sách khách
 apiRouter.get("/cards/:cardId/guests", authGuard, GuestController.list); // Xem danh sách khách
 
 // --- ORDER & PAYMENT ROUTES ---
-apiRouter.post("/orders", authGuard, OrderController.create); // Tạo đơn nâng cấp gói
-apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus); // Polling kiểm tra thanh toán
-apiRouter.post("/webhooks/sepay", OrderController.handleSepayWebhook); // Webhook SePay VietQR
+apiRouter.post("/orders", authGuard, validate(CreateOrderSchema), OrderController.create);
+apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus);
+apiRouter.post("/webhooks/sepay", OrderController.handleSepayWebhook);

@@ -35,7 +35,10 @@ export default function RsvpDashboardPage() {
 
   const fetchStats = async () => {
     setLoading(true);
-    const res = await ApiClient.request(`/rsvp/${cardId}/stats`);
+    const res = await ApiClient.request<{
+      summary: { attendingCount: number; declinedCount: number; undecidedCount: number; totalAttendingGuests: number };
+      responses: any[];
+    }>(`/rsvp/${cardId}/stats`);
     if (res.success && res.data) {
       setStats(res.data);
     }

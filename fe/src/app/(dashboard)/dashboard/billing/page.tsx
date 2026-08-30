@@ -32,7 +32,7 @@ export default function BillingPage() {
     setOrderData(null);
     setIsPaid(false);
 
-    const res = await ApiClient.request("/orders", {
+    const res = await ApiClient.request<{ paymentInfo: { orderCode: string; amount: number; bankCode: string; bankAccount: string; bankAccountName: string; qrUrl: string } }>("/orders", {
       method: "POST",
       body: JSON.stringify({
         cardId: "demo-card-id",
@@ -62,7 +62,7 @@ export default function BillingPage() {
     if (!orderData || isPaid) return;
 
     const interval = setInterval(async () => {
-      const res = await ApiClient.request(`/orders/${orderData.orderCode}/status`);
+      const res = await ApiClient.request<{ status: string }>(`/orders/${orderData.orderCode}/status`);
       if (res.success && res.data && res.data.status === "PAID") {
         setIsPaid(true);
         clearInterval(interval);

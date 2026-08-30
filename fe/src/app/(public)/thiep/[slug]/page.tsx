@@ -151,31 +151,70 @@ async function getCardData(slug: string, guestCode?: string) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const data = await getCardData(slug);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cardvite.vn";
+
   if (!data || !data.card) {
     return {
-      title: "Thiệp Điện Tử Online | Junvite Style",
+      metadataBase: new URL(appUrl),
+      title: "Thiệp Điện Tử Online | CardVite",
       description: "Nền tảng thiệp cưới, sinh nhật, thôi nôi điện tử cao cấp.",
     };
   }
 
   const card = data.card as CardDetail;
-  const title =
-    card.cardCategory === "WEDDING"
-      ? `Thiệp cưới ${(card.categoryData as any).groom?.fullName} & ${(card.categoryData as any).bride?.fullName}`
-      : card.cardCategory === "BIRTHDAY"
-      ? `Thiệp mời sinh nhật ${(card.categoryData as any).celebrantName}`
-      : `Thiệp mừng bé ${(card.categoryData as any).babyName}`;
+  const categoryData = card.categoryData as unknown as Record<string, any>;
+
+  // Tạo title theo loại thiệp
+  let title = "";
+  let description = card.greetingMessage || "Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng mình!";
+
+  if (card.cardCategory === "WEDDING") {
+    const groomName = (categoryData.groom as Record<string, string>)?.fullName || "";
+    const brideName = (categoryData.bride as Record<string, string>)?.fullName || "";
+    // Lấy ngày sự kiện chính đầu tiên
+    const mainEvent = card.events?.[0];
+    const eventDateStr = mainEvent?.eventDate
+      ? new Date(mainEvent.eventDate).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
+      : "";
+    title = `Thiệp Cưới ${groomName} & ${brideName}${eventDateStr ? ` — ${eventDateStr}` : ""}`;
+    description = `Kính mời bạn đến chung vui lễ thành hôn của ${groomName} và ${brideName}${eventDateStr ? ` vào ngày ${eventDateStr}` : ""}. ${description}`;
+  } else if (card.cardCategory === "BIRTHDAY") {
+    const celebrantName = (categoryData.celebrantName as string) || "";
+    title = `Thiệp Mừng Sinh Nhật ${celebrantName}`;
+    description = `Bạn được mời đến buổi tiệc sinh nhật của ${celebrantName}. ${description}`;
+  } else {
+    const babyName = (categoryData.babyName as string) || "";
+    title = `Thiệp Mừng Thôi Nôi Bé ${babyName}`;
+    description = `Bạn được mời đến buổi tiệc thôi nôi của bé ${babyName}. ${description}`;
+  }
+
+  const ogImage = card.photos?.[0]?.url;
 
   return {
-    title: `${title} | Thiệp Online`,
-    description: card.greetingMessage || "Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng mình!",
+    metadataBase: new URL(appUrl),
+    title: `${title} | CardVite`,
+    description,
     openGraph: {
       title,
-      description: card.greetingMessage || "Trân trọng kính mời quý khách tham dự!",
-      images: card.photos[0]?.url ? [card.photos[0].url] : [],
+      description,
+      url: `${appUrl}/thiep/${slug}`,
+      siteName: "CardVite",
+      locale: "vi_VN",
+      type: "website",
+      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: title }] } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
+    alternates: {
+      canonical: `${appUrl}/thiep/${slug}`,
     },
   };
 }
+
 
 export default async function CardPublicPage({ params, searchParams }: PageProps) {
   const { slug } = await params;

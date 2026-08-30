@@ -2,9 +2,11 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
 import { apiRouter } from "./routes/api.router";
+import { logger } from "./lib/logger";
 import "./queues/workers/mail.worker"; // Khởi động background worker xử lý gửi email bất đồng bộ
 
 dotenv.config();
@@ -12,8 +14,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middlewares
+// -----------------------------------------------------------------------
+// MIDDLEWARES — Security & Observability
+// -----------------------------------------------------------------------
 app.use(helmet({ crossOriginResourcePolicy: false }));
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
   : ["http://localhost:3000"];
@@ -21,7 +26,6 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Cho phép requests không có origin (mobile apps, curl, Postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -33,15 +37,59 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
-// Static files for uploads
+// Morgan HTTP request logger — pipe vào Pino để format đồng nhất
+app.use(
+  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", {
+    stream: {
+      write: (message: string) => logger.info(message.trim()),
+    },
+  })
+);
+
+// -----------------------------------------------------------------------
+// RATE LIMITING — Bảo vệ toàn bộ API khỏi brute-force & DoS
+// -----------------------------------------------------------------------
+
+// Global: 200 requests / 15 phút / IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
+  skip: (req) => req.path.startsWith("/webhooks"), // Bỏ qua webhook SePay
+});
+
+// Auth routes: 15 requests / 15 phút / IP (chống brute-force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Quá nhiều lần thử đăng nhập, vui lòng thử lại sau 15 phút." },
+});
+
+// OTP: 5 requests / 15 phút / IP (chống spam OTP)
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: "Quá nhiều yêu cầu OTP, vui lòng đợi 15 phút." },
+});
+
+app.use(globalLimiter);
+
+// -----------------------------------------------------------------------
+// STATIC FILES & HEALTH CHECK
+// -----------------------------------------------------------------------
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 
-// Health check
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({
     status: "ok",
     service: "Digital Card Platform API",
@@ -49,20 +97,71 @@ app.get("/health", (req: Request, res: Response) => {
   });
 });
 
-// API Routes
+// -----------------------------------------------------------------------
+// API ROUTES — Áp dụng rate limiter riêng cho auth
+// -----------------------------------------------------------------------
+app.use("/api/auth/send-otp", otpLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/verify-otp-register", authLimiter);
 app.use("/api", apiRouter);
 
-// Error handling middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error("Unhandled Error:", err);
+// -----------------------------------------------------------------------
+// GLOBAL ERROR HANDLER
+// -----------------------------------------------------------------------
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error({ err }, "Unhandled Error");
   res.status(err.status || 500).json({
     success: false,
     error: err.message || "Internal Server Error",
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Card Platform Backend Server is running at http://localhost:${PORT}`);
+// -----------------------------------------------------------------------
+// SERVER START + GRACEFUL SHUTDOWN
+// -----------------------------------------------------------------------
+const server = app.listen(PORT, () => {
+  logger.info(`🚀 Card Platform Backend running at http://localhost:${PORT}`);
 });
 
+// Graceful Shutdown — đảm bảo không mất dữ liệu khi restart/deploy
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`Received ${signal}. Gracefully shutting down...`);
+
+  server.close(async () => {
+    logger.info("HTTP server closed.");
+
+    // Đóng kết nối Database
+    try {
+      const { prisma } = await import("./lib/prisma");
+      await prisma.$disconnect();
+      logger.info("Prisma disconnected.");
+    } catch (err) {
+      logger.error({ err }, "Error disconnecting Prisma");
+    }
+
+    // Đóng kết nối Redis
+    try {
+      const { redis } = await import("./lib/redis");
+      await redis.quit();
+      logger.info("Redis disconnected.");
+    } catch (err) {
+      logger.warn({ err }, "Redis disconnect warning (may not be initialized)");
+    }
+
+    logger.info("Graceful shutdown complete. Exiting.");
+    process.exit(0);
+  });
+
+  // Force exit sau 10 giây nếu server không đóng được
+  setTimeout(() => {
+    logger.error("Forced shutdown after timeout.");
+    process.exit(1);
+  }, 10_000);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
 export default app;
+

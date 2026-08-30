@@ -1,4 +1,7 @@
 import nodemailer from "nodemailer";
+import { logger } from "../lib/logger";
+import { mailCircuit } from "../lib/circuit-breaker";
+
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -88,20 +91,13 @@ export class MailService {
     const fromAddress = process.env.SMTP_FROM || `"CardVite" <no-reply@cardvite.vn>`;
 
     if (transporter) {
-      await transporter.sendMail({
-        from: fromAddress,
-        to: email,
-        subject,
-        html,
-      });
-      console.log(`[MailService] Đã gửi OTP thành công tới ${email}`);
+      await mailCircuit.execute(() =>
+        transporter.sendMail({ from: fromAddress, to: email, subject, html })
+      );
+      logger.info({ email }, "[MailService] Đã gửi OTP thành công");
     } else {
       if (!isProduction) {
-        console.log(`\n======================================================`);
-        console.log(`[DEV OTP FALLBACK] Gửi tới: ${email}`);
-        console.log(`[DEV OTP CODE]     ===> ${otp} <===`);
-        console.log(`[DEV OTP EXPIRES]  5 phút`);
-        console.log(`======================================================\n`);
+        logger.info({ email, otp }, "[DEV OTP FALLBACK] Mã OTP");
       }
     }
   }
@@ -198,20 +194,15 @@ export class MailService {
     const fromAddress = process.env.SMTP_FROM || `"CardVite Concierge" <no-reply@cardvite.vn>`;
 
     if (transporter) {
-      await transporter.sendMail({
-        from: fromAddress,
-        to: adminEmail,
-        subject,
-        html,
-      });
-      console.log(`[MailService] Đã gửi email thông báo Concierge thành công tới ${adminEmail}`);
+      await mailCircuit.execute(() =>
+        transporter.sendMail({ from: fromAddress, to: adminEmail, subject, html })
+      );
+      logger.info({ adminEmail }, "[MailService] Đã gửi Concierge email thành công");
     } else {
-      console.log(`\n======================================================`);
-      console.log(`[DEV CONCIERGE NOTIFICATION] Gửi tới Admin: ${adminEmail}`);
-      console.log(`[KHÁCH HÀNG] ${data.fullName} - ${data.phone}`);
-      console.log(`[GÓI THIẾT KẾ] ${data.servicePackage}`);
-      console.log(`[GHI CHÚ] ${data.notes}`);
-      console.log(`======================================================\n`);
+      logger.info(
+        { adminEmail, customer: data.fullName, phone: data.phone },
+        "[DEV CONCIERGE NOTIFICATION]"
+      );
     }
   }
 }

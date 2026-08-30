@@ -369,8 +369,17 @@ export default function CardViteHomePage() {
     mouseY.set(0);
   };
 
-  // State cho 3D Carousel
+  // State & Auto-play cho 3D Coverflow Carousel (Mẫu thiệp đẹp nhất)
   const [carouselIndex, setCarouselIndex] = useState(2);
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false);
+
+  useEffect(() => {
+    if (isCarouselHovered) return;
+    const timer = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isCarouselHovered, CAROUSEL_CARDS.length]);
 
   // Active step trong quy trình 3 bước
   const [activeStep, setActiveStep] = useState(1);
@@ -2716,23 +2725,66 @@ export default function CardViteHomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 8. 3D COVERFLOW CAROUSEL (MẪU THIỆP ĐẸP NHẤT) */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative max-w-7xl mx-auto px-6 py-20 text-center overflow-hidden">
+      <section 
+        className="relative max-w-7xl mx-auto px-6 py-20 text-center overflow-hidden"
+        onMouseEnter={() => setIsCarouselHovered(true)}
+        onMouseLeave={() => setIsCarouselHovered(false)}
+      >
         {/* Background Ambient Glows & Sparkles */}
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#BE944E]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#FAF0E1]/80 rounded-full blur-3xl pointer-events-none -z-10" />
-        <span className="absolute top-12 left-12 text-[#DDB866] text-sm animate-pulse select-none">✦</span>
-        <span className="absolute top-20 right-16 text-[#DDB866] text-base animate-pulse select-none">✦</span>
-        <span className="absolute bottom-24 left-16 text-[#DDB866] text-xs animate-pulse select-none">✦</span>
+        <motion.div 
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.28, 0.15] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-10 left-1/4 w-96 h-96 bg-[#BE944E]/20 rounded-full blur-3xl pointer-events-none -z-10" 
+        />
+        <motion.div 
+          animate={{ scale: [1.1, 1, 1.1], opacity: [0.6, 0.9, 0.6] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#FAF0E1]/90 rounded-full blur-3xl pointer-events-none -z-10" 
+        />
+        
+        {/* Floating Sparkles with gentle floating motion */}
+        <motion.span 
+          animate={{ y: [0, -8, 0], opacity: [0.4, 1, 0.4], rotate: [0, 15, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-12 left-12 text-[#DDB866] text-base select-none pointer-events-none"
+        >
+          ✦
+        </motion.span>
+        <motion.span 
+          animate={{ y: [0, 10, 0], opacity: [0.5, 1, 0.5], rotate: [0, -20, 0] }}
+          transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute top-20 right-16 text-[#DDB866] text-lg select-none pointer-events-none"
+        >
+          ✦
+        </motion.span>
+        <motion.span 
+          animate={{ y: [0, -6, 0], opacity: [0.3, 0.8, 0.3], scale: [0.9, 1.1, 0.9] }}
+          transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          className="absolute bottom-24 left-16 text-[#DDB866] text-sm select-none pointer-events-none"
+        >
+          ✦
+        </motion.span>
+        <motion.span 
+          animate={{ y: [0, -10, 0], opacity: [0.4, 0.9, 0.4] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          className="absolute bottom-28 right-24 text-[#C4974E] text-xs select-none pointer-events-none"
+        >
+          ✨
+        </motion.span>
 
         {/* Botanical Foliage Corner Accents */}
-        <div className="absolute bottom-4 right-2 w-48 h-48 pointer-events-none opacity-35 -z-10">
+        <motion.div 
+          animate={{ rotate: [0, 3, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-4 right-2 w-48 h-48 pointer-events-none opacity-35 -z-10"
+        >
           <svg viewBox="0 0 100 100" className="w-full h-full fill-[#BE944E]/20 stroke-[#BE944E]">
             <path d="M10,90 Q40,50 85,20 Q65,70 10,90 Z" strokeWidth="1" />
             <path d="M40,65 Q60,50 90,30" strokeWidth="0.75" strokeDasharray="2 2" fill="none" />
             <circle cx="85" cy="20" r="4" fill="#DDB866" />
             <circle cx="70" cy="40" r="3" fill="#DDB866" />
           </svg>
-        </div>
+        </motion.div>
 
         {/* SECTION HEADER */}
         <motion.div
@@ -2746,105 +2798,184 @@ export default function CardViteHomePage() {
             <span>{t("homeCarouselTitle1")}</span>{" "}
             <span className="italic font-normal font-serif text-[#C4974E] inline-flex items-center gap-2">
               <span>{t("homeCarouselTitleEm")}</span>
-              <span className="text-2xl sm:text-3xl not-italic text-[#DDB866]">✦</span>
+              <motion.span 
+                animate={{ rotate: [0, 180, 360], scale: [1, 1.2, 1] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="text-2xl sm:text-3xl not-italic text-[#DDB866] inline-block"
+              >
+                ✦
+              </motion.span>
             </span>
           </h2>
           <p className="text-xs sm:text-sm text-stone-600/85 mt-3 max-w-xl mx-auto leading-relaxed">
             {t("homeCarouselSub")}
           </p>
           <div className="flex items-center justify-center gap-1 mt-2 text-[#BE944E]/70 text-xs">
-            <span>♥</span>
+            <motion.span
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              ♥
+            </motion.span>
           </div>
         </motion.div>
 
-        {/* 3D COVERFLOW CONTAINER */}
-        <div className="relative py-4 max-w-6xl mx-auto flex items-center justify-center min-h-[460px] sm:min-h-[520px]">
-          {/* NÚT PREV */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={prevSlide}
-            aria-label="Previous Template"
-            className="absolute left-1 sm:left-4 lg:left-8 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-md border border-[#EAE0CD] shadow-[0_8px_20px_rgba(0,0,0,0.08)] flex items-center justify-center text-stone-700 hover:text-white hover:bg-[#BE944E] transition cursor-pointer"
+        {/* 3D COVERFLOW CONTAINER WITH MOUSE HOVER TRACKING */}
+        <div 
+          className="relative py-6 max-w-6xl mx-auto flex items-center justify-center min-h-[480px] sm:min-h-[550px] select-none cursor-grab active:cursor-grabbing overflow-visible"
+          style={{ perspective: "1400px", touchAction: "pan-y" }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const relativeX = (e.clientX - rect.left) / rect.width; // 0 to 1
+            const clamped = Math.max(0, Math.min(1, relativeX));
+            const targetIdx = Math.min(
+              CAROUSEL_CARDS.length - 1,
+              Math.max(0, Math.floor(clamped * CAROUSEL_CARDS.length))
+            );
+            if (targetIdx !== carouselIndex) {
+              setCarouselIndex(targetIdx);
+            }
+          }}
+        >
+          {/* Ambient Spotlight Behind Center Card */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] h-[500px] bg-radial from-[#F5D899]/40 via-[#E8C576]/15 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
+
+          {/* 5 CARDS IN CONTINUOUS 3D COVERFLOW SPACE */}
+          <div 
+            className="relative w-full h-full flex items-center justify-center"
+            style={{ transformStyle: "preserve-3d" }}
           >
-            <ChevronLeft className="w-5 h-5" />
-          </motion.button>
-
-          {/* 5 CARDS IN 3D COVERFLOW PERSPECTIVE */}
-          <div className="flex items-center justify-center gap-2 sm:gap-4 lg:gap-6 w-full px-2 sm:px-8">
             {CAROUSEL_CARDS.map((card, idx) => {
-              const offset = (idx - carouselIndex + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length;
+              const offset = idx - carouselIndex;
               const isCenter = offset === 0;
-              const isLeft1 = offset === CAROUSEL_CARDS.length - 1;
-              const isRight1 = offset === 1;
-              const isLeft2 = offset === CAROUSEL_CARDS.length - 2;
-              const isRight2 = offset === 2;
+              const absOffset = Math.abs(offset);
 
-              // Hide cards that are further away
-              if (!isCenter && !isLeft1 && !isRight1 && !isLeft2 && !isRight2) {
-                return null;
-              }
+              // X position relative to center
+              let xPos = 0;
+              if (offset === -1) xPos = -225;
+              else if (offset === 1) xPos = 225;
+              else if (offset === -2) xPos = -410;
+              else if (offset === 2) xPos = 410;
+              else if (offset < -2) xPos = -560;
+              else if (offset > 2) xPos = 560;
+
+              const scaleVal = isCenter ? 1.05 : absOffset === 1 ? 0.91 : absOffset === 2 ? 0.78 : 0.65;
+              const rotateYVal = isCenter ? 0 : offset < 0 ? 26 : -26;
+              const zIndexVal = 30 - absOffset * 6;
+              const opacityVal = absOffset > 2 ? 0 : isCenter ? 1 : absOffset === 1 ? 0.88 : 0.45;
+              const pointerEvents = absOffset > 2 ? "none" : "auto";
 
               return (
                 <motion.div
                   key={card.id}
-                  layout
                   onClick={() => setCarouselIndex(idx)}
-                  whileHover={{ y: isCenter ? -6 : -2 }}
-                  className={`transition-all duration-500 transform cursor-pointer relative shrink-0 ${
+                  onMouseEnter={() => setCarouselIndex(idx)}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.2}
+                  onDragEnd={(_, info) => {
+                    if (info.offset.x < -35) nextSlide();
+                    else if (info.offset.x > 35) prevSlide();
+                  }}
+                  animate={{
+                    x: xPos,
+                    scale: scaleVal,
+                    rotateY: rotateYVal,
+                    opacity: opacityVal,
+                    zIndex: zIndexVal,
+                    y: isCenter ? 0 : 8,
+                  }}
+                  whileHover={{ 
+                    y: isCenter ? -6 : 0,
+                    scale: isCenter ? 1.07 : scaleVal * 1.03,
+                    opacity: 1,
+                  }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 260, 
+                    damping: 24,
+                    mass: 0.7
+                  }}
+                  className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer shrink-0 transition-shadow ${
                     isCenter
-                      ? "z-30 scale-100 sm:scale-105 w-60 sm:w-72 lg:w-[310px] aspect-[9/13.5] rounded-[32px] sm:rounded-[38px] border-[3px] border-[#E5C175] ring-4 ring-[#BE944E]/25 shadow-[0_25px_60px_rgba(190,148,78,0.38)] overflow-hidden"
-                      : isLeft1 || isRight1
-                      ? `z-20 opacity-85 hover:opacity-100 scale-90 sm:scale-95 w-48 sm:w-56 lg:w-64 aspect-[9/13.5] rounded-[26px] sm:rounded-[32px] border border-[#EFE8DC] shadow-xl overflow-hidden ${
-                          isLeft1 ? "-rotate-y-6" : "rotate-y-6"
-                        }`
-                      : "hidden md:block z-10 opacity-40 hover:opacity-60 scale-75 lg:scale-80 w-36 sm:w-44 lg:w-52 aspect-[9/13.5] rounded-[22px] sm:rounded-[26px] border border-stone-200 shadow-md blur-[0.5px] overflow-hidden"
+                      ? "w-60 sm:w-72 lg:w-[315px] aspect-[9/13.5] rounded-[32px] sm:rounded-[38px] border-[3px] border-[#E5C175] ring-4 ring-[#BE944E]/30 shadow-[0_25px_65px_rgba(190,148,78,0.45)] overflow-hidden"
+                      : absOffset === 1
+                      ? "w-52 sm:w-60 lg:w-68 aspect-[9/13.5] rounded-[26px] sm:rounded-[32px] border border-[#EFE8DC] shadow-xl overflow-hidden"
+                      : "hidden md:block w-40 sm:w-48 lg:w-56 aspect-[9/13.5] rounded-[22px] sm:rounded-[26px] border border-stone-200 shadow-md blur-[0.5px] overflow-hidden"
                   }`}
+                  style={{ 
+                    transformStyle: "preserve-3d",
+                    pointerEvents: pointerEvents as any,
+                  }}
                 >
-                  <div className="relative w-full h-full p-4 sm:p-5 flex flex-col justify-between text-center overflow-hidden bg-gradient-to-b from-[#FAF7F2] to-white group">
-                    {/* Background Image */}
+                  {/* Active Floating Breathing Wrapper */}
+                  <motion.div
+                    animate={isCenter ? { y: [-3, 3, -3] } : { y: 0 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative w-full h-full p-4 sm:p-5 flex flex-col justify-between text-center overflow-hidden bg-gradient-to-b from-[#FAF7F2] to-white group"
+                  >
+                    {/* Background Image with Ken Burns / Zoom Effect */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={card.image}
                       alt={card.title}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                     />
 
+                    {/* Shimmer Light Sweep on Center Card */}
+                    {isCenter && (
+                      <motion.div
+                        animate={{ x: ["-150%", "200%"] }}
+                        transition={{ duration: 3.2, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+                        className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 pointer-events-none z-15"
+                      />
+                    )}
+
                     {/* Gradient Overlays for High Contrast Text */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/35 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/35 pointer-events-none" />
 
                     {/* Center Card Decorative Floral Corners */}
                     {isCenter && (
                       <>
-                        <div className="absolute top-2 left-2 w-14 h-14 pointer-events-none opacity-85 z-20">
+                        <motion.div 
+                          animate={{ scale: [1, 1.08, 1] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                          className="absolute top-2 left-2 w-14 h-14 pointer-events-none opacity-90 z-20"
+                        >
                           <svg viewBox="0 0 50 50" className="w-full h-full fill-[#FDF8F0] stroke-[#D4AF57]">
                             <path d="M5,25 Q15,5 35,5 Q25,25 5,25 Z" strokeWidth="0.8" />
                             <circle cx="20" cy="18" r="4" fill="#E8C576" />
                             <circle cx="12" cy="10" r="3" fill="#FFF8EB" stroke="#D4AF57" strokeWidth="0.6" />
                           </svg>
-                        </div>
-                        <div className="absolute bottom-2 right-2 w-16 h-16 pointer-events-none opacity-85 z-20">
+                        </motion.div>
+                        <motion.div 
+                          animate={{ scale: [1, 1.08, 1] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                          className="absolute bottom-2 right-2 w-16 h-16 pointer-events-none opacity-90 z-20"
+                        >
                           <svg viewBox="0 0 50 50" className="w-full h-full fill-[#FDF8F0] stroke-[#D4AF57]">
                             <path d="M45,25 Q35,45 15,45 Q25,25 45,25 Z" strokeWidth="0.8" />
                             <circle cx="30" cy="32" r="4" fill="#E8C576" />
                             <circle cx="38" cy="40" r="3" fill="#FFF8EB" stroke="#D4AF57" strokeWidth="0.6" />
                           </svg>
-                        </div>
+                        </motion.div>
                       </>
                     )}
 
                     {/* Top Header Tag */}
-                    <div className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-white/90 font-medium">
-                      THE WEDDING OF
+                    <div className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-white/90 font-medium drop-shadow-sm flex items-center justify-center gap-1.5">
+                      <span>THE WEDDING OF</span>
                     </div>
 
                     {/* Bottom Card Content */}
                     <div className="relative z-10 space-y-1 sm:space-y-1.5 text-white">
                       {/* Tag Badge */}
-                      <span className="inline-block px-3 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white mb-1 shadow-sm">
+                      <motion.span 
+                        whileHover={{ scale: 1.05 }}
+                        className="inline-block px-3 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white mb-1 shadow-sm"
+                      >
                         {card.tag}
-                      </span>
+                      </motion.span>
 
                       {/* Card Title */}
                       <h4 className="text-lg sm:text-2xl font-serif font-bold text-white tracking-tight drop-shadow-md">
@@ -2861,10 +2992,16 @@ export default function CardViteHomePage() {
                         <div className="pt-2">
                           <Link
                             href="/collections"
-                            className="inline-flex items-center justify-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider shadow-[0_8px_20px_rgba(190,148,78,0.4)] hover:scale-105 transition"
+                            className="relative inline-flex items-center justify-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider shadow-[0_8px_24px_rgba(190,148,78,0.45)] hover:shadow-[0_12px_28px_rgba(190,148,78,0.6)] hover:scale-105 active:scale-95 transition-all overflow-hidden group/btn"
                           >
-                            <span>{t("useTemplateBtn")}</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            {/* Shimmer line inside CTA button */}
+                            <motion.div 
+                              animate={{ x: ["-100%", "200%"] }}
+                              transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.5, ease: "easeInOut" }}
+                              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 pointer-events-none"
+                            />
+                            <span className="relative z-10">{t("useTemplateBtn")}</span>
+                            <ChevronRight className="relative z-10 w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
                           </Link>
                         </div>
                       ) : (
@@ -2873,46 +3010,58 @@ export default function CardViteHomePage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
               );
             })}
           </div>
-
-          {/* NÚT NEXT */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={nextSlide}
-            aria-label="Next Template"
-            className="absolute right-1 sm:right-4 lg:right-8 z-30 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/95 backdrop-blur-md border border-[#EAE0CD] shadow-[0_8px_20px_rgba(0,0,0,0.08)] flex items-center justify-center text-stone-700 hover:text-white hover:bg-[#BE944E] transition cursor-pointer"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </motion.button>
         </div>
 
-        {/* DOTS PAGINATION */}
-        <div className="flex items-center justify-center gap-2 mt-6">
-          {CAROUSEL_CARDS.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCarouselIndex(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 rounded-full transition-all cursor-pointer ${
-                carouselIndex === idx ? "w-7 bg-[#BE944E]" : "w-2 bg-stone-300 hover:bg-stone-400"
-              }`}
-            />
-          ))}
+        {/* MOUSE / DRAG INTERACTIVE HINT & DOTS */}
+        <div className="flex flex-col items-center justify-center gap-2 mt-4">
+          <p className="text-[11px] text-stone-500 flex items-center gap-1.5 font-medium select-none">
+            <span>↔</span>
+            <span>Rê chuột hoặc vuốt qua lại để xem các mẫu thiệp</span>
+          </p>
+        </div>
+
+        {/* DOTS PAGINATION WITH ANIMATED ACTIVE PILL */}
+        <div className="flex items-center justify-center gap-2.5 mt-4">
+          {CAROUSEL_CARDS.map((_, idx) => {
+            const isActive = carouselIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCarouselIndex(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                className="relative h-2.5 rounded-full transition-all duration-300 cursor-pointer overflow-hidden flex items-center"
+                style={{ width: isActive ? "32px" : "10px" }}
+              >
+                <div 
+                  className={`w-full h-full rounded-full transition-colors duration-300 ${
+                    isActive ? "bg-[#BE944E] shadow-sm" : "bg-stone-300 hover:bg-stone-400"
+                  }`}
+                />
+                {isActive && (
+                  <motion.div 
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "100%" }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="absolute inset-0 bg-white/40 rounded-full pointer-events-none"
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* NÚT XEM TẤT CẢ MẪU THIỆP */}
         <div className="mt-7">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="inline-block">
+          <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} className="inline-block">
             <Link
               href="/collections"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#EAE0CD] bg-white/90 hover:bg-[#FAF7F2] text-xs font-bold text-stone-700 shadow-2xs hover:shadow-sm transition"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#EAE0CD] bg-white/90 hover:bg-[#FAF7F2] text-xs font-bold text-stone-700 shadow-2xs hover:shadow-md transition"
             >
               <Gift className="w-3.5 h-3.5 text-[#BE944E]" />
               <span>{t("homeViewAllTemplates")}</span>
@@ -3224,50 +3373,91 @@ export default function CardViteHomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 11. SECTION: 3 BƯỚC TẠO THIỆP (INTERACTIVE STEPS) */}
       {/* ------------------------------------------------------------- */}
-      <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20">
+      <section className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 relative">
+        {/* TOP STATS FEATURE ROW */}
+        <div className="flex flex-wrap items-center justify-end gap-6 sm:gap-10 mb-10 text-stone-700 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E]">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-bold text-stone-800">10 phút</div>
+              <div className="text-[11px] text-stone-500">Siêu nhanh</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E]">
+              <Palette className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-bold text-stone-800">100+ mẫu</div>
+              <div className="text-[11px] text-stone-500">Đẹp & đa dạng</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E]">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="font-bold text-stone-800">Tối ưu</div>
+              <div className="text-[11px] text-stone-500">Mọi thiết bị</div>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* CỘT TRÁI: 3 BƯỚC CÓ THỂ CLICK CHUYỂN TRẠNG THÁI */}
+          {/* CỘT TRÁI: TIÊU ĐỀ & 3 BƯỚC CÓ THỂ CLICK CHUYỂN TRẠNG THÁI */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6 }}
-            className="lg:col-span-7 space-y-8"
+            className="lg:col-span-7 space-y-7"
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#181716] tracking-tight leading-tight">
-              {t("homeStepsTitle1")} <br />
-              <span className="italic font-normal font-serif text-[#C4974E]">
-                {t("homeStepsTitleEm")}
-              </span>
-            </h2>
+            <div>
+              <h2 className="text-3xl sm:text-4xl lg:text-[46px] font-serif font-bold text-[#181716] tracking-tight leading-[1.15]">
+                <span>{t("homeStepsTitle1")}</span> <br />
+                <span className="italic font-normal font-serif text-[#C4974E] inline-flex items-center gap-2">
+                  <span>{t("homeStepsTitleEm")}</span>
+                  <span className="not-italic text-2xl sm:text-3xl font-light text-[#C4974E]/80">♡</span>
+                </span>
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-500 mt-2 font-medium">
+                Đơn giản – Nhanh chóng – Đẹp tinh tế
+              </p>
+            </div>
 
             {/* 3 STEPS INTERACTIVE TABS */}
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-3.5 max-w-lg">
               {/* STEP 1 */}
               <motion.div
                 onClick={() => setActiveStep(1)}
-                whileHover={{ x: 6, scale: 1.01 }}
-                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                whileHover={{ x: 4, scale: 1.01 }}
+                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 ${
                   activeStep === 1
-                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
-                    : "bg-white/60 border-[#EFE9E1] hover:bg-white"
+                    ? "bg-white border-[#E5C175] shadow-[0_6px_24px_rgba(190,148,78,0.14)] ring-1 ring-[#BE944E]/30"
+                    : "bg-white/70 border-[#EFE9E1] hover:bg-white"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
                     activeStep === 1
-                      ? "bg-[#BE944E] text-white border-[#BE944E] shadow-xs"
+                      ? "bg-gradient-to-br from-[#BE944E] to-[#9C7636] text-white border-[#BE944E] shadow-xs"
                       : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
                   }`}
                 >
                   1
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-[#BE944E]" />
-                    <span>{t("homeStep1Title")}</span>
+                <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E] shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="text-sm sm:text-base font-serif font-bold text-[#181716]">
+                    {t("homeStep1Title")}
                   </h3>
-                  <p className="text-xs text-stone-500 leading-relaxed">
+                  <p className="text-xs text-stone-500 leading-snug">
                     {t("homeStep1Desc")}
                   </p>
                 </div>
@@ -3276,28 +3466,30 @@ export default function CardViteHomePage() {
               {/* STEP 2 */}
               <motion.div
                 onClick={() => setActiveStep(2)}
-                whileHover={{ x: 6, scale: 1.01 }}
-                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                whileHover={{ x: 4, scale: 1.01 }}
+                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 ${
                   activeStep === 2
-                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
-                    : "bg-white/60 border-[#EFE9E1] hover:bg-white"
+                    ? "bg-white border-[#E5C175] shadow-[0_6px_24px_rgba(190,148,78,0.14)] ring-1 ring-[#BE944E]/30"
+                    : "bg-white/70 border-[#EFE9E1] hover:bg-white"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
                     activeStep === 2
-                      ? "bg-[#BE944E] text-white border-[#BE944E] shadow-xs"
-                      : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
+                      ? "bg-gradient-to-br from-[#BE944E] to-[#9C7636] text-white border-[#BE944E] shadow-xs"
+                      : "bg-[#EAE5DE] text-[#6E645A] border-[#E2DBD0]"
                   }`}
                 >
                   2
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
-                    <Edit3 className="w-3.5 h-3.5 text-[#BE944E]" />
-                    <span>{t("homeStep2Title")}</span>
+                <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E] shrink-0">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="text-sm sm:text-base font-serif font-bold text-[#181716]">
+                    {t("homeStep2Title")}
                   </h3>
-                  <p className="text-xs text-stone-500 leading-relaxed">
+                  <p className="text-xs text-stone-500 leading-snug">
                     {t("homeStep2Desc")}
                   </p>
                 </div>
@@ -3306,125 +3498,138 @@ export default function CardViteHomePage() {
               {/* STEP 3 */}
               <motion.div
                 onClick={() => setActiveStep(3)}
-                whileHover={{ x: 6, scale: 1.01 }}
-                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 ${
+                whileHover={{ x: 4, scale: 1.01 }}
+                className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-center gap-4 ${
                   activeStep === 3
-                    ? "bg-white border-[#BE944E] shadow-md ring-2 ring-[#BE944E]/20"
-                    : "bg-white/60 border-[#EFE9E1] hover:bg-white"
+                    ? "bg-white border-[#E5C175] shadow-[0_6px_24px_rgba(190,148,78,0.14)] ring-1 ring-[#BE944E]/30"
+                    : "bg-white/70 border-[#EFE9E1] hover:bg-white"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-full font-bold text-xs flex items-center justify-center shrink-0 border transition ${
                     activeStep === 3
-                      ? "bg-[#BE944E] text-white border-[#BE944E] shadow-xs"
-                      : "bg-[#FAF2E4] text-[#8C6424] border-[#E8DBD0]"
+                      ? "bg-gradient-to-br from-[#BE944E] to-[#9C7636] text-white border-[#BE944E] shadow-xs"
+                      : "bg-[#EAE5DE] text-[#6E645A] border-[#E2DBD0]"
                   }`}
                 >
                   3
                 </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-serif font-bold text-[#181716] flex items-center gap-2">
-                    <Send className="w-3.5 h-3.5 text-[#BE944E]" />
-                    <span>{t("homeStep3Title")}</span>
+                <div className="w-8 h-8 rounded-full bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-center text-[#BE944E] shrink-0">
+                  <Send className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <h3 className="text-sm sm:text-base font-serif font-bold text-[#181716]">
+                    {t("homeStep3Title")}
                   </h3>
-                  <p className="text-xs text-stone-500 leading-relaxed">
+                  <p className="text-xs text-stone-500 leading-snug">
                     {t("homeStep3Desc")}
                   </p>
                 </div>
               </motion.div>
             </div>
 
-            <div>
+            {/* CTA BUTTON & SUB-NOTE */}
+            <div className="pt-2">
               <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }} className="inline-block">
                 <Link
                   href="/dashboard/cards/new"
-                  className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-widest shadow-lg transition"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider shadow-[0_8px_25px_rgba(190,148,78,0.38)] transition"
                 >
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
                   <span>{t("homeStepsBtn")}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>
+              <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-3 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#BE944E]" />
+                <span>Không cần đăng ký • Hoàn toàn miễn phí</span>
+              </div>
             </div>
           </motion.div>
 
-          {/* CỘT PHẢI: PHONE MOCKUP ĐỔI GIAO DIỆN THEO BƯỚC ĐANG CHỌN */}
-          <div className="lg:col-span-5 flex justify-center">
+          {/* CỘT PHẢI: GIAO DIỆN THIỆP HOA THỦY MẶC ARCH SANG TRỌNG (NHƯ ẢNH 1) */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-center">
             <motion.div
-              key={activeStep}
-              initial={{ opacity: 0, scale: 0.92, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="relative w-64 sm:w-72 aspect-[9/18.5] rounded-[42px] bg-[#1E2E20] p-3 shadow-2xl border-4 border-[#2D4530]"
+              initial={{ opacity: 0, scale: 0.94, y: 20 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="relative w-full max-w-[340px] sm:max-w-[380px] rounded-[36px] sm:rounded-[42px] p-2.5 sm:p-3 bg-white shadow-[0_25px_60px_rgba(0,0,0,0.12)] border border-[#EFE8DC]"
             >
-              <div className="w-full h-full bg-[#243627] rounded-[34px] overflow-hidden flex flex-col justify-between p-6 text-center text-white relative shadow-inner">
-                {/* Dynamic island bar */}
-                <div className="w-16 h-3.5 bg-[#142016] rounded-full mx-auto mb-4" />
+              {/* CARD FRAME */}
+              <div className="relative w-full aspect-[9/13.8] rounded-[28px] sm:rounded-[34px] overflow-hidden bg-[#F4F7F3] flex flex-col items-center justify-between p-6 sm:p-7 text-center shadow-inner">
+                {/* Background Watercolor Floral Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/wedding_card_sample.jpg"
+                  alt="Mẫu thiệp hoa thủy mặc sang trọng"
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-90 transition-transform duration-700 hover:scale-105"
+                />
 
-                {activeStep === 1 && (
-                  <div className="my-auto space-y-4">
-                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest font-bold">
-                      BƯỚC 1: CHỌN MẪU
-                    </span>
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-700/60 mx-auto flex items-center justify-center shadow-inner">
-                      <Sparkles className="w-7 h-7 text-emerald-200" />
-                    </div>
-                    <h4 className="text-lg font-serif font-bold text-white">
-                      Floral Emerald
-                    </h4>
-                    <p className="text-[10px] text-emerald-100/70">
-                      Tông xanh rêu hoàng gia sang trọng
-                    </p>
+                {/* Soft Ivory Tint for High Contrast Readability */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5]/85 via-[#FAF8F5]/65 to-[#FAF8F5]/90 pointer-events-none" />
+
+                {/* Gold Arch Decorative Inner Border */}
+                <div className="absolute inset-3 sm:inset-4 rounded-[22px] sm:rounded-[26px] border border-[#C4974E]/40 pointer-events-none" />
+
+                {/* Top Label */}
+                <div className="relative z-10 pt-2 sm:pt-3">
+                  <span className="text-[10px] sm:text-[11px] font-sans font-semibold tracking-[0.25em] text-stone-700 uppercase">
+                    LỄ THÀNH HÔN
+                  </span>
+                </div>
+
+                {/* Couple Names in Romantic Italic Calligraphy */}
+                <div className="relative z-10 my-auto py-2">
+                  <h3 className="font-serif italic text-2xl sm:text-3xl text-[#1E3A2B] font-normal leading-tight">
+                    Minh Khoa
+                  </h3>
+                  <div className="font-serif italic text-lg sm:text-xl text-[#1E3A2B] my-0.5">
+                    &
                   </div>
-                )}
+                  <h3 className="font-serif italic text-2xl sm:text-3xl text-[#1E3A2B] font-normal leading-tight">
+                    Thu Hương
+                  </h3>
 
-                {activeStep === 2 && (
-                  <div className="my-auto space-y-3">
-                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest font-bold">
-                      BƯỚC 2: ĐIỀN THÔNG TIN
-                    </span>
-                    <div className="space-y-1">
-                      <span className="text-base font-serif tracking-widest text-emerald-200 block">
-                        THU HÀ
-                      </span>
-                      <span className="text-[10px] text-white/60 block">&</span>
-                      <span className="text-base font-serif tracking-widest text-emerald-200 block">
-                        MINH QUÂN
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-white/70 pt-1 tracking-wider">
-                      20 . 10 . 2026 • GEM Center
-                    </div>
+                  {/* Wedding Date */}
+                  <div className="font-serif font-bold text-[#C4974E] text-base sm:text-lg tracking-[0.18em] mt-3">
+                    20 . 06 . 2025
                   </div>
-                )}
+                  <div className="text-[10px] sm:text-[11px] font-sans font-semibold tracking-[0.18em] text-stone-500 uppercase mt-0.5">
+                    17:00 | THỨ SÁU
+                  </div>
 
-                {activeStep === 3 && (
-                  <div className="my-auto space-y-3">
-                    <span className="text-[10px] text-emerald-300 uppercase tracking-widest font-bold">
-                      BƯỚC 3: GỬI THIỆP ĐÍCH DANH
-                    </span>
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/30 text-emerald-300 mx-auto flex items-center justify-center shadow-inner">
-                      <CheckCircle2 className="w-7 h-7" />
+                  {/* Location */}
+                  <div className="mt-3.5">
+                    <div className="text-xs sm:text-[13px] font-sans font-bold tracking-wider text-stone-800 uppercase">
+                      GEM CENTER
                     </div>
-                    <p className="text-[10px] text-emerald-100/90 leading-relaxed">
-                      Link riêng cho từng khách: <br />
-                      <code className="text-[9px] bg-black/40 px-2 py-0.5 rounded text-amber-200">
-                        cardvite.vn/thiep/g-8a9x
-                      </code>
-                    </p>
-                    <div className="pt-2">
-                      <span className="inline-block px-5 py-1.5 rounded-full bg-[#4E7252] text-white text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                        MỞ THIỆP
-                      </span>
+                    <div className="text-[9.5px] sm:text-[10.5px] text-stone-500 mt-0.5 font-sans">
+                      08 Nguyễn Bỉnh Khiêm, Q.1, TP. HCM
                     </div>
                   </div>
-                )}
+                </div>
 
-                <div className="text-[8px] uppercase tracking-widest text-white/40 pb-1">
-                  CardVite Realtime Demo
+                {/* Action Button on the Card */}
+                <div className="relative z-10 pb-1 sm:pb-2">
+                  <Link
+                    href="/collections"
+                    className="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-[#132317] hover:bg-[#1E3A2B] text-white text-[11px] sm:text-xs font-semibold shadow-md hover:scale-105 transition"
+                  >
+                    <span>Xem thiệp mẫu</span>
+                    <Play className="w-3 h-3 fill-current ml-0.5" />
+                  </Link>
                 </div>
               </div>
             </motion.div>
+
+            {/* 3 PAGINATION DOTS (CENTER ONE ACTIVE GOLD) */}
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <span className="w-2 h-2 rounded-full bg-stone-300" />
+              <span className="w-3 h-3 rounded-full bg-[#BE944E] shadow-xs" />
+              <span className="w-2 h-2 rounded-full bg-stone-300" />
+            </div>
           </div>
         </div>
       </section>
@@ -3432,7 +3637,8 @@ export default function CardViteHomePage() {
       {/* ------------------------------------------------------------- */}
       {/* 12. SECTION: TRẢI NGHIỆM THƯỢNG LƯU SỐ (BENTO GRID CÓ HOVER) */}
       {/* ------------------------------------------------------------- */}
-      <section id="custom" className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20">
+      <section id="custom" className="max-w-6xl mx-auto px-6 py-20 md:px-12 lg:px-20 relative">
+        {/* HEADER SECTION WITH BOTANICAL ORNAMENT */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -3440,69 +3646,120 @@ export default function CardViteHomePage() {
           transition={{ duration: 0.6 }}
           className="text-center max-w-2xl mx-auto mb-14"
         >
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#181716] tracking-tight">
-            {t("homeSectionExperienceTitle")}{" "}
+          {/* Top Leaf & Heart Ornament */}
+          <div className="flex items-center justify-center gap-2.5 text-[#C4974E] mb-3 select-none">
+            <span className="text-sm">🌿</span>
+            <span className="text-xs">♥</span>
+            <span className="text-sm scale-x-[-1] inline-block">🌿</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-serif font-bold text-[#181716] tracking-tight leading-tight">
+            <span>{t("homeSectionExperienceTitle") || "Trải Nghiệm"}</span>{" "}
             <span className="italic font-normal font-serif text-[#C4974E]">
-              {t("homeSectionExperienceEm")}
-            </span>{" "}
-            {t("homeSectionExperienceSuffix")}
+              {t("homeSectionExperienceEm") || "Thượng Lưu Số"}
+            </span>
           </h2>
-          <p className="text-xs sm:text-sm text-stone-600/85 mt-2.5 leading-relaxed">
-            {t("homeSectionExperienceSub")}
+          <p className="text-xs sm:text-sm text-stone-600/90 mt-3 leading-relaxed max-w-xl mx-auto">
+            {t("homeSectionExperienceSub") ||
+              "Kết hợp nghệ thuật thiệp giấy truyền thống với công nghệ hiện đại, mang đến trải nghiệm hoàn hảo cho ngày trọng đại."}
           </p>
+          <div className="flex items-center justify-center gap-1 mt-2 text-[#BE944E]/70 text-xs">
+            <span>♥</span>
+          </div>
         </motion.div>
 
         {/* BENTO GRID EXACT 3 TIERS VỚI MOTION HOVER */}
         <div className="space-y-5">
           {/* HÀNG 1: THIỆP GỬI ĐÍCH DANH (LEFT 60%) + 2 THẺ CỘT PHẢI STACK (RIGHT 40%) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* THẺ LỚN TRÁI: THIỆP GỬI ĐÍCH DANH */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            {/* THẺ LỚN TRÁI: THIỆP GỬI ĐÍCH DANH TỪNG KHÁCH MỜI */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               whileHover={{ y: -6, scale: 1.01 }}
               transition={{ duration: 0.3 }}
-              className="lg:col-span-7 bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-end min-h-[340px] group hover:shadow-2xl hover:border-[#BE944E]/40"
+              className="lg:col-span-7 bg-white rounded-[32px] sm:rounded-[36px] p-7 sm:p-9 border border-[#EFE9E1] shadow-2xs relative overflow-hidden flex flex-col justify-between min-h-[340px] group hover:shadow-xl hover:border-[#BE944E]/40"
             >
+              {/* Background Photo */}
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&auto=format&fit=crop')`,
+                  backgroundImage: `url('/images/journal-card-balloon.jpg')`,
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+              {/* Dark Gradient Overlay for Crisp Text Readability */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/25" />
 
-              <div className="relative z-10 text-white">
-                <h3 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight">
-                  {t("homeCard1Title")}
+              {/* Top Left Diamond Badge */}
+              <div className="relative z-10">
+                <div className="w-11 h-11 rounded-2xl bg-white/90 backdrop-blur-md border border-white/60 text-[#BE944E] flex items-center justify-center shadow-xs">
+                  <Gem className="w-5 h-5" />
+                </div>
+              </div>
+
+              {/* Bottom Card Content */}
+              <div className="relative z-10 text-white space-y-2 max-w-md pt-12">
+                <div className="text-[11px] font-sans font-semibold tracking-wider text-amber-200/90 uppercase flex items-center gap-2">
+                  <span>Tính năng nổi bật</span>
+                  <span className="w-6 h-[1px] bg-amber-200/60 inline-block" />
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight leading-snug">
+                  {t("homeCard1Title") || "Thiệp Gửi Đích Danh Từng Khách Mời"}
                 </h3>
-                <p className="text-xs text-white/85 mt-1.5 max-w-md leading-relaxed">
-                  {t("homeCard1Desc")}
+                <p className="text-xs text-white/85 leading-relaxed">
+                  {t("homeCard1Desc") ||
+                    "Cá nhân hóa thiệp lời mời với tên khách được in trang trọng, tạo cảm giác được trân trọng tuyệt đối."}
                 </p>
+                <div className="pt-2">
+                  <Link
+                    href="/collections"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold shadow-md hover:scale-105 transition"
+                  >
+                    <span>Khám phá ngay</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </motion.div>
 
-            {/* CỘT PHẢI: 2 THẺ STACK NHỎ */}
-            <div className="lg:col-span-5 flex flex-col gap-5">
-              {/* THẺ 1: QUẢN LÝ RSVP */}
+            {/* CỘT PHẢI: 2 THẺ STACK NHỎ (RSVP & VIETQR) */}
+            <div className="lg:col-span-5 flex flex-col gap-5 justify-between">
+              {/* THẺ 1: QUẢN LÝ RSVP & CHỐT BÀN */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                whileHover={{ y: -5, scale: 1.015 }}
-                className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center hover:shadow-xl hover:border-[#BE944E]/40 transition group"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="flex-1 bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-[#EFE9E1] shadow-2xs flex items-center justify-between gap-4 hover:shadow-md hover:border-[#BE944E]/40 transition group relative overflow-hidden cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-2xl bg-[#5C7658]/10 text-[#5C7658] flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                  <CalendarCheck2 className="w-5 h-5" strokeWidth={1.5} />
+                {/* Background 3D Banquet Corner Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/bento-banquet.jpg"
+                  alt="Banquet"
+                  className="absolute right-8 bottom-[-10px] w-28 h-28 object-cover rounded-2xl opacity-40 pointer-events-none transition-transform duration-500 group-hover:scale-105"
+                />
+
+                <div className="flex items-start gap-4 z-10 max-w-[260px]">
+                  <div className="w-12 h-12 rounded-2xl bg-[#EAF3EA] text-[#4A724E] flex items-center justify-center shrink-0 group-hover:scale-108 transition-transform shadow-2xs">
+                    <CalendarCheck2 className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-serif font-bold text-[#181716] group-hover:text-[#BE944E] transition">
+                      {t("homeCard2Title") || "Quản Lý RSVP & Chốt Bàn"}
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                      {t("homeCard2Desc") ||
+                        "Tự động hóa việc xác nhận tham dự và sắp xếp chỗ ngồi thông minh."}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-base font-serif font-bold text-[#181716]">
-                  {t("homeCard2Title")}
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  {t("homeCard2Desc")}
-                </p>
+
+                <div className="text-stone-400 group-hover:text-[#BE944E] group-hover:translate-x-1 transition z-10 shrink-0">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </motion.div>
 
               {/* THẺ 2: HỘP MỪNG CƯỚI VIETQR */}
@@ -3511,23 +3768,40 @@ export default function CardViteHomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                whileHover={{ y: -5, scale: 1.015 }}
-                className="flex-1 bg-white rounded-3xl p-6 border border-[#EFE9E1] shadow-2xs flex flex-col justify-center hover:shadow-xl hover:border-[#BE944E]/40 transition group"
+                whileHover={{ y: -4, scale: 1.01 }}
+                className="flex-1 bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-[#EFE9E1] shadow-2xs flex items-center justify-between gap-4 hover:shadow-md hover:border-[#BE944E]/40 transition group relative overflow-hidden cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-2xl bg-[#BE944E]/15 text-[#BE944E] flex items-center justify-center mb-3 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-                  <Gift className="w-5 h-5" strokeWidth={1.5} />
+                {/* Background 3D Gift Box Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/bento-gift-box.jpg"
+                  alt="3D Gift Box"
+                  className="absolute right-8 bottom-[-10px] w-24 h-24 object-cover rounded-2xl opacity-60 pointer-events-none transition-transform duration-500 group-hover:scale-105"
+                />
+
+                <div className="flex items-start gap-4 z-10 max-w-[260px]">
+                  <div className="w-12 h-12 rounded-2xl bg-[#FAF2E4] text-[#8C6424] flex items-center justify-center shrink-0 group-hover:scale-108 transition-transform shadow-2xs">
+                    <Gift className="w-5 h-5" strokeWidth={1.75} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-serif font-bold text-[#181716] group-hover:text-[#BE944E] transition">
+                      {t("homeCard3Title") || "Hộp Mừng Cưới VietQR"}
+                    </h3>
+                    <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                      {t("homeCard3Desc") ||
+                        "Tích hợp mã QR thanh toán tinh tế, tiện lợi cho khách mời từ xa."}
+                    </p>
+                  </div>
                 </div>
-                <h3 className="text-base font-serif font-bold text-[#181716]">
-                  {t("homeCard3Title")}
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  {t("homeCard3Desc")}
-                </p>
+
+                <div className="text-stone-400 group-hover:text-[#BE944E] group-hover:translate-x-1 transition z-10 shrink-0">
+                  <ChevronRight className="w-5 h-5" />
+                </div>
               </motion.div>
             </div>
           </div>
 
-          {/* HÀNG 2: 2 THẺ BẰNG NHAU (50% - 50%) */}
+          {/* HÀNG 2: 2 THẺ BẰNG NHAU (MINI-GAME & ALBUM ẢNH 3D) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* THẺ 3: MINI-GAME TƯƠNG TÁC */}
             <motion.div
@@ -3535,19 +3809,34 @@ export default function CardViteHomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              whileHover={{ y: -5, scale: 1.015 }}
-              className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between hover:shadow-xl hover:border-[#BE944E]/40 transition group"
+              whileHover={{ y: -4, scale: 1.01 }}
+              className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-[#EFE9E1] shadow-2xs flex items-center justify-between gap-4 hover:shadow-md hover:border-[#BE944E]/40 transition group relative overflow-hidden cursor-pointer"
             >
-              <div>
-                <div className="w-10 h-10 rounded-2xl bg-[#E08269]/15 text-[#E08269] flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                  <Gamepad2 className="w-5 h-5" strokeWidth={1.5} />
+              {/* Background 3D Gamepad Image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/bento-gamepad.jpg"
+                alt="3D Gamepad"
+                className="absolute right-8 bottom-[-10px] w-24 h-24 object-cover rounded-2xl opacity-60 pointer-events-none transition-transform duration-500 group-hover:scale-105"
+              />
+
+              <div className="flex items-start gap-4 z-10 max-w-[260px]">
+                <div className="w-12 h-12 rounded-2xl bg-[#FDF0EC] text-[#D96B4F] flex items-center justify-center shrink-0 group-hover:scale-108 transition-transform shadow-2xs">
+                  <Gamepad2 className="w-5 h-5" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-base font-serif font-bold text-[#181716]">
-                  {t("homeCard4Title")}
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  {t("homeCard4Desc")}
-                </p>
+                <div>
+                  <h3 className="text-base font-serif font-bold text-[#181716] group-hover:text-[#BE944E] transition">
+                    {t("homeCard4Title") || "Mini-Game Tương Tác"}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeCard4Desc") ||
+                      "Gắn kết khách mời trước sự kiện với các trò chơi nhỏ thú vị."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-stone-400 group-hover:text-[#BE944E] group-hover:translate-x-1 transition z-10 shrink-0">
+                <ChevronRight className="w-5 h-5" />
               </div>
             </motion.div>
 
@@ -3557,62 +3846,120 @@ export default function CardViteHomePage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              whileHover={{ y: -5, scale: 1.015 }}
-              className="bg-white rounded-3xl p-7 border border-[#EFE9E1] shadow-2xs flex flex-col justify-between hover:shadow-xl hover:border-[#BE944E]/40 transition group"
+              whileHover={{ y: -4, scale: 1.01 }}
+              className="bg-white rounded-[28px] sm:rounded-[32px] p-6 sm:p-7 border border-[#EFE9E1] shadow-2xs flex items-center justify-between gap-4 hover:shadow-md hover:border-[#BE944E]/40 transition group relative overflow-hidden cursor-pointer"
             >
-              <div>
-                <div className="w-10 h-10 rounded-2xl bg-[#BE944E]/15 text-[#BE944E] flex items-center justify-center mb-3 group-hover:scale-110 group-hover:-rotate-6 transition-transform">
-                  <ImageIcon className="w-5 h-5" strokeWidth={1.5} />
+              {/* Background 3D Photo Frame Image */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/bento-photo-music.jpg"
+                alt="3D Photo Frame"
+                className="absolute right-8 bottom-[-10px] w-24 h-24 object-cover rounded-2xl opacity-60 pointer-events-none transition-transform duration-500 group-hover:scale-105"
+              />
+
+              <div className="flex items-start gap-4 z-10 max-w-[260px]">
+                <div className="w-12 h-12 rounded-2xl bg-[#FAF3E8] text-[#BE944E] flex items-center justify-center shrink-0 group-hover:scale-108 transition-transform shadow-2xs">
+                  <ImageIcon className="w-5 h-5" strokeWidth={1.75} />
                 </div>
-                <h3 className="text-base font-serif font-bold text-[#181716]">
-                  {t("homeCard5Title")}
-                </h3>
-                <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                  {t("homeCard5Desc")}
-                </p>
+                <div>
+                  <h3 className="text-base font-serif font-bold text-[#181716] group-hover:text-[#BE944E] transition">
+                    {t("homeCard5Title") || "Album Ảnh 3D & Nhạc"}
+                  </h3>
+                  <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+                    {t("homeCard5Desc") ||
+                      "Trình diễn bộ ảnh cưới ấn tượng trên nền nhạc yêu thích."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-stone-400 group-hover:text-[#BE944E] group-hover:translate-x-1 transition z-10 shrink-0">
+                <ChevronRight className="w-5 h-5" />
               </div>
             </motion.div>
           </div>
 
-          {/* HÀNG 3: THẺ ĐA NGÔN NGỮ TOÀN CẦU TRÀN HÀNG + VÒNG CUNG QUỸ ĐẠO THIÊN HÀ */}
+          {/* HÀNG 3: THẺ ĐA NGÔN NGỮ TOÀN CẦU TRÀN HÀNG + BẢN ĐỒ VÀNG */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            whileHover={{ y: -5, scale: 1.01 }}
+            whileHover={{ y: -4, scale: 1.008 }}
             transition={{ duration: 0.3 }}
-            className="bg-white rounded-3xl p-8 border border-[#EFE9E1] shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative group hover:shadow-xl hover:border-[#BE944E]/40"
+            className="bg-[#FAF7F0] rounded-[32px] sm:rounded-[36px] p-7 sm:p-9 border border-[#EAE0CD] shadow-2xs flex flex-col md:flex-row items-center justify-between gap-6 overflow-hidden relative group hover:shadow-md hover:border-[#BE944E]/40"
           >
-            <div className="max-w-lg z-10">
-              <div className="w-10 h-10 rounded-2xl bg-stone-100 text-stone-700 flex items-center justify-center mb-3 group-hover:scale-110 group-hover:rotate-6 transition-transform">
-                <Globe2 className="w-5 h-5" strokeWidth={1.5} />
+            {/* Left Content */}
+            <div className="max-w-lg z-10 flex items-start gap-5">
+              <div className="w-14 h-14 rounded-full bg-[#FAF0E1] border border-[#EAE0CD] text-[#BE944E] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-108 transition-transform">
+                <Globe2 className="w-6 h-6" strokeWidth={1.75} />
               </div>
-              <h3 className="text-xl font-serif font-bold text-[#181716]">
-                {t("homeCard6Title")}
-              </h3>
-              <p className="text-xs text-stone-500 mt-1.5 leading-relaxed">
-                {t("homeCard6Desc")}
-              </p>
+              <div className="space-y-1">
+                <h3 className="text-xl font-serif font-bold text-[#181716]">
+                  {t("homeCard6Title") || "Đa Ngôn Ngữ Toàn Cầu"}
+                </h3>
+                <p className="text-xs text-stone-600 leading-relaxed max-w-md">
+                  {t("homeCard6Desc") ||
+                    "Tự động dịch nội dung thiệp dựa trên ngôn ngữ trình duyệt của khách mời, xóa nhòa khoảng cách địa lý."}
+                </p>
+                <div className="pt-2">
+                  <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/90 border border-[#EAE0CD] text-xs font-semibold text-stone-700 shadow-2xs group-hover:bg-white transition">
+                    <span>Hỗ trợ nhiều ngôn ngữ</span>
+                    <Globe2 className="w-3.5 h-3.5 text-[#BE944E]" />
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* SƠ ĐỒ VÒNG CUNG QUỸ ĐẠO THIÊN HÀ CÓ CHUYỂN ĐỘNG XOAY */}
-            <div className="relative w-44 h-28 flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 160 100" className="w-full h-full">
+            {/* Right Graphic: Golden Dotted Globe & Network Paths */}
+            <div className="relative w-72 h-36 flex items-center justify-center shrink-0 opacity-85 pointer-events-none">
+              <svg viewBox="0 0 280 140" className="w-full h-full">
+                {/* World map stylized continents */}
                 <path
-                  d="M 10 90 A 70 70 0 0 1 150 90"
+                  d="M30 40 Q45 25 70 35 T100 55 T80 85 T40 70 Z M130 30 Q160 20 190 35 T220 50 T200 80 T150 70 Z M190 90 Q220 85 240 100 T230 125 T190 115 Z"
+                  fill="#BE944E"
+                  fillOpacity="0.12"
+                />
+                {/* Orbital connecting golden arc line */}
+                <path
+                  d="M 30 70 Q 140 10 250 70"
+                  fill="none"
+                  stroke="#BE944E"
+                  strokeWidth="1.5"
+                  strokeDasharray="4 4"
+                  opacity="0.6"
+                />
+                <path
+                  d="M 50 85 Q 150 120 230 60"
                   fill="none"
                   stroke="#BE944E"
                   strokeWidth="1"
                   strokeDasharray="3 3"
-                  opacity="0.6"
+                  opacity="0.4"
                 />
-                <motion.g
-                  animate={{ x: [0, 40, 0], y: [0, 40, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <circle cx="105" cy="22" r="4.5" fill="#BE944E" />
-                </motion.g>
-                <circle cx="145" cy="62" r="3.5" fill="#8C6424" />
+                {/* Animated Glowing Connection Nodes */}
+                <motion.circle
+                  cx="50"
+                  cy="70"
+                  r="4"
+                  fill="#BE944E"
+                  animate={{ r: [3.5, 5, 3.5], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
+                <motion.circle
+                  cx="140"
+                  cy="40"
+                  r="5"
+                  fill="#D8B062"
+                  animate={{ r: [4, 6, 4], opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                />
+                <motion.circle
+                  cx="230"
+                  cy="65"
+                  r="4"
+                  fill="#BE944E"
+                  animate={{ r: [3.5, 5, 3.5], opacity: [0.7, 1, 0.7] }}
+                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                />
               </svg>
             </div>
           </motion.div>

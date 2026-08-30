@@ -4,6 +4,7 @@ import { Playfair_Display, Inter, Outfit, Quicksand } from "next/font/google";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -34,7 +35,8 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "Digital Card Platform | Nền Tảng Thiệp Điện Tử Đa Danh Mục",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://cardvite.vn"),
+  title: "CardVite | Nền Tảng Thiệp Điện Tử Đa Danh Mục",
   description:
     "Tạo thiệp cưới, sinh nhật, thôi nôi online sang trọng, hiệu ứng phong bì 3D, đa ngôn ngữ Việt - Anh - Trung.",
 };
@@ -51,10 +53,12 @@ export default function RootLayout({
       >
         <AuthProvider>
           <LanguageProvider>
-            {children}
-            <Suspense fallback={null}>
-              <AuthModal />
-            </Suspense>
+            <ErrorBoundary>
+              {children}
+              <Suspense fallback={null}>
+                <AuthModal />
+              </Suspense>
+            </ErrorBoundary>
           </LanguageProvider>
         </AuthProvider>
       </body>

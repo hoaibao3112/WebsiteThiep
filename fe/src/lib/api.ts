@@ -1,32 +1,48 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
+/**
+ * ApiClient — Client HTTP cho Backend API
+ *
+ * Bảo mật:
+ * - JWT được lưu trong HTTPOnly cookie (không thể bị XSS đọc)
+ * - Cookie tự động được gửi kèm mọi request nhờ credentials: 'include'
+ * - Token KHÔNG còn được lưu trong localStorage
+ */
 export class ApiClient {
-  private static getToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("auth_token");
-  }
-
-  static setToken(token: string) {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("auth_token", token);
-      // Đồng bộ cookie để Next.js server middleware đọc được phiên đăng nhập
-      document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=604800; SameSite=Lax`;
+  /**
+   * Gọi Next.js Route Handler để set JWT vào HTTPOnly cookie
+   * Thay thế cho localStorage.setItem('auth_token')
+   */
+  static async setToken(token: string): Promise<void> {
+    if (typeof window === "undefined") return;
+    try {
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+    } catch {
+      // Silently fail - session route unavailable
     }
   }
 
-  static clearToken() {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("auth_token");
-      document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
+  /**
+   * Xóa HTTPOnly cookie khi logout
+   * Thay thế cho localStorage.removeItem('auth_token')
+   */
+  static async clearToken(): Promise<void> {
+    if (typeof window === "undefined") return;
+    try {
+      await fetch("/api/auth/session", { method: "DELETE" });
+    } catch {
+      // Silently fail
     }
   }
 
-  static async request<T = any>(
+  static async request<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string; message?: string }> {
-    const token = this.getToken();
-
     // Auto-detect FormData: let the browser set Content-Type with the correct boundary
     const isFormData = options.body instanceof FormData;
 
@@ -35,21 +51,18 @@ export class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
     try {
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
+        credentials: "include", // Tự động gửi HTTPOnly cookie với mọi request
       });
 
       const data = await res.json();
       return data;
-    } catch (error: any) {
-      // Silently return failure without triggering Next.js dev error overlay
-      return { success: false, error: error?.message || "Lỗi kết nối máy chủ" };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Lỗi kết nối máy chủ";
+      return { success: false, error: message };
     }
   }
 }

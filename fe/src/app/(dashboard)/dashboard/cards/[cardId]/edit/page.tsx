@@ -425,7 +425,7 @@ function EditCardContent() {
         try {
           const formData = new FormData();
           formData.append("file", file);
-          const res = await ApiClient.request("/upload/image", {
+          const res = await ApiClient.request<{ url: string; thumbUrl?: string }>("/upload/image", {
             method: "POST",
             body: formData,
           });
@@ -434,7 +434,7 @@ function EditCardContent() {
             const realUrl = res.data.url;
             setPhotos((prev) =>
               prev.map((p) =>
-                p.id === tempId ? { ...p, url: realUrl, thumbUrl: res.data.thumbUrl } : p
+                p.id === tempId ? { ...p, url: realUrl, thumbUrl: res.data?.thumbUrl } : p
               )
             );
             URL.revokeObjectURL(localUrl);
@@ -518,7 +518,7 @@ function EditCardContent() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await ApiClient.request("/upload/music", {
+      const res = await ApiClient.request<{ url: string }>("/upload/music", {
         method: "POST",
         body: formData,
       });

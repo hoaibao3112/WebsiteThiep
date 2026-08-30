@@ -70,7 +70,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
     }
     setLoading(true);
     try {
-      const res = await ApiClient.request(`/wishes/${cardId}?limit=30`);
+      const res = await ApiClient.request<{ items: typeof SAMPLE_DEMO_WISHES }>(`/wishes/${cardId}?limit=30`);
       if (res.success && res.data && res.data.items && res.data.items.length > 0) {
         setWishes(res.data.items);
       } else {
