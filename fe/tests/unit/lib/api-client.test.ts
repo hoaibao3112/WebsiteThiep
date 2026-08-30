@@ -27,19 +27,20 @@ describe("ApiClient", () => {
   });
 
   // ─────────────────────────────────────────────
-  // Token Management
+  // Credentials & Cookie Handling
   // ─────────────────────────────────────────────
 
-  describe("Token management", () => {
-    it("setToken lưu token vào localStorage", () => {
-      ApiClient.setToken("my-token-123");
-      expect(mockLocalStorage.getItem("auth_token")).toBe("my-token-123");
+  describe("Credentials handling", () => {
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        json: async () => ({ success: true, data: {} }),
+      });
     });
 
-    it("clearToken xóa token khỏi localStorage", () => {
-      mockLocalStorage.setItem("auth_token", "some-token");
-      ApiClient.clearToken();
-      expect(mockLocalStorage.getItem("auth_token")).toBeNull();
+    it("luôn gửi credentials: 'include' để truyền HTTPS Secure Cookie", async () => {
+      await ApiClient.request("/test");
+      const calledOptions = mockFetch.mock.calls[0][1];
+      expect(calledOptions.credentials).toBe("include");
     });
   });
 
@@ -76,23 +77,8 @@ describe("ApiClient", () => {
       const calledHeaders = mockFetch.mock.calls[0][1].headers;
       expect(calledHeaders["Content-Type"]).toBeUndefined();
     });
-
-    it("gửi Authorization header khi có token trong localStorage", async () => {
-      mockLocalStorage.setItem("auth_token", "bearer-token-xyz");
-
-      await ApiClient.request("/cards");
-
-      const calledHeaders = mockFetch.mock.calls[0][1].headers;
-      expect(calledHeaders["Authorization"]).toBe("Bearer bearer-token-xyz");
-    });
-
-    it("KHÔNG gửi Authorization header khi localStorage trống", async () => {
-      await ApiClient.request("/cards");
-
-      const calledHeaders = mockFetch.mock.calls[0][1].headers;
-      expect(calledHeaders["Authorization"]).toBeUndefined();
-    });
   });
+
 
   // ─────────────────────────────────────────────
   // request() — Response handling

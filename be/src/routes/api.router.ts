@@ -39,7 +39,9 @@ apiRouter.post("/auth/verify-otp-register", validate(RegisterWithOtpSchema), Aut
 apiRouter.post("/auth/google", validate(GoogleLoginSchema), AuthController.googleLogin);
 apiRouter.post("/auth/register", validate(LoginSchema), AuthController.register);
 apiRouter.post("/auth/login", validate(LoginSchema), AuthController.login);
+apiRouter.post("/auth/logout", AuthController.logout);
 apiRouter.get("/auth/me", authGuard, AuthController.getMe);
+
 apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthController.updateProfile);
 
 // --- MEDIA UPLOAD ---

@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, CookieOptions } from "express";
 import { AuthService } from "../services/auth.service";
 import { OtpService } from "../services/otp.service";
 import {
@@ -18,6 +18,16 @@ function getClientIp(req: Request): string {
     "127.0.0.1"
   );
 }
+
+const isProduction = process.env.NODE_ENV === "production";
+
+const COOKIE_OPTIONS: CookieOptions = {
+  httpOnly: true,
+  secure: isProduction, // HTTPS trên production
+  sameSite: isProduction ? "none" : "lax", // "none" cho phép cross-site request từ frontend sang backend
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+  path: "/",
+};
 
 export class AuthController {
   /**
@@ -48,6 +58,11 @@ export class AuthController {
       const validated = VerifyOtpRegisterSchema.parse(req.body);
       const result = await AuthService.registerWithOtp(validated);
 
+      // Đặt HTTPS HTTPOnly Cookie
+      if (result.token) {
+        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+      }
+
       res.status(201).json({
         success: true,
         message: "Đăng ký và xác thực tài khoản thành công!",
@@ -66,6 +81,11 @@ export class AuthController {
       const validated = GoogleLoginSchema.parse(req.body);
       const result = await AuthService.googleLogin(validated.idToken);
 
+      // Đặt HTTPS HTTPOnly Cookie
+      if (result.token) {
+        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+      }
+
       res.status(200).json({
         success: true,
         message: "Đăng nhập với Google thành công!",
@@ -81,6 +101,12 @@ export class AuthController {
       const validated = RegisterSchema.parse(req.body);
       const clientIp = getClientIp(req);
       const result = await AuthService.register(validated, clientIp);
+
+      // Đặt HTTPS HTTPOnly Cookie
+      if (result.token) {
+        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+      }
+
       res.status(201).json({
         success: true,
         message: "Đăng ký tài khoản thành công!",
@@ -96,6 +122,12 @@ export class AuthController {
       const validated = LoginSchema.parse(req.body);
       const clientIp = getClientIp(req);
       const result = await AuthService.login(validated, clientIp);
+
+      // Đặt HTTPS HTTPOnly Cookie
+      if (result.token) {
+        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+      }
+
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công!",
@@ -103,6 +135,15 @@ export class AuthController {
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
+    }
+  }
+
+  static async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.clearCookie("auth_token", COOKIE_OPTIONS);
+      res.status(200).json({ success: true, message: "Đăng xuất thành công" });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
     }
   }
 
@@ -139,3 +180,4 @@ export class AuthController {
     }
   }
 }
+

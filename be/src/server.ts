@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 import path from "path";
@@ -18,6 +19,8 @@ const PORT = process.env.PORT || 5000;
 // MIDDLEWARES — Security & Observability
 // -----------------------------------------------------------------------
 app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cookieParser());
+
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())

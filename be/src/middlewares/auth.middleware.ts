@@ -13,14 +13,21 @@ export function authGuard(
 ) {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else if (req.cookies && req.cookies.auth_token) {
+      token = req.cookies.auth_token;
+    }
+
+    if (!token) {
       return res.status(401).json({
         success: false,
         error: "Vui lòng đăng nhập để tiếp tục",
       });
     }
 
-    const token = authHeader.split(" ")[1];
     const decoded = AuthService.verifyToken(token);
     req.user = decoded;
     req.userId = decoded.userId;

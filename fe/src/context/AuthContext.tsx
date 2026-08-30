@@ -52,33 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshUser = async () => {
-    const token = ApiClient.getToken();
-    if (!token) {
-      setUser(null);
-      setToken(null);
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const res = await ApiClient.request<AuthUser>("/auth/me");
       if (res.success && res.data) {
         setUser(res.data);
-        setToken(token);
       } else {
-        await ApiClient.clearToken();
         setUser(null);
-        setToken(null);
       }
     } catch {
-      await ApiClient.clearToken();
       setUser(null);
-      setToken(null);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   useEffect(() => {
     refreshUser();
@@ -103,8 +89,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
-      setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
       return { success: true };
@@ -119,8 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
-      setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
       return { success: true };
@@ -135,8 +117,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (res.success && res.data) {
-      await ApiClient.setToken(res.data.token); // Set HTTPOnly cookie
-      setToken(res.data.token);
       setUser(res.data.user);
       closeAuthModal();
       return { success: true };
@@ -145,10 +125,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = React.useCallback(async () => {
-    await ApiClient.clearToken(); // Xóa HTTPOnly cookie
+    await ApiClient.request("/auth/logout", { method: "POST" });
     setUser(null);
-    setToken(null);
   }, []);
+
 
   return (
     <AuthContext.Provider
