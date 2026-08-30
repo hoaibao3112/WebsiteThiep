@@ -3936,33 +3936,34 @@ export default function CardViteHomePage() {
                   opacity="0.4"
                 />
                 {/* Animated Glowing Connection Nodes */}
-                <motion.circle
+                <circle
                   cx="50"
                   cy="70"
                   r="4"
                   fill="#BE944E"
-                  animate={{ r: [3.5, 5, 3.5], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="animate-pulse"
+                  opacity="0.8"
                 />
-                <motion.circle
+                <circle
                   cx="140"
                   cy="40"
                   r="5"
                   fill="#D8B062"
-                  animate={{ r: [4, 6, 4], opacity: [0.8, 1, 0.8] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                  className="animate-pulse"
+                  opacity="0.9"
                 />
-                <motion.circle
+                <circle
                   cx="230"
                   cy="65"
                   r="4"
                   fill="#BE944E"
-                  animate={{ r: [3.5, 5, 3.5], opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                  className="animate-pulse"
+                  opacity="0.8"
                 />
               </svg>
             </div>
           </motion.div>
+
         </div>
       </section>
 

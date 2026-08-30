@@ -10,32 +10,49 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/a
  */
 export class ApiClient {
   /**
-   * Gọi Next.js Route Handler để set JWT vào HTTPOnly cookie
-   * Thay thế cho localStorage.setItem('auth_token')
+   * Lấy token hiện tại từ localStorage hoặc Cookie
+   */
+  static getToken(): string | null {
+    if (typeof window === "undefined") return null;
+    const local = localStorage.getItem("auth_token");
+    if (local) return local;
+
+    // Fallback: đọc từ cookie
+    const match = document.cookie.match(new RegExp("(^| )auth_token=([^;]+)"));
+    return match ? decodeURIComponent(match[2]) : null;
+  }
+
+  /**
+   * Lưu token vào localStorage + cookie + HTTPOnly session route
    */
   static async setToken(token: string): Promise<void> {
     if (typeof window === "undefined") return;
     try {
+      localStorage.setItem("auth_token", token);
+      document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=604800; SameSite=Lax`;
+
+      // Đồng bộ tới Route Handler session nội bộ nếu có
       await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
-      });
+      }).catch(() => {});
     } catch {
-      // Silently fail - session route unavailable
+      // Silently ignore
     }
   }
 
   /**
-   * Xóa HTTPOnly cookie khi logout
-   * Thay thế cho localStorage.removeItem('auth_token')
+   * Xóa token khỏi localStorage + cookie + session
    */
   static async clearToken(): Promise<void> {
     if (typeof window === "undefined") return;
     try {
-      await fetch("/api/auth/session", { method: "DELETE" });
+      localStorage.removeItem("auth_token");
+      document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
+      await fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
     } catch {
-      // Silently fail
+      // Silently ignore
     }
   }
 
@@ -43,6 +60,8 @@ export class ApiClient {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<{ success: boolean; data?: T; error?: string; message?: string }> {
+    const token = this.getToken();
+
     // Auto-detect FormData: let the browser set Content-Type with the correct boundary
     const isFormData = options.body instanceof FormData;
 
@@ -51,11 +70,15 @@ export class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
-        credentials: "include", // Tự động gửi HTTPOnly cookie với mọi request
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -66,3 +89,4 @@ export class ApiClient {
     }
   }
 }
+

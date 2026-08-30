@@ -52,12 +52,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshUser = async () => {
-    // Không cần kiểm tra localStorage nữa
-    // HTTPƯOnly cookie sẽ tự động được gửi bởi credentials: 'include'
+    const token = ApiClient.getToken();
+    if (!token) {
+      setUser(null);
+      setToken(null);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const res = await ApiClient.request<AuthUser>("/auth/me");
       if (res.success && res.data) {
         setUser(res.data);
+        setToken(token);
       } else {
         await ApiClient.clearToken();
         setUser(null);
@@ -71,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
+
 
   useEffect(() => {
     refreshUser();
