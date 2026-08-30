@@ -23,38 +23,31 @@ export class ApiClient {
   }
 
   /**
-   * Lưu token vào localStorage + cookie + HTTPOnly session route
+   * Lưu token vào localStorage + cookie
    */
   static async setToken(token: string): Promise<void> {
     if (typeof window === "undefined") return;
     try {
       localStorage.setItem("auth_token", token);
       document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=604800; SameSite=Lax`;
-
-      // Đồng bộ tới Route Handler session nội bộ nếu có
-      await fetch("/api/auth/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      }).catch(() => {});
     } catch {
       // Silently ignore
     }
   }
 
   /**
-   * Xóa token khỏi localStorage + cookie + session
+   * Xóa token khỏi localStorage + cookie
    */
   static async clearToken(): Promise<void> {
     if (typeof window === "undefined") return;
     try {
       localStorage.removeItem("auth_token");
       document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
-      await fetch("/api/auth/session", { method: "DELETE" }).catch(() => {});
     } catch {
       // Silently ignore
     }
   }
+
 
   static async request<T = unknown>(
     endpoint: string,
