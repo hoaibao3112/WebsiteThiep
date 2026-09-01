@@ -21,7 +21,7 @@ export default function BillingPage() {
   const localizedPlans = getLocalizedPlans(t);
   const [selectedPlan, setSelectedPlan] = useState<PlanConfig>(localizedPlans[2] || PLANS[2]); // Default VIP
   const [loading, setLoading] = useState(false);
-  const [orderData, setOrderData] = useState<any | null>(null);
+  const [orderData, setOrderData] = useState<{ orderCode: string; pollingToken?: string; amount: number; bankCode: string; bankAccount: string; bankAccountName: string; qrUrl: string } | null>(null);
   const [isPaid, setIsPaid] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -32,8 +32,10 @@ export default function BillingPage() {
     setOrderData(null);
     setIsPaid(false);
 
-    const res = await ApiClient.request<{ paymentInfo: { orderCode: string; amount: number; bankCode: string; bankAccount: string; bankAccountName: string; qrUrl: string } }>("/orders", {
+    const idempotencyKey = crypto.randomUUID();
+    const res = await ApiClient.request<{ paymentInfo: { orderCode: string; pollingToken: string; amount: number; bankCode: string; bankAccount: string; bankAccountName: string; qrUrl: string } }>("/orders", {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
       body: JSON.stringify({
         cardId: "demo-card-id",
         planId: plan.code,
@@ -62,7 +64,10 @@ export default function BillingPage() {
     if (!orderData || isPaid) return;
 
     const interval = setInterval(async () => {
-      const res = await ApiClient.request<{ status: string }>(`/orders/${orderData.orderCode}/status`);
+      if (!orderData.pollingToken) return;
+      const res = await ApiClient.request<{ status: string }>(`/orders/${orderData.orderCode}/status`, {
+        headers: { "X-Polling-Token": orderData.pollingToken },
+      });
       if (res.success && res.data && res.data.status === "PAID") {
         setIsPaid(true);
         clearInterval(interval);

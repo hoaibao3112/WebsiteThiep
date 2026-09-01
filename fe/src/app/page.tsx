@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import confetti from "canvas-confetti";
 import {
   ArrowRight,
+  ArrowUp,
   Menu,
   X,
   CalendarCheck2,
@@ -558,15 +559,62 @@ export default function CardViteHomePage() {
     setTimeout(() => setQrSuccess(false), 5000);
   };
 
+  // Smart Sticky / Reveal Header States
+  const [showHeader, setShowHeader] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Check if page scrolled past initial threshold
+      setIsScrolled(currentScrollY > 20);
+      setShowBackToTop(currentScrollY > 400);
+
+      // Smart Hide/Reveal:
+      // 1. Khi ở gần đầu trang (<= 20px) -> luôn hiện
+      if (currentScrollY <= 20) {
+        setShowHeader(true);
+      }
+      // 2. Khi cuộn xuống và đã qua 80px -> tự động ẩn nhẹ nhàng để thoáng trang
+      else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        setShowHeader(false);
+      }
+      // 3. Khi cuộn nhẹ lên ở BẤT KỲ ĐÂU trên trang -> trượt xuống hiện ngay lập tức
+      else if (currentScrollY < lastScrollY.current) {
+        setShowHeader(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen w-full bg-[#FAF7F2] text-[#181716] font-sans antialiased overflow-x-hidden selection:bg-[#BE944E]/20">
+    <div className="min-h-screen w-full bg-[#FAF7F2] text-[#181716] font-sans antialiased overflow-x-clip selection:bg-[#BE944E]/20">
       <Suspense fallback={null}>
         <AuthQueryHandler />
       </Suspense>
       {/* ------------------------------------------------------------- */}
       {/* 1. HEADER & NAVBAR */}
       {/* ------------------------------------------------------------- */}
-      <header className="w-full px-6 py-4 md:px-12 lg:px-20 bg-[#FAF7F2] sticky top-0 z-40 backdrop-blur-md bg-[#FAF7F2]/90 border-b border-[#EFE9E1]/60 transition-all">
+      <header
+        className={`w-full px-6 py-3.5 md:px-12 lg:px-20 sticky top-0 z-40 transition-all duration-300 transform ${
+          showHeader ? "translate-y-0" : "-translate-y-full shadow-none pointer-events-none"
+        } ${
+          isScrolled
+            ? "bg-[#FAF7F2]/95 backdrop-blur-md shadow-sm border-b border-[#EFE9E1]"
+            : "bg-[#FAF7F2]/90 backdrop-blur-xs border-b border-[#EFE9E1]/60"
+        }`}
+      >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* LOGO */}
           <Link href="/" className="group flex items-center" title="Trang Chủ">
@@ -3971,6 +4019,25 @@ export default function CardViteHomePage() {
       {/* 13. FOOTER */}
       {/* ------------------------------------------------------------- */}
       <Footer />
+
+      {/* FLOATING QUICK ACTION: BACK TO TOP */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={scrollToTop}
+            title="Cuộn lên đầu trang"
+            aria-label="Cuộn lên đầu trang"
+            className="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-[#181716] text-[#BE944E] hover:text-white hover:bg-[#BE944E] shadow-xl border border-[#BE944E]/30 backdrop-blur-md transition-colors cursor-pointer flex items-center justify-center group"
+          >
+            <ArrowUp className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

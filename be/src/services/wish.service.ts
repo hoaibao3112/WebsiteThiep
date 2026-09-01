@@ -26,7 +26,7 @@ export class WishService {
     // 2. Kiểm tra thiệp tồn tại
     const card = await prisma.card.findUnique({
       where: { id: cardId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, accountId: true },
     });
 
     if (!card) {
@@ -46,6 +46,7 @@ export class WishService {
 
     const wish = await prisma.wish.create({
       data: {
+        accountId: card.accountId,
         cardId,
         senderName: senderName.trim(),
         relationship: relationship?.trim(),

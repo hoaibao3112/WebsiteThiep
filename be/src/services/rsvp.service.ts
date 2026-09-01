@@ -32,6 +32,7 @@ export class RsvpService {
         slug: true,
         status: true,
         telegramChatId: true,
+        accountId: true,
       },
     });
 
@@ -60,6 +61,7 @@ export class RsvpService {
     // 4. Lưu bản ghi RSVP vào Database
     const rsvp = await prisma.rsvpResponse.create({
       data: {
+        accountId: card.accountId,
         cardId,
         guestId,
         fullName,

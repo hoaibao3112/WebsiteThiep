@@ -10,6 +10,7 @@ import {
   GoogleLoginSchema,
 } from "../lib/validators/auth.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import crypto from "node:crypto";
 
 function getClientIp(req: Request): string {
   return (
@@ -28,6 +29,16 @@ const COOKIE_OPTIONS: CookieOptions = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
   path: "/",
 };
+
+const CSRF_COOKIE_OPTIONS: CookieOptions = {
+  ...COOKIE_OPTIONS,
+  httpOnly: false,
+};
+
+function setAuthCookies(res: Response, token: string) {
+  res.cookie("auth_token", token, COOKIE_OPTIONS);
+  res.cookie("csrf_token", crypto.randomBytes(32).toString("base64url"), CSRF_COOKIE_OPTIONS);
+}
 
 export class AuthController {
   /**
@@ -60,13 +71,13 @@ export class AuthController {
 
       // Đặt HTTPS HTTPOnly Cookie
       if (result.token) {
-        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+        setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
         success: true,
         message: "Đăng ký và xác thực tài khoản thành công!",
-        data: result,
+        data: { user: result.user },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -83,13 +94,13 @@ export class AuthController {
 
       // Đặt HTTPS HTTPOnly Cookie
       if (result.token) {
-        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+        setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
         success: true,
         message: "Đăng nhập với Google thành công!",
-        data: result,
+        data: { user: result.user },
       });
     } catch (error: any) {
       res.status(401).json({ success: false, error: error.message });
@@ -104,13 +115,13 @@ export class AuthController {
 
       // Đặt HTTPS HTTPOnly Cookie
       if (result.token) {
-        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+        setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
         success: true,
         message: "Đăng ký tài khoản thành công!",
-        data: result,
+        data: { user: result.user },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -125,13 +136,13 @@ export class AuthController {
 
       // Đặt HTTPS HTTPOnly Cookie
       if (result.token) {
-        res.cookie("auth_token", result.token, COOKIE_OPTIONS);
+        setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công!",
-        data: result,
+        data: { user: result.user },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -141,6 +152,7 @@ export class AuthController {
   static async logout(req: Request, res: Response, next: NextFunction) {
     try {
       res.clearCookie("auth_token", COOKIE_OPTIONS);
+      res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
       res.status(200).json({ success: true, message: "Đăng xuất thành công" });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });

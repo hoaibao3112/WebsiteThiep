@@ -35,6 +35,7 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export interface TokenPayload {
   userId: string;
+  accountId: string;
   email: string;
   role: "USER" | "ADMIN";
 }
@@ -80,8 +81,10 @@ export class AuthService {
       }
     }
 
+    const accountId = await this.ensureDefaultAccount(user.id, user.name);
     const token = this.generateToken({
       userId: user.id,
+      accountId,
       email: user.email,
       role: user.role,
     });
@@ -167,8 +170,10 @@ export class AuthService {
       });
     }
 
+    const accountId = await this.ensureDefaultAccount(user.id, user.name);
     const token = this.generateToken({
       userId: user.id,
+      accountId,
       email: user.email,
       role: user.role,
     });
@@ -223,8 +228,10 @@ export class AuthService {
       },
     });
 
+    const accountId = await this.ensureDefaultAccount(user.id, user.name);
     const token = this.generateToken({
       userId: user.id,
+      accountId,
       email: user.email,
       role: user.role,
     });
@@ -278,8 +285,10 @@ export class AuthService {
       throw new Error("Email hoặc mật khẩu không chính xác");
     }
 
+    const accountId = await this.ensureDefaultAccount(user.id, user.name);
     const token = this.generateToken({
       userId: user.id,
+      accountId,
       email: user.email,
       role: user.role,
     });
@@ -368,6 +377,23 @@ export class AuthService {
    */
   static generateToken(payload: TokenPayload): string {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  }
+
+  private static async ensureDefaultAccount(userId: string, name: string | null): Promise<string> {
+    const existing = await prisma.accountMember.findFirst({
+      where: { userId },
+      select: { accountId: true },
+    });
+    if (existing) return existing.accountId;
+
+    const account = await prisma.account.create({
+      data: {
+        name: name?.trim() || "Tài khoản của tôi",
+        members: { create: { userId, role: "OWNER" } },
+      },
+      select: { id: true },
+    });
+    return account.id;
   }
 
   /**

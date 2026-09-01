@@ -34,7 +34,7 @@ export class GuestImportService {
 
     const card = await prisma.card.findFirst({
       where: { id: cardId, userId },
-      select: { id: true, slug: true },
+      select: { id: true, slug: true, accountId: true },
     });
 
     if (!card) throw new Error("Thiệp không tồn tại hoặc bạn không có quyền");
@@ -59,6 +59,7 @@ export class GuestImportService {
       const customUrl = `${appUrl}/thiep/${card.slug}?g=${guestCode}`;
 
       return {
+        accountId: card.accountId,
         cardId,
         guestCode,
         fullName: g.fullName.trim(),

@@ -19,22 +19,60 @@ enum Role {
   ADMIN
 }
 
+enum AccountMemberRole {
+  OWNER
+  MEMBER
+}
+
+model Account {
+  id                  String               @id @default(cuid())
+  name                String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  members             AccountMember[]
+  cards               Card[]
+  cardEvents          CardEvent[]
+  cardPhotos          CardPhoto[]
+  guests              Guest[]
+  rsvpResponses       RsvpResponse[]
+  wishes              Wish[]
+  orders              Order[]
+  paymentTransactions PaymentTransaction[]
+
+  @@map("accounts")
+}
+
+model AccountMember {
+  id        String            @id @default(cuid())
+  accountId String
+  userId    String
+  role      AccountMemberRole @default(MEMBER)
+  createdAt DateTime          @default(now())
+  account   Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([accountId, userId])
+  @@index([userId])
+  @@map("account_members")
+}
+
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String?   // Hash bcrypt cho email/password login
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String? // Hash bcrypt cho email/password login
   name          String?
   phone         String?
   avatar        String?
-  googleId      String?   @unique
-  emailVerified Boolean   @default(false)
-  role          Role      @default(USER)
-  telegramId    String?   // ID Telegram nhận thông báo RSVP realtime
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  googleId      String?  @unique
+  emailVerified Boolean  @default(false)
+  role          Role     @default(USER)
+  telegramId    String? // ID Telegram nhận thông báo RSVP realtime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  cards         Card[]
-  orders        Order[]
+  cards          Card[]
+  orders         Order[]
+  accountMembers AccountMember[]
 
   @@map("users")
 }
@@ -49,24 +87,24 @@ enum PlanCode {
 }
 
 model Plan {
-  id                String    @id @default(cuid())
-  code              PlanCode  @unique
-  name              String    // Gói Miễn Phí / Gói Tiêu Chuẩn / Gói VIP
-  price             Int       // Giá tiền VND (0, 199000, 399000)
-  durationDays      Int?      // null = Vĩnh viễn, 7 = 7 ngày, 180 = 6 tháng
-  maxPhotos         Int       @default(5)
-  hasWatermark      Boolean   @default(true)
-  allowCustomDomain Boolean   @default(false)
-  allowMusicUpload  Boolean   @default(false)
-  allowTelegramNoti Boolean   @default(false)
-  features          Json?     // Danh sách tính năng hiển thị
-  isActive          Boolean   @default(true)
-  sortOrder         Int       @default(0)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                String   @id @default(cuid())
+  code              PlanCode @unique
+  name              String // Gói Miễn Phí / Gói Tiêu Chuẩn / Gói VIP
+  price             Int // Giá tiền VND (0, 199000, 399000)
+  durationDays      Int? // null = Vĩnh viễn, 7 = 7 ngày, 180 = 6 tháng
+  maxPhotos         Int      @default(5)
+  hasWatermark      Boolean  @default(true)
+  allowCustomDomain Boolean  @default(false)
+  allowMusicUpload  Boolean  @default(false)
+  allowTelegramNoti Boolean  @default(false)
+  features          Json? // Danh sách tính năng hiển thị
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  cards             Card[]
-  orders            Order[]
+  cards  Card[]
+  orders Order[]
 
   @@map("plans")
 }
@@ -81,20 +119,20 @@ enum CardCategory {
 }
 
 model Template {
-  id           String        @id @default(cuid())
-  slug         String        @unique
+  id           String       @id @default(cuid())
+  slug         String       @unique
   name         String
   category     CardCategory
   thumbnailUrl String
   previewUrl   String?
-  configJson   Json          // Cấu hình màu sắc, layout, font mặc định
-  isPremium    Boolean       @default(false)
-  isActive     Boolean       @default(true)
-  sortOrder    Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  configJson   Json // Cấu hình màu sắc, layout, font mặc định
+  isPremium    Boolean      @default(false)
+  isActive     Boolean      @default(true)
+  sortOrder    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
-  cards        Card[]
+  cards Card[]
 
   @@index([category, isActive])
   @@map("templates")
@@ -127,53 +165,56 @@ enum FallingEffect {
 }
 
 model Card {
-  id               String         @id @default(cuid())
-  slug             String         @unique // VD: quan-va-ha-2026
-  cardCategory     CardCategory
-  status           CardStatus     @default(DRAFT)
-  
+  id           String       @id @default(cuid())
+  accountId    String
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  slug         String       @unique // VD: quan-va-ha-2026
+  cardCategory CardCategory
+  status       CardStatus   @default(DRAFT)
+
   // Quan hệ sở hữu & Gói dịch vụ
-  userId           String
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId           String
-  plan             Plan           @relation(fields: [planId], references: [id])
-  templateId       String
-  template         Template       @relation(fields: [templateId], references: [id])
-  expiredAt        DateTime?      // Ngày hết hạn dựa theo Plan
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId     String
+  plan       Plan      @relation(fields: [planId], references: [id])
+  templateId String
+  template   Template  @relation(fields: [templateId], references: [id])
+  expiredAt  DateTime? // Ngày hết hạn dựa theo Plan
 
   // Cấu hình chung giao diện & hiệu ứng
-  openingEffect    OpeningEffect  @default(WAX_SEAL)
-  fallingEffect    FallingEffect  @default(PETAL)
-  musicUrl         String?
-  isAutoPlay       Boolean        @default(true)
-  primaryColor     String         @default("#D4AF37") // Mã màu HEX
-  fontFamily       String         @default("Inter")
-  greetingMessage  String?        // Lời ngỏ chung
+  openingEffect   OpeningEffect @default(WAX_SEAL)
+  fallingEffect   FallingEffect @default(PETAL)
+  musicUrl        String?
+  isAutoPlay      Boolean       @default(true)
+  primaryColor    String        @default("#D4AF37") // Mã màu HEX
+  fontFamily      String        @default("Inter")
+  greetingMessage String? // Lời ngỏ chung
 
   // Payload dữ liệu riêng biệt theo Category (JSONB)
-  categoryData     Json
+  categoryData Json
 
   // Cấu hình mừng cưới (Banking QR)
-  bankingPrimary   Json?          // { bankCode, accountNumber, accountName, qrUrl }
-  bankingSecondary Json?          // { bankCode, accountNumber, accountName, qrUrl } (Dành riêng cho cô dâu nếu là cưới)
+  bankingPrimary   Json? // { bankCode, accountNumber, accountName, qrUrl }
+  bankingSecondary Json? // { bankCode, accountNumber, accountName, qrUrl } (Dành riêng cho cô dâu nếu là cưới)
 
   // Cấu hình nhận thông báo riêng cho thiệp
-  telegramChatId   String?        // ID Telegram nhận thông báo RSVP của thiệp này
+  telegramChatId String? // ID Telegram nhận thông báo RSVP của thiệp này
 
-  viewCount        Int            @default(0) // Số lượt xem thiệp
-  
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  viewCount Int @default(0) // Số lượt xem thiệp
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Quan hệ con
-  events           CardEvent[]
-  photos           CardPhoto[]
-  guests           Guest[]
-  rsvpResponses    RsvpResponse[]
-  wishes           Wish[]
-  orders           Order[]
+  events        CardEvent[]
+  photos        CardPhoto[]
+  guests        Guest[]
+  rsvpResponses RsvpResponse[]
+  wishes        Wish[]
+  orders        Order[]
 
   @@index([userId])
+  @@index([accountId])
   @@index([slug])
   @@index([cardCategory, status])
   @@map("cards")
@@ -183,24 +224,27 @@ model Card {
 // 5. CARD EVENT
 // ---------------------------------------------------------
 model CardEvent {
-  id          String    @id @default(cuid())
-  cardId      String
-  card        Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  
-  eventName   String    // VD: "Lễ Thành Hôn", "Tiệc Mừng Đầy Tháng", "Tiệc Sinh Nhật"
-  eventDate   DateTime  // Ngày giờ diễn ra (Dương lịch)
-  lunarDate   String?   // Ngày Âm lịch (VD: "Ngày 16 tháng 08 năm Giáp Thìn")
-  venueName   String    // Tên địa điểm: "Tư gia nhà trai" hoặc "Trung tâm hội nghị GEM Center"
-  address     String    // Địa chỉ chi tiết
-  mapUrl      String?   // Link Google Maps
-  latitude    Float?
-  longitude   Float?
-  sortOrder   Int       @default(0)
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId    String
+  card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  eventName String // VD: "Lễ Thành Hôn", "Tiệc Mừng Đầy Tháng", "Tiệc Sinh Nhật"
+  eventDate DateTime // Ngày giờ diễn ra (Dương lịch)
+  lunarDate String? // Ngày Âm lịch (VD: "Ngày 16 tháng 08 năm Giáp Thìn")
+  venueName String // Tên địa điểm: "Tư gia nhà trai" hoặc "Trung tâm hội nghị GEM Center"
+  address   String // Địa chỉ chi tiết
+  mapUrl    String? // Link Google Maps
+  latitude  Float?
+  longitude Float?
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([cardId])
+  @@index([accountId, cardId])
   @@map("card_events")
 }
 
@@ -208,19 +252,22 @@ model CardEvent {
 // 6. PHOTO GALLERY
 // ---------------------------------------------------------
 model CardPhoto {
-  id          String    @id @default(cuid())
-  cardId      String
-  card        Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  
-  url         String    // Link ảnh trên CDN (Cloudinary / Supabase Storage / S3)
-  thumbUrl    String?   // Link thumbnail WebP siêu nhẹ
-  caption     String?
-  isCover     Boolean   @default(false)
-  sortOrder   Int       @default(0)
-  
-  createdAt   DateTime  @default(now())
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId    String
+  card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  url       String // Link ảnh trên CDN (Cloudinary / Supabase Storage / S3)
+  thumbUrl  String? // Link thumbnail WebP siêu nhẹ
+  caption   String?
+  isCover   Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
 
   @@index([cardId])
+  @@index([accountId, cardId])
   @@map("card_photos")
 }
 
@@ -228,23 +275,26 @@ model CardPhoto {
 // 7. GUEST & PERSONALIZED LINK
 // ---------------------------------------------------------
 model Guest {
-  id            String         @id @default(cuid())
-  cardId        String
-  card          Card           @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  
-  guestCode     String         // Mã định danh ngắn ngẫu nhiên: "G-8A9X"
-  fullName      String         // Tên khách: "Nguyễn Văn Tuấn"
-  salutation    String         @default("Bạn") // "Anh", "Chị", "Em", "Bác", "Gia đình"
-  group         String?        // "Bạn Cấp 3", "Đồng Nghiệp", "Họ Hàng"
-  phone         String?
-  customUrl     String?        // /thiep/[slug]?g=G-8A9X
-  
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId    String
+  card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  guestCode  String // Mã định danh ngắn ngẫu nhiên: "G-8A9X"
+  fullName   String // Tên khách: "Nguyễn Văn Tuấn"
+  salutation String  @default("Bạn") // "Anh", "Chị", "Em", "Bác", "Gia đình"
+  group      String? // "Bạn Cấp 3", "Đồng Nghiệp", "Họ Hàng"
+  phone      String?
+  customUrl  String? // /thiep/[slug]?g=G-8A9X
+
   rsvpResponses RsvpResponse[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   @@unique([cardId, guestCode])
   @@index([cardId])
+  @@index([accountId, cardId])
   @@map("guests")
 }
 
@@ -264,25 +314,28 @@ enum PartySide {
 }
 
 model RsvpResponse {
-  id          String     @id @default(cuid())
-  cardId      String
-  card        Card       @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  guestId     String?
-  guest       Guest?     @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId    String
+  card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  guestId   String?
+  guest     Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
 
-  fullName    String
-  phone       String?
-  status      RsvpStatus @default(ATTENDING)
-  guestCount  Int        @default(1) // Số người tham gia (1, 2, 3...)
-  side        PartySide  @default(MUTUAL)
-  note        String?    // Lời nhắn / Ăn chay / Yêu cầu đặc biệt
-  
-  ipAddress   String?    // Chống spam rate-limit
-  userAgent   String?
+  fullName   String
+  phone      String?
+  status     RsvpStatus @default(ATTENDING)
+  guestCount Int        @default(1) // Số người tham gia (1, 2, 3...)
+  side       PartySide  @default(MUTUAL)
+  note       String? // Lời nhắn / Ăn chay / Yêu cầu đặc biệt
 
-  createdAt   DateTime   @default(now())
+  ipAddress String? // Chống spam rate-limit
+  userAgent String?
+
+  createdAt DateTime @default(now())
 
   @@index([cardId, status])
+  @@index([accountId, cardId, status])
   @@map("rsvp_responses")
 }
 
@@ -290,20 +343,23 @@ model RsvpResponse {
 // 9. WISHES & GUESTBOOK (Sổ lưu bút)
 // ---------------------------------------------------------
 model Wish {
-  id           String    @id @default(cuid())
-  cardId       String
-  card         Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId    String
+  card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
   senderName   String
-  relationship String?   // "Bạn chú rể", "Đồng nghiệp cô dâu", "Bạn thân"...
-  content      String    @db.Text
-  emoji        String?   // "❤️", "🥂", "🎉", "💐"
-  isApproved   Boolean   @default(true) // Hỗ trợ kiểm duyệt nếu cần
+  relationship String? // "Bạn chú rể", "Đồng nghiệp cô dâu", "Bạn thân"...
+  content      String  @db.Text
+  emoji        String? // "❤️", "🥂", "🎉", "💐"
+  isApproved   Boolean @default(true) // Hỗ trợ kiểm duyệt nếu cần
   ipAddress    String?
 
-  createdAt    DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([cardId, createdAt(sort: Desc)])
+  @@index([accountId, cardId, createdAt(sort: Desc)])
   @@map("wishes")
 }
 
@@ -324,48 +380,57 @@ enum PaymentGateway {
 }
 
 model Order {
-  id             String                @id @default(cuid())
-  orderCode      String                @unique // Mã đơn: "WD10982" (nội dung chuyển khoản)
-  userId         String
-  user           User                  @relation(fields: [userId], references: [id])
-  cardId         String
-  card           Card                  @relation(fields: [cardId], references: [id])
-  planId         String
-  plan           Plan                  @relation(fields: [planId], references: [id])
-  
-  amount         Int                   // Số tiền phải thanh toán VND
-  status         OrderStatus           @default(PENDING)
-  paymentGateway PaymentGateway        @default(VIETQR_SEPAY)
+  id               String  @id @default(cuid())
+  accountId        String
+  account          Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  orderCode        String  @unique // Mã đơn: "WD10982" (nội dung chuyển khoản)
+  idempotencyKey   String
+  pollingTokenHash String
+  userId           String
+  user             User    @relation(fields: [userId], references: [id])
+  cardId           String
+  card             Card    @relation(fields: [cardId], references: [id])
+  planId           String
+  plan             Plan    @relation(fields: [planId], references: [id])
+
+  amount         Int // Số tiền phải thanh toán VND
+  status         OrderStatus    @default(PENDING)
+  paymentGateway PaymentGateway @default(VIETQR_SEPAY)
   paidAt         DateTime?
-  expiredAt      DateTime              // Hạn thanh toán (thường sau 30 phút tạo đơn)
+  expiredAt      DateTime // Hạn thanh toán (thường sau 30 phút tạo đơn)
 
-  transactions   PaymentTransaction[]
+  transactions PaymentTransaction[]
 
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
+  @@unique([accountId, idempotencyKey])
   @@index([orderCode])
   @@index([userId])
+  @@index([accountId, status])
   @@index([status])
   @@map("orders")
 }
 
 model PaymentTransaction {
-  id              String         @id @default(cuid())
-  orderId         String
-  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   gateway         PaymentGateway @default(VIETQR_SEPAY)
-  gatewayTxId     String?        // ID giao dịch từ SePay (để chống trùng lặp Webhook)
-  amount          Int            // Số tiền thực tế nhận được
+  gatewayTxId     String? // ID giao dịch từ SePay (để chống trùng lặp Webhook)
+  amount          Int // Số tiền thực tế nhận được
   bankCode        String?
   accountNumber   String?
   transactionTime DateTime?
-  rawPayload      Json           // Lưu toàn bộ dữ liệu webhook trả về để audit
+  rawPayload      Json // Lưu toàn bộ dữ liệu webhook trả về để audit
 
-  createdAt       DateTime       @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([gateway, gatewayTxId])
   @@index([orderId])
+  @@index([accountId, orderId])
   @@map("payment_transactions")
 }

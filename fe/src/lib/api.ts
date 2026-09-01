@@ -20,6 +20,14 @@ export class ApiClient {
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers as Record<string, string>),
     };
+    const method = (options.method || "GET").toUpperCase();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method) && typeof document !== "undefined") {
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((entry) => entry.startsWith("csrf_token="))
+        ?.slice("csrf_token=".length);
+      if (csrfToken) headers["X-CSRF-Token"] = decodeURIComponent(csrfToken);
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -36,5 +44,4 @@ export class ApiClient {
     }
   }
 }
-
 

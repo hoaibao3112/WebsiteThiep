@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const registerWithOtp = async (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => {
-    const res = await ApiClient.request<{ user: AuthUser; token: string }>("/auth/verify-otp-register", {
+    const res = await ApiClient.request<{ user: AuthUser }>("/auth/verify-otp-register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const res = await ApiClient.request<{ user: AuthUser; token: string }>("/auth/login", {
+    const res = await ApiClient.request<{ user: AuthUser }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const googleLogin = async (idToken: string) => {
-    const res = await ApiClient.request<{ user: AuthUser; token: string }>("/auth/google", {
+    const res = await ApiClient.request<{ user: AuthUser }>("/auth/google", {
       method: "POST",
       body: JSON.stringify({ idToken }),
     });

@@ -2,12 +2,13 @@ import { prisma } from "../lib/prisma";
 import { generateVietQrUrl } from "../lib/vietqr";
 import { CreateOrderInput, SepayWebhookPayload } from "../lib/validators/order.schema";
 import { Prisma } from "@prisma/client";
+import crypto from "node:crypto";
 
 export class OrderService {
   /**
    * Tạo đơn hàng nâng cấp gói và sinh link VietQR động
    */
-  static async createOrder(userId: string, input: CreateOrderInput) {
+  static async createOrder(userId: string, input: CreateOrderInput, idempotencyKey: string) {
     const { cardId, planId } = input;
 
     // 1. Kiểm tra card & plan
@@ -19,21 +20,38 @@ export class OrderService {
     if (!card) throw new Error("Thiệp không tồn tại");
     if (!plan) throw new Error("Gói dịch vụ không tồn tại");
 
+    const accountId = card.accountId;
+    const existingOrder = await prisma.order.findUnique({
+      where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
+      include: { plan: true },
+    });
+    if (existingOrder) {
+      if (existingOrder.cardId !== cardId || existingOrder.planId !== planId) {
+        throw new Error("Idempotency-Key đã được dùng cho yêu cầu khác");
+      }
+      return { order: existingOrder, replayed: true };
+    }
+
     if (plan.price <= 0) {
       // Nếu là gói Free, nâng cấp trực tiếp
       await prisma.card.update({
-        where: { id: cardId },
+        where: { id: cardId, accountId },
         data: { planId: plan.id, status: "ACTIVE" },
       });
       return { success: true, message: "Kích hoạt gói miễn phí thành công" };
     }
 
     // 2. Tạo mã đơn hàng ngẫu nhiên duy nhất (VD: THIEP + 6 số)
-    const orderCode = `THIEP${Math.floor(100000 + Math.random() * 900000)}`;
+    const orderCode = `THIEP${crypto.randomInt(100000, 1000000)}`;
+    const pollingToken = crypto.randomBytes(32).toString("base64url");
+    const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
     const expiredAt = new Date(Date.now() + 30 * 60 * 1000); // 30 phút
 
     const order = await prisma.order.create({
       data: {
+        accountId,
+        idempotencyKey,
+        pollingTokenHash,
         orderCode,
         userId,
         cardId,
@@ -71,6 +89,7 @@ export class OrderService {
         bankAccountName,
         qrUrl,
         expiredAt,
+        pollingToken,
       },
     };
   }
@@ -126,7 +145,16 @@ export class OrderService {
 
     if (!order) {
       console.error(`[Webhook SePay] Order ${orderCode} not found in database!`);
-      return { success: false, message: "Order not found" };
+      return { success: true, ignored: true, message: "Order not found" };
+    }
+
+    const expectedAccount = process.env.BANK_ACCOUNT;
+    if (!expectedAccount) throw new Error("BANK_ACCOUNT chưa được cấu hình");
+    if (accountNumber !== expectedAccount) {
+      return { success: true, ignored: true, message: "Unexpected receiving account" };
+    }
+    if (order.status !== "PENDING" || order.expiredAt <= new Date()) {
+      return { success: true, ignored: true, message: "Order is not payable" };
     }
 
     // 4. Kiểm tra số tiền chuyển khoản
@@ -134,7 +162,7 @@ export class OrderService {
       console.error(
         `[Webhook SePay] Amount mismatch: Expected ${order.amount}, got ${transferAmount}`
       );
-      return { success: false, message: "Insufficient transfer amount" };
+      return { success: true, ignored: true, message: "Insufficient transfer amount" };
     }
 
     // 5. Thực hiện Transaction: Cập nhật Order -> Kích hoạt Card -> Ghi log PaymentTransaction
@@ -142,6 +170,7 @@ export class OrderService {
       // Ghi nhận PaymentTransaction
       await tx.paymentTransaction.create({
         data: {
+          accountId: order.accountId,
           orderId: order.id,
           gateway: "VIETQR_SEPAY",
           gatewayTxId: String(gatewayTxId),
@@ -154,7 +183,7 @@ export class OrderService {
 
       // Cập nhật Order sang PAID
       await tx.order.update({
-        where: { id: order.id },
+        where: { id: order.id, accountId: order.accountId },
         data: {
           status: "PAID",
           paidAt: new Date(),
@@ -174,7 +203,7 @@ export class OrderService {
       }
 
       await tx.card.update({
-        where: { id: order.cardId },
+        where: { id: order.cardId, accountId: order.accountId },
         data: {
           planId: order.planId,
           status: "ACTIVE",
@@ -192,11 +221,13 @@ export class OrderService {
   /**
    * Kiểm tra trạng thái đơn hàng (Polling từ Frontend)
    */
-  static async checkOrderStatus(orderCode: string) {
+  static async checkOrderStatus(orderCode: string, pollingToken: string) {
+    const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
     const order = await prisma.order.findUnique({
       where: { orderCode },
       select: {
         id: true,
+        pollingTokenHash: true,
         orderCode: true,
         amount: true,
         status: true,
@@ -211,6 +242,8 @@ export class OrderService {
       },
     });
 
-    return order;
+    if (!order || order.pollingTokenHash !== pollingTokenHash) return null;
+    const { pollingTokenHash: _pollingTokenHash, ...safeOrder } = order;
+    return safeOrder;
   }
 }

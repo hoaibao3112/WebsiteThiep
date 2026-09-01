@@ -31,6 +31,13 @@ export class CardService {
       throw new Error("Gói dịch vụ không tồn tại");
     }
 
+    const membership = await prisma.accountMember.findFirst({
+      where: { userId },
+      select: { accountId: true },
+    });
+    if (!membership) throw new Error("Tài khoản chưa được khởi tạo");
+    const accountId = membership.accountId;
+
     // 2. [HIGH] Enforce Plan Limits: Kiểm tra quyền nhạc nền tùy chỉnh
     if (cardSettings.musicUrl && cardSettings.musicUrl.trim() !== "") {
       if (!plan.allowMusicUpload) {
@@ -54,7 +61,7 @@ export class CardService {
     if (cardId) {
       // Cập nhật thiệp hiện có (Multi-tenant check: userId)
       const existingCard = await prisma.card.findFirst({
-        where: { id: cardId, userId },
+        where: { id: cardId, userId, accountId },
       });
 
       if (!existingCard) {
@@ -98,10 +105,11 @@ export class CardService {
         });
 
         // Cập nhật danh sách sự kiện nếu có
-        await tx.cardEvent.deleteMany({ where: { cardId } });
+        await tx.cardEvent.deleteMany({ where: { cardId, accountId } });
         if (eventsList.length > 0) {
           await tx.cardEvent.createMany({
             data: eventsList.map((e: any, index: number) => ({
+              accountId,
               cardId,
               eventName: e.eventName || "Sự Kiện",
               eventDate: new Date(e.eventDate),
@@ -117,10 +125,11 @@ export class CardService {
         }
 
         // Cập nhật gallery ảnh nếu có
-        await tx.cardPhoto.deleteMany({ where: { cardId } });
+        await tx.cardPhoto.deleteMany({ where: { cardId, accountId } });
         if (photosList.length > 0) {
           await tx.cardPhoto.createMany({
             data: photosList.map((p: any, index: number) => ({
+              accountId,
               cardId,
               url: p.url || p,
               thumbUrl: p.thumbUrl || null,
@@ -147,6 +156,7 @@ export class CardService {
 
       const newCard = await tx.card.create({
         data: {
+          accountId,
           userId,
           slug: cardSettings.slug,
           cardCategory: categoryData.cardCategory,
@@ -172,6 +182,7 @@ export class CardService {
       if (eventsList.length > 0) {
         await tx.cardEvent.createMany({
           data: eventsList.map((e: any, index: number) => ({
+            accountId,
             cardId: newCard.id,
             eventName: e.eventName || "Sự Kiện",
             eventDate: new Date(e.eventDate),
@@ -190,6 +201,7 @@ export class CardService {
       if (photosList.length > 0) {
         await tx.cardPhoto.createMany({
           data: photosList.map((p: any, index: number) => ({
+            accountId,
             cardId: newCard.id,
             url: p.url || p,
             thumbUrl: p.thumbUrl || null,

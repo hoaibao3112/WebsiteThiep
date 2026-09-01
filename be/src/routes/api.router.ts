@@ -11,6 +11,7 @@ import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
 import { authGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
+import { csrfGuard } from "../middlewares/csrf.middleware";
 import {
   SendOtpSchema,
   RegisterWithOtpSchema,
@@ -29,6 +30,7 @@ const upload = multer({
 });
 
 export const apiRouter = Router();
+apiRouter.use(csrfGuard);
 
 // --- CONCIERGE / THIẾT KẾ RIÊNG ---
 apiRouter.post("/concierge/submit", validate(ConciergeSchema), ConciergeController.submit);
