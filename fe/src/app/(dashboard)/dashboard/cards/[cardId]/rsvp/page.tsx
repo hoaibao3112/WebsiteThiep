@@ -87,13 +87,14 @@ export default function RsvpDashboardPage() {
             </div>
           </div>
 
-          <button
-            onClick={handleExportExcel}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer self-start sm:self-auto"
-          >
-            <Download className="w-4 h-4" />
-            <span>Xuất Báo Cáo Excel</span>
-          </button>
+          <div className="flex flex-wrap gap-2 self-start sm:self-auto">
+            <Link href={`/dashboard/cards/${cardId}/guests`} className="inline-flex items-center gap-2 rounded-xl border border-[#0068ff]/25 bg-blue-50 px-4 py-2.5 text-xs font-bold text-[#005bdc]">
+              <Users className="w-4 h-4"/><span>Quản lý khách mời</span>
+            </Link>
+            <button onClick={handleExportExcel} className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition cursor-pointer">
+              <Download className="w-4 h-4"/><span>Xuất Báo Cáo Excel</span>
+            </button>
+          </div>
         </div>
 
         {/* 4 THẺ THỐNG KÊ (METRICS CARDS) */}

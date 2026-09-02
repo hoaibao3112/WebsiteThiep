@@ -53,6 +53,7 @@ import {
   Loader2,
   X,
   RefreshCw,
+  Save,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -73,39 +74,39 @@ export default function NewCardBuilderPage() {
 // Danh sách Preset Mẫu Thiệp
 const TEMPLATE_PRESETS = [
   {
-    id: "wedding-hong-xanh-luxury",
-    name: "Hoa Mộc Hồng Luxury",
+    id: "wedding-minimalist-gold",
+    name: "Hoàng Gia Minimalist",
     category: "WEDDING",
-    tag: "ROMANCE",
-    color: "#BE944E",
-    font: "Playfair Display",
+    tag: "FREE",
+    color: "#D4AF37",
+    font: "Inter",
     bg: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
   },
   {
-    id: "wedding-emerald-royal",
-    name: "Vườn Ngọc Hoàng Gia",
-    category: "WEDDING",
-    tag: "LUXURY",
-    color: "#2D5A3B",
-    font: "Playfair Display",
+    id: "birthday-glow-party",
+    name: "Neon Glow Birthday Party",
+    category: "BIRTHDAY",
+    tag: "FREE",
+    color: "#FF007F",
+    font: "Outfit",
     bg: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
   },
   {
-    id: "wedding-vintage-classic",
-    name: "Cổ Điển Hoàng Triều",
-    category: "WEDDING",
-    tag: "VINTAGE",
-    color: "#A2772A",
-    font: "Cinzel",
+    id: "newborn-little-prince",
+    name: "Hoàng Tử Nhỏ",
+    category: "NEWBORN",
+    tag: "FREE",
+    color: "#70A1FF",
+    font: "Quicksand",
     bg: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&auto=format&fit=crop",
   },
   {
-    id: "wedding-ruby-passion",
-    name: "Ruby Nhung Đỏ",
-    category: "WEDDING",
-    tag: "TRADITION",
-    color: "#8B1E2F",
-    font: "Playfair Display",
+    id: "newborn-sweet-angel",
+    name: "Thiên Thần Nhỏ",
+    category: "NEWBORN",
+    tag: "FREE",
+    color: "#FFB8B8",
+    font: "Quicksand",
     bg: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop",
   },
 ];
@@ -316,7 +317,8 @@ function CardBuilderContent() {
 
   // State cấu hình cơ bản
   const [category, setCategory] = useState<CardCategory>(initialCategory);
-  const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATE_PRESETS[0].id);
+  const initialTemplate = TEMPLATE_PRESETS.find((template) => template.category === initialCategory) ?? TEMPLATE_PRESETS[0];
+  const [selectedTemplate, setSelectedTemplate] = useState(initialTemplate.id);
   const [slug, setSlug] = useState(`thiep-${Date.now().toString().slice(-6)}`);
   const [primaryColor, setPrimaryColor] = useState("#BE944E");
   const [fontFamily, setFontFamily] = useState("Playfair Display");
@@ -413,7 +415,14 @@ function CardBuilderContent() {
   const [rsvpCustomNote, setRsvpCustomNote] = useState("");
 
   const [saving, setSaving] = useState(false);
-  const [successToast, setSuccessToast] = useState(false);
+  const [cardId, setCardId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "dirty" | "saving" | "saved" | "error">("idle");
+  const createIdempotencyKeyRef = useRef(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `card-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
 
   // File Upload Handlers (100% upload trực tiếp từ máy)
   const handleUploadCoverFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -627,19 +636,14 @@ function CardBuilderContent() {
           },
   };
 
-  const handleSaveCard = async () => {
+  const persistDraft = async (): Promise<string | null> => {
     setSaving(true);
-    confetti({
-      particleCount: 100,
-      spread: 90,
-      origin: { y: 0.5 },
-      colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#10B981"],
-    });
+    setSaveStatus("saving");
+    setSaveError(null);
 
-    const payload: any = {
+    const payload = {
       slug,
-      templateId: selectedTemplate,
-      planId: "free-plan-id",
+      templateSlug: selectedTemplate,
       openingEffect,
       fallingEffect,
       primaryColor,
@@ -707,22 +711,54 @@ function CardBuilderContent() {
       },
     };
 
-    try {
-      await ApiClient.request("/cards", {
-        method: "POST",
+    const endpoint = cardId ? `/cards/${cardId}` : "/cards";
+    const method = cardId ? "PUT" : "POST";
+    const res = await ApiClient.request<{ id: string }>(endpoint, {
+        method,
+        headers: cardId ? undefined : { "Idempotency-Key": createIdempotencyKeyRef.current },
         body: JSON.stringify(payload),
       });
 
-      setSaving(false);
-      setSuccessToast(true);
-      setTimeout(() => {
-        router.push(`/thiep/${slug}`);
-      }, 1200);
-    } catch {
-      setSaving(false);
-      // Fallback
-      router.push(`/thiep/${slug}`);
+    setSaving(false);
+    if (!res.success || !res.data?.id) {
+      setSaveStatus("error");
+      setSaveError(res.error || "Không thể lưu bản nháp. Vui lòng thử lại.");
+      return null;
     }
+
+    const savedId = res.data.id;
+    setCardId(savedId);
+    setSaveStatus("saved");
+    window.history.replaceState(null, "", `/dashboard/cards/${savedId}/edit`);
+    return savedId;
+  };
+
+  const handleSaveCard = async () => {
+    await persistDraft();
+  };
+
+  const handlePublishCard = async () => {
+    const savedId = await persistDraft();
+    if (!savedId) return;
+
+    setSaving(true);
+    setSaveStatus("saving");
+    const res = await ApiClient.request(`/cards/${savedId}/publish`, { method: "PATCH" });
+    setSaving(false);
+    if (!res.success) {
+      setSaveStatus("error");
+      setSaveError(res.error || "Không thể xuất bản thiệp. Vui lòng kiểm tra thông tin.");
+      return;
+    }
+
+    setSaveStatus("saved");
+    confetti({
+      particleCount: 100,
+      spread: 90,
+      origin: { y: 0.5 },
+      colors: ["#BE944E", "#D4AF37", "#FFFFFF", "#10B981"],
+    });
+    setTimeout(() => router.push(`/thiep/${slug}`), 1200);
   };
 
   return (
@@ -803,11 +839,21 @@ function CardBuilderContent() {
             disabled={saving}
             className="px-5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-widest shadow-md flex items-center gap-2 cursor-pointer transition"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{saving ? "Đang xuất bản..." : "Xuất Bản Thiệp ✨"}</span>
+            <Save className="w-3.5 h-3.5" />
+            <span>{saving ? "Đang lưu..." : "Lưu bản nháp"}</span>
           </motion.button>
         </div>
       </header>
+
+      <div
+        role={saveError ? "alert" : "status"}
+        aria-live={saveError ? "assertive" : "polite"}
+        className={`px-4 py-2 text-center text-xs ${
+          saveError ? "bg-rose-50 text-rose-700" : "bg-white text-stone-500"
+        }`}
+      >
+        {saveError || (saveStatus === "saved" ? "Bản nháp đã được lưu" : "Thiệp chưa được lưu")}
+      </div>
 
       {/* STEP PROGRESS BAR */}
       <div className="bg-white border-b border-[#EAE2D6] px-4 sm:px-8 py-3">
@@ -1342,7 +1388,7 @@ function CardBuilderContent() {
                     1. Bộ sưu tập mẫu thiệp cao cấp
                   </label>
                   <div className="grid grid-cols-2 gap-3">
-                    {TEMPLATE_PRESETS.map((tpl) => (
+                    {TEMPLATE_PRESETS.filter((tpl) => tpl.category === category).map((tpl) => (
                       <div
                         key={tpl.id}
                         onClick={() => {
@@ -2199,7 +2245,7 @@ function CardBuilderContent() {
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={handleSaveCard}
+                    onClick={handlePublishCard}
                     disabled={saving}
                     className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white font-serif font-bold text-sm uppercase tracking-widest shadow-lg flex items-center justify-center gap-2 cursor-pointer transition"
                   >
@@ -2248,7 +2294,7 @@ function CardBuilderContent() {
             ) : (
               <button
                 type="button"
-                onClick={handleSaveCard}
+                onClick={handlePublishCard}
                 disabled={saving}
                 className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
               >

@@ -1,5 +1,7 @@
 import "@testing-library/jest-dom";
 import { vi, afterEach } from "vitest";
+import { createElement } from "react";
+import type { ReactNode } from "react";
 
 // ─── Mock Next.js navigation ───
 vi.mock("next/navigation", () => ({
@@ -16,8 +18,8 @@ vi.mock("next/navigation", () => ({
 
 // ─── Mock Next.js Link — plain string mock, no JSX in .ts ───
 vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: { children: unknown; href: string; [key: string]: unknown }) =>
-    Object.assign(document.createElement("a"), { href }),
+  default: ({ children, href, ...props }: { children: ReactNode; href: string; [key: string]: unknown }) =>
+    createElement("a", { href, ...props }, children),
 }));
 
 // ─── Mock canvas-confetti ───
@@ -31,11 +33,13 @@ vi.mock("framer-motion", () => ({
     {},
     {
       get: (_target, tag: string) =>
-        ({ children, ...props }: { children: unknown; [key: string]: unknown }) =>
-          ({ type: tag, props: { children, ...props } }),
+        ({ children, initial: _initial, animate: _animate, exit: _exit,
+          transition: _transition, whileHover: _whileHover, whileTap: _whileTap,
+          layout: _layout, ...props }: { children: ReactNode; [key: string]: unknown }) =>
+          createElement(tag, props, children),
     }
   ),
-  AnimatePresence: ({ children }: { children: unknown }) => children,
+  AnimatePresence: ({ children }: { children: ReactNode }) => children,
 }));
 
 // ─── Mock ApiClient ───

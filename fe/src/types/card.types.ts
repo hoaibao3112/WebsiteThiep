@@ -127,4 +127,5 @@ export interface CardDetail {
   } | null;
   events: EventItem[];
   photos: PhotoItem[];
+  template?: { slug: string };
 }

@@ -21,12 +21,19 @@ import {
   HeartHandshake,
   MailOpen,
   Sparkle,
+  Send,
 } from "lucide-react";
+
+interface DashboardCard {
+  id: string; slug: string; cardCategory: "WEDDING" | "BIRTHDAY" | "NEWBORN";
+  createdAt: string; viewCount?: number; plan?: { name?: string; code?: "FREE" | "BASIC" | "VIP" };
+  _count?: { rsvpResponses?: number; wishes?: number };
+}
 
 export default function MyCardsPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [cards, setCards] = useState<any[]>([]);
+  const [cards, setCards] = useState<DashboardCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -257,6 +264,15 @@ export default function MyCardsPage() {
                   </button>
 
                   <div className="flex items-center gap-2">
+                    {card.plan?.code === "VIP" ? (
+                      <Link href={`/dashboard/cards/${card.id}/guests`} className="px-3.5 py-2 border border-[#0068ff]/25 text-[#005bdc] rounded-xl transition flex items-center gap-1.5 hover:bg-blue-50">
+                        <Send className="w-3.5 h-3.5"/><span>Khách mời</span>
+                      </Link>
+                    ) : (
+                      <Link href="/pricing" title="Nâng cấp VIP để tạo link khách riêng" className="px-3.5 py-2 border border-amber-200 text-amber-700 rounded-xl transition flex items-center gap-1.5 hover:bg-amber-50">
+                        <Crown className="w-3.5 h-3.5"/><span>VIP</span>
+                      </Link>
+                    )}
                     <Link
                       href={`/dashboard/cards/${card.id}/edit`}
                       className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition flex items-center gap-1.5 shadow-2xs"

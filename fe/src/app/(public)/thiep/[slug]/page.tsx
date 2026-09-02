@@ -191,6 +191,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogImage = card.photos?.[0]?.url;
 
   return {
+    referrer: "no-referrer",
     metadataBase: new URL(appUrl),
     title: `${title} | CardVite`,
     description,
@@ -236,19 +237,20 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   }
 
   const card: CardDetail = result.card;
-  const guestName = result.guestInfo?.fullName;
+  const guestName = result.guestInfo ? `${result.guestInfo.salutation || ""} ${result.guestInfo.fullName}`.trim() : undefined;
+  const guestPhone = result.guestInfo?.phone;
 
   // RENDER VIEW THEO CARD CATEGORY
   if (card.cardCategory === "WEDDING") {
-    return <WeddingView card={card} guestName={guestName} guestCode={guestCode} />;
+    return <WeddingView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
   }
 
   if (card.cardCategory === "BIRTHDAY") {
-    return <BirthdayView card={card} guestName={guestName} guestCode={guestCode} />;
+    return <BirthdayView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
   }
 
   if (card.cardCategory === "NEWBORN") {
-    return <NewbornView card={card} guestName={guestName} guestCode={guestCode} />;
+    return <NewbornView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
   }
 
   return <div>Danh mục thiệp không xác định</div>;

@@ -12,7 +12,7 @@ export class ApiClient {
   static async request<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<{ success: boolean; data?: T; error?: string; message?: string }> {
+  ): Promise<{ success: boolean; data?: T; error?: string; message?: string; status?: number; fieldErrors?: Record<string, string[]> }> {
     // Auto-detect FormData: let the browser set Content-Type with the correct boundary
     const isFormData = options.body instanceof FormData;
 
@@ -36,12 +36,30 @@ export class ApiClient {
         credentials: "include", // Tự động gửi HTTPS Secure Cookie
       });
 
-      const data = await res.json();
-      return data;
+      let data: { success?: boolean; data?: T; error?: string; message?: string; fieldErrors?: Record<string, string[]> };
+      try {
+        data = await res.json();
+      } catch {
+        return {
+          success: false,
+          status: res.status,
+          error: "Máy chủ trả về dữ liệu không hợp lệ",
+        };
+      }
+
+      if (res.ok === false || data.success === false) {
+        return {
+          success: false,
+          status: res.status,
+          error: data.error || data.message || "Yêu cầu không thể hoàn tất",
+          fieldErrors: data.fieldErrors,
+        };
+      }
+
+      return { ...data, success: true, status: res.status };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Lỗi kết nối máy chủ";
       return { success: false, error: message };
     }
   }
 }
-

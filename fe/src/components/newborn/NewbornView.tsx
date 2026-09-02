@@ -28,8 +28,9 @@ import { formatDate, formatTime } from "@/lib/utils";
 export const NewbornView: React.FC<{
   card: CardDetail;
   guestName?: string;
+  guestPhone?: string;
   guestCode?: string;
-}> = ({ card, guestName, guestCode }) => {
+}> = ({ card, guestName, guestPhone, guestCode }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
   const [showRsvp, setShowRsvp] = useState(false);
@@ -277,6 +278,7 @@ export const NewbornView: React.FC<{
         onClose={() => setShowRsvp(false)}
         cardId={card.id}
         defaultGuestName={guestName}
+        defaultGuestPhone={guestPhone}
         guestCode={guestCode}
         primaryColor={primaryColor}
       />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2, UserCheck, Users } from "lucide-react";
 import { ApiClient } from "@/lib/api";
@@ -11,6 +11,7 @@ interface RsvpFormModalProps {
   onClose: () => void;
   cardId: string;
   defaultGuestName?: string;
+  defaultGuestPhone?: string;
   guestCode?: string;
   primaryColor?: string;
 }
@@ -20,16 +21,22 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
   onClose,
   cardId,
   defaultGuestName = "",
+  defaultGuestPhone = "",
   guestCode,
   primaryColor = "#D4AF37",
 }) => {
   const { t } = useLanguage();
   const [fullName, setFullName] = useState(defaultGuestName);
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(defaultGuestPhone);
   const [status, setStatus] = useState<"ATTENDING" | "DECLINED" | "UNDECIDED">("ATTENDING");
   const [guestCount, setGuestCount] = useState(1);
   const [side, setSide] = useState<"GROOM_SIDE" | "BRIDE_SIDE" | "MUTUAL">("MUTUAL");
   const [note, setNote] = useState("");
+
+  useEffect(() => {
+    if (defaultGuestName) setFullName(defaultGuestName);
+    if (defaultGuestPhone) setPhone(defaultGuestPhone);
+  }, [defaultGuestName, defaultGuestPhone, isOpen]);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -61,7 +68,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
       method: "POST",
       body: JSON.stringify({
         cardId,
-        guestCode,
+        guestToken: guestCode,
         fullName: fullName.trim(),
         phone: phone.trim() || undefined,
         status,
@@ -283,4 +290,3 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
     </AnimatePresence>
   );
 };
-

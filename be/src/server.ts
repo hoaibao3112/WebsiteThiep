@@ -36,7 +36,7 @@ app.use(
       callback(new Error(`CORS: Origin ${origin} not allowed`));
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Idempotency-Key", "X-CSRF-Token"],
     credentials: true,
   })
 );
@@ -167,4 +167,3 @@ process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 export default app;
-
