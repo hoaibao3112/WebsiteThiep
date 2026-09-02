@@ -242,15 +242,15 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
 
   // RENDER VIEW THEO CARD CATEGORY
   if (card.cardCategory === "WEDDING") {
-    return <WeddingView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
+    return <WeddingView card={card} templateSlug={card.template?.slug} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   if (card.cardCategory === "BIRTHDAY") {
-    return <BirthdayView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
+    return <BirthdayView card={card} templateSlug={card.template?.slug} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   if (card.cardCategory === "NEWBORN") {
-    return <NewbornView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
+    return <NewbornView card={card} templateSlug={card.template?.slug} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   return <div>Danh mục thiệp không xác định</div>;

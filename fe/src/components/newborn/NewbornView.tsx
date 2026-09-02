@@ -24,6 +24,7 @@ import {
   Ruler,
 } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/utils";
+import { getTemplateConfig } from "@/lib/editor/template-config";
 
 export const NewbornView: React.FC<{
   card: CardDetail;
@@ -31,7 +32,8 @@ export const NewbornView: React.FC<{
   guestPhone?: string;
   isVipExperience?: boolean;
   guestCode?: string;
-}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false }) => {
+  templateSlug?: string;
+}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -40,6 +42,7 @@ export const NewbornView: React.FC<{
 
   const data = card.categoryData as NewbornDataPayload;
   const primaryColor = card.primaryColor || "#70A1FF";
+  const variant = getTemplateConfig(templateSlug || card.template?.slug, "NEWBORN")?.variant || "little-prince";
 
   const isAnnouncementOnly = data.ceremonyType === "ANNOUNCEMENT_ONLY";
   const isOneYear = data.ceremonyType === "ONE_YEAR";
@@ -53,7 +56,7 @@ export const NewbornView: React.FC<{
     : t("fullMonthCeremony");
 
   return (
-    <div className="relative min-h-screen bg-[#f0f7ff] text-stone-800 font-sans pb-24 overflow-x-hidden">
+    <div data-template-variant={variant} className={`relative min-h-screen text-stone-800 font-sans pb-24 overflow-x-hidden ${variant === "sweet-angel" ? "bg-[#fff4f8]" : "bg-[#f0f7ff]"}`}>
       {!opened && card.openingEffect === "WAX_SEAL" && (
         <WaxSealOpening
           primaryColor={primaryColor}
@@ -69,7 +72,7 @@ export const NewbornView: React.FC<{
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
       <AudioPlayer musicUrl={card.musicUrl} autoPlay={false} startOnGesture={audioStarted && card.isAutoPlay} />
 
-      <main className="max-w-md sm:max-w-lg mx-auto bg-white min-h-screen shadow-2xl overflow-hidden border-x border-sky-100 relative">
+      <main className={`max-w-md sm:max-w-lg mx-auto min-h-screen shadow-2xl overflow-hidden relative ${variant === "sweet-angel" ? "bg-[#fffafd] border-x border-pink-100" : "bg-white border-x border-sky-100"}`}>
         <div className="absolute top-4 right-4 z-20">
           <LanguageSwitcher />
         </div>

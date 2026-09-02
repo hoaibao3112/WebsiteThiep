@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/utils";
 import { getMonogram } from "@/lib/guest/monogram";
+import { getTemplateConfig } from "@/lib/editor/template-config";
 
 interface WeddingViewProps {
   card: CardDetail;
@@ -38,6 +39,7 @@ interface WeddingViewProps {
   guestPhone?: string;
   isVipExperience?: boolean;
   guestCode?: string;
+  templateSlug?: string;
 }
 
 export const WeddingView: React.FC<WeddingViewProps> = ({
@@ -46,6 +48,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   guestPhone,
   isVipExperience = false,
   guestCode,
+  templateSlug,
 }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
@@ -56,6 +59,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
   const data = card.categoryData as WeddingDataPayload;
   const primaryColor = card.primaryColor || "#BE944E";
+  const variant = getTemplateConfig(templateSlug || card.template?.slug, "WEDDING")?.variant || "minimalist-gold";
 
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date("2026-11-20T18:00:00Z");
@@ -72,7 +76,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     "/images/demo/couple-cover.png";
 
   return (
-    <div className="relative min-h-screen bg-[#FBF8F3] text-stone-800 font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-amber-200">
+    <div data-template-variant={variant} className={`relative min-h-screen text-stone-800 font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-amber-200 ${variant === "hong-xanh-luxury" ? "bg-[#09152b] text-blue-50 selection:bg-rose-300/40" : "bg-[#FBF8F3]"}`}>
       {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN */}
       {!opened && card.openingEffect === "WAX_SEAL" && (
         <WaxSealOpening
@@ -95,7 +99,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-80 sm:h-96 bg-radial from-rose-200/20 via-amber-100/15 to-transparent pointer-events-none -z-10 blur-3xl" />
 
       {/* CONTAINER CHÍNH - CARD MOCKUP SANG TRỌNG TƯƠI SÁNG & RESPONSIVE */}
-      <main className="w-full max-w-md sm:max-w-lg mx-auto bg-white/95 backdrop-blur-sm min-h-screen shadow-[0_15px_60px_rgba(190,148,78,0.15)] sm:border-x border-[#EFE8DC] relative">
+      <main className={`w-full max-w-md sm:max-w-lg mx-auto backdrop-blur-sm min-h-screen relative ${variant === "hong-xanh-luxury" ? "bg-[#0f2342] shadow-[0_15px_60px_rgba(8,20,50,0.5)] sm:border-x border-blue-300/20" : "bg-white/95 shadow-[0_15px_60px_rgba(190,148,78,0.15)] sm:border-x border-[#EFE8DC]"}`}>
         {/* NÚT ĐỔI NGÔN NGỮ FLOATING TRÊN ĐẦU THIỆP */}
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30">
           <LanguageSwitcher />
@@ -104,7 +108,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         {/* ------------------------------------------------------------- */}
         {/* 1. HERO SECTION: LỘNG LẪY, TƯƠI SÁNG, NGHỆ THUẬT */}
         {/* ------------------------------------------------------------- */}
-        <section className="relative w-full pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-6 text-center bg-gradient-to-b from-[#FDF9F3] via-white to-[#FAF6F0] overflow-hidden border-b border-[#F0EAE1]">
+        <section className={`relative w-full pt-8 sm:pt-10 pb-8 sm:pb-10 px-4 sm:px-6 text-center overflow-hidden border-b ${variant === "hong-xanh-luxury" ? "bg-gradient-to-b from-[#102c52] via-[#0f2342] to-[#182d50] border-blue-200/20" : "bg-gradient-to-b from-[#FDF9F3] via-white to-[#FAF6F0] border-[#F0EAE1]"}`}>
           {/* DECORATIVE TOP MONOGRAM EMBLEM */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}

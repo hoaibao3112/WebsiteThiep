@@ -13,6 +13,7 @@ import { LanguageSwitcher } from "../shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import { Cake, MapPin, Calendar, Clock, Gift, UserCheck, Navigation } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/utils";
+import { getTemplateConfig } from "@/lib/editor/template-config";
 
 export const BirthdayView: React.FC<{
   card: CardDetail;
@@ -20,7 +21,8 @@ export const BirthdayView: React.FC<{
   guestPhone?: string;
   isVipExperience?: boolean;
   guestCode?: string;
-}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false }) => {
+  templateSlug?: string;
+}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -29,11 +31,12 @@ export const BirthdayView: React.FC<{
 
   const data = card.categoryData as BirthdayDataPayload;
   const primaryColor = card.primaryColor || "#FF5E36";
+  const variant = getTemplateConfig(templateSlug || card.template?.slug, "BIRTHDAY")?.variant || "glow-party";
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date();
 
   return (
-    <div className="relative min-h-screen bg-stone-950 text-stone-100 font-sans pb-24 overflow-x-hidden">
+    <div data-template-variant={variant} className="relative min-h-screen bg-stone-950 text-stone-100 font-sans pb-24 overflow-x-hidden">
       {!opened && card.openingEffect === "WAX_SEAL" && (
         <WaxSealOpening
           primaryColor={primaryColor}
@@ -66,7 +69,7 @@ export const BirthdayView: React.FC<{
             alt="Birthday Celebrant"
             className="absolute inset-0 w-full h-full object-cover opacity-60"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-stone-900 via-stone-900/40 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-br from-orange-950/70 via-stone-900/40 to-fuchsia-950/60" />
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-[11px] font-bold tracking-widest uppercase mb-3 border border-amber-400/30">

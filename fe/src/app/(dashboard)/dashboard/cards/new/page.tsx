@@ -9,6 +9,7 @@ import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
+import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { uploadSingleImage } from "@/lib/image-upload";
 import {
   Heart,
@@ -634,6 +635,21 @@ function CardBuilderContent() {
             ceremonyType,
             events: [],
           },
+  };
+
+  const handleVisualDraftChange = (next: CardDetail) => {
+    setPrimaryColor(next.primaryColor);
+    setFontFamily(next.fontFamily);
+    setGreetingMessage(next.greetingMessage || "");
+    setOpeningEffect(next.openingEffect as typeof openingEffect);
+    setFallingEffect(next.fallingEffect as typeof fallingEffect);
+    setSelectedMusicSrc(next.musicUrl || "");
+    const nextData = next.categoryData;
+    if (nextData.cardCategory === "WEDDING") {
+      setCoverPhotoUrl(nextData.coverPhotoUrl || "");
+      setGroomName(nextData.groom.fullName);
+      setBrideName(nextData.bride.fullName);
+    }
   };
 
   const persistDraft = async (): Promise<string | null> => {
@@ -2318,6 +2334,13 @@ function CardBuilderContent() {
           </div>
 
           {/* DEVICE MOCKUP WRAPPER */}
+          <VisualCardEditor
+            templateSlug={selectedTemplate}
+            draft={previewCard}
+            onDraftChange={handleVisualDraftChange}
+            onSave={handleSaveCard}
+            isVip={false}
+          >
           <div
             className={`transition-all duration-300 ${
               previewDevice === "mobile"
@@ -2337,11 +2360,12 @@ function CardBuilderContent() {
               ref={previewViewportRef}
               className="w-full h-full bg-[#FAF8F5] rounded-[38px] overflow-y-auto overflow-x-hidden relative shadow-inner"
             >
-              {category === "WEDDING" && <WeddingView card={previewCard} />}
-              {category === "BIRTHDAY" && <BirthdayView card={previewCard} />}
-              {category === "NEWBORN" && <NewbornView card={previewCard} />}
+              {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={selectedTemplate} />}
+              {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={selectedTemplate} />}
+              {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={selectedTemplate} />}
             </div>
           </div>
+          </VisualCardEditor>
         </div>
       </div>
     </div>

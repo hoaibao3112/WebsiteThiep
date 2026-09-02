@@ -9,6 +9,7 @@ import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
+import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import {
   Heart,
   Cake,
@@ -250,6 +251,7 @@ function EditCardContent() {
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATE_PRESETS[0].id);
   const [slug, setSlug] = useState("");
   const [templateSlug, setTemplateSlug] = useState("wedding-minimalist-gold");
+  const [isVipExperience, setIsVipExperience] = useState(false);
   const [primaryColor, setPrimaryColor] = useState("#BE944E");
   const [fontFamily, setFontFamily] = useState("Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
@@ -331,6 +333,7 @@ function EditCardContent() {
     setCategory(card.cardCategory);
     setSlug(card.slug);
     if (card.template?.slug) setTemplateSlug(card.template.slug);
+    setIsVipExperience(Boolean((card as CardDetail & { plan?: { code?: string } }).plan?.code === "VIP"));
     setPrimaryColor(card.primaryColor);
     setFontFamily(card.fontFamily);
     setOpeningEffect((card.openingEffect as "WAX_SEAL" | "GATE_OPEN" | "NONE") || "WAX_SEAL");
@@ -603,6 +606,19 @@ function EditCardContent() {
             ceremonyType,
             events: [],
           },
+  };
+
+  const handleVisualDraftChange = (next: CardDetail) => {
+    setPrimaryColor(next.primaryColor);
+    setFontFamily(next.fontFamily);
+    setGreetingMessage(next.greetingMessage || "");
+    setOpeningEffect(next.openingEffect as typeof openingEffect);
+    setFallingEffect(next.fallingEffect);
+    setSelectedMusicSrc(next.musicUrl || "");
+    if (next.categoryData.cardCategory === "WEDDING") {
+      setGroomName(next.categoryData.groom.fullName);
+      setBrideName(next.categoryData.bride.fullName);
+    }
   };
 
   // ────────────────────────────────────────────────────────────────
@@ -1692,6 +1708,13 @@ function EditCardContent() {
           </div>
 
           {/* Device Mockup */}
+          <VisualCardEditor
+            templateSlug={templateSlug || selectedTemplate}
+            draft={previewCard}
+            onDraftChange={handleVisualDraftChange}
+            onSave={handleSaveCard}
+            isVip={isVipExperience}
+          >
           <div
             className={`transition-all duration-300 ${
               previewDevice === "mobile"
@@ -1705,11 +1728,12 @@ function EditCardContent() {
               <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40" />
             )}
             <div className="w-full h-full bg-[#FAF8F5] rounded-[38px] overflow-y-auto overflow-x-hidden relative shadow-inner">
-              {category === "WEDDING" && <WeddingView card={previewCard} />}
-              {category === "BIRTHDAY" && <BirthdayView card={previewCard} />}
-              {category === "NEWBORN" && <NewbornView card={previewCard} />}
+              {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
+              {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
+              {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
             </div>
           </div>
+          </VisualCardEditor>
 
           {/* Bottom hint */}
           <p className="mt-4 text-xs text-stone-400 text-center">
