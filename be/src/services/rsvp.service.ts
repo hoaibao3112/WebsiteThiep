@@ -11,7 +11,7 @@ export class RsvpService {
     input: RsvpSubmitInput,
     meta?: { ipAddress?: string; userAgent?: string }
   ) {
-    const { cardId, guestCode, fullName, phone, status, guestCount, side, note } =
+    const { cardId, guestCode, guestToken, fullName, phone, status, guestCount, side, note } =
       input;
 
     // 1. Rate limiting bằng Redis: 1 IP chỉ được gửi tối đa 5 lần trong 5 phút
@@ -31,6 +31,7 @@ export class RsvpService {
         id: true,
         slug: true,
         status: true,
+        expiredAt: true,
         telegramChatId: true,
         accountId: true,
       },
@@ -40,40 +41,38 @@ export class RsvpService {
       throw new Error("Thiệp không tồn tại");
     }
 
-    if (card.status !== "ACTIVE" && card.status !== "DRAFT") {
+    if (card.status !== "ACTIVE" || (card.expiredAt && card.expiredAt <= new Date())) {
       throw new Error("Thiệp đã hết hạn hoặc tạm dừng nhận phản hồi");
     }
 
     // 3. Tìm Guest ID nếu có guestCode
     let guestId: string | null = null;
-    if (guestCode) {
-      const guest = await prisma.guest.findUnique({
-        where: {
-          cardId_guestCode: {
-            cardId,
-            guestCode,
-          },
-        },
+    let resolvedName = fullName;
+    let resolvedPhone = phone;
+    if (guestCode || guestToken) {
+      const guest = await prisma.guest.findFirst({
+        where: { cardId, OR: [...(guestToken ? [{ guestToken }] : []), ...(guestCode ? [{ guestCode }] : [])] },
       });
-      if (guest) guestId = guest.id;
+      if (guest) { guestId = guest.id; resolvedName = guest.fullName; resolvedPhone = guest.phone || undefined; }
     }
 
     // 4. Lưu bản ghi RSVP vào Database
-    const rsvp = await prisma.rsvpResponse.create({
-      data: {
+    const rsvp = guestId ? await prisma.rsvpResponse.upsert({
+      where: { cardId_guestId: { cardId, guestId } },
+      create: {
         accountId: card.accountId,
         cardId,
         guestId,
-        fullName,
-        phone,
+        fullName: resolvedName,
+        phone: resolvedPhone,
         status,
         guestCount,
         side,
         note,
         ipAddress: meta?.ipAddress,
         userAgent: meta?.userAgent,
-      },
-    });
+      }, update: { fullName: resolvedName, phone: resolvedPhone, status, guestCount, side, note, ipAddress: meta?.ipAddress, userAgent: meta?.userAgent },
+    }) : await prisma.rsvpResponse.create({ data: { accountId: card.accountId, cardId, fullName, phone, status, guestCount, side, note, ipAddress: meta?.ipAddress, userAgent: meta?.userAgent } });
 
     // 5. Đẩy Job vào hàng đợi BullMQ để bắn thông báo ngầm (Telegram/Zalo)
     if (card.telegramChatId) {

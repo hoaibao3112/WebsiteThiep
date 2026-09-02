@@ -3,6 +3,7 @@ import { z } from "zod";
 export const RsvpSubmitSchema = z.object({
   cardId: z.string().min(1, "Mã thiệp không hợp lệ"),
   guestCode: z.string().optional(),
+  guestToken: z.string().min(32).max(64).optional(),
   fullName: z.string().min(2, "Vui lòng nhập họ và tên của bạn"),
   phone: z
     .string()

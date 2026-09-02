@@ -236,6 +236,8 @@ function EditCardContent() {
 
   // Loading state
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   // Active tab & device preview
   const [activeTab, setActiveTab] = useState<
@@ -247,6 +249,7 @@ function EditCardContent() {
   const [category, setCategory] = useState<CardCategory>("WEDDING");
   const [selectedTemplate, setSelectedTemplate] = useState(TEMPLATE_PRESETS[0].id);
   const [slug, setSlug] = useState("");
+  const [templateSlug, setTemplateSlug] = useState("wedding-minimalist-gold");
   const [primaryColor, setPrimaryColor] = useState("#BE944E");
   const [fontFamily, setFontFamily] = useState("Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
@@ -317,6 +320,7 @@ function EditCardContent() {
   // ── Save state ──
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
 
   // ────────────────────────────────────────────────────────────────
@@ -326,6 +330,7 @@ function EditCardContent() {
   const populateFromCard = useCallback((card: CardDetail) => {
     setCategory(card.cardCategory);
     setSlug(card.slug);
+    if (card.template?.slug) setTemplateSlug(card.template.slug);
     setPrimaryColor(card.primaryColor);
     setFontFamily(card.fontFamily);
     setOpeningEffect((card.openingEffect as "WAX_SEAL" | "GATE_OPEN" | "NONE") || "WAX_SEAL");
@@ -382,21 +387,14 @@ function EditCardContent() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
-      try {
-        const res = await ApiClient.request(`/cards/${cardId}`);
-        if (res.success && res.data) {
-          populateFromCard(res.data as CardDetail);
-        } else {
-          populateFromCard(DEMO_CARD);
-        }
-      } catch {
-        populateFromCard(DEMO_CARD);
-      } finally {
-        setLoading(false);
-      }
+      setLoadError(null);
+      const res = await ApiClient.request<CardDetail>(`/cards/${cardId}`);
+      if (res.success && res.data) populateFromCard(res.data);
+      else setLoadError(res.error || "Không thể tải dữ liệu thiệp.");
+      setLoading(false);
     };
     load();
-  }, [cardId, populateFromCard]);
+  }, [cardId, populateFromCard, loadAttempt]);
 
   // ────────────────────────────────────────────────────────────────
   // PHOTO UPLOAD HANDLERS
@@ -617,6 +615,7 @@ function EditCardContent() {
 
     const payload = {
       slug,
+      templateSlug,
       openingEffect,
       fallingEffect,
       primaryColor,
@@ -654,6 +653,11 @@ function EditCardContent() {
         body: JSON.stringify(payload),
       });
       setSaving(false);
+      if (!res.success) {
+        setSaveError(res.error || "Không thể lưu thay đổi. Vui lòng thử lại.");
+        return;
+      }
+      setSaveError(null);
       setSuccessToast(true);
       setTimeout(() => {
         setSuccessToast(false);
@@ -661,8 +665,7 @@ function EditCardContent() {
       }, 1800);
     } catch {
       setSaving(false);
-      setSuccessToast(true);
-      setTimeout(() => setSuccessToast(false), 1800);
+      setSaveError("Không thể kết nối máy chủ. Dữ liệu của bạn vẫn được giữ nguyên.");
     }
   };
 
@@ -680,6 +683,21 @@ function EditCardContent() {
           <p className="text-sm text-stone-600 font-serif">Đang tải dữ liệu thiệp...</p>
         </div>
       </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="min-h-screen bg-[#F8F6F0] flex items-center justify-center p-6">
+        <div role="alert" className="max-w-md rounded-2xl border border-rose-200 bg-white p-6 text-center shadow-sm">
+          <h1 className="font-serif text-xl font-bold text-stone-900">Không thể mở thiệp</h1>
+          <p className="mt-2 text-sm text-rose-700">{loadError}</p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Link href="/dashboard/cards" className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold">Quay lại</Link>
+            <button type="button" onClick={() => setLoadAttempt((value) => value + 1)} className="min-h-11 rounded-xl bg-[#BE944E] px-4 py-2.5 text-sm font-bold text-white">Thử lại</button>
+          </div>
+        </div>
+      </main>
     );
   }
 
@@ -786,8 +804,21 @@ function EditCardContent() {
 
       {/* ── SUCCESS TOAST ── */}
       <AnimatePresence>
+        {saveError && (
+          <motion.div
+            role="alert"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] rounded-2xl bg-rose-600 px-6 py-3 text-sm font-bold text-white shadow-xl"
+          >
+            {saveError}
+          </motion.div>
+        )}
         {successToast && (
           <motion.div
+            role="status"
+            aria-live="polite"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}

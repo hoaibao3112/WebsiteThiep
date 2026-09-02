@@ -27,12 +27,14 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE & Build Cache
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tsbuildinfo
 
 # Uploads
 public/uploads/*
 !public/uploads/.gitkeep
+

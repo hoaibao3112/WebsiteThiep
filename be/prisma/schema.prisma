@@ -179,7 +179,9 @@ model Card {
   plan       Plan      @relation(fields: [planId], references: [id])
   templateId String
   template   Template  @relation(fields: [templateId], references: [id])
-  expiredAt  DateTime? // Ngày hết hạn dựa theo Plan
+  publishedAt         DateTime?
+  expiredAt           DateTime? // Ngày hết hạn dựa theo Plan
+  createIdempotencyKey String?
 
   // Cấu hình chung giao diện & hiệu ứng
   openingEffect   OpeningEffect @default(WAX_SEAL)
@@ -217,6 +219,7 @@ model Card {
   @@index([accountId])
   @@index([slug])
   @@index([cardCategory, status])
+  @@unique([accountId, createIdempotencyKey])
   @@map("cards")
 }
 
@@ -281,12 +284,19 @@ model Guest {
   cardId    String
   card      Card    @relation(fields: [cardId], references: [id], onDelete: Cascade)
 
-  guestCode  String // Mã định danh ngắn ngẫu nhiên: "G-8A9X"
+  guestCode  String // Legacy: giữ tạm để link cũ tiếp tục hoạt động
+  guestToken String @unique
   fullName   String // Tên khách: "Nguyễn Văn Tuấn"
+  normalizedName String
+  normalizedPhone String?
   salutation String  @default("Bạn") // "Anh", "Chị", "Em", "Bác", "Gia đình"
   group      String? // "Bạn Cấp 3", "Đồng Nghiệp", "Họ Hàng"
   phone      String?
   customUrl  String? // /thiep/[slug]?g=G-8A9X
+  notes      String?
+  deliveryStatus GuestDeliveryStatus @default(NOT_SENT)
+  shareOpenedAt DateTime?
+  sentAt DateTime?
 
   rsvpResponses RsvpResponse[]
   createdAt     DateTime       @default(now())
@@ -295,7 +305,16 @@ model Guest {
   @@unique([cardId, guestCode])
   @@index([cardId])
   @@index([accountId, cardId])
+  @@index([accountId, cardId, deliveryStatus])
+  @@index([accountId, cardId, normalizedPhone])
   @@map("guests")
+}
+
+enum GuestDeliveryStatus {
+  NOT_SENT
+  OPENED_ZALO
+  CONFIRMED_SENT
+  FAILED
 }
 
 // ---------------------------------------------------------
@@ -336,6 +355,7 @@ model RsvpResponse {
 
   @@index([cardId, status])
   @@index([accountId, cardId, status])
+  @@unique([cardId, guestId])
   @@map("rsvp_responses")
 }
 

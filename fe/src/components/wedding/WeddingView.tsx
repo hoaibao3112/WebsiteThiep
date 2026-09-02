@@ -34,12 +34,14 @@ import { formatDate, formatTime } from "@/lib/utils";
 interface WeddingViewProps {
   card: CardDetail;
   guestName?: string;
+  guestPhone?: string;
   guestCode?: string;
 }
 
 export const WeddingView: React.FC<WeddingViewProps> = ({
   card,
   guestName,
+  guestPhone,
   guestCode,
 }) => {
   const { t } = useLanguage();
@@ -514,6 +516,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         onClose={() => setShowRsvp(false)}
         cardId={card.id}
         defaultGuestName={guestName}
+        defaultGuestPhone={guestPhone}
         guestCode={guestCode}
         primaryColor={primaryColor}
       />
@@ -604,4 +607,3 @@ function CountdownWrapper({ targetDate }: { targetDate: string | Date }) {
     </div>
   );
 }
-
