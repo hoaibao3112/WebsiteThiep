@@ -128,4 +128,5 @@ export interface CardDetail {
   events: EventItem[];
   photos: PhotoItem[];
   template?: { slug: string };
+  features?: { vipOpeningExperience?: boolean };
 }

@@ -30,11 +30,13 @@ import {
   Phone,
 } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/utils";
+import { getMonogram } from "@/lib/guest/monogram";
 
 interface WeddingViewProps {
   card: CardDetail;
   guestName?: string;
   guestPhone?: string;
+  isVipExperience?: boolean;
   guestCode?: string;
 }
 
@@ -42,10 +44,12 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   card,
   guestName,
   guestPhone,
+  isVipExperience = false,
   guestCode,
 }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
+  const [audioStarted, setAudioStarted] = useState(false);
   const [showRsvp, setShowRsvp] = useState(false);
   const [showGift, setShowGift] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
@@ -65,7 +69,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
     data.groom?.avatarUrl ||
-    "https://images.unsplash.com/photo-1519741497674-611481863552?w=1000&auto=format&fit=crop";
+    "/images/demo/couple-cover.png";
 
   return (
     <div className="relative min-h-screen bg-[#FBF8F3] text-stone-800 font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-amber-200">
@@ -75,13 +79,16 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           primaryColor={primaryColor}
           title={`${groomShortName} & ${brideShortName}`}
           guestName={guestName}
+          isVipExperience={isVipExperience}
+          monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
+          onOpenStart={() => setAudioStarted(true)}
           onOpened={() => setOpened(true)}
         />
       )}
 
       {/* 2. HIỆU ỨNG RƠI & NHẠC NỀN */}
       <FallingEffect effect={card.fallingEffect || "PETAL"} />
-      <AudioPlayer musicUrl={card.musicUrl} autoPlay={card.isAutoPlay} />
+      <AudioPlayer musicUrl={card.musicUrl} autoPlay={false} startOnGesture={audioStarted && card.isAutoPlay} />
 
       {/* AMBIENT BACKGROUND GLOWS */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-80 sm:h-96 bg-radial from-amber-200/30 via-rose-100/20 to-transparent pointer-events-none -z-10 blur-3xl" />
@@ -219,7 +226,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
                 <img
                   src={
                     data.groom.avatarUrl ||
-                    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop"
+                    "/images/demo/groom-avatar.png"
                   }
                   alt={t("groom")}
                   className="w-full h-full object-cover"
@@ -253,7 +260,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
                 <img
                   src={
                     data.bride.avatarUrl ||
-                    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop"
+                    "/images/demo/bride-avatar.png"
                   }
                   alt={t("bride")}
                   className="w-full h-full object-cover"

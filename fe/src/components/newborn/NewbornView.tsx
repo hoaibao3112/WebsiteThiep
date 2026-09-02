@@ -29,10 +29,12 @@ export const NewbornView: React.FC<{
   card: CardDetail;
   guestName?: string;
   guestPhone?: string;
+  isVipExperience?: boolean;
   guestCode?: string;
-}> = ({ card, guestName, guestPhone, guestCode }) => {
+}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
+  const [audioStarted, setAudioStarted] = useState(false);
   const [showRsvp, setShowRsvp] = useState(false);
   const [showGift, setShowGift] = useState(false);
 
@@ -58,12 +60,14 @@ export const NewbornView: React.FC<{
           title={`${data.babyName}`}
           subtitle={ceremonyTitle}
           guestName={guestName}
+          isVipExperience={isVipExperience}
+          onOpenStart={() => setAudioStarted(true)}
           onOpened={() => setOpened(true)}
         />
       )}
 
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
-      <AudioPlayer musicUrl={card.musicUrl} autoPlay={card.isAutoPlay} />
+      <AudioPlayer musicUrl={card.musicUrl} autoPlay={false} startOnGesture={audioStarted && card.isAutoPlay} />
 
       <main className="max-w-md sm:max-w-lg mx-auto bg-white min-h-screen shadow-2xl overflow-hidden border-x border-sky-100 relative">
         <div className="absolute top-4 right-4 z-20">

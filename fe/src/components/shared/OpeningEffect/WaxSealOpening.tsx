@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Heart } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -11,6 +11,10 @@ interface WaxSealOpeningProps {
   title: string;
   subtitle?: string;
   guestName?: string;
+  guest?: { salutation?: string; fullName: string };
+  monogram?: string;
+  isVipExperience?: boolean;
+  onOpenStart?: () => void;
   onOpened: () => void;
 }
 
@@ -19,14 +23,28 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
   title,
   subtitle,
   guestName,
+  guest,
+  monogram,
+  isVipExperience = false,
+  onOpenStart,
   onOpened,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const timerRef = useRef<number | null>(null);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update(); media.addEventListener("change", update);
+    return () => { media.removeEventListener("change", update); if (timerRef.current) window.clearTimeout(timerRef.current); };
+  }, []);
 
   const handleOpen = () => {
     if (isOpen) return;
     setIsOpen(true);
+    onOpenStart?.();
 
     try {
       const audio = new Audio(
@@ -36,10 +54,13 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
       audio.play().catch(() => {});
     } catch (e) {}
 
-    setTimeout(() => {
+    timerRef.current = window.setTimeout(() => {
       onOpened();
-    }, 1400);
+    }, reducedMotion ? 180 : 1400);
   };
+
+  const displayGuest = guest ? `${guest.salutation ? `${guest.salutation} ` : ""}${guest.fullName}` : guestName;
+  const displayMonogram = monogram || "♥";
 
   return (
     <AnimatePresence>
@@ -47,7 +68,7 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
         className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/95 backdrop-blur-md p-4"
         initial={{ opacity: 1 }}
         exit={{ opacity: 0, scale: 1.05 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: reducedMotion ? 0.18 : 0.8 }}
       >
         {/* Nút đổi ngôn ngữ ở góc trên màn hình */}
         <div className="absolute top-6 right-6 z-50">
@@ -66,10 +87,10 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
               <span className="text-xs uppercase tracking-widest text-stone-400 font-medium">
                 {subtitle || t("cordiallyInvites")}
               </span>
-              {guestName ? (
-                <div className="mt-2 inline-block px-4 py-1.5 bg-amber-50 rounded-full border border-amber-200/60 shadow-xs">
+          {displayGuest ? (
+                <div className={`mt-2 inline-block px-4 py-1.5 rounded-full border border-amber-200/60 shadow-xs ${isVipExperience ? "bg-amber-50" : "bg-stone-50"}`}>
                   <p className="text-sm font-semibold text-amber-900">
-                    {t("invitationTo")}: {guestName}
+                    {isVipExperience ? "Trân trọng kính mời" : t("invitationTo")}: {displayGuest}
                   </p>
                 </div>
               ) : null}
@@ -99,9 +120,10 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                 className="relative group cursor-pointer focus:outline-none"
               >
                 <motion.div
-                  className="absolute -inset-2 rounded-full opacity-70 blur-sm"
+                  aria-hidden="true"
+                  className="absolute -inset-2 rounded-full opacity-70 blur-sm motion-reduce:hidden"
                   style={{ backgroundColor: primaryColor }}
-                  animate={{
+                  animate={reducedMotion ? undefined : {
                     scale: [1, 1.15, 1],
                     opacity: [0.4, 0.8, 0.4],
                   }}
@@ -120,15 +142,16 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                       "inset 0 2px 4px rgba(255,255,255,0.4), 0 8px 16px rgba(0,0,0,0.25)",
                   }}
                 >
-                  <Sparkles className="w-6 h-6 animate-pulse mb-0.5" />
+                  {isVipExperience ? <span className="text-xl font-serif tracking-widest" aria-label={`Con dấu ${displayMonogram}`}>{displayMonogram}</span> : <Sparkles className="w-6 h-6 animate-pulse mb-0.5" />}
                   <span className="text-[10px] font-bold uppercase tracking-wider">
                     {t("openCard")}
                   </span>
                 </div>
               </motion.button>
-              <p className="text-xs text-stone-400 mt-3 animate-bounce">
+              <p className="text-xs text-stone-400 mt-3 motion-reduce:animate-none">
                 {t("tapToOpen")}
               </p>
+              {isVipExperience && <button type="button" onClick={() => setReducedMotion((value) => !value)} className="mt-2 text-[11px] text-stone-500 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-600">{reducedMotion ? "Bật chuyển động" : "Giảm chuyển động"}</button>}
             </div>
           </motion.div>
         </div>

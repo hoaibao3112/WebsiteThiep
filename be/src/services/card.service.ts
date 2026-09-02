@@ -381,6 +381,7 @@ export class CardService {
     return {
       card,
       guestInfo,
+      features: { vipOpeningExperience: card.plan.code === "VIP" },
     };
   }
 

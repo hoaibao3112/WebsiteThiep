@@ -89,7 +89,7 @@ async function main() {
       slug: "wedding-hong-xanh-luxury",
       name: "Hồng Xanh Luxury",
       category: "WEDDING" as const,
-      thumbnailUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop",
+      thumbnailUrl: "/images/demo/couple-cover.png",
       isPremium: true,
       configJson: {
         themeColor: "#8B9D83",
@@ -101,7 +101,7 @@ async function main() {
       slug: "wedding-minimalist-gold",
       name: "Hoàng Gia Minimalist",
       category: "WEDDING" as const,
-      thumbnailUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop",
+      thumbnailUrl: "/images/demo/couple-studio.png",
       isPremium: false,
       configJson: {
         themeColor: "#D4AF37",

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 interface AudioPlayerProps {
   musicUrl?: string | null;
   autoPlay?: boolean;
+  startOnGesture?: boolean;
 }
 
 const DEFAULT_WEDDING_SONG = "/music/le-duong.mp3";
@@ -15,6 +16,7 @@ const DEFAULT_WEDDING_SONG = "/music/le-duong.mp3";
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   musicUrl,
   autoPlay = false,
+  startOnGesture = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const soundRef = useRef<Howl | null>(null);
@@ -42,7 +44,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         },
       });
 
-      if (autoPlay) {
+      if (autoPlay || startOnGesture) {
         try {
           soundRef.current.play();
         } catch {
@@ -60,7 +62,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
         // ignore
       }
     };
-  }, [musicUrl, autoPlay]);
+  }, [musicUrl, autoPlay, startOnGesture]);
 
   const togglePlay = () => {
     if (!soundRef.current) return;

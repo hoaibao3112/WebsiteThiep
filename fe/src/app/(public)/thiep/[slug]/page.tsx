@@ -31,7 +31,7 @@ const DEMO_WEDDING_CARD: CardDetail = {
       fullName: "Nguyễn Minh Khôi",
       shortName: "Minh Khôi",
       birthOrder: "Trưởng nam",
-      avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop",
+      avatarUrl: "/images/demo/groom-avatar.png",
       parents: {
         fatherName: "Nguyễn Văn Hùng",
         motherName: "Trần Thị Mai",
@@ -42,7 +42,7 @@ const DEMO_WEDDING_CARD: CardDetail = {
       fullName: "Lê Ngọc Hân",
       shortName: "Ngọc Hân",
       birthOrder: "Út nữ",
-      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop",
+      avatarUrl: "/images/demo/bride-avatar.png",
       parents: {
         fatherName: "Lê Quốc Bảo",
         motherName: "Phạm Thu Cúc",
@@ -56,13 +56,13 @@ const DEMO_WEDDING_CARD: CardDetail = {
         title: "Lần Đầu Gặp Gỡ",
         date: "14/02/2020",
         description: "Chúng mình gặp nhau tại một quán cà phê nhỏ vào chiều mưa Hà Nội.",
-        imageUrl: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&auto=format&fit=crop",
+        imageUrl: "/images/demo/couple-cover.png",
       },
       {
         title: "Lời Cầu Hôn Ngọt Ngào",
         date: "25/12/2023",
         description: "Dưới ánh hoàng hôn bên bờ biển Đà Nẵng, em đã nói 'Em đồng ý!'.",
-        imageUrl: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&auto=format&fit=crop",
+        imageUrl: "/images/demo/couple-studio.png",
       },
     ],
     events: [
@@ -105,19 +105,19 @@ const DEMO_WEDDING_CARD: CardDetail = {
   photos: [
     {
       id: "p-1",
-      url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
-      caption: "Khoảnh khắc hạnh phúc",
+      url: "/images/demo/couple-cover.png",
+      caption: "Khoảnh khắc hạnh phúc trọn vẹn",
       isCover: true,
     },
     {
       id: "p-2",
-      url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop",
-      caption: "Cùng nhau đi khắp thế gian",
+      url: "/images/demo/couple-studio.png",
+      caption: "Nguyện cùng nhau đi hết thanh xuân",
     },
     {
       id: "p-3",
-      url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=800&auto=format&fit=crop",
-      caption: "Nụ cười của em",
+      url: "/images/demo/couple-aodai.png",
+      caption: "Lễ Gia Tiên & Vu Quy truyền thống",
     },
   ],
   bankingPrimary: {
@@ -242,15 +242,15 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
 
   // RENDER VIEW THEO CARD CATEGORY
   if (card.cardCategory === "WEDDING") {
-    return <WeddingView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
+    return <WeddingView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   if (card.cardCategory === "BIRTHDAY") {
-    return <BirthdayView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
+    return <BirthdayView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   if (card.cardCategory === "NEWBORN") {
-    return <NewbornView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} />;
+    return <NewbornView card={card} guestName={guestName} guestPhone={guestPhone} guestCode={guestCode} isVipExperience={result.features?.vipOpeningExperience} />;
   }
 
   return <div>Danh mục thiệp không xác định</div>;
