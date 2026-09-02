@@ -71,10 +71,10 @@ const DEFAULT_WEDDING_DATA: WeddingDataPayload = {
 const DEFAULT_BIRTHDAY_DATA: BirthdayDataPayload = {
   cardCategory: "BIRTHDAY",
   celebrantName: "Khánh Linh",
-  age: "18",
+  age: 18,
   birthDate: new Date("2008-09-15"),
   avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop",
-  message: "Hãy cùng đến chung vui và quẩy hết mình trong bữa tiệc sinh nhật đặc biệt này nhé!",
+  greeting: "Hãy cùng đến chung vui và quẩy hết mình trong bữa tiệc sinh nhật đặc biệt này nhé!",
   events: [
     { id: "b-ev-1", eventName: "Đêm Tiệc Glow Party", eventDate: new Date(Date.now() + 7 * 86400000), venueName: "The Rooftop Lounge", address: "Tầng 19, Tòa nhà Bitexco, Q.1, TP. HCM" },
   ],
@@ -174,10 +174,10 @@ function CardBuilderContent() {
     greetingMessage,
     events:
       category === "WEDDING"
-        ? weddingData.events.map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
+        ? (weddingData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
         : category === "BIRTHDAY"
-        ? birthdayData.events.map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
-        : newbornData.events.map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
+        ? (birthdayData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
+        : (newbornData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
     photos: [
       { id: "p-1", url: "/images/demo/couple-cover.png", caption: "Khoảnh khắc hạnh phúc", isCover: true },
       { id: "p-2", url: "/images/demo/couple-studio.png", caption: "Nguyện cùng nhau đi hết thanh xuân" },
