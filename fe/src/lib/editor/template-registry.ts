@@ -44,6 +44,17 @@ const NEWBORN_FIELDS: readonly EditorField[] = [
 ];
 
 const REGISTRY: Record<string, readonly EditorField[]> = {
+  // 9 MẪU THIỆP CƯỚI ĐỘC BẢN
+  "wedding-heritage-crimson-gold": WEDDING_FIELDS,
+  "wedding-modern-editorial-magazine": WEDDING_FIELDS,
+  "wedding-sweet-editorial-romance": WEDDING_FIELDS,
+  "wedding-crimson-wine-marsala": WEDDING_FIELDS,
+  "wedding-forest-green-botanical": WEDDING_FIELDS,
+  "wedding-pure-lotus-heritage": WEDDING_FIELDS,
+  "wedding-cinematic-editorial": WEDDING_FIELDS,
+  "wedding-alpine-lake-romance": WEDDING_FIELDS,
+  "wedding-imperial-dragon-crimson": WEDDING_FIELDS,
+  // CÁC MẪU CŨ VÀ KHÁC
   "wedding-minimalist-gold": WEDDING_FIELDS,
   "wedding-hong-xanh-luxury": WEDDING_FIELDS,
   "birthday-glow-party": BIRTHDAY_FIELDS,
@@ -52,7 +63,7 @@ const REGISTRY: Record<string, readonly EditorField[]> = {
 };
 
 export function getTemplateFields(slug: string): readonly EditorField[] {
-  return REGISTRY[slug] ?? [];
+  return REGISTRY[slug] ?? (slug.startsWith("wedding-") ? WEDDING_FIELDS : []);
 }
 
 export function isAllowedEditorPath(path: string): boolean {

@@ -28,6 +28,7 @@ import { useAuth } from "@/context/AuthContext";
 import { TemplateDetailModal, TemplateModalData } from "@/components/shared/TemplateDetailModal";
 
 interface TemplateItem extends TemplateModalData {
+  slug?: string;
   originalPrice?: string;
   rating?: number;
   salesCount?: number;
@@ -205,7 +206,7 @@ export default function CollectionsPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [selectedModalTemplate, setSelectedModalTemplate] = useState<TemplateModalData | null>(null);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
-  const [displayedCount, setDisplayedCount] = useState(8);
+  const [displayedCount, setDisplayedCount] = useState(12);
 
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const styleScrollRef = useRef<HTMLDivElement>(null);
@@ -213,102 +214,161 @@ export default function CollectionsPage() {
   const pricePrefix = t("priceFromPrefix") || "Từ";
 
   const TEMPLATES: TemplateItem[] = [
+    // ── 9 MẪU THIỆP CƯỚI ĐỘC BẢN CHUẨN HOÁ ──
     {
-      id: "1",
-      name: t("template1Name") || "Minimalism Nâu",
+      id: "wedding-heritage-crimson-gold",
+      slug: "wedding-heritage-crimson-gold",
+      demoSlug: "wedding-heritage-crimson-gold",
+      name: "Á Đông Cung Đình Hoàng Gia",
       category: "WEDDING",
-      style: "Minimalist Luxury",
+      style: "Cổ Điển Hoàng Gia",
       price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=700&auto=format&fit=crop",
+      imageUrl: "/images/templates/template-01-heritage.png",
       isNew: true,
+      description: "Phong cách Á Đông cung đình với tone đỏ nhung gấm & vàng hoàng kim, phù hiệu sơn mài đỉnh thiệp, khung vòm cổ điển, huy hiệu âm dương lịch và sớ thư pháp lưu bút.",
+      tags: ["Á Đông", "Sơn Mài", "Hoàng Gia"],
     },
     {
-      id: "2",
-      name: t("template2Name") || "Hoa Mộc Hồng",
+      id: "wedding-modern-editorial-magazine",
+      slug: "wedding-modern-editorial-magazine",
+      demoSlug: "wedding-modern-editorial-magazine",
+      name: "Tạp Chí Hàn Quốc Editorial",
+      category: "WEDDING",
+      style: "Minimalist Luxury",
+      price: `${pricePrefix} 249.000đ`,
+      imageUrl: "/images/templates/template-02-magazine.png",
+      isNew: true,
+      description: "Tạp chí Hàn Quốc tone be ấm & nâu chocolate, bố cục Zigzag Song thân đối xứng, bộ 3 ảnh Triptych và tờ lịch tháng nhúng trực tiếp.",
+      tags: ["Tạp Chí", "Hàn Quốc", "Zigzag"],
+    },
+    {
+      id: "wedding-sweet-editorial-romance",
+      slug: "wedding-sweet-editorial-romance",
+      demoSlug: "wedding-sweet-editorial-romance",
+      name: "Sweet Pink Lãng Mạn",
       category: "WEDDING",
       style: "Floral Romance",
       price: `${pricePrefix} 249.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=700&auto=format&fit=crop",
+      imageUrl: "/images/templates/template-03-sweet-pink.png",
+      isNew: true,
+      description: "Tone hồng phấn khói & đất nung ngọt ngào, phong bì sáp đỏ 3D, hộp vòm Arch RSVP và cặp thẻ đôi VietQR riêng cho Cô dâu & Chú rể.",
+      tags: ["Sweet Pink", "Phong Bì 3D", "VietQR"],
     },
     {
-      id: "3",
-      name: t("template3Name") || "Cổ Điển Hoàng Gia",
+      id: "wedding-crimson-wine-marsala",
+      slug: "wedding-crimson-wine-marsala",
+      demoSlug: "wedding-crimson-wine-marsala",
+      name: "Quý Tộc Đỏ Rượu Marsala",
       category: "WEDDING",
       style: "Cổ Điển Hoàng Gia",
       price: `${pricePrefix} 299.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&auto=format&fit=crop",
+      imageUrl: "/images/templates/template-04-marsala.png",
+      isNew: true,
+      description: "Đỏ rượu vang Burgundy & trắng kem quý tộc Châu Âu, cổng vòm La Mã chữ uốn lượn, thấu kính lịch tròn trong suốt, 2 thẻ tiệc và đếm ngược kép.",
+      tags: ["Marsala", "Cổng Vòm", "Quý Tộc"],
     },
     {
-      id: "4",
-      name: t("template4Name") || "Mộc Nhi Nhi",
-      category: "NEWBORN",
+      id: "wedding-forest-green-botanical",
+      slug: "wedding-forest-green-botanical",
+      demoSlug: "wedding-forest-green-botanical",
+      name: "Rustic Xanh Rêu Thiên Nhiên",
+      category: "WEDDING",
+      style: "Floral Romance",
+      price: `${pricePrefix} 249.000đ`,
+      imageUrl: "/images/templates/template-05-forest.png",
+      isNew: true,
+      description: "Tone xanh rêu rừng & hoa dại mộc mạc, phong bì thảo mộc, thẻ lịch Polaroid My Love, thơ tình đối diện và thẻ sự kiện liền khối.",
+      tags: ["Rustic", "Xanh Rêu", "Sân Vườn"],
+    },
+    {
+      id: "wedding-pure-lotus-heritage",
+      slug: "wedding-pure-lotus-heritage",
+      demoSlug: "wedding-pure-lotus-heritage",
+      name: "Hoa Sen Thanh Khiết Báo Hỷ",
+      category: "WEDDING",
+      style: "Cổ Điển Hoàng Gia",
+      price: `${pricePrefix} 249.000đ`,
+      imageUrl: "/images/templates/template-06-lotus.png",
+      isNew: true,
+      description: "Hoa sen quốc hoa màu nước thanh tao, biểu tượng Song Hỷ son tròn, thiệp báo hỷ trang nghiêm và đầm sen dát vàng hoàng kim.",
+      tags: ["Hoa Sen", "Báo Hỷ", "Thuần Việt"],
+    },
+    {
+      id: "wedding-cinematic-editorial",
+      slug: "wedding-cinematic-editorial",
+      demoSlug: "wedding-cinematic-editorial",
+      name: "Điện Ảnh Lookbook Tình Yêu",
+      category: "WEDDING",
       style: "Minimalist Luxury",
-      price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=700&auto=format&fit=crop",
+      price: `${pricePrefix} 299.000đ`,
+      imageUrl: "/images/templates/template-07-cinematic.png",
+      isNew: true,
+      description: "Phim điện ảnh & tạp chí thời trang Vogue Lookbook, nhiều chương tình yêu Our Love Story & Fall In Love, lịch nụ hôn và poster You are my Sunshine.",
+      tags: ["Cinematic", "Vogue", "Lookbook"],
     },
     {
-      id: "5",
-      name: t("template5Name") || "Cyber Neon",
+      id: "wedding-alpine-lake-romance",
+      slug: "wedding-alpine-lake-romance",
+      demoSlug: "wedding-alpine-lake-romance",
+      name: "Suối Nguồn Hồ Nước Thiên Nhiên",
+      category: "WEDDING",
+      style: "Minimalist Luxury",
+      price: `${pricePrefix} 249.000đ`,
+      imageUrl: "/images/templates/template-08-alpine.png",
+      isNew: true,
+      description: "Hồ nước ngọc bích thiên nhiên Thụy Sĩ, lịch tán rừng thông, hoa khô dán Washi Tape, hộp quà pastel và cổng Song Hỷ minh họa.",
+      tags: ["Hồ Nước", "Thụy Sĩ", "Washi Tape"],
+    },
+    {
+      id: "wedding-imperial-dragon-crimson",
+      slug: "wedding-imperial-dragon-crimson",
+      demoSlug: "wedding-imperial-dragon-crimson",
+      name: "Long Phụng Sum Vầy Đỏ Đô",
+      category: "WEDDING",
+      style: "Cổ Điển Hoàng Gia",
+      price: `${pricePrefix} 299.000đ`,
+      imageUrl: "/images/templates/template-09-dragon.png",
+      isNew: true,
+      description: "Đỏ đô gấm cung đình toàn trang in chìm Long Phụng, tranh chibi uyên ương tựa cổng Song Hỷ 3D, giá vẽ hoa cưới và hộp mừng cưới 2 thẻ QR vàng cát.",
+      tags: ["Long Phụng", "Đỏ Đô", "Song Hỷ 3D"],
+    },
+
+    // ── MẪU SINH NHẬT & THÔI NÔI ──
+    {
+      id: "birthday-glow-party",
+      slug: "birthday-glow-party",
+      demoSlug: "birthday-glow-party",
+      name: "Cyber Neon Glow Party",
       category: "BIRTHDAY",
       style: "Cyber Neon",
       price: `${pricePrefix} 199.000đ`,
       imageUrl: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=700&auto=format&fit=crop",
+      description: "Phong cách tiệc sinh nhật Neon trẻ trung, hiệu ứng ánh sáng phát quang rực rỡ.",
+      tags: ["Neon", "Sinh Nhật", "Party"],
     },
     {
-      id: "6",
-      name: t("template6Name") || "Terracotta Arch",
-      category: "WEDDING",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=700&auto=format&fit=crop",
-    },
-    {
-      id: "7",
-      name: t("template7Name") || "Classic Ivory",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 299.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=700&auto=format&fit=crop",
-    },
-    {
-      id: "8",
-      name: t("template8Name") || "Bold Asymmetry",
-      category: "EVENT",
+      id: "newborn-little-prince",
+      slug: "newborn-little-prince",
+      demoSlug: "newborn-little-prince",
+      name: "Hoàng Tử Nhỏ (Đầy Tháng)",
+      category: "NEWBORN",
       style: "Minimalist Luxury",
       price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=700&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=700&auto=format&fit=crop",
+      description: "Tone xanh pastel dịu nhẹ cho tiệc đầy tháng, thôi nôi bé trai.",
+      tags: ["Đầy Tháng", "Bé Trai", "Pastel"],
     },
     {
-      id: "9",
-      name: "Hoa Lụa Hoàng Gia",
-      category: "WEDDING",
-      style: "Floral Romance",
-      price: `${pricePrefix} 269.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=700&auto=format&fit=crop",
-    },
-    {
-      id: "10",
-      name: "Vườn Ngọc Romance",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 299.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=700&auto=format&fit=crop",
-    },
-    {
-      id: "11",
-      name: "Bé Cưng Baby Cloud",
+      id: "newborn-sweet-angel",
+      slug: "newborn-sweet-angel",
+      demoSlug: "newborn-sweet-angel",
+      name: "Thiên Thần Nhỏ (Thôi Nôi)",
       category: "NEWBORN",
       style: "Minimalist Luxury",
       price: `${pricePrefix} 199.000đ`,
       imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=700&auto=format&fit=crop",
-    },
-    {
-      id: "12",
-      name: "Gala Tiệc Tối Sang Trọng",
-      category: "EVENT",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=700&auto=format&fit=crop",
+      description: "Tone hồng ngọt ngào mừng bé gái tròn 1 tuổi hoặc đầy tháng.",
+      tags: ["Thôi Nôi", "Bé Gái", "Ngọt Ngào"],
     },
   ];
 
@@ -346,8 +406,9 @@ export default function CollectionsPage() {
   };
 
   const handleUseTemplate = (template: TemplateItem) => {
+    const templateParam = template.slug || template.id;
     if (user) {
-      router.push(`/dashboard/cards/new?templateId=${template.id}`);
+      router.push(`/dashboard/cards/new?category=${template.category}&template=${templateParam}`);
     } else {
       openAuthModal("login");
     }

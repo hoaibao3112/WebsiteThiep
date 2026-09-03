@@ -2,7 +2,6 @@ import { prisma } from "../lib/prisma";
 import {
   DraftCardInput,
   PublishCardDataSchema,
-  UpsertCardInput,
 } from "../lib/validators/card";
 import { Prisma } from "@prisma/client";
 
@@ -127,219 +126,6 @@ export class CardService {
   }
 
   /**
-   * Tạo mới hoặc cập nhật thiệp
-   * Enforce chặt chẽ giới hạn gói dịch vụ (Plan Limits) tại Backend
-   */
-  static async upsertCard(userId: string, input: UpsertCardInput, cardId?: string) {
-    const { data: categoryData, events = [], ...cardSettings } = input as any;
-
-    const photosList = Array.isArray(input.photos) && input.photos.length > 0
-      ? input.photos
-      : Array.isArray(categoryData?.photos)
-      ? categoryData.photos
-      : [];
-
-    const eventsList = Array.isArray(input.events) && input.events.length > 0
-      ? input.events
-      : Array.isArray(categoryData?.events)
-      ? categoryData.events
-      : [];
-
-    // 1. Kiểm tra gói dịch vụ (Plan)
-    const plan = await prisma.plan.findUnique({
-      where: { id: cardSettings.planId },
-    });
-
-    if (!plan) {
-      throw new Error("Gói dịch vụ không tồn tại");
-    }
-
-    const membership = await prisma.accountMember.findFirst({
-      where: { userId },
-      select: { accountId: true },
-    });
-    if (!membership) throw new Error("Tài khoản chưa được khởi tạo");
-    const accountId = membership.accountId;
-
-    // 2. [HIGH] Enforce Plan Limits: Kiểm tra quyền nhạc nền tùy chỉnh
-    if (cardSettings.musicUrl && cardSettings.musicUrl.trim() !== "") {
-      if (!plan.allowMusicUpload) {
-        throw new Error(
-          `Gói dịch vụ "${plan.name}" không hỗ trợ nhạc nền tùy chỉnh. Vui lòng nâng cấp gói Tiêu Chuẩn / VIP.`
-        );
-      }
-    }
-
-    // 3. [HIGH] Enforce Plan Limits: Kiểm tra giới hạn số lượng ảnh
-    if (photosList.length > plan.maxPhotos) {
-      throw new Error(
-        `Gói dịch vụ "${plan.name}" chỉ cho phép tối đa ${plan.maxPhotos} ảnh. Bạn đang gửi ${photosList.length} ảnh.`
-      );
-    }
-
-    const expiredAt = plan.durationDays
-      ? new Date(Date.now() + plan.durationDays * 24 * 60 * 60 * 1000)
-      : null;
-
-    if (cardId) {
-      // Cập nhật thiệp hiện có (Multi-tenant check: userId)
-      const existingCard = await prisma.card.findFirst({
-        where: { id: cardId, userId, accountId },
-      });
-
-      if (!existingCard) {
-        throw new Error("Thiệp không tồn tại hoặc bạn không có quyền chỉnh sửa");
-      }
-
-      return prisma.$transaction(async (tx) => {
-        // Kiểm tra nếu đổi slug mà slug mới đã bị thiệp khác sử dụng
-        if (cardSettings.slug !== existingCard.slug) {
-          const slugConflict = await tx.card.findFirst({
-            where: {
-              slug: cardSettings.slug,
-              id: { not: cardId },
-            },
-          });
-          if (slugConflict) {
-            throw new Error(
-              `Đường dẫn "${cardSettings.slug}" đã được sử dụng bởi một thiệp khác. Vui lòng chọn đường dẫn khác.`
-            );
-          }
-        }
-
-        // Cập nhật card
-        const updated = await tx.card.update({
-          where: { id: cardId },
-          data: {
-            slug: cardSettings.slug,
-            templateId: cardSettings.templateId,
-            openingEffect: cardSettings.openingEffect,
-            fallingEffect: cardSettings.fallingEffect,
-            musicUrl: plan.allowMusicUpload ? cardSettings.musicUrl : null,
-            isAutoPlay: cardSettings.isAutoPlay,
-            primaryColor: cardSettings.primaryColor,
-            fontFamily: cardSettings.fontFamily,
-            greetingMessage: cardSettings.greetingMessage,
-            categoryData: categoryData as Prisma.InputJsonValue,
-            bankingPrimary: cardSettings.bankingPrimary as Prisma.InputJsonValue,
-            bankingSecondary: cardSettings.bankingSecondary as Prisma.InputJsonValue,
-            telegramChatId: cardSettings.telegramChatId,
-          },
-        });
-
-        // Cập nhật danh sách sự kiện nếu có
-        await tx.cardEvent.deleteMany({ where: { cardId, accountId } });
-        if (eventsList.length > 0) {
-          await tx.cardEvent.createMany({
-            data: eventsList.map((e: any, index: number) => ({
-              accountId,
-              cardId,
-              eventName: e.eventName || "Sự Kiện",
-              eventDate: new Date(e.eventDate),
-              lunarDate: e.lunarDate,
-              venueName: e.venueName || "Địa điểm tổ chức",
-              address: e.address || "Địa chỉ",
-              mapUrl: e.mapUrl,
-              latitude: e.latitude,
-              longitude: e.longitude,
-              sortOrder: index,
-            })),
-          });
-        }
-
-        // Cập nhật gallery ảnh nếu có
-        await tx.cardPhoto.deleteMany({ where: { cardId, accountId } });
-        if (photosList.length > 0) {
-          await tx.cardPhoto.createMany({
-            data: photosList.map((p: any, index: number) => ({
-              accountId,
-              cardId,
-              url: p.url || p,
-              thumbUrl: p.thumbUrl || null,
-              caption: p.caption || null,
-              isCover: index === 0,
-              sortOrder: index,
-            })),
-          });
-        }
-
-        return updated;
-      });
-    }
-
-    // Tạo mới thiệp
-    return prisma.$transaction(async (tx) => {
-      // Kiểm tra trùng slug
-      const slugExists = await tx.card.findUnique({
-        where: { slug: cardSettings.slug },
-      });
-      if (slugExists) {
-        throw new Error(`Đường dẫn "${cardSettings.slug}" đã được sử dụng. Vui lòng chọn đường dẫn khác.`);
-      }
-
-      const newCard = await tx.card.create({
-        data: {
-          accountId,
-          userId,
-          slug: cardSettings.slug,
-          cardCategory: categoryData.cardCategory,
-          status: "DRAFT",
-          planId: plan.id,
-          templateId: cardSettings.templateId,
-          expiredAt,
-          openingEffect: cardSettings.openingEffect,
-          fallingEffect: cardSettings.fallingEffect,
-          musicUrl: plan.allowMusicUpload ? cardSettings.musicUrl : null,
-          isAutoPlay: cardSettings.isAutoPlay,
-          primaryColor: cardSettings.primaryColor,
-          fontFamily: cardSettings.fontFamily,
-          greetingMessage: cardSettings.greetingMessage,
-          categoryData: categoryData as Prisma.InputJsonValue,
-          bankingPrimary: cardSettings.bankingPrimary as Prisma.InputJsonValue,
-          bankingSecondary: cardSettings.bankingSecondary as Prisma.InputJsonValue,
-          telegramChatId: cardSettings.telegramChatId,
-        },
-      });
-
-      // Tạo các sự kiện
-      if (eventsList.length > 0) {
-        await tx.cardEvent.createMany({
-          data: eventsList.map((e: any, index: number) => ({
-            accountId,
-            cardId: newCard.id,
-            eventName: e.eventName || "Sự Kiện",
-            eventDate: new Date(e.eventDate),
-            lunarDate: e.lunarDate,
-            venueName: e.venueName || "Địa điểm tổ chức",
-            address: e.address || "Địa chỉ",
-            mapUrl: e.mapUrl,
-            latitude: e.latitude,
-            longitude: e.longitude,
-            sortOrder: index,
-          })),
-        });
-      }
-
-      // Tạo ảnh gallery
-      if (photosList.length > 0) {
-        await tx.cardPhoto.createMany({
-          data: photosList.map((p: any, index: number) => ({
-            accountId,
-            cardId: newCard.id,
-            url: p.url || p,
-            thumbUrl: p.thumbUrl || null,
-            caption: p.caption || null,
-            isCover: index === 0,
-            sortOrder: index,
-          })),
-        });
-      }
-
-      return newCard;
-    });
-  }
-
-  /**
    * Lấy chi tiết thiệp cho trang công khai (Guest view)
    * Tăng viewCount bất đồng bộ (không chặn response)
    */
@@ -416,17 +202,26 @@ export class CardService {
       include: { plan: true },
     });
     if (!existing) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa");
-    if (existing.status === "EXPIRED") throw new Error("Thiệp FREE đã hết hạn và không thể chỉnh sửa");
+    if (existing.status === "EXPIRED") throw new Error("Thiệp đã hết hạn và không thể chỉnh sửa");
     if (input.photos.length > existing.plan.maxPhotos) {
-      throw new Error(`Gói FREE chỉ cho phép tối đa ${existing.plan.maxPhotos} ảnh`);
+      throw new Error(`Gói ${existing.plan.name || existing.plan.code} chỉ cho phép tối đa ${existing.plan.maxPhotos} ảnh`);
     }
 
     const template = await prisma.template.findUnique({ where: { slug: input.templateSlug } });
     if (
-      !template || !template.isActive || template.isPremium ||
+      !template ||
+      !template.isActive ||
       template.category !== input.data.cardCategory
     ) {
-      throw new Error("Mẫu thiệp không khả dụng cho gói FREE");
+      throw new Error("Mẫu thiệp không tồn tại hoặc không phù hợp với danh mục thiệp");
+    }
+
+    if (template.isPremium && !existing.plan.allowPremiumTemplates) {
+      throw new Error(
+        existing.plan.code === "FREE"
+          ? "Mẫu thiệp không khả dụng cho gói FREE"
+          : `Mẫu thiệp Premium không khả dụng cho gói ${existing.plan.name}`
+      );
     }
 
     return prisma.$transaction(async (tx) => {

@@ -69,38 +69,83 @@ export default function EditCardPage() {
 
 const TEMPLATE_PRESETS = [
   {
-    id: "wedding-hong-xanh-luxury",
-    name: "Hoa Mộc Hồng Luxury",
+    id: "wedding-heritage-crimson-gold",
+    name: "Á Đông Cung Đình",
     category: "WEDDING",
-    tag: "ROMANCE",
-    color: "#BE944E",
+    tag: "TRADITION",
+    color: "#8B1E2D",
     font: "Playfair Display",
+    bg: "/images/demo/couple-cover.png",
+  },
+  {
+    id: "wedding-modern-editorial-magazine",
+    name: "Tạp Chí Hàn Quốc",
+    category: "WEDDING",
+    tag: "EDITORIAL",
+    color: "#543A2C",
+    font: "Inter",
     bg: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
   },
   {
-    id: "wedding-emerald-royal",
-    name: "Vườn Ngọc Hoàng Gia",
+    id: "wedding-sweet-editorial-romance",
+    name: "Sweet Pink Lãng Mạn",
     category: "WEDDING",
-    tag: "LUXURY",
-    color: "#2D5A3B",
+    tag: "ROMANCE",
+    color: "#B84A39",
+    font: "Great Vibes",
+    bg: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
+  },
+  {
+    id: "wedding-crimson-wine-marsala",
+    name: "Đỏ Rượu Marsala",
+    category: "WEDDING",
+    tag: "CLASSIC",
+    color: "#6B1724",
+    font: "Playfair Display",
+    bg: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop",
+  },
+  {
+    id: "wedding-forest-green-botanical",
+    name: "Rustic Xanh Rêu",
+    category: "WEDDING",
+    tag: "BOTANICAL",
+    color: "#3D4A34",
+    font: "Outfit",
+    bg: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
+  },
+  {
+    id: "wedding-pure-lotus-heritage",
+    name: "Hoa Sen Báo Hỷ",
+    category: "WEDDING",
+    tag: "HERITAGE",
+    color: "#3B5E43",
+    font: "Playfair Display",
+    bg: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&auto=format&fit=crop",
+  },
+  {
+    id: "wedding-cinematic-editorial",
+    name: "Điện Ảnh Lookbook",
+    category: "WEDDING",
+    tag: "CINEMATIC",
+    color: "#1C1C1C",
+    font: "Cinzel",
+    bg: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop",
+  },
+  {
+    id: "wedding-alpine-lake-romance",
+    name: "Suối Nguồn Hồ Ngọc",
+    category: "WEDDING",
+    tag: "ALPINE",
+    color: "#2B6B6D",
     font: "Playfair Display",
     bg: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&auto=format&fit=crop",
   },
   {
-    id: "wedding-vintage-classic",
-    name: "Cổ Điển Hoàng Triều",
+    id: "wedding-imperial-dragon-crimson",
+    name: "Long Phụng Đỏ Đô",
     category: "WEDDING",
-    tag: "VINTAGE",
-    color: "#A2772A",
-    font: "Cinzel",
-    bg: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&auto=format&fit=crop",
-  },
-  {
-    id: "wedding-ruby-passion",
-    name: "Ruby Nhung Đỏ",
-    category: "WEDDING",
-    tag: "TRADITION",
-    color: "#8B1E2F",
+    tag: "ROYAL",
+    color: "#6E1719",
     font: "Playfair Display",
     bg: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop",
   },
@@ -928,7 +973,7 @@ function EditCardContent() {
                     {TEMPLATE_PRESETS.map((tpl) => (
                       <div
                         key={tpl.id}
-                        onClick={() => { setSelectedTemplate(tpl.id); setPrimaryColor(tpl.color); setFontFamily(tpl.font); }}
+                        onClick={() => { setSelectedTemplate(tpl.id); setTemplateSlug(tpl.id); setPrimaryColor(tpl.color); setFontFamily(tpl.font); }}
                         className={`rounded-2xl border p-3 cursor-pointer transition relative overflow-hidden flex flex-col justify-between h-28 group ${
                           selectedTemplate === tpl.id
                             ? "border-2 border-[#BE944E] ring-2 ring-[#BE944E]/30 bg-amber-50/40 shadow-md"

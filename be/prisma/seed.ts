@@ -19,6 +19,7 @@ async function main() {
       allowCustomDomain: false,
       allowMusicUpload: false,
       allowTelegramNoti: false,
+      allowPremiumTemplates: false,
       sortOrder: 1,
       features: [
         "Sử dụng đầy đủ mẫu thiệp cơ bản",
@@ -32,7 +33,7 @@ async function main() {
 
   const basicPlan = await prisma.plan.upsert({
     where: { code: "BASIC" },
-    update: {},
+    update: { allowPremiumTemplates: true },
     create: {
       code: "BASIC",
       name: "Gói Tiêu Chuẩn",
@@ -43,6 +44,7 @@ async function main() {
       allowCustomDomain: false,
       allowMusicUpload: true,
       allowTelegramNoti: false,
+      allowPremiumTemplates: true,
       sortOrder: 2,
       features: [
         "Xóa hoàn toàn logo hệ thống",
@@ -57,7 +59,7 @@ async function main() {
 
   const vipPlan = await prisma.plan.upsert({
     where: { code: "VIP" },
-    update: {},
+    update: { allowPremiumTemplates: true },
     create: {
       code: "VIP",
       name: "Gói Cao Cấp (VIP)",
@@ -68,6 +70,7 @@ async function main() {
       allowCustomDomain: true,
       allowMusicUpload: true,
       allowTelegramNoti: true,
+      allowPremiumTemplates: true,
       sortOrder: 3,
       features: [
         "Lưu trữ vĩnh viễn (Kỷ niệm trọn đời)",
@@ -85,6 +88,81 @@ async function main() {
 
   // 2. Tạo Mẫu Thiệp Mẫu (Templates)
   const templates = [
+    // ── 9 MẪU THIỆP CƯỚI ĐỘC BẢN ──
+    {
+      slug: "wedding-heritage-crimson-gold",
+      name: "Á Đông Cung Đình Hoàng Gia",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: true,
+      configJson: { themeColor: "#8B1E2D", fontFamily: "Playfair Display", style: "Imperial Crimson & Gold" },
+    },
+    {
+      slug: "wedding-modern-editorial-magazine",
+      name: "Tạp Chí Hàn Quốc Editorial",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-studio.png",
+      isPremium: false,
+      configJson: { themeColor: "#543A2C", fontFamily: "Inter", style: "Modern Editorial" },
+    },
+    {
+      slug: "wedding-sweet-editorial-romance",
+      name: "Hàn Quốc Sweet Pink Lãng Mạn",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: false,
+      configJson: { themeColor: "#B84A39", fontFamily: "Great Vibes", style: "Sweet Romance" },
+    },
+    {
+      slug: "wedding-crimson-wine-marsala",
+      name: "Quý Tộc Đỏ Rượu Marsala",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: true,
+      configJson: { themeColor: "#6B1724", fontFamily: "Playfair Display", style: "Roman Arch Marsala" },
+    },
+    {
+      slug: "wedding-forest-green-botanical",
+      name: "Rustic Xanh Rêu Thiên Nhiên",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-studio.png",
+      isPremium: false,
+      configJson: { themeColor: "#3D4A34", fontFamily: "Outfit", style: "Botanical Rustic" },
+    },
+    {
+      slug: "wedding-pure-lotus-heritage",
+      name: "Hoa Sen Thanh Khiết Báo Hỷ",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: false,
+      configJson: { themeColor: "#3B5E43", fontFamily: "Playfair Display", style: "Pure Lotus Watercolors" },
+    },
+    {
+      slug: "wedding-cinematic-editorial",
+      name: "Điện Ảnh Lookbook Tình Yêu",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-studio.png",
+      isPremium: true,
+      configJson: { themeColor: "#1C1C1C", fontFamily: "Cinzel", style: "Cinematic Film & Vogue" },
+    },
+    {
+      slug: "wedding-alpine-lake-romance",
+      name: "Suối Nguồn Hồ Nước Thiên Nhiên",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: false,
+      configJson: { themeColor: "#2B6B6D", fontFamily: "Playfair Display", style: "Alpine Lake Romance" },
+    },
+    {
+      slug: "wedding-imperial-dragon-crimson",
+      name: "Long Phụng Sum Vầy Đỏ Đô",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/couple-cover.png",
+      isPremium: true,
+      configJson: { themeColor: "#6E1719", fontFamily: "Playfair Display", style: "Imperial Dragon Crimson" },
+    },
+
+    // ── MẪU CŨ ──
     {
       slug: "wedding-hong-xanh-luxury",
       name: "Hồng Xanh Luxury",

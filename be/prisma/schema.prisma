@@ -97,6 +97,7 @@ model Plan {
   allowCustomDomain Boolean  @default(false)
   allowMusicUpload  Boolean  @default(false)
   allowTelegramNoti Boolean  @default(false)
+  allowPremiumTemplates Boolean @default(false)
   features          Json? // Danh sách tính năng hiển thị
   isActive          Boolean  @default(true)
   sortOrder         Int      @default(0)

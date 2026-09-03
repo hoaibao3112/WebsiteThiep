@@ -65,18 +65,18 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
         ? ["#FFFFFF", "#E0F2FE", "#BAE6FD"]
         : ["#38BDF8", "#F472B6", "#FBBF24", "#34D399"]; // Balloon
 
-    const maxItems = effect === "SNOW" ? 60 : 25;
+    const maxItems = effect === "SNOW" ? 65 : 38;
 
     for (let i = 0; i < maxItems; i++) {
       items.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        size: Math.random() * (effect === "PETAL" ? 14 : 10) + 8,
-        speedY: Math.random() * 1.5 + 0.8,
-        speedX: Math.sin(Math.random() * 2) * 0.8,
+        size: Math.random() * (effect === "PETAL" ? 15 : 12) + 8,
+        speedY: Math.random() * 1.6 + 0.9,
+        speedX: (Math.random() - 0.5) * 1.2,
         rotation: Math.random() * 360,
-        rotationSpeed: (Math.random() - 0.5) * 1.5,
-        opacity: Math.random() * 0.5 + 0.4,
+        rotationSpeed: (Math.random() - 0.5) * 1.8,
+        opacity: Math.random() * 0.45 + 0.45,
         color: colors[Math.floor(Math.random() * colors.length)],
       });
     }
@@ -92,9 +92,9 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
         ctx.fillStyle = item.color;
 
         if (effect === "PETAL") {
-          // Vẽ hình cánh hoa
+          // Vẽ hình cánh hoa hồng/hoa sen mềm mại
           ctx.beginPath();
-          ctx.ellipse(0, 0, item.size, item.size / 2, Math.PI / 4, 0, 2 * Math.PI);
+          ctx.ellipse(0, 0, item.size, item.size * 0.55, Math.PI / 4, 0, 2 * Math.PI);
           ctx.fill();
         } else if (effect === "HEART") {
           // Vẽ hình trái tim
@@ -128,9 +128,9 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
           ctx.bezierCurveTo(item.size / 2, 0, 0, 0, 0, topCurveHeight);
           ctx.fill();
         } else if (effect === "SNOW") {
-          // Vẽ bông tuyết
+          // Vẽ bông tuyết lung linh
           ctx.beginPath();
-          ctx.arc(0, 0, item.size / 3, 0, Math.PI * 2);
+          ctx.arc(0, 0, item.size / 3.2, 0, Math.PI * 2);
           ctx.fill();
         } else {
           // Vẽ bóng bay
@@ -141,9 +141,9 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
 
         ctx.restore();
 
-        // Update position
+        // Update position với dao động gió hình sin tự nhiên
         item.y += item.speedY;
-        item.x += item.speedX;
+        item.x += item.speedX + Math.sin(item.y * 0.02) * 0.6;
         item.rotation += item.rotationSpeed;
 
         if (item.y > height + 20) {

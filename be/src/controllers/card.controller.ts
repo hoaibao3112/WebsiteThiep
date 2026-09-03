@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { CardService } from "../services/card.service";
-import { DraftCardSchema, UpsertCardSchema } from "../lib/validators/card";
+import { DraftCardSchema } from "../lib/validators/card";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
@@ -71,25 +71,7 @@ export class CardController {
       return res.status(400).json({ success: false, error: message });
     }
   }
-  static async upsert(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      const userId = req.userId;
-      if (!userId) {
-        return res.status(500).json({
-          success: false,
-          error: "Thiếu thông tin xác thực - lỗi hệ thống",
-        });
-      }
 
-      const cardId = req.params.id as string | undefined;
-      const validated = UpsertCardSchema.parse(req.body);
-
-      const card = await CardService.upsertCard(userId, validated, cardId);
-      res.status(200).json({ success: true, data: card });
-    } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
-    }
-  }
 
   static async getBySlug(req: Request, res: Response, next: NextFunction) {
     try {

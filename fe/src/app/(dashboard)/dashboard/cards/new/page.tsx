@@ -100,7 +100,7 @@ function CardBuilderContent() {
   const searchParams = useSearchParams();
 
   const initialCategory = (searchParams.get("category")?.toUpperCase() as CardCategory) || "WEDDING";
-  const initialTemplate = searchParams.get("template") || "wedding-minimalist-gold";
+  const initialTemplate = searchParams.get("template") || "wedding-heritage-crimson-gold";
 
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [templateSlug, setTemplateSlug] = useState<string>(initialTemplate);
@@ -112,7 +112,7 @@ function CardBuilderContent() {
   const templateConfig = getTemplateConfig(templateSlug, category);
 
   // State thiệp
-  const [primaryColor, setPrimaryColor] = useState(templateConfig?.defaultPrimaryColor || "#BE944E");
+  const [primaryColor, setPrimaryColor] = useState(templateConfig?.defaultPrimaryColor || "#8B1E2D");
   const [fontFamily, setFontFamily] = useState(templateConfig?.defaultFontFamily || "Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX">("WAX_SEAL");
   const [fallingEffect, setFallingEffect] = useState<"NONE" | "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">("PETAL");
@@ -129,8 +129,8 @@ function CardBuilderContent() {
   const handleCategoryChange = (newCat: CardCategory) => {
     setCategory(newCat);
     if (newCat === "WEDDING") {
-      setTemplateSlug("wedding-minimalist-gold");
-      setPrimaryColor("#BE944E");
+      setTemplateSlug("wedding-heritage-crimson-gold");
+      setPrimaryColor("#8B1E2D");
       setFontFamily("Playfair Display");
       setFallingEffect("PETAL");
       setMusicUrl("/music/le-duong.mp3");
@@ -255,7 +255,9 @@ function CardBuilderContent() {
     }
   };
 
-  const templatesForCategory = Object.values(TEMPLATE_CONFIGS).filter((t) => t.category === category);
+  const templatesForCategory = Object.values(TEMPLATE_CONFIGS).filter(
+    (t) => t.category === category && !t.label.includes("(Legacy)")
+  );
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
@@ -326,14 +328,14 @@ function CardBuilderContent() {
 
         {/* TEMPLATE PRESET SELECTOR & ACTIONS */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5">
-            <span className="text-[11px] text-stone-400 font-medium mr-1">Mẫu:</span>
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto max-w-xl py-1 no-scrollbar">
+            <span className="text-[11px] text-stone-400 font-medium mr-1 shrink-0">Mẫu:</span>
             {templatesForCategory.map((tpl) => (
               <button
                 key={tpl.slug}
                 type="button"
                 onClick={() => handleTemplateChange(tpl.slug)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer border ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer border shrink-0 ${
                   templateSlug === tpl.slug
                     ? "bg-amber-50 border-amber-400 text-amber-900 font-bold shadow-2xs"
                     : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"

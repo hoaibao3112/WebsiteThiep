@@ -11,8 +11,8 @@ const db = vi.hoisted(() => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
-  cardEvent: { createMany: vi.fn() },
-  cardPhoto: { createMany: vi.fn() },
+  cardEvent: { createMany: vi.fn(), deleteMany: vi.fn() },
+  cardPhoto: { createMany: vi.fn(), deleteMany: vi.fn() },
 }));
 
 const prismaMock = vi.hoisted(() => ({
@@ -203,3 +203,160 @@ describe("CardService lifecycle reads and publish", () => {
     });
   });
 });
+
+describe("CardService.updateDraft template premium & plan permissions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("rejects updating to a premium template when the card is on a FREE plan", async () => {
+    db.card.findFirst.mockResolvedValue({
+      id: "card-1",
+      accountId: "account-1",
+      status: "DRAFT",
+      plan: {
+        code: "FREE",
+        name: "Gói Dùng Thử",
+        maxPhotos: 5,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
+
+    db.template.findUnique.mockResolvedValue({
+      id: "premium-template-id",
+      slug: "wedding-modern-editorial-magazine",
+      category: "WEDDING",
+      isActive: true,
+      isPremium: true,
+    });
+
+    const updateInput: DraftCardInput = {
+      ...input,
+      templateSlug: "wedding-modern-editorial-magazine",
+    };
+
+    await expect(
+      CardService.updateDraft("account-1", "card-1", updateInput)
+    ).rejects.toThrow("Mẫu thiệp không khả dụng cho gói FREE");
+
+    expect(db.card.update).not.toHaveBeenCalled();
+  });
+
+  it("successfully updates to a premium template when the card is on a VIP plan with allowPremiumTemplates=true", async () => {
+    db.card.findFirst.mockResolvedValue({
+      id: "card-1",
+      accountId: "account-1",
+      status: "DRAFT",
+      plan: {
+        code: "VIP",
+        name: "Gói Cao Cấp (VIP)",
+        maxPhotos: 50,
+        allowMusicUpload: true,
+        allowTelegramNoti: true,
+        allowPremiumTemplates: true,
+      },
+    });
+
+    db.template.findUnique.mockResolvedValue({
+      id: "premium-template-id",
+      slug: "wedding-modern-editorial-magazine",
+      category: "WEDDING",
+      isActive: true,
+      isPremium: true,
+    });
+
+    db.card.update.mockResolvedValue({
+      id: "card-1",
+      templateId: "premium-template-id",
+      slug: input.slug,
+    });
+
+    const updateInput: DraftCardInput = {
+      ...input,
+      templateSlug: "wedding-modern-editorial-magazine",
+    };
+
+    const result = await CardService.updateDraft("account-1", "card-1", updateInput);
+
+    expect(result).toMatchObject({
+      id: "card-1",
+      templateId: "premium-template-id",
+    });
+    expect(db.card.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "card-1", accountId: "account-1" },
+      data: expect.objectContaining({
+        templateId: "premium-template-id",
+      }),
+    }));
+  });
+
+  it("successfully updates to a premium template when the card is on a BASIC plan with allowPremiumTemplates=true", async () => {
+    db.card.findFirst.mockResolvedValue({
+      id: "card-1",
+      accountId: "account-1",
+      status: "DRAFT",
+      plan: {
+        code: "BASIC",
+        name: "Gói Tiêu Chuẩn",
+        maxPhotos: 20,
+        allowMusicUpload: true,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: true,
+      },
+    });
+
+    db.template.findUnique.mockResolvedValue({
+      id: "premium-template-id",
+      slug: "wedding-heritage-crimson-gold",
+      category: "WEDDING",
+      isActive: true,
+      isPremium: true,
+    });
+
+    db.card.update.mockResolvedValue({
+      id: "card-1",
+      templateId: "premium-template-id",
+      slug: input.slug,
+    });
+
+    const updateInput: DraftCardInput = {
+      ...input,
+      templateSlug: "wedding-heritage-crimson-gold",
+    };
+
+    const result = await CardService.updateDraft("account-1", "card-1", updateInput);
+
+    expect(result).toMatchObject({
+      id: "card-1",
+      templateId: "premium-template-id",
+    });
+  });
+
+  it("rejects updating when photo count exceeds the plan limits", async () => {
+    db.card.findFirst.mockResolvedValue({
+      id: "card-1",
+      accountId: "account-1",
+      status: "DRAFT",
+      plan: {
+        code: "FREE",
+        name: "Gói Dùng Thử",
+        maxPhotos: 5,
+        allowPremiumTemplates: false,
+      },
+    });
+
+    const updateInput: DraftCardInput = {
+      ...input,
+      photos: Array.from({ length: 6 }, (_, i) => ({
+        url: `https://example.com/photo-${i}.jpg`,
+      })),
+    };
+
+    await expect(
+      CardService.updateDraft("account-1", "card-1", updateInput)
+    ).rejects.toThrow("tối đa 5 ảnh");
+  });
+});
+

@@ -79,12 +79,34 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
   return (
     <div className="fixed bottom-[74px] sm:bottom-24 right-3.5 sm:right-4 z-40">
+      {/* Nốt nhạc bay lượn sinh động */}
+      {isPlaying && (
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.span
+            initial={{ opacity: 0, y: 0, x: 0, scale: 0.8 }}
+            animate={{ opacity: [0, 1, 0], y: -36, x: -14, scale: 1.2 }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut", delay: 0 }}
+            className="absolute -top-1 left-2 text-amber-300 text-xs font-bold select-none drop-shadow"
+          >
+            ♪
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, y: 0, x: 0, scale: 0.8 }}
+            animate={{ opacity: [0, 1, 0], y: -45, x: 12, scale: 1.4 }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeOut", delay: 1 }}
+            className="absolute -top-2 right-1 text-rose-300 text-sm font-bold select-none drop-shadow"
+          >
+            ♫
+          </motion.span>
+        </div>
+      )}
+
       <motion.button
         type="button"
         onClick={togglePlay}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.9 }}
-        className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#3D2C1E]/85 backdrop-blur-md text-white shadow-xl border border-white/25 cursor-pointer focus:outline-none active:scale-90 transition-transform"
+        className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#3D2C1E]/90 backdrop-blur-md text-white shadow-xl border border-white/25 cursor-pointer focus:outline-none active:scale-90 transition-transform"
         title={isPlaying ? "Tắt nhạc" : "Bật nhạc"}
       >
         <motion.div

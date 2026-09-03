@@ -63,7 +63,7 @@ export interface WeddingDataPayload {
     description?: string;
     imageUrl?: string;
   }>;
-  events: EventItem[];
+  events?: EventItem[];
 }
 
 export interface BirthdayDataPayload {
@@ -75,7 +75,7 @@ export interface BirthdayDataPayload {
   greeting?: string;
   themeMood?: string;
   hobbies?: string[];
-  events: EventItem[];
+  events?: EventItem[];
 }
 
 export interface NewbornDataPayload {
