@@ -26,6 +26,9 @@ const COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   secure: isProduction, // HTTPS trên production
   sameSite: isProduction ? "none" : "lax", // "none" cho phép cross-site request từ frontend sang backend
+  httpOnly: true,
+  secure: isProduction, // HTTPS trên production
+  sameSite: isProduction ? "none" : "lax", // "none" cho phép cross-site request từ frontend sang backend
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
   path: "/",
 };
@@ -35,9 +38,12 @@ const CSRF_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: false,
 };
 
-function setAuthCookies(res: Response, token: string) {
+function setAuthCookies(res: Response, token: string): string {
+  const csrf = crypto.randomBytes(32).toString("base64url");
   res.cookie("auth_token", token, COOKIE_OPTIONS);
-  res.cookie("csrf_token", crypto.randomBytes(32).toString("base64url"), CSRF_COOKIE_OPTIONS);
+  res.cookie("csrf_token", csrf, CSRF_COOKIE_OPTIONS);
+  res.setHeader("X-CSRF-Token", csrf);
+  return csrf;
 }
 
 export class AuthController {
@@ -69,15 +75,15 @@ export class AuthController {
       const validated = VerifyOtpRegisterSchema.parse(req.body);
       const result = await AuthService.registerWithOtp(validated);
 
-      // Đặt HTTPS HTTPOnly Cookie
+      let csrfToken: string | undefined;
       if (result.token) {
-        setAuthCookies(res, result.token);
+        csrfToken = setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
         success: true,
         message: "Đăng ký và xác thực tài khoản thành công!",
-        data: { user: result.user },
+        data: { user: result.user, token: result.token, csrfToken },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -92,15 +98,15 @@ export class AuthController {
       const validated = GoogleLoginSchema.parse(req.body);
       const result = await AuthService.googleLogin(validated.idToken);
 
-      // Đặt HTTPS HTTPOnly Cookie
+      let csrfToken: string | undefined;
       if (result.token) {
-        setAuthCookies(res, result.token);
+        csrfToken = setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
         success: true,
         message: "Đăng nhập với Google thành công!",
-        data: { user: result.user },
+        data: { user: result.user, token: result.token, csrfToken },
       });
     } catch (error: any) {
       res.status(401).json({ success: false, error: error.message });
@@ -113,15 +119,15 @@ export class AuthController {
       const clientIp = getClientIp(req);
       const result = await AuthService.register(validated, clientIp);
 
-      // Đặt HTTPS HTTPOnly Cookie
+      let csrfToken: string | undefined;
       if (result.token) {
-        setAuthCookies(res, result.token);
+        csrfToken = setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
         success: true,
         message: "Đăng ký tài khoản thành công!",
-        data: { user: result.user },
+        data: { user: result.user, token: result.token, csrfToken },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -134,15 +140,15 @@ export class AuthController {
       const clientIp = getClientIp(req);
       const result = await AuthService.login(validated, clientIp);
 
-      // Đặt HTTPS HTTPOnly Cookie
+      let csrfToken: string | undefined;
       if (result.token) {
-        setAuthCookies(res, result.token);
+        csrfToken = setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công!",
-        data: { user: result.user },
+        data: { user: result.user, token: result.token, csrfToken },
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -165,7 +171,13 @@ export class AuthController {
       if (!userId) throw new Error("Chưa đăng nhập");
 
       const user = await AuthService.getMe(userId);
-      res.status(200).json({ success: true, data: user });
+      let csrfToken = req.cookies?.csrf_token;
+      if (!csrfToken) {
+        csrfToken = crypto.randomBytes(32).toString("base64url");
+        res.cookie("csrf_token", csrfToken, CSRF_COOKIE_OPTIONS);
+      }
+      res.setHeader("X-CSRF-Token", csrfToken);
+      res.status(200).json({ success: true, data: user, csrfToken });
     } catch (error: any) {
       res.status(401).json({ success: false, error: error.message });
     }
@@ -192,4 +204,3 @@ export class AuthController {
     }
   }
 }
-

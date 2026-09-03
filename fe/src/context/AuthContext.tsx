@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { ApiClient } from "@/lib/api";
+import { ApiClient, setApiClientTokens } from "@/lib/api";
 
 export interface AuthUser {
   id: string;
@@ -126,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = React.useCallback(async () => {
     await ApiClient.request("/auth/logout", { method: "POST" });
+    setApiClientTokens({ authToken: null, csrfToken: null });
     setUser(null);
   }, []);
 

@@ -204,11 +204,11 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
 
           <div className="grid grid-cols-2 gap-3 items-center">
             <LivingPhoto
-              src={coverPhoto}
+              src={brideAvatar}
               alt="Cô dâu Khánh Thy"
               badgeText="CÔ DÂU"
               enableGleam={true}
-              onClick={() => onSelectPhoto(coverPhoto)}
+              onClick={() => onSelectPhoto(brideAvatar)}
             />
             <LivingPhoto
               src={groomAvatar}
