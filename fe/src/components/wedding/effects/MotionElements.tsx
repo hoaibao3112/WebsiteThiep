@@ -213,3 +213,105 @@ export const FloatingQuote: React.FC<FloatingQuoteProps> = ({
     </motion.div>
   );
 };
+
+/**
+ * 5. SCROLL UNFURL (Khung Cuộn Thư Truyền Thống Á Đông với 2 đầu trục dát vàng & hiệu ứng mở ra)
+ */
+interface ScrollUnfurlProps {
+  children: React.ReactNode;
+  className?: string;
+  borderColor?: string;
+}
+
+export const ScrollUnfurl: React.FC<ScrollUnfurlProps> = ({
+  children,
+  className = "",
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scaleY: 0.92 }}
+      whileInView={{ opacity: 1, scaleY: 1 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative py-3 my-4 ${className}`}
+    >
+      {/* Trục cuốn trên */}
+      <div className="relative z-20 flex items-center justify-between h-4 bg-gradient-to-r from-[#8a6828] via-[#e5c158] to-[#8a6828] rounded-full shadow-md border-y border-[#fff3b3]/50">
+        <div className="w-5 h-5 -ml-1 rounded-full bg-gradient-to-b from-[#b8860b] via-[#ffd700] to-[#8b6508] border border-amber-900 shadow-sm" />
+        <div className="flex-1 border-t border-amber-900/20 mx-2" />
+        <div className="w-5 h-5 -mr-1 rounded-full bg-gradient-to-b from-[#b8860b] via-[#ffd700] to-[#8b6508] border border-amber-900 shadow-sm" />
+      </div>
+
+      {/* Thân cuộn thư */}
+      <div className="relative z-10 bg-[#FFF9EE] border-x-8 border-[#8B1E2D] shadow-inner px-4 py-6 -my-1">
+        {/* Hoa văn chìm */}
+        <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#8B1E2D_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none" />
+        <div className="relative z-10">{children}</div>
+      </div>
+
+      {/* Trục cuốn dưới */}
+      <div className="relative z-20 flex items-center justify-between h-4 bg-gradient-to-r from-[#8a6828] via-[#e5c158] to-[#8a6828] rounded-full shadow-md border-y border-[#fff3b3]/50">
+        <div className="w-5 h-5 -ml-1 rounded-full bg-gradient-to-b from-[#b8860b] via-[#ffd700] to-[#8b6508] border border-amber-900 shadow-sm" />
+        <div className="flex-1 border-t border-amber-900/20 mx-2" />
+        <div className="w-5 h-5 -mr-1 rounded-full bg-gradient-to-b from-[#b8860b] via-[#ffd700] to-[#8b6508] border border-amber-900 shadow-sm" />
+      </div>
+    </motion.div>
+  );
+};
+
+/**
+ * 6. AUSPICIOUS MEDALLIONS (Bộ 3 Huy Hiệu Sơn Mài Đếm Ngược / Âm Dương Cát Tường)
+ */
+interface AuspiciousMedallionsProps {
+  solarDateStr?: string;
+  lunarDateStr?: string;
+  auspiciousTime?: string;
+}
+
+export const AuspiciousMedallions: React.FC<AuspiciousMedallionsProps> = ({
+  solarDateStr = "25.12",
+  lunarDateStr = "17.11",
+  auspiciousTime = "11:00",
+}) => {
+  const items = [
+    { label: "Giờ Hoàng Đạo", value: auspiciousTime, sub: "Giờ Cát" },
+    { label: "Lịch Âm", value: lunarDateStr, sub: "Bình Ngô" },
+    { label: "Lịch Dương", value: solarDateStr, sub: "Năm 2026" },
+  ];
+
+  return (
+    <div className="flex items-center justify-center gap-3 py-3">
+      {items.map((it, idx) => (
+        <motion.div
+          key={idx}
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: idx * 0.15 }}
+          whileHover={{ scale: 1.06, y: -2 }}
+          className="relative group cursor-default"
+        >
+          {/* Viền hào quang vàng */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-[#99732B] via-[#F3DE97] to-[#7A5818] shadow-lg flex items-center justify-center">
+            <div className="w-full h-full rounded-full bg-[#751624] border border-[#E5C158] flex flex-col items-center justify-center text-center p-1 relative overflow-hidden shadow-inner">
+              <span className="text-[9px] uppercase tracking-wider text-[#F7E7C4] font-serif block">
+                {it.label}
+              </span>
+              <motion.span
+                animate={{ scale: [1, 1.06, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: idx * 0.3 }}
+                className="text-base sm:text-lg font-bold font-mono text-[#FFF5DA] tracking-tight my-0.5 drop-shadow"
+              >
+                {it.value}
+              </motion.span>
+              <span className="text-[8px] sm:text-[9px] text-amber-200/80 font-serif italic block">
+                {it.sub}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+

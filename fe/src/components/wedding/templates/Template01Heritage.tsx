@@ -7,6 +7,7 @@ import { CountdownUnits } from "./common/CountdownUnits";
 import { InteractiveCalendarGrid } from "./common/InteractiveCalendarGrid";
 import { GuestbookSection } from "@/components/shared/GuestbookSection";
 import { formatDate } from "@/lib/utils";
+import { AuspiciousMedallions, ScrollUnfurl } from "../effects/MotionElements";
 import {
   Compass,
   Maximize2,
@@ -186,7 +187,7 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
-        {/* 4. LỊCH THÁNG & BỘ ĐẾM NGƯỢC CÁT TƯỜNG */}
+        {/* 4. LỊCH THÁNG & BỘ 3 HUY HIỆU SƠN MÀI CÁT TƯỜNG */}
         <motion.section
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -196,12 +197,22 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
         >
           <div className="text-center">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B1E2D]">
-              LỊCH KHẮC THIÊN DUYÊN
+              LỊCH KHẮC THIÊN DUYÊN • AUSPICIOUS CALENDAR
             </span>
             <h3 className="text-xl font-serif font-bold text-[#8B1E2D] mt-0.5">
               Ngày Cát Tường Viên Mãn
             </h3>
+            <p className="text-xs text-stone-500 italic font-serif mt-1">
+              Thời khắc kết duyên lành, trăm năm gắn kết bền lâu
+            </p>
           </div>
+
+          {/* 3 Huy hiệu sơn mài âm dương hoàng đạo từ ảnh mẫu 01 */}
+          <AuspiciousMedallions
+            solarDateStr="20.11"
+            lunarDateStr="24.10"
+            auspiciousTime="10:00"
+          />
 
           <InteractiveCalendarGrid targetDate={targetDate} variant="burgundy-circle" heartColor="#8B1E2D" />
 
@@ -365,8 +376,13 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
               BLESSINGS &amp; WISHES
             </span>
             <h3 className="text-xl font-serif font-bold text-[#8B1E2D]">Sổ Lưu Bút Hoàng Gia</h3>
+            <p className="text-xs text-stone-500 italic mt-0.5">
+              Gửi lời chúc phúc trăm năm vào cuộn thư lưu niệm
+            </p>
           </div>
-          <GuestbookSection cardId={card.id} primaryColor="#8B1E2D" />
+          <ScrollUnfurl>
+            <GuestbookSection cardId={card.id} primaryColor="#8B1E2D" />
+          </ScrollUnfurl>
         </motion.section>
 
         {/* 9. BOTTOM ACTION DOCK CỐ ĐỊNH CHÂN MÀN HÌNH */}

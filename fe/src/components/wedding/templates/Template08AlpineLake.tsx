@@ -136,7 +136,30 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
                   loading="lazy"
                 />
               </div>
+              <motion.a
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                href="https://maps.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center justify-center gap-1.5 w-full py-2 bg-teal-50 rounded-xl border border-teal-200 text-xs font-bold text-[#2B6B6D] hover:bg-teal-100 transition cursor-pointer"
+              >
+                <Navigation className="w-3.5 h-3.5" />
+                <span>Chỉ đường trên Google Maps</span>
+              </motion.a>
             </div>
+          </div>
+
+          {/* Thư ngỏ chạm đến cảm xúc theo ảnh mẫu Part 1 */}
+          <div className="p-4 rounded-2xl bg-white border border-[#D5E5E6] text-center space-y-1.5 text-xs text-stone-600 italic font-serif leading-relaxed max-w-sm mx-auto shadow-2xs">
+            <p className="font-sans font-bold text-[#1E3E40] not-italic text-sm">Hi bạn thân mến —</p>
+            <p>ngày cưới của chúng mình đã bước vào đếm ngược rồi —</p>
+            <p>Từng nghĩ hôn lễ chỉ là một thông báo, nhưng giờ mới hiểu,</p>
+            <p>đó là dịp hiếm hoi được gặp nhau, là sự ủng hộ và yêu thương không tính toán.</p>
+            <p>Cuộc đời có hơn ba vạn ngày, thật hạnh phúc khi trong một ngày như thế, bạn đến vì chúng mình.</p>
+            <p className="font-bold text-[#C92A2A] not-italic pt-1 font-sans">
+              Đã lâu không gặp, hẹn nhau trong ngày cưới nhé! 💕
+            </p>
           </div>
         </motion.section>
 
@@ -202,6 +225,10 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }}>♡</motion.span>
           </div>
 
+          <p className="text-center font-serif italic text-sm text-[#C92A2A]">
+            My heart belongs to you
+          </p>
+
           <div className="grid grid-cols-2 gap-3 items-center">
             <LivingPhoto
               src={brideAvatar}
@@ -219,17 +246,40 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             />
           </div>
 
-          {/* 4 Khối countdown đỏ */}
+          {/* Thơ lãng mạn theo ảnh mẫu */}
+          <div className="text-center text-xs font-serif italic text-stone-600 leading-relaxed max-w-xs mx-auto">
+            <p>Tình yêu chúng mình như suối nguồn qua bốn mùa,</p>
+            <p>lắng đọng thành lời thề đi cùng nhau suốt đời 💍</p>
+          </div>
+
+          {/* 4 Khối countdown đỏ rượu vang trên nền trắng */}
           <div className="pt-2 text-center">
             <CountdownUnits targetDate={targetDate} style="boxes-burgundy" showCalendarButton={false} />
           </div>
 
-          {/* Danh ngôn tình yêu FloatingQuote */}
-          <FloatingQuote
-            quote="“Anh sẽ luôn yêu em, điều này em có thể hỏi lại anh bao nhiêu lần cũng được. Em không thuộc về bất kỳ ai khác, vì em chính là duy nhất của anh ❤️”"
-            theme="forest"
-            author="Nguyễn Dương & Khánh Thy"
-          />
+          {/* THƠ DÁN BĂNG KEO WASHI TAPE XANH BƠ CHUẨN XÁC THEO ẢNH MẪU PART 2 */}
+          <div className="relative p-5 rounded-2xl bg-[#FCFAF7] border border-[#E7ECE9] shadow-xs text-left space-y-2 overflow-hidden max-w-sm mx-auto">
+            {/* Miếng băng dính washi dán góc */}
+            <div className="absolute top-0 right-8 w-16 h-4 bg-[#A3B899]/70 -rotate-3 shadow-xs border-y border-white/40" />
+            
+            <p className="text-xs font-serif italic text-stone-700 leading-relaxed pt-2">
+              “Anh sẽ luôn yêu em, điều này — em có thể hỏi lại anh bao nhiêu lần cũng được.<br />
+              Em không thuộc về bất kỳ ai khác, vì em chính là duy nhất của anh 💕”
+            </p>
+            <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-stone-400">
+              <span>🌿 Wild Botanical</span>
+              <span>— Nguyễn Dương</span>
+            </div>
+          </div>
+
+          {/* TRÍCH ĐOẠN TRIẾT LÝ HÔN NHÂN THEO ẢNH MẪU PART 3 */}
+          <div className="p-4 rounded-2xl bg-[#F4F7F7] border border-[#D5E5E6] text-center text-xs font-serif italic text-stone-600 leading-relaxed max-w-sm mx-auto space-y-1">
+            <p>Trong đời mỗi người, sẽ luôn có một khoảnh khắc cần kiên định với lựa chọn của chính mình</p>
+            <p>một giây phút để nói rằng: &ldquo;Đây là tôi, và đây là quyết định của tôi.&rdquo;</p>
+            <p className="font-semibold text-[#1E3E40] not-italic font-sans pt-1">
+              Khoảnh khắc ấy, chính là hiện tại có bạn bên cạnh. ❤️
+            </p>
+          </div>
         </motion.section>
 
         {/* 5. KHỐI RSVP VÀ HỘP QUÀ MỪNG TRÁI TIM */}

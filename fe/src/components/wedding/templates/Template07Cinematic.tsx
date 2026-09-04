@@ -230,7 +230,71 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
-        {/* 7. ĐỊA ĐIỂM PROMEX CENTER CHỮ NEON ĐỎ & BẢN ĐỒ */}
+        {/* 6.5. POEM & EDITORIAL 2-PHOTO GRID VỚI VERTICAL TYPOGRAPHY (PART 3 TRONG ẢNH MẪU) */}
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="p-6 text-center space-y-5 bg-[#FDFBF7] border-b border-stone-200"
+        >
+          {/* Khổ thơ điện ảnh 1 */}
+          <div className="space-y-1 text-xs font-serif italic text-stone-600 leading-relaxed max-w-xs mx-auto">
+            <p>Ánh trời bừng sáng soi vào chốn nhân gian</p>
+            <p>Ta vượt ngàn sông núi</p>
+            <p>Chỉ để cùng em</p>
+            <p className="font-semibold text-stone-800">Đi qua bốn mùa, dùng chung ba bữa</p>
+          </div>
+
+          {/* Bộ đôi ảnh tạp chí so le */}
+          <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              onClick={() => onSelectPhoto(coverPhoto)}
+              className="aspect-[3/4] rounded-xl overflow-hidden shadow-sm bg-stone-200 cursor-pointer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPhoto} alt="Editorial 1" className="w-full h-full object-cover" />
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.03 }}
+              onClick={() => onSelectPhoto(coverPhoto)}
+              className="aspect-[3/4] rounded-xl overflow-hidden shadow-sm bg-stone-200 cursor-pointer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPhoto} alt="Editorial 2" className="w-full h-full object-cover" />
+            </motion.div>
+          </div>
+
+          <p className="text-[11px] font-serif italic text-[#3B5E43] max-w-xs mx-auto">
+            “As the clouds and mist dissipate, love you and everyone knows it”
+          </p>
+
+          {/* Ảnh vuông lớn kèm chữ đứng FOREVER AND EVER */}
+          <div className="relative max-w-xs mx-auto flex items-center gap-3">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => onSelectPhoto(coverPhoto)}
+              className="flex-1 aspect-[4/3] rounded-2xl overflow-hidden shadow-md bg-stone-200 cursor-pointer"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPhoto} alt="Embracing Moment" className="w-full h-full object-cover" />
+            </motion.div>
+            <div className="writing-vertical text-[10px] font-mono tracking-[0.3em] uppercase text-stone-400 font-bold select-none">
+              FOREVER · AND · EVER
+            </div>
+          </div>
+
+          {/* Khổ thơ điện ảnh 2 */}
+          <div className="space-y-1 text-xs font-serif italic text-stone-600 leading-relaxed max-w-xs mx-auto pt-2">
+            <p>Em tựa mây trời băng qua ngàn đồi biếc</p>
+            <p>Thoáng hiện như cánh chim muôn hoa bừng nở</p>
+            <p>Giữa nhân gian cỏ cây vô tận</p>
+            <p className="text-stone-800 font-medium">Riêng anh chỉ thấy em là ngọn núi xanh dịu dàng</p>
+          </div>
+        </motion.section>
+
+        {/* 7. ĐỊA ĐIỂM PROMES CENTER CHỮ NEON ĐỎ & BẢN ĐỒ */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -244,7 +308,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               className="text-3xl font-serif italic text-[#C92A2A] font-bold"
             >
-              Promex Center
+              Promes Center
             </motion.h4>
             <p className="text-xs text-stone-600">
               122-124 Xuân Thủy — Cầu Giấy — Hà Nội
@@ -254,11 +318,36 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           <div className="max-w-sm mx-auto rounded-2xl overflow-hidden border border-stone-200 shadow-sm bg-white p-2">
             <div className="aspect-[16/9] rounded-xl overflow-hidden relative bg-stone-100">
               <iframe
-                title="Promex Center Map"
+                title="Promes Center Map"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.897!2d105.78!3d21.037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjHCsDAyJzEzLjIiTiAxMDXCsDQ2JzQ4LjAiRQ!5e0!3m2!1svi!2s!4v1620000000000"
                 className="w-full h-full border-0 pointer-events-none"
                 loading="lazy"
               />
+            </div>
+            <motion.a
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              href="https://maps.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center justify-center gap-1.5 w-full py-2 bg-stone-50 rounded-xl border border-stone-200 text-xs font-bold text-[#C92A2A] hover:bg-stone-100 transition cursor-pointer"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Chỉ đường trên Google Maps</span>
+            </motion.a>
+          </div>
+
+          {/* Dải ảnh panorama ngang: LOVE YOU FOREVER AND EVER */}
+          <div className="pt-3">
+            <div className="aspect-[21/9] rounded-2xl overflow-hidden relative shadow-md">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPhoto} alt="Panorama Love" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/30" />
+            </div>
+            <div className="py-2 flex items-center justify-between text-[10px] font-serif uppercase tracking-[0.25em] text-stone-500 font-semibold px-2">
+              <span>LOVE YOU</span>
+              <span>FOREVER</span>
+              <span>AND EVER</span>
             </div>
           </div>
         </motion.section>

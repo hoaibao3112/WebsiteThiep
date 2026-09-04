@@ -176,12 +176,23 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
           <div className="max-w-sm mx-auto rounded-2xl overflow-hidden border border-amber-300/30 shadow-md bg-white p-2">
             <div className="aspect-[16/9] rounded-xl overflow-hidden relative bg-stone-100">
               <iframe
-                title="Promex Center Map"
+                title="Promes Center Map"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.09!2d105.82!3d21.01!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjHCsDAwJzM2LjAiTiAxMDXCsDQ5JzEyLjAiRQ!5e0!3m2!1svi!2s!4v1620000000000"
                 className="w-full h-full border-0 pointer-events-none"
                 loading="lazy"
               />
             </div>
+            <motion.a
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              href="https://maps.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center justify-center gap-1.5 w-full py-2 bg-[#6E1719] rounded-xl border border-amber-300/50 text-xs font-bold text-amber-200 hover:bg-[#8B1E2D] transition cursor-pointer shadow-xs"
+            >
+              <Navigation className="w-3.5 h-3.5 text-amber-300" />
+              <span>Chỉ đường trên Google Maps</span>
+            </motion.a>
           </div>
 
           <p className="text-xs text-amber-100/80 italic pt-2">
@@ -203,30 +214,34 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
 
           {/* Thẻ QR Chú Rể */}
           <div className="space-y-1">
-            <span className="text-xs text-amber-200/90 font-serif">Chú rể · Anh Tuấn</span>
+            <span className="text-xs text-amber-200/90 font-serif">Chú rể · {groomShort}</span>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onOpenGift}
-              className="w-36 h-36 mx-auto rounded-3xl bg-white p-3 shadow-lg flex flex-col items-center justify-center cursor-pointer"
+              className="w-40 h-40 mx-auto rounded-3xl bg-white p-3 shadow-lg flex flex-col items-center justify-center cursor-pointer border border-[#E6C994]"
             >
-              <div className="w-full h-full rounded-2xl bg-[#E6C994] flex items-center justify-center text-xs font-bold text-[#4A0E10] font-mono shadow-inner">
-                Mã Qr
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#F5E6CC] to-[#E6C994] flex flex-col items-center justify-center text-center p-2 text-[#4A0E10] shadow-inner">
+                <span className="text-2xl mb-1">📱</span>
+                <span className="text-xs font-bold font-mono uppercase tracking-wider">MÃ QR</span>
+                <span className="text-[10px] opacity-80 pt-0.5">Chạm mừng cưới</span>
               </div>
             </motion.div>
           </div>
 
           {/* Thẻ QR Cô Dâu */}
           <div className="space-y-1 pt-2">
-            <span className="text-xs text-amber-200/90 font-serif">Cô dâu · Thu Trang</span>
+            <span className="text-xs text-amber-200/90 font-serif">Cô dâu · {brideShort}</span>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onOpenGift}
-              className="w-36 h-36 mx-auto rounded-3xl bg-white p-3 shadow-lg flex flex-col items-center justify-center cursor-pointer"
+              className="w-40 h-40 mx-auto rounded-3xl bg-white p-3 shadow-lg flex flex-col items-center justify-center cursor-pointer border border-[#E6C994]"
             >
-              <div className="w-full h-full rounded-2xl bg-[#E6C994] flex items-center justify-center text-xs font-bold text-[#4A0E10] font-mono shadow-inner">
-                Mã Qr
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#F5E6CC] to-[#E6C994] flex flex-col items-center justify-center text-center p-2 text-[#4A0E10] shadow-inner">
+                <span className="text-2xl mb-1">📱</span>
+                <span className="text-xs font-bold font-mono uppercase tracking-wider">MÃ QR</span>
+                <span className="text-[10px] opacity-80 pt-0.5">Chạm mừng cưới</span>
               </div>
             </motion.div>
           </div>
