@@ -3,13 +3,14 @@
 import React, { useState, Suspense, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload } from "@/types/card.types";
+import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload, PhotoItem } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
+import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import {
   Heart,
   Cake,
@@ -102,6 +103,10 @@ function CardBuilderContent() {
   const initialCategory = (searchParams.get("category")?.toUpperCase() as CardCategory) || "WEDDING";
   const initialTemplate = searchParams.get("template") || "wedding-heritage-crimson-gold";
 
+  // Lấy dữ liệu mẫu khởi tạo dựa theo template được chọn
+  const initialDemoCard = DEMO_TEMPLATES_MAP[initialTemplate];
+  const initialTemplateConfig = getTemplateConfig(initialTemplate, initialCategory);
+
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [templateSlug, setTemplateSlug] = useState<string>(initialTemplate);
   const [slug, setSlug] = useState(`thiep-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -109,53 +114,91 @@ function CardBuilderContent() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const templateConfig = getTemplateConfig(templateSlug, category);
-
-  // State thiệp
-  const [primaryColor, setPrimaryColor] = useState(templateConfig?.defaultPrimaryColor || "#8B1E2D");
-  const [fontFamily, setFontFamily] = useState(templateConfig?.defaultFontFamily || "Playfair Display");
-  const [openingEffect, setOpeningEffect] = useState<"NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX">("WAX_SEAL");
-  const [fallingEffect, setFallingEffect] = useState<"NONE" | "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">("PETAL");
-  const [musicUrl, setMusicUrl] = useState("/music/le-duong.mp3");
+  // State thiệp đồng bộ theo mẫu đã chọn
+  const [primaryColor, setPrimaryColor] = useState(
+    initialDemoCard?.primaryColor || initialTemplateConfig?.defaultPrimaryColor || "#8B1E2D"
+  );
+  const [fontFamily, setFontFamily] = useState(
+    initialDemoCard?.fontFamily || initialTemplateConfig?.defaultFontFamily || "Playfair Display"
+  );
+  const [openingEffect, setOpeningEffect] = useState<"NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX">(
+    initialDemoCard?.openingEffect || "WAX_SEAL"
+  );
+  const [fallingEffect, setFallingEffect] = useState<"NONE" | "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">(
+    initialDemoCard?.fallingEffect || "PETAL"
+  );
+  const [musicUrl, setMusicUrl] = useState(
+    initialDemoCard?.musicUrl || "/music/le-duong.mp3"
+  );
   const [greetingMessage, setGreetingMessage] = useState(
-    "“Tình yêu không phải là nhìn nhau, mà là cùng nhau nhìn về một hướng.” Trân trọng kính mời bạn đến chung vui cùng gia đình chúng tôi!"
+    initialDemoCard?.greetingMessage ||
+      "“Tình yêu không phải là nhìn nhau, mà là cùng nhau nhìn về một hướng.” Trân trọng kính mời bạn đến chung vui cùng gia đình chúng tôi!"
   );
 
-  const [weddingData, setWeddingData] = useState<WeddingDataPayload>(DEFAULT_WEDDING_DATA);
-  const [birthdayData, setBirthdayData] = useState<BirthdayDataPayload>(DEFAULT_BIRTHDAY_DATA);
-  const [newbornData, setNewbornData] = useState<NewbornDataPayload>(DEFAULT_NEWBORN_DATA);
+  const [weddingData, setWeddingData] = useState<WeddingDataPayload>(
+    initialDemoCard && initialDemoCard.cardCategory === "WEDDING"
+      ? (initialDemoCard.categoryData as WeddingDataPayload)
+      : DEFAULT_WEDDING_DATA
+  );
+  const [birthdayData, setBirthdayData] = useState<BirthdayDataPayload>(
+    initialDemoCard && initialDemoCard.cardCategory === "BIRTHDAY"
+      ? (initialDemoCard.categoryData as BirthdayDataPayload)
+      : DEFAULT_BIRTHDAY_DATA
+  );
+  const [newbornData, setNewbornData] = useState<NewbornDataPayload>(
+    initialDemoCard && initialDemoCard.cardCategory === "NEWBORN"
+      ? (initialDemoCard.categoryData as NewbornDataPayload)
+      : DEFAULT_NEWBORN_DATA
+  );
+
+  const [customPhotos, setCustomPhotos] = useState<PhotoItem[]>(
+    initialDemoCard?.photos && initialDemoCard.photos.length > 0
+      ? initialDemoCard.photos
+      : [
+          { id: "p-1", url: "/images/demo/couple-cover.png", caption: "Khoảnh khắc hạnh phúc", isCover: true },
+          { id: "p-2", url: "/images/demo/couple-studio.png", caption: "Nguyện cùng nhau đi hết thanh xuân" },
+          { id: "p-3", url: "/images/demo/couple-aodai.png", caption: "Lễ Gia Tiên truyền thống" },
+        ]
+  );
 
   // Chuyển Category
   const handleCategoryChange = (newCat: CardCategory) => {
     setCategory(newCat);
     if (newCat === "WEDDING") {
-      setTemplateSlug("wedding-heritage-crimson-gold");
-      setPrimaryColor("#8B1E2D");
-      setFontFamily("Playfair Display");
-      setFallingEffect("PETAL");
-      setMusicUrl("/music/le-duong.mp3");
+      handleTemplateChange("wedding-heritage-crimson-gold");
     } else if (newCat === "BIRTHDAY") {
-      setTemplateSlug("birthday-glow-party");
-      setPrimaryColor("#F97316");
-      setFontFamily("Outfit");
-      setFallingEffect("BALLOON");
-      setMusicUrl("/music/everytime-we-touch.mp3");
+      handleTemplateChange("birthday-glow-party");
     } else {
-      setTemplateSlug("newborn-little-prince");
-      setPrimaryColor("#4169A1");
-      setFontFamily("Quicksand");
-      setFallingEffect("BALLOON");
-      setMusicUrl("/music/like-my-father.mp3");
+      handleTemplateChange("newborn-little-prince");
     }
   };
 
-  // Chuyển Template Slug
+  // Chuyển Template Slug: Tự động đổ dữ liệu chữ, ảnh, nhạc, màu sắc của mẫu đó
   const handleTemplateChange = (slugKey: string) => {
     setTemplateSlug(slugKey);
-    const cfg = TEMPLATE_CONFIGS[slugKey];
-    if (cfg) {
-      setPrimaryColor(cfg.defaultPrimaryColor);
-      setFontFamily(cfg.defaultFontFamily);
+    const demoCard = DEMO_TEMPLATES_MAP[slugKey];
+    if (demoCard) {
+      setPrimaryColor(demoCard.primaryColor || "#8B1E2D");
+      setFontFamily(demoCard.fontFamily || "Playfair Display");
+      setMusicUrl(demoCard.musicUrl || "/music/le-duong.mp3");
+      setGreetingMessage(demoCard.greetingMessage || "");
+      if (demoCard.fallingEffect) setFallingEffect(demoCard.fallingEffect);
+      if (demoCard.cardCategory === "WEDDING") {
+        setWeddingData(demoCard.categoryData as WeddingDataPayload);
+      } else if (demoCard.cardCategory === "BIRTHDAY") {
+        setBirthdayData(demoCard.categoryData as BirthdayDataPayload);
+      } else if (demoCard.cardCategory === "NEWBORN") {
+        setNewbornData(demoCard.categoryData as NewbornDataPayload);
+      }
+      if (demoCard.photos && demoCard.photos.length > 0) {
+        setCustomPhotos(demoCard.photos);
+      }
+    } else {
+      const cfg = TEMPLATE_CONFIGS[slugKey];
+      if (cfg) {
+        setPrimaryColor(cfg.defaultPrimaryColor);
+        setFontFamily(cfg.defaultFontFamily);
+      }
     }
   };
 
@@ -178,11 +221,7 @@ function CardBuilderContent() {
         : category === "BIRTHDAY"
         ? (birthdayData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
         : (newbornData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
-    photos: [
-      { id: "p-1", url: "/images/demo/couple-cover.png", caption: "Khoảnh khắc hạnh phúc", isCover: true },
-      { id: "p-2", url: "/images/demo/couple-studio.png", caption: "Nguyện cùng nhau đi hết thanh xuân" },
-      { id: "p-3", url: "/images/demo/couple-aodai.png", caption: "Lễ Gia Tiên truyền thống" },
-    ],
+    photos: customPhotos,
     categoryData:
       category === "WEDDING"
         ? weddingData
@@ -199,6 +238,7 @@ function CardBuilderContent() {
     setOpeningEffect(next.openingEffect);
     setFallingEffect(next.fallingEffect);
     setMusicUrl(next.musicUrl || "");
+    if (next.photos) setCustomPhotos(next.photos);
 
     if (category === "WEDDING" && next.categoryData.cardCategory === "WEDDING") {
       setWeddingData(next.categoryData as WeddingDataPayload);
@@ -215,6 +255,34 @@ function CardBuilderContent() {
     setErrorMsg("");
 
     try {
+      const activeEvents =
+        category === "WEDDING"
+          ? (weddingData.events || []).map((e) => ({
+              eventName: e.eventName,
+              eventDate: new Date(e.eventDate).toISOString(),
+              venueName: e.venueName,
+              address: e.address,
+            }))
+          : category === "BIRTHDAY"
+          ? (birthdayData.events || []).map((e) => ({
+              eventName: e.eventName,
+              eventDate: new Date(e.eventDate).toISOString(),
+              venueName: e.venueName,
+              address: e.address,
+            }))
+          : (newbornData.events || []).map((e) => ({
+              eventName: e.eventName,
+              eventDate: new Date(e.eventDate).toISOString(),
+              venueName: e.venueName,
+              address: e.address,
+            }));
+
+      const activePhotos = customPhotos.map((p, idx) => ({
+        url: p.url,
+        caption: p.caption,
+        isCover: p.isCover ?? idx === 0,
+      }));
+
       const payload = {
         slug,
         templateSlug,
@@ -225,6 +293,8 @@ function CardBuilderContent() {
         musicUrl,
         isAutoPlay: true,
         greetingMessage,
+        photos: activePhotos,
+        events: activeEvents,
         data:
           category === "WEDDING"
             ? weddingData
