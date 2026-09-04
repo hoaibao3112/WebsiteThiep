@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { logger } from "./logger";
 
 const redisHost = process.env.REDIS_HOST || "127.0.0.1";
 const redisPort = Number(process.env.REDIS_PORT) || 6379;
@@ -24,19 +25,19 @@ let isRedisConnected = false;
 
 redis.on("error", (err) => {
   if (isRedisConnected) {
-    console.warn("⚠️ Redis disconnected, using memory fallback");
+    logger.warn("Redis disconnected, using memory fallback");
   }
   isRedisConnected = false;
 });
 
 redis.on("connect", () => {
   isRedisConnected = true;
-  console.log("✅ Connected to Redis successfully");
+  logger.info("Connected to Redis successfully");
 });
 
 // Thử kết nối ban đầu
 redis.connect().catch(() => {
-  console.warn("⚠️ [Redis] Không thể kết nối Redis local, tự động chuyển sang Memory Fallback cho OTP & RateLimit.");
+  logger.warn("[Redis] Không thể kết nối Redis local, tự động chuyển sang Memory Fallback cho OTP & RateLimit.");
 });
 
 // Polyfill an toàn cho các hàm cơ bản nếu Redis offline trong Dev

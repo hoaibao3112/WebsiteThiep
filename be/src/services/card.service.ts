@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { logger } from "../lib/logger";
 import {
   DraftCardInput,
   PublishCardDataSchema,
@@ -150,7 +151,7 @@ export class CardService {
         data: { viewCount: { increment: 1 } },
       })
       .catch((err) => {
-        console.warn(`[CardService] Không thể tăng viewCount cho thiệp ${card.id}:`, err?.message || err);
+        logger.warn({ cardId: card.id, err: err?.message || err }, "Không thể tăng viewCount");
       });
 
     let guestInfo = null;

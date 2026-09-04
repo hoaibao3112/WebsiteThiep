@@ -94,30 +94,30 @@ export class RsvpService {
   /**
    * Lấy thống kê RSVP cho Dashboard của Host
    */
-  static async getRsvpStats(userId: string, cardId: string) {
-    // Multi-tenant check: Chỉ chủ sở hữu thiệp mới xem được thống kê
+  static async getRsvpStats(accountId: string, cardId: string) {
+    // Multi-tenant check: Chỉ account sở hữu thiệp mới xem được thống kê
     const card = await prisma.card.findFirst({
-      where: { id: cardId, userId },
+      where: { id: cardId, accountId },
     });
     if (!card) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền truy cập");
 
     const [totalAttending, totalDeclined, totalUndecided, totalGuestsCount, responses] =
       await Promise.all([
         prisma.rsvpResponse.count({
-          where: { cardId, status: "ATTENDING" },
+          where: { accountId, cardId, status: "ATTENDING" },
         }),
         prisma.rsvpResponse.count({
-          where: { cardId, status: "DECLINED" },
+          where: { accountId, cardId, status: "DECLINED" },
         }),
         prisma.rsvpResponse.count({
-          where: { cardId, status: "UNDECIDED" },
+          where: { accountId, cardId, status: "UNDECIDED" },
         }),
         prisma.rsvpResponse.aggregate({
-          where: { cardId, status: "ATTENDING" },
+          where: { accountId, cardId, status: "ATTENDING" },
           _sum: { guestCount: true },
         }),
         prisma.rsvpResponse.findMany({
-          where: { cardId },
+          where: { accountId, cardId },
           orderBy: { createdAt: "desc" },
         }),
       ]);

@@ -167,4 +167,15 @@ const gracefulShutdown = async (signal: string) => {
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
+// Bắt Promise rejection chưa được handle — tránh crash âm thầm trong production
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error({ reason, promise: String(promise) }, "Unhandled Promise Rejection — cần review code để thêm .catch()");
+});
+
+// Bắt exception đồng bộ chưa được handle — log rồi shutdown an toàn
+process.on("uncaughtException", (error) => {
+  logger.fatal({ err: error }, "Uncaught Exception — server sẽ tự shutdown");
+  gracefulShutdown("uncaughtException");
+});
+
 export default app;

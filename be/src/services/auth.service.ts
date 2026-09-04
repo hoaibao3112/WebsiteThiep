@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate-limiter";
+import { logger } from "../lib/logger";
 import {
   RegisterInput,
   LoginInput,
@@ -109,7 +110,7 @@ export class AuthService {
    */
   static async googleLogin(idToken: string) {
     if (!GOOGLE_CLIENT_ID) {
-      console.warn("[GoogleAuth] Warning: GOOGLE_CLIENT_ID chưa được cấu hình trong .env");
+      logger.warn("[GoogleAuth] GOOGLE_CLIENT_ID chưa được cấu hình trong .env");
     }
 
     let ticket;
@@ -119,7 +120,7 @@ export class AuthService {
         audience: GOOGLE_CLIENT_ID, // Bắt buộc check audience
       });
     } catch (error: any) {
-      console.error("[GoogleAuth] Token verification failed:", error?.message || error);
+      logger.error({ err: error?.message || error }, "[GoogleAuth] Token verification failed");
       throw new Error("Mã xác thực Google không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!");
     }
 

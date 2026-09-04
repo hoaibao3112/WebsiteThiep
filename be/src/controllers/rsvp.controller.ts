@@ -36,16 +36,16 @@ export class RsvpController {
 
   static async getStats(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const userId = req.userId;
-      if (!userId) {
-        return res.status(500).json({
+      const accountId = req.user?.accountId;
+      if (!accountId) {
+        return res.status(401).json({
           success: false,
           error: "Thiếu thông tin xác thực - lỗi hệ thống",
         });
       }
 
       const cardId = req.params.cardId as string;
-      const stats = await RsvpService.getRsvpStats(userId, cardId);
+      const stats = await RsvpService.getRsvpStats(accountId, cardId);
       res.status(200).json({ success: true, data: stats });
     } catch (error: any) {
       if (error instanceof ZodError) {

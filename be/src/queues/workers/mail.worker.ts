@@ -2,11 +2,12 @@ import { Worker, Job } from "bullmq";
 import { redisConnectionOptions } from "../../lib/bullmq";
 import { MAIL_QUEUE_NAME, MailJobData } from "../mail.queue";
 import { MailService } from "../../services/mail.service";
+import { logger } from "../../lib/logger";
 
 export const mailWorker = new Worker<MailJobData>(
   MAIL_QUEUE_NAME,
   async (job: Job<MailJobData>) => {
-    console.log(`[BullMQ Mail Worker] Processing email job #${job.id} to ${job.data.email}`);
+    logger.info({ jobId: job.id, email: job.data.email }, "[BullMQ Mail Worker] Processing email job");
     await MailService.sendOtpEmail(job.data.email, job.data.otp);
   },
   {
@@ -16,9 +17,9 @@ export const mailWorker = new Worker<MailJobData>(
 );
 
 mailWorker.on("completed", (job) => {
-  console.log(`[BullMQ Mail Worker] Job #${job.id} completed successfully`);
+  logger.info({ jobId: job.id }, "[BullMQ Mail Worker] Job completed successfully");
 });
 
 mailWorker.on("failed", (job, err) => {
-  console.error(`[BullMQ Mail Worker] Job #${job?.id} failed:`, err);
+  logger.error({ jobId: job?.id, err }, "[BullMQ Mail Worker] Job failed");
 });

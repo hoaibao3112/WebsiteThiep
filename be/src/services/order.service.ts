@@ -3,6 +3,7 @@ import { generateVietQrUrl } from "../lib/vietqr";
 import { CreateOrderInput, SepayWebhookPayload } from "../lib/validators/order.schema";
 import { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
+import { logger } from "../lib/logger";
 
 export class OrderService {
   /**
@@ -41,30 +42,45 @@ export class OrderService {
       return { success: true, message: "Kích hoạt gói miễn phí thành công" };
     }
 
-    // 2. Tạo mã đơn hàng ngẫu nhiên duy nhất (VD: THIEP + 6 số)
-    const orderCode = `THIEP${crypto.randomInt(100000, 1000000)}`;
+    // 2. Tạo mã đơn hàng ngẫu nhiên duy nhất (VD: THIEP + 8 ký tự alphanumeric)
+    const generateOrderCode = () => `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
+    let orderCode = generateOrderCode();
     const pollingToken = crypto.randomBytes(32).toString("base64url");
     const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
     const expiredAt = new Date(Date.now() + 30 * 60 * 1000); // 30 phút
 
-    const order = await prisma.order.create({
-      data: {
-        accountId,
-        idempotencyKey,
-        pollingTokenHash,
-        orderCode,
-        userId,
-        cardId,
-        planId,
-        amount: plan.price,
-        status: "PENDING",
-        paymentGateway: "VIETQR_SEPAY",
-        expiredAt,
-      },
-      include: {
-        plan: true,
-      },
-    });
+    // Retry loop cho trường hợp orderCode bị trùng (P2002 unique constraint)
+    let order;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        order = await prisma.order.create({
+          data: {
+            accountId,
+            idempotencyKey,
+            pollingTokenHash,
+            orderCode,
+            userId,
+            cardId,
+            planId,
+            amount: plan.price,
+            status: "PENDING",
+            paymentGateway: "VIETQR_SEPAY",
+            expiredAt,
+          },
+          include: {
+            plan: true,
+          },
+        });
+        break;
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002" && attempt < 3) {
+          orderCode = generateOrderCode();
+          continue;
+        }
+        throw err;
+      }
+    }
+    if (!order) throw new Error("Không thể tạo mã đơn hàng sau nhiều lần thử");
 
     // 3. Sinh VietQR động chuẩn Napas 247
     const bankCode = process.env.BANK_CODE || "VCB";
@@ -107,11 +123,7 @@ export class OrderService {
       transactionDate,
     } = payload;
 
-    console.log(`[Webhook SePay] Received payload:`, {
-      gatewayTxId,
-      content,
-      transferAmount,
-    });
+    logger.info({ gatewayTxId, transferAmount }, "[Webhook SePay] Received payload");
 
     // 1. Chống lặp giao dịch (Idempotency): Kiểm tra transaction đã xử lý chưa
     const existingTx = await prisma.paymentTransaction.findUnique({
@@ -124,14 +136,14 @@ export class OrderService {
     });
 
     if (existingTx) {
-      console.log(`[Webhook SePay] Transaction ${gatewayTxId} already processed.`);
+      logger.info({ gatewayTxId }, "[Webhook SePay] Transaction already processed");
       return { success: true, message: "Transaction already processed" };
     }
 
-    // 2. Tìm mã đơn hàng trong nội dung chuyển khoản (Regex tìm chuỗi THIEP + 6 số)
-    const match = content.match(/THIEP\d{6}/i);
+    // 2. Tìm mã đơn hàng trong nội dung chuyển khoản (THIEP + 5-8 ký tự alphanumeric)
+    const match = content.match(/THIEP[A-Z0-9]{5,8}/i);
     if (!match) {
-      console.log(`[Webhook SePay] No OrderCode found in content: "${content}"`);
+      logger.warn({ content }, "[Webhook SePay] No OrderCode found in content");
       return { success: false, message: "OrderCode not found in transaction content" };
     }
 
@@ -144,7 +156,7 @@ export class OrderService {
     });
 
     if (!order) {
-      console.error(`[Webhook SePay] Order ${orderCode} not found in database!`);
+      logger.warn({ orderCode }, "[Webhook SePay] Order not found in database");
       return { success: true, ignored: true, message: "Order not found" };
     }
 
@@ -159,9 +171,7 @@ export class OrderService {
 
     // 4. Kiểm tra số tiền chuyển khoản
     if (transferAmount < order.amount) {
-      console.error(
-        `[Webhook SePay] Amount mismatch: Expected ${order.amount}, got ${transferAmount}`
-      );
+      logger.warn({ expected: order.amount, received: transferAmount, orderCode }, "[Webhook SePay] Amount mismatch");
       return { success: true, ignored: true, message: "Insufficient transfer amount" };
     }
 
@@ -212,9 +222,7 @@ export class OrderService {
       });
     });
 
-    console.log(
-      `[Webhook SePay] Successfully activated VIP for card ${order.cardId} via order ${orderCode}!`
-    );
+    logger.info({ cardId: order.cardId, orderCode }, "[Webhook SePay] Successfully activated VIP");
     return { success: true, message: "Order activated successfully" };
   }
 
