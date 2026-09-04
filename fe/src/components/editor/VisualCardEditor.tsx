@@ -589,9 +589,20 @@ function ImageInspector({ value, onChange }: { value: string; onChange: (value: 
 }
 
 const MUSIC_LIBRARY = [
-  { name: "Lễ Đường (Nhạc Cưới)", src: "/music/le-duong.mp3" },
-  { name: "Everytime We Touch", src: "/music/everytime-we-touch.mp3" },
-  { name: "Like My Father", src: "/music/like-my-father.mp3" },
+  { name: "Lễ Đường (Nhạc Cưới Truyền Thống)", src: "/music/le-duong.mp3" },
+  { name: "Until I Found You - Stephen Sanchez", src: "/music/until-i-found-you.mp3" },
+  { name: "I Do - 911 Band", src: "/music/i-do.mp3" },
+  { name: "A Thousand Years - Christina Perri", src: "/music/a-thousand-years.mp3" },
+  { name: "Perfect - Ed Sheeran", src: "/music/perfect.mp3" },
+  { name: "Hơn Cả Yêu - Đức Phúc", src: "/music/hon-ca-yeu.mp3" },
+  { name: "Beautiful In White - Shane Filan", src: "/music/beautiful-in-white.mp3" },
+  { name: "Die With A Smile - Lady Gaga & Bruno Mars", src: "/music/die-with-a-smile.mp3" },
+  { name: "Ngày Đầu Tiên - Đức Phúc", src: "/music/ngay-dau-tien.mp3" },
+  { name: "Marry You - Bruno Mars", src: "/music/marry-you.mp3" },
+  { name: "Một Nhà - Da LAB", src: "/music/mot-nha.mp3" },
+  { name: "Xin Má Rước Dâu - Diệu Kiên", src: "/music/xin-ma-ruoc-dau.mp3" },
+  { name: "Everytime We Touch (Acoustic)", src: "/music/everytime-we-touch.mp3" },
+  { name: "Like My Father - Jax", src: "/music/like-my-father.mp3" },
   { name: "Tắt nhạc nền", src: "" },
 ];
 

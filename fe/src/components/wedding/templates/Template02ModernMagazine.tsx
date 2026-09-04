@@ -33,18 +33,20 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
   const brideName = data.bride?.fullName || "Nguyễn Hải Yến";
   const brideShort = data.bride?.shortName || "Hải Yến";
 
-  const heroPhoto = "/images/demo/korean-hero.png";
-  const bridePhoto = "/images/demo/korean-bride.png";
-  const groomPhoto = "/images/demo/korean-groom.png";
-  const calendarPhoto = "/images/demo/korean-calendar.png";
+  const heroPhoto =
+    data.coverPhotoUrl || card.photos?.[0]?.url || "/images/demo/editorial-couple-hero.png";
+  const bridePhoto =
+    data.bride?.avatarUrl || card.photos?.[1]?.url || "/images/demo/editorial-couple-pose.jpg";
+  const groomPhoto =
+    data.groom?.avatarUrl || card.photos?.[2]?.url || "/images/demo/editorial-couple-hero.png";
+  const calendarPhoto =
+    card.photos?.[3]?.url || "/images/demo/editorial-couple-love.jpg";
 
   const defaultGalleryPhotos = [
     { url: heroPhoto, caption: "Khoảnh khắc hẹn ước" },
     { url: bridePhoto, caption: "Nụ cười rạng rỡ của cô dâu" },
+    { url: "/images/demo/editorial-couple-love.jpg", caption: "Fall In Love With You" },
     { url: groomPhoto, caption: "Ánh mắt ấm áp của chú rể" },
-    { url: calendarPhoto, caption: "Từng ngày đong đầy yêu thương" },
-    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
-    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
   ];
 
   const galleryPhotos =

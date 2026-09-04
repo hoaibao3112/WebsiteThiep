@@ -65,6 +65,11 @@ const TEMPLATE_REFERENCE_PARTS: Record<
     venue: "Tư Gia Nhà Trai - Hà Nội",
     parts: [
       {
+        label: "Ảnh Cưới Studio (Ảnh Mới Cập Nhật)",
+        url: "/images/demo/editorial-couple-hero.png",
+        desc: "Bộ ảnh cưới phong cách Hàn Quốc thanh lịch, lễ phục trắng tinh khôi.",
+      },
+      {
         label: "Phần 1: Hero & Bố Cục Zigzag",
         url: "/images/templates/references/mau-02b-cong-vinh-hai-yen-editorial-zigzag-01.png",
         desc: "Bố cục đối xứng Zigzag song thân cô dâu & chú rể, bộ 3 ảnh kể chuyện Triptych.",
@@ -169,25 +174,25 @@ const TEMPLATE_REFERENCE_PARTS: Record<
     ],
   },
   "wedding-cinematic-editorial": {
-    groom: "Quang Huy",
-    bride: "Thuỳ Linh",
+    groom: "Đình Khoa (Rambo)",
+    bride: "Bảo Trân (Trân Mèo)",
     date: "19.12.2026",
     venue: "Promex Center, Cầu Giấy, Hà Nội",
     parts: [
       {
-        label: "Phần 1: Poster Đồi Thông & Our Love Story",
-        url: "/images/templates/references/mau-07-cinematic-editorial-part-01.png",
-        desc: "Poster cinematic toàn trang, trích dẫn tiếng Anh, thanh header tạp chí và chuyên mục Our Love Story.",
+        label: "Phần 1: Poster Lookbook Đường Phố & Kính Râm",
+        url: "/images/demo/cinematic-couple-street.jpg",
+        desc: "Poster cinematic lookbook đen trắng phong cách Vogue thời thượng, kính râm và kiến trúc Châu Âu cổ điển.",
       },
       {
-        label: "Phần 2: Fall In Love & Lịch Nụ Hôn",
-        url: "/images/templates/references/mau-07-cinematic-editorial-part-02.png",
-        desc: "Bài thơ rừng xanh, ảnh nụ hôn nhúng lịch tháng 12 ngày 19 và bộ đếm ngược đỏ rượu vang.",
+        label: "Phần 2: Xe Mui Trần Vintage & Nụ Hôn Ngọt Ngào",
+        url: "/images/demo/cinematic-couple-car.jpg",
+        desc: "Bộ ảnh xe cổ mui trần lãng mạn, nụ hôn ngọt ngào giữa phố, lịch tháng 12 và chuyện tình Fall In Love.",
       },
       {
-        label: "Phần 3: Promex Center & You Are My Sunshine",
-        url: "/images/templates/references/mau-07-cinematic-editorial-part-03.png",
-        desc: "Địa điểm Promex Center, Google Maps, poster phát sáng You are my Sunshine và RSVP đen than chì.",
+        label: "Phần 3: Váy Cưới Lộng Lẫy & Sân Khấu Hoàng Gia",
+        url: "/images/demo/cinematic-couple-stage.jpg",
+        desc: "Khoảnh khắc cô dâu diện váy cưới đuôi dài lấp lánh bước lên lễ đường dưới ánh đèn spotlight hôn lễ hoành tráng.",
       },
     ],
   },

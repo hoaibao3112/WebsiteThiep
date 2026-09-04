@@ -35,8 +35,22 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
 
   const coverPhoto =
     data.coverPhotoUrl ||
-    card.photos[0]?.url ||
-    "/images/templates/template-07-cinematic.png";
+    card.photos?.[0]?.url ||
+    "/images/demo/cinematic-couple-street.jpg";
+
+  const carPhoto =
+    card.photos?.[1]?.url ||
+    "/images/demo/cinematic-couple-car.jpg";
+
+  const studioPhoto =
+    card.photos?.[2]?.url ||
+    data.groom?.avatarUrl ||
+    "/images/demo/cinematic-couple-studio.jpg";
+
+  const stagePhoto =
+    card.photos?.[3]?.url ||
+    data.bride?.avatarUrl ||
+    "/images/demo/cinematic-couple-stage.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Ánh nhìn điện ảnh giữa khung cảnh lãng mạn" },
@@ -113,7 +127,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
         {/* 3. LANDSCAPE PHOTO: RIGHT LOVE | RIGHT REASON */}
         <section className="relative w-full aspect-[16/10] overflow-hidden bg-stone-900 text-white text-center flex flex-col justify-end p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={coverPhoto} alt="Right Love" className="absolute inset-0 w-full h-full object-cover opacity-85" />
+          <img src={carPhoto} alt="Right Love" className="absolute inset-0 w-full h-full object-cover opacity-85" />
           <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
           <div className="relative z-10 space-y-1">
@@ -143,11 +157,11 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
 
           <motion.div
             whileHover={{ scale: 1.03 }}
-            onClick={() => onSelectPhoto(coverPhoto)}
+            onClick={() => onSelectPhoto(studioPhoto)}
             className="relative max-w-xs mx-auto aspect-[4/3] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coverPhoto} alt="Sweet Couple" className="w-full h-full object-cover transition duration-500" />
+            <img src={studioPhoto} alt="Sweet Couple" className="w-full h-full object-cover transition duration-500" />
             <motion.span
               animate={{ scale: [1, 1.08, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -187,11 +201,11 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
 
           <motion.div
             whileHover={{ scale: 1.03 }}
-            onClick={() => onSelectPhoto(coverPhoto)}
+            onClick={() => onSelectPhoto(carPhoto)}
             className="relative max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-lg cursor-pointer bg-stone-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coverPhoto} alt="Love and freedom" className="w-full h-full object-cover transition duration-300" />
+            <img src={carPhoto} alt="Love and freedom" className="w-full h-full object-cover transition duration-300" />
             <div className="absolute bottom-3 left-4 text-left">
               <span className="text-sm font-serif italic text-white block drop-shadow">love and freedom</span>
               <span className="text-xl font-serif italic text-[#C92A2A] font-bold block drop-shadow">
@@ -220,7 +234,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
-            src={coverPhoto}
+            src={stagePhoto}
             alt="Calendar overlay"
             animate={{ scale: [1, 1.06, 1] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
@@ -293,11 +307,11 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.03 }}
-              onClick={() => onSelectPhoto(coverPhoto)}
+              onClick={() => onSelectPhoto(carPhoto)}
               className="aspect-[3/4] rounded-xl overflow-hidden shadow-sm bg-stone-200 cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Editorial 2" className="w-full h-full object-cover" />
+              <img src={carPhoto} alt="Editorial 2" className="w-full h-full object-cover" />
             </motion.div>
           </div>
 
@@ -309,11 +323,11 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           <div className="relative max-w-xs mx-auto flex items-center gap-3">
             <motion.div
               whileHover={{ scale: 1.02 }}
-              onClick={() => onSelectPhoto(coverPhoto)}
+              onClick={() => onSelectPhoto(studioPhoto)}
               className="flex-1 aspect-[4/3] rounded-2xl overflow-hidden shadow-md bg-stone-200 cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Embracing Moment" className="w-full h-full object-cover" />
+              <img src={studioPhoto} alt="Embracing Moment" className="w-full h-full object-cover" />
             </motion.div>
             <div className="writing-vertical text-[10px] font-mono tracking-[0.3em] uppercase text-stone-400 font-bold select-none">
               FOREVER · AND · EVER
@@ -376,7 +390,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           <div className="pt-3">
             <div className="aspect-[21/9] rounded-2xl overflow-hidden relative shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Panorama Love" className="w-full h-full object-cover" />
+              <img src={stagePhoto} alt="Panorama Love" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/30" />
             </div>
             <div className="py-2 flex items-center justify-between text-[10px] font-serif uppercase tracking-[0.25em] text-stone-500 font-semibold px-2">

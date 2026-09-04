@@ -158,10 +158,6 @@ const MUSIC_OPTIONS = [
   { title: "Xin Má Rước Dâu", artist: "Diệu Kiên", duration: "3:16", category: "VN", badge: "Rộn Ràng", src: "/music/xin-ma-ruoc-dau.mp3" },
   { title: "Hơn Cả Yêu", artist: "Đức Phúc", duration: "4:05", category: "VN", badge: "Ngọt Ngào", src: "/music/hon-ca-yeu.mp3" },
   { title: "Một Nhà", artist: "Da LAB", duration: "3:18", category: "VN", badge: "Vui Tươi", src: "/music/mot-nha.mp3" },
-  { title: "Cưới Nhau Đi (Yes I Do)", artist: "Bùi Anh Tuấn & Hiền Hồ", duration: "3:48", category: "VN", badge: "Lãng Mạn", src: "/music/i-do.mp3" },
-  { title: "Ánh Nắng Của Anh", artist: "Đức Phúc", duration: "4:20", category: "VN", badge: "Acoustic", src: "/music/perfect.mp3" },
-  { title: "Cầu Hôn", artist: "Văn Mai Hương", duration: "3:55", category: "VN", badge: "Tình Cảm", src: "/music/a-thousand-years.mp3" },
-  { title: "Ta Là Của Nhau", artist: "Đông Nhi & Ông Cao Thắng", duration: "4:12", category: "VN", badge: "Hạnh Phúc", src: "/music/i-do.mp3" },
   // NHẠC CƯỚI QUỐC TẾ
   { title: "Die With A Smile", artist: "Lady Gaga & Bruno Mars", duration: "4:11", category: "INT", badge: "Siêu Hit", src: "/music/die-with-a-smile.mp3" },
   { title: "Beautiful In White", artist: "Shane Filan (Westlife)", duration: "3:30", category: "INT", badge: "Hoàng Gia", src: "/music/beautiful-in-white.mp3" },
@@ -172,7 +168,6 @@ const MUSIC_OPTIONS = [
   { title: "I Do", artist: "911 Band", duration: "3:24", category: "INT", badge: "Kinh Điển", src: "/music/i-do.mp3" },
   { title: "A Thousand Years", artist: "Christina Perri", duration: "4:45", category: "INT", badge: "Bất Hủ", src: "/music/a-thousand-years.mp3" },
   { title: "Perfect", artist: "Ed Sheeran", duration: "4:23", category: "INT", badge: "Du Dương", src: "/music/perfect.mp3" },
-  { title: "Sweet Love Story (Cello & Piano)", artist: "Romantic Wedding Orchestra", duration: "3:20", category: "INT", badge: "Quý Phái", src: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=sweet-love-story-piano-18237.mp3" },
 ];
 
 const COLOR_PRESETS = [
