@@ -17,6 +17,13 @@ export interface TemplateModalData {
   description?: string;
   tags?: string[];
   demoSlug?: string;
+  coupleText?: string;
+  features?: string[];
+  colorPalette?: string[];
+  envelopeColor?: string;
+  musicTitle?: string;
+  eventDateText?: string;
+  venueText?: string;
 }
 
 interface TemplateDetailModalProps {

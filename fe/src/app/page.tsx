@@ -55,11 +55,16 @@ import {
   Smartphone,
   Palette,
   Gem,
+  Eye,
+  BookOpen,
+  Tag,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import { Footer } from "@/components/shared/Footer";
 import { useAuth } from "@/context/AuthContext";
+import { TemplateDetailModal, TemplateModalData } from "@/components/shared/TemplateDetailModal";
+import { MASTER_TEMPLATES, MasterTemplateItem } from "@/lib/templates-data";
 
 const TRACKS = [
   { id: 1, title: "Until I Found You", artist: "Stephen Sanchez", duration: "2:57" },
@@ -139,6 +144,20 @@ export default function CardViteHomePage() {
   const { t } = useLanguage();
   const { user, logout, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedModalTemplate, setSelectedModalTemplate] = useState<TemplateModalData | null>(null);
+  const [activeTemplateTab, setActiveTemplateTab] = useState<"ALL" | "WEDDING" | "BIRTHDAY" | "NEWBORN">("ALL");
+
+  // Khóa cuộn trang khi menu mobile mở để tránh giật lag
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   const handleCreateCardClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
@@ -149,43 +168,10 @@ export default function CardViteHomePage() {
     }
   };
 
-  const CAROUSEL_CARDS = [
-    {
-      id: 1,
-      title: t("carouselCard1Title") || "Thiệp Cổ Điển",
-      couple: t("carouselCard1Couple") || "Quang Đạt & Minh Khôi",
-      image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&auto=format&fit=crop",
-      tag: t("carouselCard1Tag") || "Cổ Điển",
-    },
-    {
-      id: 2,
-      title: t("carouselCard2Title") || "Hoa Lụa Nâu",
-      couple: t("carouselCard2Couple") || "Văn Long & Thu Hà",
-      image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=700&auto=format&fit=crop",
-      tag: t("carouselCard2Tag") || "Tối Giản",
-    },
-    {
-      id: 3,
-      title: t("carouselCard3Title") || "Hoa Mộc Hồng",
-      couple: t("carouselCard3Couple") || "Tuấn Anh & Mai Phương",
-      image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop",
-      tag: t("carouselCard3Tag") || "Romance",
-    },
-    {
-      id: 4,
-      title: t("carouselCard4Title") || "Hồng Xanh",
-      couple: t("carouselCard4Couple") || "Minh Đức & Thu Hà",
-      image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=700&auto=format&fit=crop",
-      tag: t("carouselCard4Tag") || "Cổ Điển",
-    },
-    {
-      id: 5,
-      title: t("carouselCard5Title") || "Thiệp Lá Xanh",
-      couple: t("carouselCard5Couple") || "Bảo Nam & Hoài An",
-      image: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=700&auto=format&fit=crop",
-      tag: t("carouselCard5Tag") || "Hiện Đại",
-    },
-  ];
+  const displayedTemplates = MASTER_TEMPLATES.filter((tpl) => {
+    if (activeTemplateTab === "ALL") return true;
+    return tpl.category === activeTemplateTab;
+  });
 
   const SAMPLE_WISHES_1 = [
     { name: "Lan Anh", relation: t("relationCollegeFriend") || "Bạn Đại Học", wish: t("wish1Text") || "Chúc hai bạn trăm năm hạnh phúc, đầu bạc răng long! ❤️", time: t("wish1Time") || "2 phút trước" },
@@ -370,17 +356,17 @@ export default function CardViteHomePage() {
     mouseY.set(0);
   };
 
-  // State & Auto-play cho 3D Coverflow Carousel (Mẫu thiệp đẹp nhất)
-  const [carouselIndex, setCarouselIndex] = useState(2);
+  // State & Auto-play cho Coverflow Carousel (Mẫu thiệp đẹp nhất)
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const [isCarouselHovered, setIsCarouselHovered] = useState(false);
 
   useEffect(() => {
-    if (isCarouselHovered) return;
+    if (isCarouselHovered || displayedTemplates.length === 0) return;
     const timer = setInterval(() => {
-      setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
+      setCarouselIndex((prev) => (prev + 1) % displayedTemplates.length);
     }, 4000);
     return () => clearInterval(timer);
-  }, [isCarouselHovered, CAROUSEL_CARDS.length]);
+  }, [isCarouselHovered, displayedTemplates.length]);
 
   // Active step trong quy trình 3 bước
   const [activeStep, setActiveStep] = useState(1);
@@ -512,11 +498,13 @@ export default function CardViteHomePage() {
   const [activeLangTag, setActiveLangTag] = useState("한국어");
 
   const nextSlide = () => {
-    setCarouselIndex((prev) => (prev + 1) % CAROUSEL_CARDS.length);
+    if (displayedTemplates.length === 0) return;
+    setCarouselIndex((prev) => (prev + 1) % displayedTemplates.length);
   };
 
   const prevSlide = () => {
-    setCarouselIndex((prev) => (prev - 1 + CAROUSEL_CARDS.length) % CAROUSEL_CARDS.length);
+    if (displayedTemplates.length === 0) return;
+    setCarouselIndex((prev) => (prev - 1 + displayedTemplates.length) % displayedTemplates.length);
   };
 
   const handleHeroCardClick = () => {
@@ -604,11 +592,13 @@ export default function CardViteHomePage() {
         <AuthQueryHandler />
       </Suspense>
       {/* ------------------------------------------------------------- */}
-      {/* 1. HEADER & NAVBAR */}
+      {/* 1. HEADER & NAVBAR (TỐI ƯU HÓA HOÀN HẢO CHO ĐIỆN THOẠI & DESKTOP) */}
       {/* ------------------------------------------------------------- */}
       <header
-        className={`w-full px-6 py-3.5 md:px-12 lg:px-20 sticky top-0 z-40 transition-all duration-300 transform ${
-          showHeader ? "translate-y-0" : "-translate-y-full shadow-none pointer-events-none"
+        className={`w-full px-4 sm:px-6 py-2.5 md:py-3.5 md:px-12 lg:px-20 sticky top-0 z-40 transition-all duration-300 ${
+          showHeader
+            ? "translate-y-0"
+            : "max-md:translate-y-0 md:-translate-y-full md:shadow-none md:pointer-events-none"
         } ${
           isScrolled
             ? "bg-[#FAF7F2]/95 backdrop-blur-md shadow-sm border-b border-[#EFE9E1]"
@@ -617,9 +607,13 @@ export default function CardViteHomePage() {
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* LOGO */}
-          <Link href="/" className="group flex items-center" title="Trang Chủ">
+          <Link href="/" className="group flex items-center" title="Trang Chủ CardVite">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo" className="h-12 sm:h-15 md:h-16 w-auto object-contain transition-transform group-hover:scale-105" />
+            <img
+              src="/images/logo.png"
+              alt="CardVite Logo"
+              className="h-9 sm:h-11 md:h-15 w-auto object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
 
           {/* DESKTOP NAV LINKS */}
@@ -650,7 +644,7 @@ export default function CardViteHomePage() {
             </Link>
           </nav>
 
-          {/* RIGHT ACTION */}
+          {/* DESKTOP RIGHT ACTION */}
           <div className="hidden md:flex items-center gap-3">
             <LanguageSwitcher />
 
@@ -691,75 +685,194 @@ export default function CardViteHomePage() {
             </motion.div>
           </div>
 
-          {/* MOBILE HAMBURGER BUTTON */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-[#181716]"
-            aria-label="Toggle Menu"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* MOBILE RIGHT ACTION BAR (DỄ SỬ DỤNG TRÊN ĐIỆN THOẠI) */}
+          <div className="flex md:hidden items-center gap-2">
+            {user ? (
+              <Link
+                href="/dashboard/cards"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white border border-stone-200 text-stone-800 text-[11px] font-semibold shadow-2xs"
+              >
+                <div className="w-4.5 h-4.5 rounded-full bg-[#BE944E] text-white flex items-center justify-center text-[9px] font-bold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <span className="max-w-[65px] truncate text-[11px]">{user.name}</span>
+              </Link>
+            ) : (
+              <button
+                onClick={handleCreateCardClick}
+                className="px-3 py-1.5 rounded-full bg-[#C19A5B] text-white text-[10px] font-bold uppercase tracking-wider shadow-xs active:scale-95 transition"
+              >
+                {t("homeCreateBtn") || "Tạo thiệp"}
+              </button>
+            )}
+
+            {/* HAMBURGER BUTTON VỚI MIN 44X44PX TOUCH AREA */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(true)}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-stone-100 hover:bg-stone-200 text-[#181716] transition cursor-pointer"
+              aria-label="Mở Menu Điều Hướng"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* MOBILE MENU OVERLAY */}
+      {/* MOBILE LUXURY NAVIGATION DRAWER */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-50 bg-[#FAF7F2]/98 backdrop-blur-xl flex flex-col justify-center px-8 md:hidden"
-          >
-            <button
+          <>
+            {/* Backdrop làm mờ mượt mà */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="absolute top-6 right-6 p-2 text-[#181716]"
+              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs md:hidden"
+            />
+
+            {/* Slide-out Menu Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 280 }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-[88vw] max-w-sm bg-[#FAF7F2] border-l border-[#EAE2D5] shadow-2xl flex flex-col justify-between p-6 overflow-y-auto md:hidden"
             >
-              <X className="w-6 h-6" />
-            </button>
-            <div className="space-y-6 text-center">
-              <Link
-                href="/collections"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-2xl font-serif font-bold text-[#181716]"
-              >
-                {t("homeNavCollections")}
-              </Link>
-              <Link
-                href="/journal"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-2xl font-serif font-bold text-[#181716]"
-              >
-                {t("homeNavJournal")}
-              </Link>
-              <Link
-                href="/pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-2xl font-serif font-bold text-[#181716]"
-              >
-                {t("homeNavPricing")}
-              </Link>
-              <Link
-                href="/concierge"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-2xl font-serif font-bold text-[#181716]"
-              >
-                {t("homeNavConcierge")}
-              </Link>
-              <div className="pt-6 flex flex-col items-center gap-4">
-                <LanguageSwitcher />
-                <button
-                  onClick={(e) => {
-                    setMobileMenuOpen(false);
-                    handleCreateCardClick(e);
-                  }}
-                  className="w-full max-w-xs py-3.5 rounded-full bg-[#C19A5B] text-white text-xs font-bold uppercase tracking-widest shadow-md cursor-pointer"
-                >
-                  {t("homeCreateBtn")}
-                </button>
+              <div className="space-y-6">
+                {/* TOP ROW: LOGO & NÚT ĐÓNG */}
+                <div className="flex items-center justify-between pb-4 border-b border-[#EFE9E1]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/images/logo.png" alt="CardVite" className="h-8 w-auto object-contain" />
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-9 h-9 rounded-full bg-stone-200/70 hover:bg-stone-300 flex items-center justify-center text-stone-700 transition cursor-pointer"
+                    aria-label="Đóng Menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* USER PROFILE / AUTH CARD TRÊN MOBILE */}
+                {user ? (
+                  <div className="p-4 rounded-2xl bg-white border border-[#E7D7C1] shadow-2xs space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#BE944E] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="overflow-hidden">
+                        <h4 className="text-xs font-bold text-stone-900 truncate">{user.name}</h4>
+                        <p className="text-[11px] text-stone-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Link
+                        href="/dashboard/cards"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-2 px-2.5 rounded-xl bg-[#F5EFE6] text-[#7A5A27] text-[11px] font-bold text-center hover:bg-[#ECE3D4] transition"
+                      >
+                        Quản Lý Thiệp
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          router.push("/dashboard/cards/new");
+                        }}
+                        className="py-2 px-2.5 rounded-xl bg-[#BE944E] text-white text-[11px] font-bold text-center hover:bg-[#AA8240] transition shadow-xs"
+                      >
+                        + Tạo Mới
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-center text-[11px] text-stone-400 hover:text-rose-600 transition pt-1 font-medium cursor-pointer"
+                    >
+                      {t("navLogout") || "Đăng xuất tài khoản"}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-white border border-[#E7D7C1] shadow-2xs space-y-2.5">
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      Đăng nhập để lưu thiệp cưới trực tuyến và theo dõi khách mời xác nhận RSVP dễ dàng.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          openAuthModal("login");
+                        }}
+                        className="flex-1 py-2.5 rounded-xl border border-[#C5A059] text-[#8C6424] text-xs font-bold text-center hover:bg-[#FAF6F0] transition cursor-pointer"
+                      >
+                        {t("navLogin") || "Đăng Nhập"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          setMobileMenuOpen(false);
+                          handleCreateCardClick(e);
+                        }}
+                        className="flex-1 py-2.5 rounded-xl bg-[#BE944E] text-white text-xs font-bold text-center hover:bg-[#AA8240] transition shadow-xs cursor-pointer"
+                      >
+                        {t("homeCreateBtn") || "Tạo Thiệp"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* DANH SÁCH ĐIỀU HƯỚNG CHÍNH */}
+                <div className="space-y-1 pt-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 px-3 block mb-1">
+                    Danh Mục Điều Hướng
+                  </span>
+                  {[
+                    { href: "/collections", label: t("homeNavCollections") || "Bộ Sưu Tập Mẫu Thiệp", icon: Sparkles, badge: "Hot" },
+                    { href: "/journal", label: t("homeNavJournal") || "Cẩm Nang & Ý Tưởng Cưới", icon: BookOpen },
+                    { href: "/pricing", label: t("homeNavPricing") || "Bảng Giá Dịch Vụ", icon: Gift },
+                    { href: "/concierge", label: t("homeNavConcierge") || "Thiết Kế Riêng Concierge", icon: Flower2 },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-stone-200/50 text-stone-800 font-medium text-sm transition group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4 text-[#BE944E]" />
+                          <span className="group-hover:text-[#BE944E] transition-colors">{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </motion.div>
+
+              {/* CHÂN MENU MOBILE: ĐỔI NGÔN NGỮ & BẢN QUYỀN */}
+              <div className="pt-6 border-t border-[#EAE2D5] space-y-4">
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-xs text-stone-500 font-medium">Ngôn ngữ:</span>
+                  <LanguageSwitcher />
+                </div>
+                <p className="text-[11px] text-stone-400 text-center">
+                  CardVite • Nền tảng thiệp điện tử cao cấp hàng đầu
+                </p>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
@@ -2868,17 +2981,136 @@ export default function CardViteHomePage() {
           </div>
         </motion.div>
 
-        {/* 3D COVERFLOW CONTAINER WITH MOUSE HOVER TRACKING */}
+        {/* TABS LỌC DANH MỤC THIỆP MẪU */}
+        <div className="flex items-center justify-center gap-2 mb-8 overflow-x-auto no-scrollbar px-2 py-1 max-w-xl mx-auto">
+          {[
+            { id: "ALL", label: "Tất Cả Mẫu" },
+            { id: "WEDDING", label: "Thiệp Cưới Hoàng Gia" },
+            { id: "BIRTHDAY", label: "Sinh Nhật" },
+            { id: "NEWBORN", label: "Thôi Nôi & Đầy Tháng" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => {
+                setActiveTemplateTab(tab.id as any);
+                setCarouselIndex(0);
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer ${
+                activeTemplateTab === tab.id
+                  ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md scale-102 ring-2 ring-[#BE944E]/30"
+                  : "bg-white/80 hover:bg-white text-stone-700 border border-stone-200/80 hover:border-[#BE944E]/40 shadow-2xs"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* MOBILE VIEW: TOUCH-FRIENDLY HORIZONTAL SNAP CAROUSEL (DỄ DÙNG 100% TRÊN ĐIỆN THOẠI) */}
+        {/* ------------------------------------------------------------- */}
+        <div className="block md:hidden w-full px-2 py-2">
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-4 pt-1 px-4 -mx-6">
+            {displayedTemplates.map((card) => (
+              <div
+                key={card.id}
+                onClick={() => setSelectedModalTemplate(card)}
+                className="w-[78vw] max-w-[285px] shrink-0 snap-center rounded-[26px] p-3 bg-gradient-to-b from-[#FFFDF8] via-[#FAF5EC] to-[#F3EAD9] border border-[#E7D6BE] shadow-[0_10px_25px_rgba(180,140,70,0.12)] flex flex-col justify-between cursor-pointer active:scale-[0.99] transition-transform text-left"
+              >
+                {/* Card Image Container */}
+                <div className="relative w-full aspect-[9/13.5] rounded-[20px] overflow-hidden bg-stone-100 shadow-inner mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={card.imageUrl}
+                    alt={card.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+                  {/* Badges */}
+                  <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                    {card.isNew ? (
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1 border border-white/30">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        <span>Mới</span>
+                      </span>
+                    ) : <span />}
+                    <span className="px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-xs text-white text-[9px] font-semibold tracking-wider uppercase border border-white/20">
+                      {card.category === "WEDDING" ? "Cưới" : card.category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
+                    </span>
+                  </div>
+
+                  {/* Couple / Host overlay */}
+                  {card.coupleText && (
+                    <div className="absolute bottom-2.5 left-3 right-3 text-white pointer-events-none">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-amber-200 truncate">
+                        {card.coupleText}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Card Info & Mobile Action Buttons */}
+                <div className="space-y-2">
+                  <div className="flex items-baseline justify-between gap-1">
+                    <h3 className="font-serif font-bold text-sm text-[#2A231C] truncate">{card.name}</h3>
+                    <span className="font-serif font-bold text-[#BE944E] text-xs shrink-0">{card.price}</span>
+                  </div>
+                  <p className="text-[11px] text-stone-500 truncate">{card.style}</p>
+
+                  {/* NÚT THAO TÁC RÕ RÀNG TRÊN ĐIỆN THOẠI */}
+                  <div className="flex items-center gap-2 pt-1 border-t border-[#EFE5D5]">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedModalTemplate(card);
+                      }}
+                      className="flex-1 py-2 px-2.5 rounded-xl bg-white border border-[#D9C4A1] text-stone-900 text-xs font-bold shadow-2xs flex items-center justify-center gap-1.5 active:bg-stone-50 cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Xem Mẫu</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (user) {
+                          router.push(`/dashboard/cards/new?category=${card.category}&template=${card.slug}`);
+                        } else {
+                          openAuthModal("login");
+                        }
+                      }}
+                      className="flex-1 py-2 px-2.5 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] text-white text-xs font-bold shadow-2xs flex items-center justify-center gap-1.5 active:opacity-90 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Dùng Mẫu</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-stone-400 mt-2 flex items-center justify-center gap-1 font-medium">
+            <span>←</span> <span>Vuốt sang ngang hoặc chạm vào thẻ để xem chi tiết</span> <span>→</span>
+          </p>
+        </div>
+
+        {/* ------------------------------------------------------------- */}
+        {/* DESKTOP VIEW: 3D COVERFLOW CONTAINER VỚI TEMPLATE DETAILS */}
+        {/* ------------------------------------------------------------- */}
         <div 
-          className="relative py-6 max-w-6xl mx-auto flex items-center justify-center min-h-[480px] sm:min-h-[550px] select-none cursor-grab active:cursor-grabbing overflow-visible"
+          className="hidden md:flex relative py-6 max-w-6xl mx-auto items-center justify-center min-h-[480px] sm:min-h-[550px] select-none cursor-grab active:cursor-grabbing overflow-visible"
           style={{ perspective: "1400px", touchAction: "pan-y" }}
           onMouseMove={(e) => {
+            if (displayedTemplates.length === 0) return;
             const rect = e.currentTarget.getBoundingClientRect();
             const relativeX = (e.clientX - rect.left) / rect.width; // 0 to 1
             const clamped = Math.max(0, Math.min(1, relativeX));
             const targetIdx = Math.min(
-              CAROUSEL_CARDS.length - 1,
-              Math.max(0, Math.floor(clamped * CAROUSEL_CARDS.length))
+              displayedTemplates.length - 1,
+              Math.max(0, Math.floor(clamped * displayedTemplates.length))
             );
             if (targetIdx !== carouselIndex) {
               setCarouselIndex(targetIdx);
@@ -2888,12 +3120,12 @@ export default function CardViteHomePage() {
           {/* Ambient Spotlight Behind Center Card */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] h-[500px] bg-radial from-[#F5D899]/40 via-[#E8C576]/15 to-transparent rounded-full blur-3xl pointer-events-none -z-10" />
 
-          {/* 5 CARDS IN CONTINUOUS 3D COVERFLOW SPACE */}
+          {/* CARDS IN CONTINUOUS 3D COVERFLOW SPACE */}
           <div 
             className="relative w-full h-full flex items-center justify-center"
             style={{ transformStyle: "preserve-3d" }}
           >
-            {CAROUSEL_CARDS.map((card, idx) => {
+            {displayedTemplates.map((card, idx) => {
               const offset = idx - carouselIndex;
               const isCenter = offset === 0;
               const absOffset = Math.abs(offset);
@@ -2916,15 +3148,14 @@ export default function CardViteHomePage() {
               return (
                 <motion.div
                   key={card.id}
-                  onClick={() => setCarouselIndex(idx)}
-                  onMouseEnter={() => setCarouselIndex(idx)}
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
-                  dragElastic={0.2}
-                  onDragEnd={(_, info) => {
-                    if (info.offset.x < -35) nextSlide();
-                    else if (info.offset.x > 35) prevSlide();
+                  onClick={() => {
+                    if (isCenter) {
+                      setSelectedModalTemplate(card);
+                    } else {
+                      setCarouselIndex(idx);
+                    }
                   }}
+                  onMouseEnter={() => setCarouselIndex(idx)}
                   animate={{
                     x: xPos,
                     scale: scaleVal,
@@ -2962,11 +3193,11 @@ export default function CardViteHomePage() {
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                     className="relative w-full h-full p-4 sm:p-5 flex flex-col justify-between text-center overflow-hidden bg-gradient-to-b from-[#FAF7F2] to-white group"
                   >
-                    {/* Background Image with Ken Burns / Zoom Effect */}
+                    {/* Background Image */}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={card.image}
-                      alt={card.title}
+                      src={card.imageUrl}
+                      alt={card.name}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                     />
 
@@ -2982,37 +3213,9 @@ export default function CardViteHomePage() {
                     {/* Gradient Overlays for High Contrast Text */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/35 pointer-events-none" />
 
-                    {/* Center Card Decorative Floral Corners */}
-                    {isCenter && (
-                      <>
-                        <motion.div 
-                          animate={{ scale: [1, 1.08, 1] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                          className="absolute top-2 left-2 w-14 h-14 pointer-events-none opacity-90 z-20"
-                        >
-                          <svg viewBox="0 0 50 50" className="w-full h-full fill-[#FDF8F0] stroke-[#D4AF57]">
-                            <path d="M5,25 Q15,5 35,5 Q25,25 5,25 Z" strokeWidth="0.8" />
-                            <circle cx="20" cy="18" r="4" fill="#E8C576" />
-                            <circle cx="12" cy="10" r="3" fill="#FFF8EB" stroke="#D4AF57" strokeWidth="0.6" />
-                          </svg>
-                        </motion.div>
-                        <motion.div 
-                          animate={{ scale: [1, 1.08, 1] }}
-                          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                          className="absolute bottom-2 right-2 w-16 h-16 pointer-events-none opacity-90 z-20"
-                        >
-                          <svg viewBox="0 0 50 50" className="w-full h-full fill-[#FDF8F0] stroke-[#D4AF57]">
-                            <path d="M45,25 Q35,45 15,45 Q25,25 45,25 Z" strokeWidth="0.8" />
-                            <circle cx="30" cy="32" r="4" fill="#E8C576" />
-                            <circle cx="38" cy="40" r="3" fill="#FFF8EB" stroke="#D4AF57" strokeWidth="0.6" />
-                          </svg>
-                        </motion.div>
-                      </>
-                    )}
-
                     {/* Top Header Tag */}
                     <div className="relative z-10 text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-white/90 font-medium drop-shadow-sm flex items-center justify-center gap-1.5">
-                      <span>THE WEDDING OF</span>
+                      <span>{card.category === "WEDDING" ? "THE WEDDING OF" : "CARDVITE EXCLUSIVE"}</span>
                     </div>
 
                     {/* Bottom Card Content */}
@@ -3022,35 +3225,49 @@ export default function CardViteHomePage() {
                         whileHover={{ scale: 1.05 }}
                         className="inline-block px-3 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white mb-1 shadow-sm"
                       >
-                        {card.tag}
+                        {card.tags?.[0] || card.style}
                       </motion.span>
 
                       {/* Card Title */}
                       <h4 className="text-lg sm:text-2xl font-serif font-bold text-white tracking-tight drop-shadow-md">
-                        {card.title}
+                        {card.name}
                       </h4>
 
                       {/* Couple Names */}
                       <p className="text-xs sm:text-sm font-serif italic text-amber-200/95 drop-shadow-sm">
-                        {card.couple}
+                        {card.coupleText || card.style}
                       </p>
 
-                      {/* Center Card CTA Button */}
+                      {/* Center Card CTA Buttons */}
                       {isCenter ? (
-                        <div className="pt-2">
-                          <Link
-                            href="/collections"
-                            className="relative inline-flex items-center justify-center gap-1.5 px-5 py-2 sm:px-6 sm:py-2.5 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider shadow-[0_8px_24px_rgba(190,148,78,0.45)] hover:shadow-[0_12px_28px_rgba(190,148,78,0.6)] hover:scale-105 active:scale-95 transition-all overflow-hidden group/btn"
+                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedModalTemplate(card);
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-white/95 hover:bg-white text-stone-900 text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition cursor-pointer"
                           >
-                            {/* Shimmer line inside CTA button */}
-                            <motion.div 
-                              animate={{ x: ["-100%", "200%"] }}
-                              transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.5, ease: "easeInOut" }}
-                              className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-12 pointer-events-none"
-                            />
-                            <span className="relative z-10">{t("useTemplateBtn")}</span>
-                            <ChevronRight className="relative z-10 w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-                          </Link>
+                            <Eye className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Xem Thử</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (user) {
+                                router.push(`/dashboard/cards/new?category=${card.category}&template=${card.slug}`);
+                              } else {
+                                openAuthModal("login");
+                              }
+                            }}
+                            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:scale-105 active:scale-95 transition cursor-pointer"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Dùng Mẫu</span>
+                          </button>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center pt-1 text-white/60 text-xs">
@@ -3065,55 +3282,64 @@ export default function CardViteHomePage() {
           </div>
         </div>
 
-        {/* MOUSE / DRAG INTERACTIVE HINT & DOTS */}
-        <div className="flex flex-col items-center justify-center gap-2 mt-4">
-          <p className="text-[11px] text-stone-500 flex items-center gap-1.5 font-medium select-none">
-            <span>↔</span>
-            <span>Rê chuột hoặc vuốt qua lại để xem các mẫu thiệp</span>
-          </p>
-        </div>
+        {/* DESKTOP CONTROLS & PAGINATION */}
+        <div className="hidden md:flex flex-col items-center justify-center gap-3 mt-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={prevSlide}
+              className="w-8 h-8 rounded-full bg-white border border-stone-200 shadow-2xs hover:border-[#BE944E] text-stone-700 flex items-center justify-center transition cursor-pointer"
+              aria-label="Previous Slide"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <p className="text-[11px] text-stone-500 font-medium select-none">
+              Rê chuột hoặc chọn thẻ để khám phá các mẫu thiệp độc bản
+            </p>
+            <button
+              type="button"
+              onClick={nextSlide}
+              className="w-8 h-8 rounded-full bg-white border border-stone-200 shadow-2xs hover:border-[#BE944E] text-stone-700 flex items-center justify-center transition cursor-pointer"
+              aria-label="Next Slide"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
 
-        {/* DOTS PAGINATION WITH ANIMATED ACTIVE PILL */}
-        <div className="flex items-center justify-center gap-2.5 mt-4">
-          {CAROUSEL_CARDS.map((_, idx) => {
-            const isActive = carouselIndex === idx;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setCarouselIndex(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className="relative h-2.5 rounded-full transition-all duration-300 cursor-pointer overflow-hidden flex items-center"
-                style={{ width: isActive ? "32px" : "10px" }}
-              >
-                <div 
-                  className={`w-full h-full rounded-full transition-colors duration-300 ${
-                    isActive ? "bg-[#BE944E] shadow-sm" : "bg-stone-300 hover:bg-stone-400"
-                  }`}
-                />
-                {isActive && (
-                  <motion.div 
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "100%" }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="absolute inset-0 bg-white/40 rounded-full pointer-events-none"
+          {/* DOTS PAGINATION */}
+          <div className="flex items-center justify-center gap-2">
+            {displayedTemplates.map((_, idx) => {
+              const isActive = carouselIndex === idx;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setCarouselIndex(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className="relative h-2 rounded-full transition-all duration-300 cursor-pointer overflow-hidden flex items-center"
+                  style={{ width: isActive ? "28px" : "8px" }}
+                >
+                  <div 
+                    className={`w-full h-full rounded-full transition-colors duration-300 ${
+                      isActive ? "bg-[#BE944E] shadow-sm" : "bg-stone-300 hover:bg-stone-400"
+                    }`}
                   />
-                )}
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* NÚT XEM TẤT CẢ MẪU THIỆP */}
-        <div className="mt-7">
+        <div className="mt-8">
           <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }} className="inline-block">
             <Link
               href="/collections"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#EAE0CD] bg-white/90 hover:bg-[#FAF7F2] text-xs font-bold text-stone-700 shadow-2xs hover:shadow-md transition"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-[#D9C4A1] bg-white/95 hover:bg-[#FAF7F2] text-xs font-bold uppercase tracking-wider text-[#8C6424] shadow-md hover:shadow-lg transition"
             >
-              <Gift className="w-3.5 h-3.5 text-[#BE944E]" />
-              <span>{t("homeViewAllTemplates")}</span>
-              <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
+              <Sparkles className="w-4 h-4 text-[#BE944E]" />
+              <span>{t("homeViewAllTemplates") || "Khám Phá Toàn Bộ 100+ Mẫu Thiệp"}</span>
+              <ChevronRight className="w-3.5 h-3.5 text-[#BE944E]" />
             </Link>
           </motion.div>
         </div>
@@ -4038,6 +4264,13 @@ export default function CardViteHomePage() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* QUICK VIEW TEMPLATE DETAIL MODAL TRÊN TRANG CHỦ */}
+      <TemplateDetailModal
+        isOpen={!!selectedModalTemplate}
+        onClose={() => setSelectedModalTemplate(null)}
+        template={selectedModalTemplate}
+      />
     </div>
   );
 }

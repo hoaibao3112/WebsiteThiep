@@ -26,13 +26,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Footer } from "@/components/shared/Footer";
 import { useAuth } from "@/context/AuthContext";
 import { TemplateDetailModal, TemplateModalData } from "@/components/shared/TemplateDetailModal";
+import { MASTER_TEMPLATES, MasterTemplateItem } from "@/lib/templates-data";
 
-interface TemplateItem extends TemplateModalData {
-  slug?: string;
-  originalPrice?: string;
-  rating?: number;
-  salesCount?: number;
-}
+type TemplateItem = MasterTemplateItem;
 
 // Interactive 3D Tilt Card Component
 function LuxuryTemplateCard({
@@ -81,6 +77,7 @@ function LuxuryTemplateCard({
       ref={cardRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={() => onOpenDemo(template)}
       style={{
         rotateX,
         rotateY,
@@ -131,8 +128,8 @@ function LuxuryTemplateCard({
             : "Sự Kiện"}
         </span>
 
-        {/* INTERACTIVE HOVER GLASS OVERLAY */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-end p-4 gap-2">
+        {/* INTERACTIVE HOVER GLASS OVERLAY (DESKTOP) */}
+        <div className="hidden sm:flex absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex-col items-center justify-end p-4 gap-2">
           <button
             type="button"
             onClick={(e) => {
@@ -201,6 +198,32 @@ function LuxuryTemplateCard({
             ))}
           </div>
         )}
+
+        {/* NÚT THAO TÁC RÕ RÀNG TRÊN ĐIỆN THOẠI (KHÔNG CẦN RÊ CHUỘT) */}
+        <div className="flex sm:hidden items-center gap-1.5 pt-2 mt-1 border-t border-[#EFE5D5]">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDemo(template);
+            }}
+            className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-[#D9C4A1] text-stone-900 text-[11px] font-bold shadow-2xs flex items-center justify-center gap-1 active:bg-stone-50 cursor-pointer"
+          >
+            <Eye className="w-3.5 h-3.5 text-amber-600" />
+            <span>Xem Mẫu</span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUseTemplate(template);
+            }}
+            className="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] text-white text-[11px] font-bold shadow-2xs flex items-center justify-center gap-1 active:opacity-90 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Dùng Mẫu</span>
+          </button>
+        </div>
       </div>
     </motion.div>
   );
@@ -221,166 +244,7 @@ export default function CollectionsPage() {
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const styleScrollRef = useRef<HTMLDivElement>(null);
 
-  const pricePrefix = t("priceFromPrefix") || "Từ";
-
-  const TEMPLATES: TemplateItem[] = [
-    // ── 9 MẪU THIỆP CƯỚI ĐỘC BẢN CHUẨN HOÁ ──
-    {
-      id: "wedding-heritage-crimson-gold",
-      slug: "wedding-heritage-crimson-gold",
-      demoSlug: "wedding-heritage-crimson-gold",
-      name: "Á Đông Cung Đình Hoàng Gia",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 199.000đ`,
-      imageUrl: "/images/templates/template-01-heritage.png",
-      isNew: true,
-      description: "Phong cách Á Đông cung đình với tone đỏ nhung gấm & vàng hoàng kim, phù hiệu sơn mài đỉnh thiệp, khung vòm cổ điển, huy hiệu âm dương lịch và sớ thư pháp lưu bút.",
-      tags: ["Á Đông", "Sơn Mài", "Hoàng Gia"],
-    },
-    {
-      id: "wedding-modern-editorial-magazine",
-      slug: "wedding-modern-editorial-magazine",
-      demoSlug: "wedding-modern-editorial-magazine",
-      name: "Tạp Chí Hàn Quốc Editorial",
-      category: "WEDDING",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "/images/templates/template-02-magazine.png",
-      isNew: true,
-      description: "Tạp chí Hàn Quốc tone be ấm & nâu chocolate, bố cục Zigzag Song thân đối xứng, bộ 3 ảnh Triptych và tờ lịch tháng nhúng trực tiếp.",
-      tags: ["Tạp Chí", "Hàn Quốc", "Zigzag"],
-    },
-    {
-      id: "wedding-sweet-editorial-romance",
-      slug: "wedding-sweet-editorial-romance",
-      demoSlug: "wedding-sweet-editorial-romance",
-      name: "Sweet Pink Lãng Mạn",
-      category: "WEDDING",
-      style: "Floral Romance",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "/images/templates/template-03-sweet-pink.png",
-      isNew: true,
-      description: "Tone hồng phấn khói & đất nung ngọt ngào, phong bì sáp đỏ 3D, hộp vòm Arch RSVP và cặp thẻ đôi VietQR riêng cho Cô dâu & Chú rể.",
-      tags: ["Sweet Pink", "Phong Bì 3D", "VietQR"],
-    },
-    {
-      id: "wedding-crimson-wine-marsala",
-      slug: "wedding-crimson-wine-marsala",
-      demoSlug: "wedding-crimson-wine-marsala",
-      name: "Quý Tộc Đỏ Rượu Marsala",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 299.000đ`,
-      imageUrl: "/images/templates/template-04-marsala.png",
-      isNew: true,
-      description: "Đỏ rượu vang Burgundy & trắng kem quý tộc Châu Âu, cổng vòm La Mã chữ uốn lượn, thấu kính lịch tròn trong suốt, 2 thẻ tiệc và đếm ngược kép.",
-      tags: ["Marsala", "Cổng Vòm", "Quý Tộc"],
-    },
-    {
-      id: "wedding-forest-green-botanical",
-      slug: "wedding-forest-green-botanical",
-      demoSlug: "wedding-forest-green-botanical",
-      name: "Rustic Xanh Rêu Thiên Nhiên",
-      category: "WEDDING",
-      style: "Floral Romance",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "/images/templates/template-05-forest.png",
-      isNew: true,
-      description: "Tone xanh rêu rừng & hoa dại mộc mạc, phong bì thảo mộc, thẻ lịch Polaroid My Love, thơ tình đối diện và thẻ sự kiện liền khối.",
-      tags: ["Rustic", "Xanh Rêu", "Sân Vườn"],
-    },
-    {
-      id: "wedding-pure-lotus-heritage",
-      slug: "wedding-pure-lotus-heritage",
-      demoSlug: "wedding-pure-lotus-heritage",
-      name: "Hoa Sen Thanh Khiết Báo Hỷ",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "/images/templates/template-06-lotus.png",
-      isNew: true,
-      description: "Hoa sen quốc hoa màu nước thanh tao, biểu tượng Song Hỷ son tròn, thiệp báo hỷ trang nghiêm và đầm sen dát vàng hoàng kim.",
-      tags: ["Hoa Sen", "Báo Hỷ", "Thuần Việt"],
-    },
-    {
-      id: "wedding-cinematic-editorial",
-      slug: "wedding-cinematic-editorial",
-      demoSlug: "wedding-cinematic-editorial",
-      name: "Điện Ảnh Lookbook Tình Yêu",
-      category: "WEDDING",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 299.000đ`,
-      imageUrl: "/images/templates/template-07-cinematic.png",
-      isNew: true,
-      description: "Phim điện ảnh & tạp chí thời trang Vogue Lookbook, nhiều chương tình yêu Our Love Story & Fall In Love, lịch nụ hôn và poster You are my Sunshine.",
-      tags: ["Cinematic", "Vogue", "Lookbook"],
-    },
-    {
-      id: "wedding-alpine-lake-romance",
-      slug: "wedding-alpine-lake-romance",
-      demoSlug: "wedding-alpine-lake-romance",
-      name: "Suối Nguồn Hồ Nước Thiên Nhiên",
-      category: "WEDDING",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 249.000đ`,
-      imageUrl: "/images/templates/template-08-alpine.png",
-      isNew: true,
-      description: "Hồ nước ngọc bích thiên nhiên Thụy Sĩ, lịch tán rừng thông, hoa khô dán Washi Tape, hộp quà pastel và cổng Song Hỷ minh họa.",
-      tags: ["Hồ Nước", "Thụy Sĩ", "Washi Tape"],
-    },
-    {
-      id: "wedding-imperial-dragon-crimson",
-      slug: "wedding-imperial-dragon-crimson",
-      demoSlug: "wedding-imperial-dragon-crimson",
-      name: "Long Phụng Sum Vầy Đỏ Đô",
-      category: "WEDDING",
-      style: "Cổ Điển Hoàng Gia",
-      price: `${pricePrefix} 299.000đ`,
-      imageUrl: "/images/templates/template-09-dragon.png",
-      isNew: true,
-      description: "Đỏ đô gấm cung đình toàn trang in chìm Long Phụng, tranh chibi uyên ương tựa cổng Song Hỷ 3D, giá vẽ hoa cưới và hộp mừng cưới 2 thẻ QR vàng cát.",
-      tags: ["Long Phụng", "Đỏ Đô", "Song Hỷ 3D"],
-    },
-
-    // ── MẪU SINH NHẬT & THÔI NÔI ──
-    {
-      id: "birthday-glow-party",
-      slug: "birthday-glow-party",
-      demoSlug: "birthday-glow-party",
-      name: "Cyber Neon Glow Party",
-      category: "BIRTHDAY",
-      style: "Cyber Neon",
-      price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=700&auto=format&fit=crop",
-      description: "Phong cách tiệc sinh nhật Neon trẻ trung, hiệu ứng ánh sáng phát quang rực rỡ.",
-      tags: ["Neon", "Sinh Nhật", "Party"],
-    },
-    {
-      id: "newborn-little-prince",
-      slug: "newborn-little-prince",
-      demoSlug: "newborn-little-prince",
-      name: "Hoàng Tử Nhỏ (Đầy Tháng)",
-      category: "NEWBORN",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=700&auto=format&fit=crop",
-      description: "Tone xanh pastel dịu nhẹ cho tiệc đầy tháng, thôi nôi bé trai.",
-      tags: ["Đầy Tháng", "Bé Trai", "Pastel"],
-    },
-    {
-      id: "newborn-sweet-angel",
-      slug: "newborn-sweet-angel",
-      demoSlug: "newborn-sweet-angel",
-      name: "Thiên Thần Nhỏ (Thôi Nôi)",
-      category: "NEWBORN",
-      style: "Minimalist Luxury",
-      price: `${pricePrefix} 199.000đ`,
-      imageUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=700&auto=format&fit=crop",
-      description: "Tone hồng ngọt ngào mừng bé gái tròn 1 tuổi hoặc đầy tháng.",
-      tags: ["Thôi Nôi", "Bé Gái", "Ngọt Ngào"],
-    },
-  ];
+  const TEMPLATES = MASTER_TEMPLATES;
 
   const categories = [
     { id: "ALL", label: t("filterAll") || "Tất Cả" },
