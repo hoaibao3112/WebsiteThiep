@@ -12,7 +12,7 @@ export class CardController {
     return { userId, accountId };
   }
 
-  static async create(req: AuthenticatedRequest, res: Response) {
+  static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { userId, accountId } = CardController.getAuth(req);
       const idempotencyKey = req.header("Idempotency-Key")?.trim();
@@ -23,55 +23,87 @@ export class CardController {
       const card = await CardService.createDraft(userId, accountId, input, idempotencyKey);
       return res.status(201).json({ success: true, data: card });
     } catch (error: unknown) {
-      const fieldErrors = error instanceof z.ZodError ? error.flatten().fieldErrors : undefined;
-      const message = error instanceof Error ? error.message : "Không thể tạo thiệp";
-      return res.status(400).json({ success: false, error: message, fieldErrors });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
-  static async update(req: AuthenticatedRequest, res: Response) {
+  static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { accountId } = CardController.getAuth(req);
       const input = DraftCardSchema.parse(req.body);
       const card = await CardService.updateDraft(accountId, req.params.id as string, input);
       return res.status(200).json({ success: true, data: card });
     } catch (error: unknown) {
-      const fieldErrors = error instanceof z.ZodError ? error.flatten().fieldErrors : undefined;
-      const message = error instanceof Error ? error.message : "Không thể lưu thiệp";
-      return res.status(400).json({ success: false, error: message, fieldErrors });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
-  static async getOwner(req: AuthenticatedRequest, res: Response) {
+  static async getOwner(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { accountId } = CardController.getAuth(req);
       const card = await CardService.getOwnerCard(accountId, req.params.id as string);
       if (!card) return res.status(404).json({ success: false, error: "Không tìm thấy thiệp" });
       return res.status(200).json({ success: true, data: card });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể tải thiệp";
-      return res.status(400).json({ success: false, error: message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
-  static async slugAvailability(req: Request, res: Response) {
-    const slug = z.string().trim().min(3).max(50).regex(/^[a-z0-9-]+$/).safeParse(req.query.slug);
-    if (!slug.success) return res.status(400).json({ success: false, error: "Slug không hợp lệ" });
-    const available = await CardService.isSlugAvailable(slug.data, typeof req.query.excludeCardId === "string" ? req.query.excludeCardId : undefined);
-    return res.status(200).json({ success: true, data: { available } });
+  static async slugAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const slug = z.string().trim().min(3).max(50).regex(/^[a-z0-9-]+$/).safeParse(req.query.slug);
+      if (!slug.success) return res.status(400).json({ success: false, error: "Slug không hợp lệ" });
+      const available = await CardService.isSlugAvailable(slug.data, typeof req.query.excludeCardId === "string" ? req.query.excludeCardId : undefined);
+      return res.status(200).json({ success: true, data: { available } });
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
+    }
   }
 
-  static async remove(req: AuthenticatedRequest, res: Response) {
+  static async remove(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { accountId } = CardController.getAuth(req);
       await CardService.deleteCard(accountId, req.params.id as string);
       return res.status(200).json({ success: true });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Không thể xóa thiệp";
-      return res.status(400).json({ success: false, error: message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
-
 
   static async getBySlug(req: Request, res: Response, next: NextFunction) {
     try {
@@ -85,7 +117,14 @@ export class CardController {
 
       res.status(200).json({ success: true, data: result });
     } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -104,7 +143,14 @@ export class CardController {
       const cards = await CardService.getUserCards(accountId);
       res.status(200).json({ success: true, data: cards });
     } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -124,7 +170,14 @@ export class CardController {
       const card = await CardService.publishCard(accountId, id);
       res.status(200).json({ success: true, data: card });
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 }

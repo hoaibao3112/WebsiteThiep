@@ -1,4 +1,5 @@
 import { Response, NextFunction } from "express";
+import { ZodError } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { ExportService } from "../services/export.service";
 
@@ -31,7 +32,14 @@ export class ExportController {
 
       res.send(buffer);
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 }

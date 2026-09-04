@@ -191,6 +191,16 @@ function LuxuryTemplateCard({
             {template.price}
           </span>
         </div>
+
+        {template.tags && template.tags.length > 0 && (
+          <div className="flex items-center gap-1 pt-1 overflow-hidden">
+            {template.tags.slice(0, 3).map((t, idx) => (
+              <span key={idx} className="text-[9px] px-2 py-0.5 rounded-md bg-[#FAF0DE] text-[#8C6424] font-medium border border-[#E7D6BE] whitespace-nowrap">
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   );

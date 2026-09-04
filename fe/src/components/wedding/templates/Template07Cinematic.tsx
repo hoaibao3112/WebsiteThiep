@@ -3,7 +3,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { CountdownUnits } from "./common/CountdownUnits";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
 import { formatDate } from "@/lib/utils";
 import { MapPin, Navigation, UserCheck, Gift, Film, Heart } from "lucide-react";
 
@@ -28,6 +37,23 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
     "/images/templates/template-07-cinematic.png";
+
+  const defaultGalleryPhotos = [
+    { url: coverPhoto, caption: "Ánh nhìn điện ảnh giữa khung cảnh lãng mạn" },
+    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn buông trên ngọn đồi thông" },
+    { url: "/images/demo/couple-street.png", caption: "Từng bước chân song hành qua phố quen" },
+    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn ngọt ngào trong khung hình 35mm" },
+    { url: "/images/demo/couple-aodai.png", caption: "Khoảnh khắc hẹn ước trao nhau" },
+    { url: "/images/demo/gallery-rings.png", caption: "Chiếc nhẫn minh chứng cho tình yêu vĩnh cửu" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#FDFBF7] text-[#1C1C1C] font-serif pb-28 sm:pb-32 overflow-x-hidden selection:bg-stone-200">
@@ -174,6 +200,15 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             </div>
           </motion.div>
         </motion.section>
+
+        {/* 5.5. CHUYỆN TÌNH THƯỚC PHIM - LOVE STORY TIMELINE */}
+        <section className="bg-white border-b border-stone-200">
+          <LoveStoryTimeline
+            accentColor="#1C1C1C"
+            variant="cinematic"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
 
         {/* 6. LỊCH THÁNG NHÚNG TRÊN ẢNH NỀN & COUNTDOWN ĐỎ */}
         <motion.section
@@ -352,6 +387,36 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
+        {/* 7.5. LỊCH TRÌNH HÔN LỄ ĐIỆN ẢNH - WEDDING ITINERARY */}
+        <section className="bg-white border-b border-stone-200">
+          <WeddingItinerary
+            accentColor="#C92A2A"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName || "Promes Center"}
+            venueAddress={mainEvent?.address || "122-124 Xuân Thủy, Cầu Giấy, Hà Nội"}
+          />
+        </section>
+
+        {/* 7.6. DRESS CODE SECTION */}
+        <section className="bg-stone-50 border-b border-stone-200">
+          <DressCodeSection
+            accentColor="#C92A2A"
+            dressCodeTitle="Gợi Ý Trang Phục Dạ Tiệc Điện Ảnh"
+            note="Quý khách có thể ưu tiên các gam màu sang trọng như Đen Noir, Trắng Kem, Vàng Champagne hoặc Đỏ Rượu để tạo nên tổng thể khung hình đồng điệu."
+          />
+        </section>
+
+        {/* 7.7. ALBUM ẢNH CƯỚI LIGHTBOX */}
+        <section className="bg-white border-b border-stone-200">
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#C92A2A"
+            title="Cuộn Phim Kỷ Niệm"
+            subtitle="Từng góc máy lưu giữ khoảnh khắc thanh xuân và tình yêu nồng nàn"
+          />
+        </section>
+
         {/* 8. YOU ARE MY SUNSHINE & KHỐI RSVP */}
         <section className="relative w-full aspect-[9/16] overflow-hidden bg-stone-900 text-white flex flex-col justify-between p-6 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -367,6 +432,11 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             </span>
           </div>
 
+          {/* Brand watermark */}
+          <div className="absolute right-3 bottom-24 writing-vertical text-[8px] font-sans tracking-widest text-white/50 select-none pointer-events-none z-20">
+            Made with Ngày chung đôi
+          </div>
+
           {/* Khối RSVP trắng trong suốt ở đáy */}
           <div className="relative z-10 p-5 rounded-2xl bg-white/95 backdrop-blur-md text-stone-900 shadow-xl space-y-2">
             <span className="text-[10px] font-mono tracking-widest uppercase text-stone-500 block">R.S.V.P.</span>
@@ -379,11 +449,27 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={onOpenRsvp}
-                className="w-full py-2.5 rounded-xl bg-stone-900 text-white text-xs font-sans font-bold hover:bg-black transition shadow cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-stone-900 text-white text-xs font-sans font-bold hover:bg-black transition shadow cursor-pointer inline-flex items-center justify-center gap-1.5"
               >
-                ✍️ Gửi xác nhận
+                <UserCheck className="w-3.5 h-3.5 text-amber-200" />
+                <span>Gửi xác nhận</span>
               </motion.button>
             </div>
+          </div>
+        </section>
+
+        {/* 8.5. NÚT THẢ TIM & DÒNG CHÚC PHÚC ĐIỆN ẢNH */}
+        <section className="p-6 bg-white border-b border-stone-200 space-y-6">
+          <div className="flex justify-center">
+            <HeartBurstButton accentColor="#C92A2A" />
+          </div>
+
+          <div className="pt-2">
+            <QuickWishWall
+              cardId={card.id}
+              accentColor="#C92A2A"
+              guestName={guestName}
+            />
           </div>
         </section>
 

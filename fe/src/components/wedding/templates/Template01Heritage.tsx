@@ -3,8 +3,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { CountdownUnits } from "./common/CountdownUnits";
-import { InteractiveCalendarGrid } from "./common/InteractiveCalendarGrid";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
 import { GuestbookSection } from "@/components/shared/GuestbookSection";
 import { formatDate } from "@/lib/utils";
 import { AuspiciousMedallions, ScrollUnfurl } from "../effects/MotionElements";
@@ -43,6 +51,23 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
 
   const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
   const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+
+  const defaultGalleryPhotos = [
+    { url: "/images/demo/couple-aodai.png", caption: "Nụ cười rạng rỡ ngày hẹn ước" },
+    { url: "/images/demo/couple-kiss.png", caption: "Khoảnh khắc ngọt ngào bên nhau" },
+    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
+    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
+    { url: "/images/demo/gallery-rings.png", caption: "Kỷ vật trăm năm hẹn ước" },
+    { url: "/images/demo/gallery-shoes.png", caption: "Từng bước chân về chung một nhà" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#FFFDF9] text-stone-800 font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-amber-200">
@@ -187,6 +212,15 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
+        {/* 3.5. CHUYỆN TÌNH YÊU HOÀNG GIA - LOVE STORY TIMELINE */}
+        <section className="bg-[#FFFDF9] border-b border-[#EAE0D2]">
+          <LoveStoryTimeline
+            accentColor="#8B1E2D"
+            variant="heritage"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
+
         {/* 4. LỊCH THÁNG & BỘ 3 HUY HIỆU SƠN MÀI CÁT TƯỜNG */}
         <motion.section
           initial={{ opacity: 0, y: 25 }}
@@ -230,8 +264,12 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7 }}
-          className="p-5 sm:p-7 space-y-4 bg-[#FFFDF9] border-b border-[#EAE0D2]"
+          className="p-5 sm:p-7 space-y-4 bg-[#FFFDF9] border-b border-[#EAE0D2] relative"
         >
+          {/* Brand watermark */}
+          <div className="absolute right-2 top-10 writing-vertical text-[8px] font-sans tracking-widest text-[#8B1E2D]/40 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
           <div className="text-center mb-3">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B1E2D]">
               SCHEDULE &amp; CEREMONY
@@ -287,51 +325,45 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
-        {/* 6. MEMORIES GALLERY: POLAROID VINTAGE & DẤU SÁP */}
+        {/* 5.5. LỊCH TRÌNH TIỆC CƯỚI HOÀNG GIA - WEDDING ITINERARY */}
+        <section className="bg-[#FAF6F0] border-b border-[#EAE0D2]">
+          <WeddingItinerary
+            accentColor="#8B1E2D"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName}
+            venueAddress={mainEvent?.address}
+          />
+        </section>
+
+        {/* 5.6. DRESSCODE QUY ĐỊNH TRANG PHỤC */}
+        <section className="bg-[#FFFDF9] border-b border-[#EAE0D2]">
+          <DressCodeSection
+            accentColor="#8B1E2D"
+            dressCodeTitle="Gợi Ý Trang Phục Dạ Tiệc Hoàng Gia"
+          />
+        </section>
+
+        {/* 6. MEMORIES GALLERY LIGHTBOX: BỘ SƯU TẬP ẢNH TƯƠNG TÁC */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="p-5 sm:p-7 bg-[#FAF6F0] border-b border-[#EAE0D2]"
+          className="bg-[#FAF6F0] border-b border-[#EAE0D2]"
         >
-          <div className="text-center mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B1E2D]">
-              MEMORIES &amp; PHOTOS
-            </span>
-            <h3 className="text-xl font-serif font-bold text-[#8B1E2D] mt-0.5">
-              Kỷ Niệm Tình Yêu
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            {card.photos.map((photo, i) => (
-              <motion.div
-                key={photo.id || i}
-                whileHover={{ scale: 1.04, y: -3 }}
-                onClick={() => onSelectPhoto(photo.url)}
-                className="bg-white p-2 pb-5 rounded-xl border border-[#EAE0D2] shadow-sm hover:shadow-md cursor-pointer transition relative group"
-              >
-                <div className="aspect-[4/5] rounded-lg overflow-hidden bg-stone-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || "Ảnh cưới"}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                  />
-                </div>
-                {/* Con dấu sáp đỏ xoay nhẹ */}
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
-                  className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-[#8B1E2D] border-2 border-[#D4AF37] shadow flex items-center justify-center text-[8px] text-amber-200 font-bold"
-                >
-                  囍
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#8B1E2D"
+            title="Kỷ Niệm Tình Yêu"
+            subtitle="Từng góc ảnh lưu giữ trọn vẹn những khoảnh khắc hạnh phúc trăm năm"
+          />
         </motion.section>
+
+        {/* 6.5. NÚT THẢ TIM CHÚC PHÚC HOÀNG GIA */}
+        <section className="p-4 bg-[#FFFDF9] border-b border-[#EAE0D2] flex justify-center">
+          <HeartBurstButton accentColor="#8B1E2D" />
+        </section>
 
         {/* 7. HỘP QUÀ MỪNG CƯỚI VIETQR HOÀNG GIA */}
         <motion.section
@@ -363,13 +395,13 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           </motion.div>
         </motion.section>
 
-        {/* 8. GUESTBOOK CUỘN THƯ HOÀNG GIA */}
+        {/* 8. GUESTBOOK & QUICK WISH WALL */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="p-4 sm:p-6 bg-[#FFFDF9] border-b border-[#EAE0D2]"
+          className="p-4 sm:p-6 bg-[#FFFDF9] border-b border-[#EAE0D2] space-y-6"
         >
           <div className="text-center mb-3">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#8B1E2D]">
@@ -383,6 +415,11 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
           <ScrollUnfurl>
             <GuestbookSection cardId={card.id} primaryColor="#8B1E2D" />
           </ScrollUnfurl>
+
+          {/* Dòng chúc mừng trực tiếp */}
+          <div className="pt-2 border-t border-[#EAE0D2]">
+            <QuickWishWall cardId={card.id} accentColor="#8B1E2D" guestName={guestName} />
+          </div>
         </motion.section>
 
         {/* 9. BOTTOM ACTION DOCK CỐ ĐỊNH CHÂN MÀN HÌNH */}

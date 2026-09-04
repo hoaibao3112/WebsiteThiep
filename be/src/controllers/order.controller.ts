@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ZodError } from "zod";
 import { OrderService } from "../services/order.service";
 import { CreateOrderSchema, SepayWebhookPayloadSchema } from "../lib/validators/order.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
@@ -23,7 +24,14 @@ export class OrderController {
       const result = await OrderService.createOrder(userId, validated, idempotencyKey);
       res.status(201).json({ success: true, data: result });
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -40,7 +48,14 @@ export class OrderController {
 
       res.status(200).json({ success: true, data: order });
     } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -70,8 +85,14 @@ export class OrderController {
 
       res.status(200).json(result);
     } catch (error: any) {
-      console.error("[Webhook SePay] Error:", error);
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 }

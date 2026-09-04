@@ -630,4 +630,136 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     bankingPrimary: { bankCode: "MB", accountNumber: "0345678910", accountName: "NGUYEN ANH TUAN" },
     bankingSecondary: { bankCode: "VCB", accountNumber: "0998877661", accountName: "HUYNH THU TRANG" },
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 10. CYBER NEON GLOW PARTY (SINH NHẬT KHÁNH LINH)
+  // ─────────────────────────────────────────────────────────────────────────────
+  "birthday-glow-party": {
+    id: "demo-birthday-glow-party",
+    slug: "birthday-glow-party",
+    cardCategory: "BIRTHDAY",
+    status: "ACTIVE",
+    openingEffect: "WAX_SEAL",
+    fallingEffect: "BALLOON",
+    musicUrl: "/music/everytime-we-touch.mp3",
+    isAutoPlay: true,
+    primaryColor: "#F97316",
+    fontFamily: "Outfit",
+    greetingMessage: "Đánh dấu tuổi 18 rực rỡ với đêm tiệc âm nhạc & ánh sáng Glow Party! Rất mong sự hiện diện của bạn.",
+    template: { slug: "birthday-glow-party" },
+    categoryData: {
+      cardCategory: "BIRTHDAY",
+      celebrantName: "Khánh Linh",
+      age: 18,
+      birthDate: new Date("2008-09-15"),
+      avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop",
+      greeting: "Hãy cùng đến chung vui và quẩy hết mình trong bữa tiệc sinh nhật đặc biệt này nhé!",
+    },
+    events: [
+      {
+        id: "b-ev-1",
+        eventName: "Đêm Tiệc Glow Party 18th",
+        eventDate: new Date("2026-09-15T18:30:00Z"),
+        venueName: "The Rooftop Lounge & Sky Bar",
+        address: "Tầng 19, Tòa nhà Bitexco, Bến Nghé, Quận 1, TP. HCM",
+        mapUrl: "https://maps.google.com",
+      },
+    ],
+    photos: [
+      { id: "bp-1", url: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop", caption: "Glow Party Night", isCover: true },
+      { id: "bp-2", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop", caption: "Sweet 18" },
+      { id: "bp-3", url: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop", caption: "Happy Moments" },
+    ],
+    bankingPrimary: { bankCode: "MB", accountNumber: "0909123456", accountName: "NGUYEN KHANH LINH" },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 11. HOÀNG TỬ NHỎ (ĐẦY THÁNG BÉ BƠ)
+  // ─────────────────────────────────────────────────────────────────────────────
+  "newborn-little-prince": {
+    id: "demo-newborn-little-prince",
+    slug: "newborn-little-prince",
+    cardCategory: "NEWBORN",
+    status: "ACTIVE",
+    openingEffect: "WAX_SEAL",
+    fallingEffect: "BALLOON",
+    musicUrl: "/music/like-my-father.mp3",
+    isAutoPlay: true,
+    primaryColor: "#4169A1",
+    fontFamily: "Quicksand",
+    greetingMessage: "Mừng thiên thần nhỏ của gia đình tròn 1 tháng tuổi! Trân trọng kính mời quý cô chú bác đến chung vui.",
+    template: { slug: "newborn-little-prince" },
+    categoryData: {
+      cardCategory: "NEWBORN",
+      babyName: "Nguyễn Minh Khang",
+      nickname: "Bé Bơ",
+      gender: "BOY",
+      birthDate: new Date("2026-08-10"),
+      weight: "3.5",
+      height: "50",
+      ceremonyType: "FULL_MONTH",
+      avatarUrl: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=600&auto=format&fit=crop",
+      greeting: "Bé Bơ xin kính chào ông bà, cô chú và các bác ạ!",
+    },
+    events: [
+      {
+        id: "nb-ev-1",
+        eventName: "Lễ Cúng Đầy Tháng & Tiệc Mừng",
+        eventDate: new Date("2026-09-10T11:00:00Z"),
+        venueName: "Trung Tâm Tiệc Cưới & Hội Nghị White Palace",
+        address: "194 Hoàng Văn Thụ, Phường 9, Phú Nhuận, TP. HCM",
+        mapUrl: "https://maps.google.com",
+      },
+    ],
+    photos: [
+      { id: "np-1", url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop", caption: "Bé Bơ Thiên Thần", isCover: true },
+      { id: "np-2", url: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=800&auto=format&fit=crop", caption: "Nụ cười đầu đời" },
+    ],
+    bankingPrimary: { bankCode: "MB", accountNumber: "0988776655", accountName: "NGUYEN MINH KHANG" },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 12. THIÊN THẦN NHỎ (THÔI NÔI BÉ DÂU TÂY)
+  // ─────────────────────────────────────────────────────────────────────────────
+  "newborn-sweet-angel": {
+    id: "demo-newborn-sweet-angel",
+    slug: "newborn-sweet-angel",
+    cardCategory: "NEWBORN",
+    status: "ACTIVE",
+    openingEffect: "WAX_SEAL",
+    fallingEffect: "BALLOON",
+    musicUrl: "/music/a-thousand-years.mp3",
+    isAutoPlay: true,
+    primaryColor: "#E07A89",
+    fontFamily: "Quicksand",
+    greetingMessage: "Mừng công chúa nhỏ tròn 1 tuổi! Kính mời quý khách đến dự tiệc thôi nôi của bé.",
+    template: { slug: "newborn-sweet-angel" },
+    categoryData: {
+      cardCategory: "NEWBORN",
+      babyName: "Trần Tuệ An",
+      nickname: "Bé Dâu Tây",
+      gender: "GIRL",
+      birthDate: new Date("2025-09-20"),
+      weight: "9.2",
+      height: "76",
+      ceremonyType: "ONE_YEAR",
+      avatarUrl: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=600&auto=format&fit=crop",
+      greeting: "Gia đình trân trọng kính mời quý khách đến chung vui mừng bé tròn 1 tuổi!",
+    },
+    events: [
+      {
+        id: "na-ev-1",
+        eventName: "Tiệc Mừng Thôi Nôi Bé Dâu Tây",
+        eventDate: new Date("2026-09-20T17:30:00Z"),
+        venueName: "Nhà Hàng Riverside Palace",
+        address: "360D Bến Vân Đồn, Phường 1, Quận 4, TP. HCM",
+        mapUrl: "https://maps.google.com",
+      },
+    ],
+    photos: [
+      { id: "nap-1", url: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&auto=format&fit=crop", caption: "Công chúa nhỏ Dâu Tây", isCover: true },
+      { id: "nap-2", url: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800&auto=format&fit=crop", caption: "Thiên thần nhỏ" },
+    ],
+    bankingPrimary: { bankCode: "VCB", accountNumber: "0345612345", accountName: "TRAN TUE AN" },
+  },
 };

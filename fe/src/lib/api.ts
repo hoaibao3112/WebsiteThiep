@@ -70,7 +70,7 @@ export class ApiClient {
       });
 
       // Tự động lưu X-CSRF-Token từ response header nếu backend trả về
-      const responseCsrf = res.headers.get("X-CSRF-Token");
+      const responseCsrf = res.headers?.get ? res.headers.get("X-CSRF-Token") : null;
       if (responseCsrf) {
         setApiClientTokens({ csrfToken: responseCsrf });
       }

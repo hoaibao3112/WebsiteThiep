@@ -3,7 +3,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { Navigation, MapPin } from "lucide-react";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
+import { Navigation, MapPin, UserCheck, Gift } from "lucide-react";
 import { KineticText, LivingPhoto, MarqueeRibbon } from "../effects/MotionElements";
 
 export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
@@ -27,6 +37,23 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
     "/images/templates/template-06-lotus.png";
+
+  const defaultGalleryPhotos = [
+    { url: coverPhoto, caption: "Thanh tao như hoa sen ngát hương" },
+    { url: "/images/demo/couple-aodai.png", caption: "Áo dài truyền thống rạng rỡ duyên lành" },
+    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn hẹn ước trăm năm viên mãn" },
+    { url: "/images/demo/couple-sunset.png", caption: "Bên hồ sen chiều hoàng hôn yên bình" },
+    { url: "/images/demo/gallery-rings.png", caption: "Kỷ vật trăm năm kết tóc xe duyên" },
+    { url: "/images/demo/couple-studio.png", caption: "Nụ cười rạng rỡ của đôi uyên ương" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#F4F7F4] text-[#1E3823] font-serif pb-28 sm:pb-32 overflow-x-hidden selection:bg-rose-200">
@@ -55,16 +82,21 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
 
           {/* Đóa sen hồng màu nước nở rộ góc phải dưới */}
           <div className="mt-8 flex justify-end pr-2">
-            <div className="relative w-44 h-36 flex items-end justify-end">
-              <motion.div
-                animate={{ rotate: [-1, 1, -1] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="text-right"
-              >
-                <span className="text-6xl filter drop-shadow-sm select-none">🪷</span>
-                <span className="text-4xl -ml-4 filter drop-shadow-sm select-none">🌸</span>
-              </motion.div>
-            </div>
+            <motion.div
+              animate={{ rotate: [-1, 1, -1] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="w-36 h-28 relative flex items-center justify-end"
+            >
+              <svg viewBox="0 0 160 120" className="w-full h-full drop-shadow-sm">
+                <ellipse cx="60" cy="80" rx="45" ry="20" fill="#3B5E43" opacity="0.65" />
+                <path d="M60 80 L30 70 M60 80 L90 70" stroke="#2C4733" strokeWidth="1.2" />
+                {/* Cánh sen hồng nở bung */}
+                <path d="M100 35 C85 50 90 75 100 80 C110 75 115 50 100 35 Z" fill="#E58A96" stroke="#D4AF37" strokeWidth="1" />
+                <path d="M85 50 C70 65 80 80 95 80 C85 70 85 55 85 50 Z" fill="#F3B2BC" stroke="#D4AF37" strokeWidth="0.8" />
+                <path d="M115 50 C130 65 120 80 105 80 C115 70 115 55 115 50 Z" fill="#F3B2BC" stroke="#D4AF37" strokeWidth="0.8" />
+                <ellipse cx="100" cy="62" rx="6" ry="4" fill="#D4AF37" />
+              </svg>
+            </motion.div>
           </div>
         </section>
 
@@ -84,8 +116,12 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
             className="rounded-[28px] border-2 border-[#3B5E43] bg-white p-6 sm:p-8 shadow-sm text-center relative overflow-hidden space-y-5"
           >
             {/* Hoa sen vàng nét mảnh góc card */}
-            <div className="absolute bottom-1 left-2 text-amber-200/40 text-7xl select-none pointer-events-none">
-              🪷
+            <div className="absolute bottom-2 left-2 w-24 h-24 opacity-25 pointer-events-none">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <path d="M50 20 C40 35 45 55 50 60 C55 55 60 35 50 20 Z" fill="#D4AF37" opacity="0.7" />
+                <path d="M38 32 C28 45 35 60 47 60" fill="none" stroke="#D4AF37" strokeWidth="1.2" />
+                <path d="M62 32 C72 45 65 60 53 60" fill="none" stroke="#D4AF37" strokeWidth="1.2" />
+              </svg>
             </div>
 
             {/* Song Hỷ son đỏ hình học tròn ở đỉnh */}
@@ -145,6 +181,15 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           </div>
         </section>
 
+        {/* 3.5. CHUYỆN TÌNH SEN NGỌC - LOVE STORY TIMELINE */}
+        <section className="bg-white border-b border-[#DCE7DD]">
+          <LoveStoryTimeline
+            accentColor="#3B5E43"
+            variant="lotus"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
+
         {/* 4. THƯ MỜI THAM DỰ TIỆC CƯỚI (LỄ THÀNH HÔN & LỄ VU QUY) */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -180,13 +225,11 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           {/* Dấu phân cách hoa văn hoàng gia */}
           <div className="flex items-center justify-center gap-3 text-amber-700/60 text-xs">
             <span>—————</span>
-            <motion.span
-              animate={{ rotate: [0, 15, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="text-base inline-block"
-            >
-              🌸
-            </motion.span>
+            <div className="w-5 h-5 text-rose-400 inline-flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+                <path d="M12 3c-1.5 2-2 4-2 6 0 3 2 5 2 5s2-2 2-5c0-2-.5-4-2-6zM8 7c-2 1.5-3 3.5-3 5.5 0 2.5 1.5 4.5 3 5 0-2 .5-4 1.5-5.5-1-1.5-1.5-3.5-1.5-5zM16 7c0 1.5-.5 3.5-1.5 5 1 1.5 1.5 3.5 1.5 5.5 1.5-.5 3-2.5 3-5 0-2-1-4-3-5.5z" />
+              </svg>
+            </div>
             <span>—————</span>
           </div>
 
@@ -235,14 +278,37 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
+        {/* 4.5. LỊCH TRÌNH HÔN LỄ SEN NGỌC - WEDDING ITINERARY */}
+        <section className="bg-white border-b border-[#DCE7DD]">
+          <WeddingItinerary
+            accentColor="#3B5E43"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName}
+            venueAddress={mainEvent?.address}
+          />
+        </section>
+
+        {/* 4.6. DRESS CODE SECTION KHUYẾN NGHỊ */}
+        <section className="bg-[#F4F7F4] border-b border-[#DCE7DD]">
+          <DressCodeSection
+            accentColor="#3B5E43"
+            dressCodeTitle="Gợi Ý Tone Màu Trang Phục Sen Ngọc"
+          />
+        </section>
+
         {/* 5. KHUNG LỊCH THÁNG 11 VIỀN XANH CHUẨN XÁC */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="px-5 py-4"
+          className="px-5 py-4 relative"
         >
+          {/* Brand watermark */}
+          <div className="absolute right-1 top-8 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
           <div className="rounded-[24px] border-2 border-[#3B5E43] bg-white p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between text-[#1E3823] px-2 font-serif font-bold">
               <span className="text-xl">11</span>
@@ -324,12 +390,20 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           className="px-5 py-4"
         >
           <div className="rounded-[28px] border-2 border-[#3B5E43] bg-white p-6 shadow-sm text-center relative overflow-hidden space-y-3">
-            {/* Họa tiết hoa sen vàng nhạt */}
-            <div className="absolute top-2 left-2 text-amber-200/30 text-5xl select-none pointer-events-none">
-              🪷
+            {/* Họa tiết hoa sen vàng nhạt chìm */}
+            <div className="absolute -top-4 -left-4 w-24 h-24 text-[#D4AF37]/20 pointer-events-none">
+              <svg viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 15 C40 35 45 60 50 65 C55 60 60 35 50 15 Z" />
+                <path d="M40 30 C25 45 35 65 48 65 C38 55 38 40 40 30 Z" />
+                <path d="M60 30 C75 45 65 65 52 65 C62 55 62 40 60 30 Z" />
+              </svg>
             </div>
-            <div className="absolute bottom-2 right-2 text-amber-200/30 text-5xl select-none pointer-events-none">
-              🌸
+            <div className="absolute -bottom-4 -right-4 w-24 h-24 text-[#D4AF37]/20 pointer-events-none">
+              <svg viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 15 C40 35 45 60 50 65 C55 60 60 35 50 15 Z" />
+                <path d="M40 30 C25 45 35 65 48 65 C38 55 38 40 40 30 Z" />
+                <path d="M60 30 C75 45 65 65 52 65 C62 55 62 40 60 30 Z" />
+              </svg>
             </div>
 
             <h4 className="text-lg font-serif font-bold text-[#1E3823] uppercase tracking-wider">
@@ -349,7 +423,7 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
                 onClick={onOpenRsvp}
                 className="px-6 py-2.5 rounded-full bg-[#3B5E43] text-white text-xs font-sans font-bold hover:bg-[#2A4430] transition shadow cursor-pointer inline-flex items-center gap-1.5"
               >
-                <span>✍️</span>
+                <UserCheck className="w-3.5 h-3.5 text-emerald-200" />
                 <span>Gửi xác nhận</span>
               </motion.button>
             </div>
@@ -381,95 +455,15 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           </motion.div>
         </section>
 
-        {/* 8. BỐ CỤC ALBUM ẢNH CƯỚI BẤT ĐỐI XỨNG */}
-        <motion.section
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="px-5 py-6 space-y-4"
-        >
-          <div className="text-center space-y-1">
-            <span className="text-2xl font-serif italic text-[#25432C] block">
-              Album
-            </span>
-            <span className="text-xs font-serif tracking-widest text-stone-500 uppercase block">
-              Ảnh cưới
-            </span>
-          </div>
-
-          {/* Lưới ảnh so le chuẩn xác theo ảnh mẫu 06 */}
-          <div className="space-y-2.5">
-            {/* Hàng 1: 1 ảnh nhỏ bên trái + khoảng trống */}
-            <div className="grid grid-cols-3 gap-2">
-              <motion.div
-                whileHover={{ scale: 1.04, y: -2 }}
-                onClick={() => onSelectPhoto(coverPhoto)}
-                className="aspect-[3/4] rounded-lg overflow-hidden shadow-xs cursor-pointer bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={coverPhoto} alt="Album 1" className="w-full h-full object-cover transition duration-300" />
-              </motion.div>
-              <div className="col-span-2 flex items-center justify-center">
-                <motion.span
-                  animate={{ y: [0, -6, 0], rotate: [-4, 4, -4] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="text-5xl opacity-40 select-none inline-block"
-                >
-                  🪷
-                </motion.span>
-              </div>
-            </div>
-
-            {/* Hàng 2: 1 ảnh dọc trung tâm khổ lớn + 2 ảnh polaroid nhỏ hai bên */}
-            <div className="grid grid-cols-4 gap-2 items-center">
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                onClick={() => onSelectPhoto(card.photos[1]?.url || coverPhoto)}
-                className="aspect-[3/4] rounded-md overflow-hidden shadow-2xs cursor-pointer bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={card.photos[1]?.url || coverPhoto} alt="Mini 1" className="w-full h-full object-cover transition duration-300" />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.03, y: -3 }}
-                onClick={() => onSelectPhoto(card.photos[2]?.url || coverPhoto)}
-                className="col-span-2 aspect-[3/4] rounded-xl overflow-hidden shadow-md cursor-pointer bg-stone-100 ring-2 ring-emerald-600/20"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={card.photos[2]?.url || coverPhoto} alt="Center Couple" className="w-full h-full object-cover transition duration-500" />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                onClick={() => onSelectPhoto(card.photos[3]?.url || coverPhoto)}
-                className="aspect-[3/4] rounded-md overflow-hidden shadow-2xs cursor-pointer bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={card.photos[3]?.url || coverPhoto} alt="Mini 2" className="w-full h-full object-cover transition duration-300" />
-              </motion.div>
-            </div>
-
-            {/* Hàng 3: 2 ảnh vuông cân xứng */}
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
-              <motion.div
-                whileHover={{ scale: 1.03, y: -2 }}
-                onClick={() => onSelectPhoto(card.photos[4]?.url || coverPhoto)}
-                className="aspect-square rounded-xl overflow-hidden shadow-xs cursor-pointer bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={card.photos[4]?.url || coverPhoto} alt="Square 1" className="w-full h-full object-cover transition duration-300" />
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.03, y: -2 }}
-                onClick={() => onSelectPhoto(card.photos[0]?.url || coverPhoto)}
-                className="aspect-square rounded-xl overflow-hidden shadow-xs cursor-pointer bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={card.photos[0]?.url || coverPhoto} alt="Square 2" className="w-full h-full object-cover transition duration-300" />
-              </motion.div>
-            </div>
-          </div>
-        </motion.section>
+        {/* 8. ALBUM ẢNH CƯỚI HOA SEN LIGHTBOX */}
+        <section className="bg-white border-b border-[#DCE7DD]">
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#3B5E43"
+            title="Album Ảnh Cưới Sen Ngọc"
+            subtitle="Từng khoảnh khắc thanh tao, thuần khiết và ngập tràn hạnh phúc"
+          />
+        </section>
 
         {/* 9. FOOTER HOA SEN VÀ LỜI CHÀO ĐÓN TIẾP */}
         <motion.section
@@ -477,7 +471,7 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="pt-8 pb-12 px-6 text-center space-y-4 bg-gradient-to-b from-[#FCFDFC] to-[#EDF5EF]"
+          className="pt-8 pb-10 px-6 text-center space-y-4 bg-gradient-to-b from-[#FCFDFC] to-[#EDF5EF]"
         >
           <div className="space-y-2">
             <span className="text-sm font-serif font-bold text-[#1E3823] tracking-widest uppercase block">
@@ -488,16 +482,49 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
             </h4>
           </div>
 
-          <div className="pt-4 flex justify-center">
-            <motion.div
-              animate={{ y: [0, -5, 0], scale: [1, 1.05, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="text-5xl opacity-80 select-none"
-            >
-              🪷 🌸 🪷
-            </motion.div>
+          {/* Khối minh họa Đầm Sen Dát Vàng Hoàng Kim (Golden Lotus Pond Artwork) */}
+          <div className="pt-2 flex flex-col items-center justify-center">
+            <div className="w-full max-w-[280px] h-28 relative flex items-center justify-center">
+              <svg viewBox="0 0 300 120" className="w-full h-full drop-shadow-md">
+                {/* Lá sen lớn */}
+                <ellipse cx="70" cy="85" rx="55" ry="25" fill="#3B5E43" opacity="0.8" />
+                <path d="M70 85 L35 70 M70 85 L105 70 M70 85 L70 60 M70 85 L50 95 M70 85 L90 95" stroke="#2C4733" strokeWidth="1.5" />
+                <ellipse cx="230" cy="88" rx="50" ry="22" fill="#3B5E43" opacity="0.75" />
+                <path d="M230 88 L195 75 M230 88 L265 75 M230 88 L230 68" stroke="#2C4733" strokeWidth="1.5" />
+                {/* Cuống sen */}
+                <path d="M150 110 Q145 70 150 45" stroke="#2C4733" strokeWidth="3" fill="none" />
+                <path d="M110 110 Q105 80 115 65" stroke="#2C4733" strokeWidth="2" fill="none" />
+                <path d="M190 110 Q195 80 185 65" stroke="#2C4733" strokeWidth="2" fill="none" />
+                {/* Đóa sen hồng trung tâm nở rộ */}
+                <path d="M150 25 C130 45 135 70 150 75 C165 70 170 45 150 25 Z" fill="#E58A96" stroke="#D4AF37" strokeWidth="1.5" />
+                <path d="M135 40 C115 55 125 75 145 75 C130 65 130 50 135 40 Z" fill="#F3B2BC" stroke="#D4AF37" strokeWidth="1" />
+                <path d="M165 40 C185 55 175 75 155 75 C170 65 170 50 165 40 Z" fill="#F3B2BC" stroke="#D4AF37" strokeWidth="1" />
+                {/* Búp sen bên trái */}
+                <path d="M115 50 C105 60 110 75 118 75 C125 75 125 60 115 50 Z" fill="#E58A96" stroke="#D4AF37" strokeWidth="1" />
+                {/* Nhụy vàng */}
+                <ellipse cx="150" cy="55" rx="8" ry="6" fill="#D4AF37" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-mono tracking-widest text-[#3B5E43] uppercase pt-1">
+              ❖ ĐẦM SEN HOÀNG KIM ❖
+            </span>
           </div>
         </motion.section>
+
+        {/* 9.5. NÚT THẢ TIM & DÒNG CHÚC PHÚC SEN NGỌC */}
+        <section className="p-6 bg-[#FCFDFC] border-b border-[#DCE7DD] space-y-6">
+          <div className="flex justify-center">
+            <HeartBurstButton accentColor="#3B5E43" />
+          </div>
+
+          <div className="pt-2">
+            <QuickWishWall
+              cardId={card.id}
+              accentColor="#3B5E43"
+              guestName={guestName}
+            />
+          </div>
+        </section>
 
         {/* 10. BOTTOM DOCK CỐ ĐỊNH CHÂN MÀN HÌNH */}
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#FCFDFC]/95 backdrop-blur-md border-t border-[#DCE7DD] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">
@@ -507,7 +534,8 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
             onClick={onOpenRsvp}
             className="flex-1 py-3 px-3 rounded-full bg-[#3B5E43] text-white text-xs font-sans font-bold uppercase tracking-wider shadow flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition"
           >
-            <span>✍️ Xác Nhận Tham Dự</span>
+            <UserCheck className="w-4 h-4" />
+            <span>Xác Nhận Tham Dự</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -515,7 +543,8 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
             onClick={onOpenGift}
             className="py-3 px-5 rounded-full bg-[#8E1C1F] text-white text-xs font-sans font-bold uppercase tracking-wider shadow flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition shrink-0"
           >
-            <span>🎁 Mừng Cưới</span>
+            <Gift className="w-4 h-4" />
+            <span>Mừng Cưới</span>
           </motion.button>
         </div>
       </main>

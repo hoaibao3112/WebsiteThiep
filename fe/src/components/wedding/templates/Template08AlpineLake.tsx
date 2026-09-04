@@ -3,7 +3,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { CountdownUnits } from "./common/CountdownUnits";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
 import { formatDate } from "@/lib/utils";
 import { MapPin, Navigation, UserCheck, Gift, Calendar, Heart } from "lucide-react";
 import { KineticText, LivingPhoto, MarqueeRibbon, FloatingQuote } from "../effects/MotionElements";
@@ -32,6 +41,23 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
 
   const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
   const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+
+  const defaultGalleryPhotos = [
+    { url: coverPhoto, caption: "Hồ nước biếc và hàng thông xanh ngắt" },
+    { url: "/images/demo/couple-sunset.png", caption: "Chiều hoàng hôn soi bóng hồ phẳng lặng" },
+    { url: "/images/demo/couple-kiss.png", caption: "Lời thề ước trăm năm bên làn nước trong xanh" },
+    { url: "/images/demo/couple-street.png", caption: "Bên nhau thong dong qua bốn mùa" },
+    { url: groomAvatar, caption: "Chú rể Nguyễn Dương" },
+    { url: brideAvatar, caption: "Cô dâu Khánh Thy" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#F4F7F7] text-[#1E3E40] font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-teal-200">
@@ -158,10 +184,19 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             <p>đó là dịp hiếm hoi được gặp nhau, là sự ủng hộ và yêu thương không tính toán.</p>
             <p>Cuộc đời có hơn ba vạn ngày, thật hạnh phúc khi trong một ngày như thế, bạn đến vì chúng mình.</p>
             <p className="font-bold text-[#C92A2A] not-italic pt-1 font-sans">
-              Đã lâu không gặp, hẹn nhau trong ngày cưới nhé! 💕
+              Đã lâu không gặp, hẹn nhau trong ngày cưới nhé! <span className="text-rose-500">♥</span>
             </p>
           </div>
         </motion.section>
+
+        {/* 2.5. CHUYỆN TÌNH BÊN HỒ BIẾC - LOVE STORY TIMELINE */}
+        <section className="bg-white border-b border-[#D5E5E6]">
+          <LoveStoryTimeline
+            accentColor="#1E3E40"
+            variant="alpine"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
 
         {/* 3. LỊCH THÁNG NHÚNG TRÊN ẢNH RỪNG THÔNG VÀ HỒ NƯỚC */}
         <motion.section
@@ -249,7 +284,7 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
           {/* Thơ lãng mạn theo ảnh mẫu */}
           <div className="text-center text-xs font-serif italic text-stone-600 leading-relaxed max-w-xs mx-auto">
             <p>Tình yêu chúng mình như suối nguồn qua bốn mùa,</p>
-            <p>lắng đọng thành lời thề đi cùng nhau suốt đời 💍</p>
+            <p>lắng đọng thành lời thề đi cùng nhau suốt đời <span className="text-amber-600">✦</span></p>
           </div>
 
           {/* 4 Khối countdown đỏ rượu vang trên nền trắng */}
@@ -264,10 +299,10 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             
             <p className="text-xs font-serif italic text-stone-700 leading-relaxed pt-2">
               “Anh sẽ luôn yêu em, điều này — em có thể hỏi lại anh bao nhiêu lần cũng được.<br />
-              Em không thuộc về bất kỳ ai khác, vì em chính là duy nhất của anh 💕”
+              Em không thuộc về bất kỳ ai khác, vì em chính là duy nhất của anh <span className="text-rose-500">♥</span>”
             </p>
             <div className="flex items-center justify-between pt-1 text-[10px] font-mono text-stone-400">
-              <span>🌿 Wild Botanical</span>
+              <span>❖ Wild Botanical</span>
               <span>— Nguyễn Dương</span>
             </div>
           </div>
@@ -277,10 +312,39 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             <p>Trong đời mỗi người, sẽ luôn có một khoảnh khắc cần kiên định với lựa chọn của chính mình</p>
             <p>một giây phút để nói rằng: &ldquo;Đây là tôi, và đây là quyết định của tôi.&rdquo;</p>
             <p className="font-semibold text-[#1E3E40] not-italic font-sans pt-1">
-              Khoảnh khắc ấy, chính là hiện tại có bạn bên cạnh. ❤️
+              Khoảnh khắc ấy, chính là hiện tại có bạn bên cạnh. <span className="text-rose-500">♥</span>
             </p>
           </div>
         </motion.section>
+
+        {/* 4.5. LỊCH TRÌNH HÔN LỄ HỒ NÚI - WEDDING ITINERARY */}
+        <section className="bg-white border-b border-[#D5E5E6]">
+          <WeddingItinerary
+            accentColor="#1E3E40"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName || "Tư Gia Nhà Trai"}
+            venueAddress={mainEvent?.address || "Số 28 Phường Vĩnh Phúc, Ba Đình, Hà Nội"}
+          />
+        </section>
+
+        {/* 4.6. DRESS CODE SECTION */}
+        <section className="bg-[#F4F7F7] border-b border-[#D5E5E6]">
+          <DressCodeSection
+            accentColor="#1E3E40"
+            dressCodeTitle="Gợi Ý Tone Màu Trang Phục Alpine Lake"
+          />
+        </section>
+
+        {/* 4.7. ALBUM ẢNH CƯỚI LIGHTBOX */}
+        <section className="bg-white border-b border-[#D5E5E6]">
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#1E3E40"
+            title="Album Ảnh Kỷ Niệm"
+            subtitle="Khoảnh khắc lắng đọng bên hồ biếc và rặng thông xanh ngắt"
+          />
+        </section>
 
         {/* 5. KHỐI RSVP VÀ HỘP QUÀ MỪNG TRÁI TIM */}
         <motion.section
@@ -288,8 +352,13 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="p-6 bg-[#F7FAFA] border-b border-[#D5E5E6] text-center space-y-4"
+          className="p-6 bg-[#F7FAFA] border-b border-[#D5E5E6] text-center space-y-4 relative"
         >
+          {/* Brand watermark */}
+          <div className="absolute right-2 top-8 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
+
           <div className="max-w-xs mx-auto p-5 rounded-3xl bg-white shadow-sm border border-[#D5E5E6] space-y-2">
             <span className="text-[10px] font-mono tracking-widest text-stone-400 uppercase">R.S.V.P.</span>
             <h4 className="text-sm font-serif font-bold text-stone-900">Xác nhận tham dự</h4>
@@ -301,9 +370,10 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.94 }}
                 onClick={onOpenRsvp}
-                className="px-6 py-2 rounded-full bg-[#E03131] text-white text-xs font-bold shadow hover:bg-[#C92A2A] transition cursor-pointer"
+                className="px-6 py-2 rounded-full bg-[#E03131] text-white text-xs font-bold shadow hover:bg-[#C92A2A] transition cursor-pointer inline-flex items-center gap-1.5"
               >
-                ✍️ Gửi xác nhận
+                <UserCheck className="w-3.5 h-3.5 text-white" />
+                <span>Gửi xác nhận</span>
               </motion.button>
             </div>
           </div>
@@ -313,27 +383,74 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
               whileHover={{ scale: 1.06 }}
               whileTap={{ scale: 0.94 }}
               onClick={onOpenGift}
-              className="px-8 py-2.5 rounded-full bg-white border border-[#D5E5E6] text-stone-800 text-xs font-bold shadow-sm flex items-center justify-center gap-2 mx-auto cursor-pointer"
+              className="px-8 py-3 rounded-2xl bg-white border-2 border-[#D5E5E6] text-stone-800 text-xs font-bold shadow-sm flex flex-col items-center justify-center gap-1.5 mx-auto cursor-pointer"
             >
-              <span>💝</span>
-              <span>Gửi Quà Mừng</span>
+              {/* Hộp quà màu hồng nơ vàng chuẩn theo mẫu 08 Part 3 */}
+              <div className="w-14 h-12 relative flex items-center justify-center">
+                <svg viewBox="0 0 60 50" className="w-full h-full drop-shadow-2xs">
+                  {/* Nơ trái tim vàng */}
+                  <path d="M30 14 C24 4 14 10 20 18 C25 22 30 18 30 18 C30 18 35 22 40 18 C46 10 36 4 30 14 Z" fill="#F6C56F" />
+                  {/* Nắp hộp */}
+                  <rect x="8" y="16" width="44" height="8" rx="2" fill="#F48B96" stroke="#E26D7B" strokeWidth="1" />
+                  {/* Thân hộp */}
+                  <rect x="12" y="24" width="36" height="22" rx="2" fill="#F8A5AE" stroke="#E26D7B" strokeWidth="1" />
+                  {/* Ruy băng dọc */}
+                  <rect x="27" y="16" width="6" height="30" fill="#F6C56F" />
+                </svg>
+              </div>
+              <span className="font-serif tracking-wider text-[11px] uppercase text-[#1E3E40]">GỬI QUÀ MỪNG CÔ DÂU — CHÚ RỂ</span>
             </motion.button>
           </div>
 
-          {/* Chibi Couple in front of 3D Red Double Happiness & Thank You */}
-          <div className="pt-6 text-center space-y-1">
+          {/* Minh họa cổng cưới Song Hỷ đỏ truyền thống với cặp đôi uyên ương đứng bên dưới từ mẫu 08 Part 3 */}
+          <div className="pt-6 text-center space-y-2">
             <motion.div
-              animate={{ y: [0, -6, 0], scale: [1, 1.05, 1] }}
+              animate={{ y: [0, -4, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="text-5xl select-none"
+              className="w-24 h-28 mx-auto relative flex items-center justify-center"
             >
-              🎎
+              <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-sm">
+                {/* Cổng tam quan đỏ Song Hỷ hình học */}
+                <rect x="15" y="10" width="70" height="70" fill="#B72B2B" rx="4" />
+                <rect x="22" y="18" width="56" height="54" fill="#8C1C1C" rx="2" />
+                <text x="50" y="55" fill="#FFF" fontSize="32" fontWeight="bold" textAnchor="middle" fontFamily="serif">囍</text>
+                {/* Cột trụ hai bên */}
+                <rect x="10" y="10" width="6" height="90" fill="#8C1C1C" />
+                <rect x="84" y="10" width="6" height="90" fill="#8C1C1C" />
+                {/* Cặp đôi đứng dưới cổng */}
+                {/* Chú rể bên phải áo vest đen */}
+                <circle cx="58" cy="74" r="6" fill="#FFE5D4" />
+                <rect x="53" y="80" width="10" height="24" fill="#2B1810" rx="2" />
+                {/* Cô dâu bên trái váy trắng cưới xoè */}
+                <circle cx="42" cy="75" r="5.5" fill="#FFF0E6" />
+                <path d="M38 80 L46 80 L52 104 L32 104 Z" fill="#FFF" stroke="#E2E8F0" strokeWidth="0.8" />
+                {/* Bó hoa cưới nhỏ */}
+                <circle cx="47" cy="85" r="2.5" fill="#A3B899" />
+              </svg>
             </motion.div>
-            <h5 className="text-2xl font-serif italic text-stone-800">
+            <h5 className="text-2xl font-serif italic text-stone-800 tracking-wide pt-1">
               THANK YOU
             </h5>
+            <p className="text-[11px] text-stone-400 font-sans tracking-widest">
+              FOR SHARING OUR SPECIAL DAY
+            </p>
           </div>
         </motion.section>
+
+        {/* 5.5. NÚT THẢ TIM & DÒNG LỜI CHÚC ALPS */}
+        <section className="p-6 bg-white border-b border-[#D5E5E6] space-y-6">
+          <div className="flex justify-center">
+            <HeartBurstButton accentColor="#1E3E40" />
+          </div>
+
+          <div className="pt-2">
+            <QuickWishWall
+              cardId={card.id}
+              accentColor="#1E3E40"
+              guestName={guestName}
+            />
+          </div>
+        </section>
 
         {/* 6. BOTTOM DOCK CỐ ĐỊNH */}
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D5E5E6] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">

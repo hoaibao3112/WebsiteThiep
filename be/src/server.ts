@@ -65,7 +65,7 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
-  skip: (req) => req.path.startsWith("/webhooks"), // Bỏ qua webhook SePay
+  skip: (req) => (req.originalUrl || req.path).startsWith("/api/webhooks"), // Bỏ qua webhook SePay
 });
 
 // Auth routes: 15 requests / 15 phút / IP (chống brute-force)

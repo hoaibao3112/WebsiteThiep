@@ -1,12 +1,13 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
+import { fileURLToPath } from "node:url";
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    // Native tsconfig path resolution — no plugin needed in Vite 6+
     alias: {
-      "@": new URL("./src", import.meta.url).pathname,
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   test: {

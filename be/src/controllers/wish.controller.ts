@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ZodError } from "zod";
 import { WishService } from "../services/wish.service";
 import { WishSubmitSchema } from "../lib/validators/wish.schema";
 
@@ -16,7 +17,14 @@ export class WishController {
         data: wish,
       });
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -29,7 +37,14 @@ export class WishController {
       const data = await WishService.listWishes(cardId, limit, cursor);
       res.status(200).json({ success: true, data });
     } catch (error: any) {
-      res.status(500).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 }

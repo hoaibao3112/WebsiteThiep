@@ -3,8 +3,16 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { CountdownUnits } from "./common/CountdownUnits";
-import { InteractiveCalendarGrid } from "./common/InteractiveCalendarGrid";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
 import { MapPin, Navigation, UserCheck, Gift, Calendar, Heart } from "lucide-react";
 import { KineticText, LivingPhoto, MarqueeRibbon } from "../effects/MotionElements";
 
@@ -29,6 +37,23 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
   const bridePhoto = "/images/demo/korean-bride.png";
   const groomPhoto = "/images/demo/korean-groom.png";
   const calendarPhoto = "/images/demo/korean-calendar.png";
+
+  const defaultGalleryPhotos = [
+    { url: heroPhoto, caption: "Khoảnh khắc hẹn ước" },
+    { url: bridePhoto, caption: "Nụ cười rạng rỡ của cô dâu" },
+    { url: groomPhoto, caption: "Ánh mắt ấm áp của chú rể" },
+    { url: calendarPhoto, caption: "Từng ngày đong đầy yêu thương" },
+    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
+    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#FAF8F5] text-[#3E2B22] font-serif pb-28 sm:pb-32 overflow-x-hidden selection:bg-[#EBDCD0]">
@@ -135,13 +160,22 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
               <p className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.fatherName || "Ông: Nguyễn Tiến Minh"}</p>
               <p className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.motherName || "Bà: Hoàng Cẩm Vân"}</p>
               <p className="text-[10px] text-stone-500 italic">Hoàng Mai — Hà Nội</p>
-              <motion.div
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="w-8 h-8 mx-auto my-1 flex items-center justify-center text-lg"
-              >
-                👰🏻‍♀️
-              </motion.div>
+              <div className="my-1.5 flex items-center justify-center">
+                {/* Chibi cô dâu cầm hoa từ mẫu 02b */}
+                <div className="w-12 h-12 relative flex items-center justify-center">
+                  <svg viewBox="0 0 60 60" className="w-full h-full drop-shadow-xs">
+                    <circle cx="30" cy="24" r="14" fill="#FFF0E6" stroke="#B26E63" strokeWidth="1" />
+                    <path d="M18 20 Q30 10 42 20 Q36 15 30 15 Q24 15 18 20 Z" fill="#3E2B22" />
+                    <circle cx="25" cy="24" r="1.5" fill="#3E2B22" />
+                    <circle cx="35" cy="24" r="1.5" fill="#3E2B22" />
+                    <circle cx="22" cy="27" r="1.8" fill="#F4A6A6" opacity="0.6" />
+                    <circle cx="38" cy="27" r="1.8" fill="#F4A6A6" opacity="0.6" />
+                    <path d="M28 28 Q30 30 32 28" stroke="#D9534F" strokeWidth="1" fill="none" strokeLinecap="round" />
+                    <path d="M22 38 Q30 36 38 38 L40 54 L20 54 Z" fill="#FFF" stroke="#B26E63" strokeWidth="1" />
+                    <circle cx="30" cy="42" r="3.5" fill="#E58A96" />
+                  </svg>
+                </div>
+              </div>
               <p className="text-xs font-bold text-[#B26E63] pt-0.5">
                 Út nữ: {brideName}
               </p>
@@ -156,13 +190,21 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
               <p className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.fatherName || "Ông: Phạm Minh Toàn"}</p>
               <p className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.motherName || "Bà: Lại Thị Tám"}</p>
               <p className="text-[10px] text-stone-500 italic">Từ Liêm — Hà Nội</p>
-              <motion.div
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="w-8 h-8 mx-auto my-1 flex items-center justify-center text-lg"
-              >
-                🤵🏻‍♂️
-              </motion.div>
+              <div className="my-1.5 flex items-center justify-center">
+                {/* Chibi chú rể áo vest từ mẫu 02b */}
+                <div className="w-12 h-12 relative flex items-center justify-center">
+                  <svg viewBox="0 0 60 60" className="w-full h-full drop-shadow-xs">
+                    <circle cx="30" cy="24" r="14" fill="#FFE5D4" stroke="#543A2C" strokeWidth="1" />
+                    <path d="M18 20 Q30 11 42 20 Q36 16 30 16 Q24 16 18 20 Z" fill="#2B1810" />
+                    <circle cx="25" cy="24" r="1.5" fill="#2B1810" />
+                    <circle cx="35" cy="24" r="1.5" fill="#2B1810" />
+                    <path d="M28 28 Q30 30 32 28" stroke="#D9534F" strokeWidth="1" fill="none" strokeLinecap="round" />
+                    <path d="M21 38 Q30 36 39 38 L41 54 L19 54 Z" fill="#3E2B22" stroke="#543A2C" strokeWidth="1" />
+                    <polygon points="30,38 27,45 33,45" fill="#FFF" />
+                    <polygon points="28,42 32,42 30,44" fill="#C92A2A" />
+                  </svg>
+                </div>
+              </div>
               <p className="text-xs font-bold text-[#B26E63] pt-0.5">
                 Trưởng nam: {groomName}
               </p>
@@ -184,8 +226,13 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7 }}
-          className="pt-6 pb-4 px-4 text-center bg-[#FAF8F5] space-y-3"
+          className="pt-6 pb-4 px-4 text-center bg-[#FAF8F5] space-y-3 relative"
         >
+          {/* Brand watermark vertical */}
+          <div className="absolute right-1 top-10 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
+
           <div className="text-xs text-stone-300 tracking-[0.25em]">
             ······························································
           </div>
@@ -214,6 +261,15 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             ))}
           </div>
         </motion.section>
+
+        {/* 4.5. LOVE STORY TIMELINE */}
+        <section className="bg-[#FAF8F5] border-b border-[#EDE3D8]">
+          <LoveStoryTimeline
+            accentColor="#543A2C"
+            variant="editorial"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
 
         {/* 5. LỊCH TIỆC CƯỚI CHÍNH XÁC (DATE BLOCK VINTAGE) */}
         <motion.section
@@ -255,34 +311,31 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             </span>
           </div>
 
-          {/* TIMELINE ICON */}
+          {/* TIMELINE SVG ICONS */}
           <div className="flex items-center justify-center gap-8 text-xs text-stone-700 pt-1">
             <motion.div
               whileHover={{ scale: 1.08 }}
-              className="text-center space-y-0.5"
+              className="text-center space-y-1"
             >
-              <motion.span
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-                className="text-lg block"
-              >
-                🥂
-              </motion.span>
-              <span className="font-bold">11h00</span>
+              <div className="w-8 h-8 mx-auto flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#B26E63]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M8 22h8M12 15v7M8 15h8l1-10H7l1 10zM12 2a3 3 0 0 0-3 3v1h6V5a3 3 0 0 0-3-3z" />
+                </svg>
+              </div>
+              <span className="font-bold block">11h00</span>
               <p className="text-[10px] text-stone-500">Đón khách</p>
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.08 }}
-              className="text-center space-y-0.5"
+              className="text-center space-y-1"
             >
-              <motion.span
-                animate={{ y: [0, -3, 0] }}
-                transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                className="text-lg block"
-              >
-                🍽️
-              </motion.span>
-              <span className="font-bold">11h30</span>
+              <div className="w-8 h-8 mx-auto flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#B26E63]" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 3M7 7v10M17 7v10" />
+                </svg>
+              </div>
+              <span className="font-bold block">11h30</span>
               <p className="text-[10px] text-stone-500">Khai tiệc</p>
             </motion.div>
           </div>
@@ -351,6 +404,25 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
+        {/* 6.5. WEDDING ITINERARY */}
+        <section className="bg-[#FAF8F5] border-b border-[#EDE3D8]">
+          <WeddingItinerary
+            accentColor="#543A2C"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName}
+            venueAddress={mainEvent?.address}
+          />
+        </section>
+
+        {/* 6.6. DRESS CODE SECTION */}
+        <section className="bg-[#FAF8F5] border-b border-[#EDE3D8]">
+          <DressCodeSection
+            accentColor="#543A2C"
+            dressCodeTitle="Bảng Màu Trang Phục Tối Giản"
+          />
+        </section>
+
         {/* 7. PHONG BÌ SÁP RSVP THỜI TRANG */}
         <motion.section
           initial={{ opacity: 0, y: 25 }}
@@ -391,35 +463,45 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={onOpenRsvp}
-                className="w-full py-2.5 rounded-xl bg-[#543A2C] text-white text-xs font-sans font-bold hover:bg-[#3D291F] transition shadow cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-[#543A2C] text-white text-xs font-sans font-bold hover:bg-[#3D291F] transition shadow cursor-pointer inline-flex items-center justify-center gap-1.5"
               >
-                ✍️ Gửi xác nhận
+                <UserCheck className="w-3.5 h-3.5 text-amber-200" />
+                <span>Gửi xác nhận</span>
               </motion.button>
             </div>
           </motion.div>
         </motion.section>
 
-        {/* 8. HỘP GỬI QUÀ MỪNG TRÁI TIM */}
+        {/* 8. HỘP GỬI QUÀ MỪNG PHONG THƯ TRÁI TIM NỞ RỘ (PART 2 TRONG ẢNH MẪU) */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7 }}
-          className="p-6 bg-[#FAF8F5] border-b border-[#EDE3D8] text-center space-y-3"
+          className="p-6 bg-[#FAF8F5] border-b border-[#EDE3D8] text-center space-y-3 relative"
         >
+          {/* Brand watermark vertical */}
+          <div className="absolute right-2 top-8 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
+
           <motion.div
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.95 }}
             onClick={onOpenGift}
-            className="cursor-pointer group inline-block p-4 rounded-3xl hover:bg-stone-100/50 transition"
+            className="cursor-pointer group inline-block p-4 rounded-3xl hover:bg-stone-100/50 transition text-center"
           >
-            <motion.div
-              animate={{ y: [0, -6, 0], rotate: [0, -2, 2, 0] }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
-              className="w-16 h-16 mx-auto rounded-2xl bg-white border border-[#EDE3D8] shadow-sm flex items-center justify-center text-2xl group-hover:scale-105 transition"
-            >
-              💌
-            </motion.div>
+            {/* Minh họa phong thư mở nắp và trái tim hồng bay lên chuẩn xác từ mẫu 02b */}
+            <div className="w-20 h-16 mx-auto relative flex items-center justify-center">
+              <svg viewBox="0 0 100 80" className="w-full h-full drop-shadow-sm">
+                <path d="M15 35 L50 15 L85 35 L85 70 L15 70 Z" fill="#FBF6EE" stroke="#E3D1BE" strokeWidth="1.5" />
+                <path d="M15 70 L45 45 M85 70 L55 45" stroke="#E3D1BE" strokeWidth="1" />
+                {/* Trái tim hồng lớn nhú ra */}
+                <path d="M50 35 C42 22 30 28 35 40 C40 50 50 56 50 56 C50 56 60 50 65 40 C70 28 58 22 50 35 Z" fill="#E88D98" />
+                {/* Trái tim nhỏ bay lên */}
+                <path d="M68 20 C64 12 56 16 59 23 C62 29 68 33 68 33 C68 33 74 29 77 23 C80 16 72 12 68 20 Z" fill="#F5B2BC" opacity="0.8" />
+              </svg>
+            </div>
             <h5 className="text-sm font-serif italic text-[#B26E63] font-bold mt-2">
               Gửi quà mừng
             </h5>
@@ -429,36 +511,36 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
           </motion.div>
         </motion.section>
 
-        {/* 9. ALBUM ẢNH CƯỚI CHUẨN XÁC */}
+        {/* 9. ALBUM ẢNH CƯỚI LIGHTBOX & MASONRY */}
         <motion.section
           initial={{ opacity: 0, y: 25 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7 }}
-          className="p-5 sm:p-7 bg-[#FAF8F5] space-y-4"
+          className="bg-[#FAF8F5] border-b border-[#EDE3D8]"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-serif font-bold tracking-widest text-[#4A2E20] uppercase">
-              ALBUM ẢNH CƯỚI
-            </span>
-            <div className="flex-1 h-px bg-[#543A2C]/30" />
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#543A2C"
+            title="ALBUM ẢNH CƯỚI"
+            subtitle="Từng khoảnh khắc đong đầy dư vị và cảm xúc yêu thương"
+          />
+        </motion.section>
+
+        {/* 9.5. HEART BURST & QUICK WISH WALL */}
+        <section className="p-6 bg-[#FAF8F5] border-b border-[#EDE3D8] space-y-6">
+          <div className="flex justify-center">
+            <HeartBurstButton accentColor="#543A2C" />
           </div>
 
-          <div className="grid grid-cols-2 gap-2.5">
-            {[heroPhoto, bridePhoto, groomPhoto, calendarPhoto].map((url, idx) => (
-              <motion.div
-                key={idx}
-                whileHover={{ scale: 1.04, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onSelectPhoto(url)}
-                className="aspect-[3/4] overflow-hidden border border-[#EDE3D8] shadow-2xs cursor-pointer group bg-stone-100"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="Album moment" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-              </motion.div>
-            ))}
+          <div className="pt-2">
+            <QuickWishWall
+              cardId={card.id}
+              accentColor="#543A2C"
+              guestName={guestName}
+            />
           </div>
-        </motion.section>
+        </section>
 
         {/* 10. BOTTOM DOCK CỐ ĐỊNH CHÂN MÀN HÌNH */}
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#EDE3D8] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-lg flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">

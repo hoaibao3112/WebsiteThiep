@@ -3,9 +3,18 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WeddingTemplateProps } from "./types";
-import { CountdownUnits } from "./common/CountdownUnits";
+import {
+  CountdownUnits,
+  InteractiveCalendarGrid,
+  LoveStoryTimeline,
+  WeddingItinerary,
+  DressCodeSection,
+  PhotoGalleryLightbox,
+  HeartBurstButton,
+  QuickWishWall,
+} from "./common";
 import { formatDate } from "@/lib/utils";
-import { MapPin, Navigation, UserCheck, Gift, Heart } from "lucide-react";
+import { MapPin, Navigation, UserCheck, Gift, Heart, QrCode } from "lucide-react";
 import { KineticText, LivingPhoto, MarqueeRibbon, FloatingQuote } from "../effects/MotionElements";
 
 export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
@@ -32,6 +41,23 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
 
   const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
   const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
+
+  const defaultGalleryPhotos = [
+    { url: coverPhoto, caption: "Nụ cười rạng rỡ của đôi uyên ương" },
+    { url: brideAvatar, caption: "Vẻ đẹp dịu dàng của cô dâu" },
+    { url: groomAvatar, caption: "Ánh mắt ấm áp của chú rể" },
+    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn ngọt ngào ngày chung đôi" },
+    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
+    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
+  ];
+
+  const galleryPhotos =
+    card.photos && card.photos.length >= 4
+      ? card.photos.map((p) => ({ url: p.url, caption: p.caption }))
+      : [
+          ...(card.photos || []).map((p) => ({ url: p.url, caption: p.caption })),
+          ...defaultGalleryPhotos.slice(card.photos?.length || 0),
+        ];
 
   return (
     <div className="relative min-h-screen bg-[#FDF9F8] text-[#4A2E24] font-sans pb-28 sm:pb-32 overflow-x-hidden selection:bg-rose-200">
@@ -308,6 +334,15 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
           </div>
         </motion.section>
 
+        {/* 5.5. CHUYỆN TÌNH YÊU NGỌT NGÀO - LOVE STORY TIMELINE */}
+        <section className="bg-white border-b border-[#F5E5E0]">
+          <LoveStoryTimeline
+            accentColor="#BA3E2C"
+            variant="romantic"
+            onSelectPhoto={onSelectPhoto}
+          />
+        </section>
+
         {/* 6. SAVE THE DATE VỚI LỊCH NHÚNG TRÊN ẢNH & TIMELINE ICON */}
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -354,25 +389,57 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
             </div>
           </div>
 
-          {/* Timeline Icons: 🚗, 🎀, 🥂 */}
+          {/* Timeline SVG Icons: Rước Dâu, Chụp hình, Khai tiệc */}
           <div className="space-y-3 pt-2 max-w-xs mx-auto text-xs">
             <motion.div whileHover={{ x: 3 }} className="flex items-center gap-3">
-              <span className="text-xl">🚗</span>
-              <span className="text-rose-500">❤️</span>
+              <div className="w-7 h-7 rounded-full bg-rose-50 flex items-center justify-center text-[#B84A39]">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 17h14M5 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.5l1.5-3h8l1.5 3H19a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2M5 17a2 2 0 1 0 4 0M15 17a2 2 0 1 0 4 0" />
+                </svg>
+              </div>
+              <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-rose-500 text-xs">♥</motion.span>
               <span className="font-semibold text-stone-800">09:00 - Lễ Rước Dâu</span>
             </motion.div>
             <motion.div whileHover={{ x: 3 }} className="flex items-center gap-3">
-              <span className="text-xl">🎀</span>
-              <span className="text-rose-500">❤️</span>
+              <div className="w-7 h-7 rounded-full bg-rose-50 flex items-center justify-center text-[#B84A39]">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              </div>
+              <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }} className="text-rose-500 text-xs">♥</motion.span>
               <span className="font-semibold text-stone-800">09:30 - Chụp hình lưu niệm</span>
             </motion.div>
             <motion.div whileHover={{ x: 3 }} className="flex items-center gap-3">
-              <span className="text-xl">🥂</span>
-              <span className="text-rose-500">❤️</span>
+              <div className="w-7 h-7 rounded-full bg-rose-50 flex items-center justify-center text-[#B84A39]">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 22h8M12 15v7M8 15h8l1-10H7l1 10zM12 2a3 3 0 0 0-3 3v1h6V5a3 3 0 0 0-3-3z" />
+                </svg>
+              </div>
+              <motion.span animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.6 }} className="text-rose-500 text-xs">♥</motion.span>
               <span className="font-semibold text-stone-800">10:30 - Khai tiệc</span>
             </motion.div>
           </div>
         </motion.section>
+
+        {/* 6.5. WEDDING ITINERARY CHƯƠNG TRÌNH LỄ CƯỚI */}
+        <section className="bg-white border-b border-[#F5E5E0]">
+          <WeddingItinerary
+            accentColor="#BA3E2C"
+            weddingDate={new Date(targetDate)}
+            coupleNames={`${groomShort} & ${brideShort}`}
+            venueName={mainEvent?.venueName}
+            venueAddress={mainEvent?.address}
+          />
+        </section>
+
+        {/* 6.6. DRESS CODE SECTION */}
+        <section className="bg-[#FDF9F8] border-b border-[#F5E5E0]">
+          <DressCodeSection
+            accentColor="#BA3E2C"
+            dressCodeTitle="Gợi Ý Tone Màu Trang Phục"
+          />
+        </section>
 
         {/* 7. PHONG BÌ SÁP VÒM HỒNG RSVP */}
         <motion.section
@@ -380,8 +447,13 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="p-6 bg-white border-b border-[#F5E5E0] text-center space-y-4"
+          className="p-6 bg-white border-b border-[#F5E5E0] text-center space-y-4 relative"
         >
+          {/* Brand watermark */}
+          <div className="absolute right-2 top-8 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
+
           <p className="text-xs text-stone-600 leading-relaxed italic max-w-xs mx-auto">
             Mình rất muốn được chụp chung với bạn những tấm hình kỷ niệm vì vậy hãy đến sớm hơn một chút bạn yêu nhé! Đám cưới của chúng mình sẽ trọn vẹn hơn khi có thêm lời chúc phúc và sự hiện diện của các bạn.
           </p>
@@ -401,9 +473,10 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
                 whileHover={{ scale: 1.06 }}
                 whileTap={{ scale: 0.94 }}
                 onClick={onOpenRsvp}
-                className="px-6 py-2 rounded-full bg-white text-[#8B2E20] text-xs font-bold hover:bg-stone-50 transition shadow cursor-pointer"
+                className="px-6 py-2 rounded-full bg-white text-[#8B2E20] text-xs font-bold hover:bg-stone-50 transition shadow cursor-pointer inline-flex items-center gap-1.5"
               >
-                ✍️ Gửi xác nhận
+                <UserCheck className="w-3.5 h-3.5 text-[#BA3E2C]" />
+                <span>Gửi xác nhận</span>
               </motion.button>
             </div>
           </motion.div>
@@ -415,8 +488,13 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="p-6 bg-[#FDF9F8] border-b border-[#F5E5E0] space-y-5"
+          className="p-6 bg-[#FDF9F8] border-b border-[#F5E5E0] space-y-5 relative"
         >
+          {/* Brand watermark */}
+          <div className="absolute right-2 top-8 writing-vertical text-[8px] font-sans tracking-widest text-stone-400 select-none pointer-events-none">
+            Made with Ngày chung đôi
+          </div>
+
           <div className="text-center">
             <h4 className="text-base font-serif font-bold text-[#B84A39] tracking-widest uppercase">
               GỬI QUÀ MỪNG
@@ -444,8 +522,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
                 <p className="font-bold text-[#8B2E20]">{brideName}</p>
                 <p className="text-[10px] font-mono text-stone-500">MB Bank : 012345678</p>
               </div>
-              <div className="w-10 h-10 bg-stone-100 rounded-lg flex items-center justify-center text-xs font-mono border border-stone-200">
-                QR
+              <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-xs font-mono border border-rose-200 text-[#8B2E20]">
+                <QrCode className="w-6 h-6 text-[#8B2E20]" />
               </div>
             </motion.div>
           </div>
@@ -458,8 +536,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               onClick={onOpenGift}
               className="p-3 px-4 rounded-2xl bg-white border border-[#F5E5E0] shadow-sm flex items-center gap-3 cursor-pointer hover:shadow-md transition"
             >
-              <div className="w-10 h-10 bg-stone-100 rounded-lg flex items-center justify-center text-xs font-mono border border-stone-200">
-                QR
+              <div className="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center text-xs font-mono border border-rose-200 text-[#8B2E20]">
+                <QrCode className="w-6 h-6 text-[#8B2E20]" />
               </div>
               <div className="text-xs space-y-0.5 text-right">
                 <span className="text-[10px] text-stone-400 block font-sans">Chú rể</span>
@@ -477,20 +555,68 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
             </motion.div>
           </div>
 
-          {/* Chibi Dancing Couple & Thank You with floating animation */}
-          <div className="pt-6 text-center space-y-1">
+          {/* Minh họa uyên ương chibi khiêu vũ nắm tay nhau từ mẫu 03 Part 04 */}
+          <div className="pt-6 text-center space-y-2">
             <motion.div
-              animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }}
+              animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="text-4xl select-none"
+              className="w-24 h-24 mx-auto relative flex items-center justify-center"
             >
-              🤵🏻‍♂️ 💃🏻
+              <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-sm">
+                {/* Chibi cô dâu váy trắng xoè */}
+                <circle cx="38" cy="36" r="11" fill="#FFF0E6" stroke="#BA3E2C" strokeWidth="1" />
+                <path d="M28 32 Q38 22 48 32 Q43 27 38 27 Q33 27 28 32 Z" fill="#3E2B22" />
+                <circle cx="35" cy="36" r="1.2" fill="#3E2B22" />
+                <circle cx="41" cy="36" r="1.2" fill="#3E2B22" />
+                <path d="M36 40 Q38 42 40 40" stroke="#D9534F" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+                <path d="M30 47 Q38 45 46 47 L52 75 Q38 82 24 75 Z" fill="#FFF" stroke="#E6BCB5" strokeWidth="1" />
+                {/* Chibi chú rể áo vest đen */}
+                <circle cx="62" cy="34" r="11" fill="#FFE5D4" stroke="#4A2E24" strokeWidth="1" />
+                <path d="M52 30 Q62 20 72 30 Q67 25 62 25 Q57 25 52 30 Z" fill="#2B1810" />
+                <circle cx="59" cy="34" r="1.2" fill="#2B1810" />
+                <circle cx="65" cy="34" r="1.2" fill="#2B1810" />
+                <path d="M60 38 Q62 40 64 38" stroke="#D9534F" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+                <path d="M54 45 Q62 43 70 45 L73 72 L51 72 Z" fill="#3E2B22" stroke="#2B1810" strokeWidth="1" />
+                <polygon points="62,45 59,52 65,52" fill="#FFF" />
+                {/* Hai bàn tay nắm nhau */}
+                <path d="M44 50 Q50 52 54 50" stroke="#FFE5D4" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Trái tim hồng trên đầu */}
+                <path d="M50 20 C46 14 38 17 41 24 C44 30 50 34 50 34 C50 34 56 30 59 24 C62 17 54 14 50 20 Z" fill="#E88D98" />
+              </svg>
             </motion.div>
-            <h5 className="text-2xl font-serif italic text-[#8B2E20]">
+            <h5 className="text-2xl sm:text-3xl font-serif italic text-[#8B2E20] font-light">
               Thank you
             </h5>
+            <p className="text-[11px] text-stone-400 font-sans tracking-widest uppercase">
+              FOR SHARING OUR HAPPINESS
+            </p>
           </div>
         </motion.section>
+
+        {/* 8.5. ALBUM ẢNH CƯỚI LIGHTBOX */}
+        <section className="bg-white border-b border-[#F5E5E0]">
+          <PhotoGalleryLightbox
+            photos={galleryPhotos}
+            accentColor="#BA3E2C"
+            title="Khoảnh Khắc Yêu Thương"
+            subtitle="Từng nụ cười, từng ánh mắt đong đầy hạnh phúc của đôi uyên ương"
+          />
+        </section>
+
+        {/* 8.6. HEART BURST & QUICK WISH WALL */}
+        <section className="p-6 bg-[#FDF9F8] border-b border-[#F5E5E0] space-y-6">
+          <div className="flex justify-center">
+            <HeartBurstButton accentColor="#BA3E2C" />
+          </div>
+
+          <div className="pt-2">
+            <QuickWishWall
+              cardId={card.id}
+              accentColor="#BA3E2C"
+              guestName={guestName}
+            />
+          </div>
+        </section>
 
         {/* 9. BOTTOM DOCK CỐ ĐỊNH */}
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#F5E5E0] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">

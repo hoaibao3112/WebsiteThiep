@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { ZodError } from "zod";
 import { RsvpService } from "../services/rsvp.service";
 import { RsvpSubmitSchema } from "../lib/validators/rsvp.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
@@ -22,7 +23,14 @@ export class RsvpController {
         data: rsvp,
       });
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 
@@ -40,7 +48,14 @@ export class RsvpController {
       const stats = await RsvpService.getRsvpStats(userId, cardId);
       res.status(200).json({ success: true, data: stats });
     } catch (error: any) {
-      res.status(400).json({ success: false, error: error.message });
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+          fieldErrors: error.flatten().fieldErrors,
+        });
+      }
+      next(error);
     }
   }
 }
