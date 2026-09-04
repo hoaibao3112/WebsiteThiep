@@ -54,4 +54,12 @@ describe("Homepage & Mobile Templates Data Validation", () => {
       expect(template.tags?.length).toBeGreaterThan(0);
     });
   });
+
+  it("should have valid music metadata (musicTitle and musicUrl) for all 12 templates", () => {
+    MASTER_TEMPLATES.forEach((template) => {
+      expect(template.musicTitle).toBeTruthy();
+      expect(template.musicUrl).toBeTruthy();
+      expect(template.musicUrl).toMatch(/^\/music\/.*\.mp3$/);
+    });
+  });
 });

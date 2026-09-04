@@ -122,8 +122,8 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       <FallingEffect effect={card.fallingEffect || "PETAL"} />
       <AudioPlayer
         musicUrl={card.musicUrl}
-        autoPlay={false}
-        startOnGesture={audioStarted && card.isAutoPlay}
+        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
       />
       <FloatingCelebrationWidget primaryColor={primaryColor} />
 

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Eye, Check, ChevronLeft, ChevronRight, Layers, Sparkles } from "lucide-react";
+import { X, Eye, Check, ChevronLeft, ChevronRight, Layers, Sparkles, Music, Play, Pause, Volume2 } from "lucide-react";
+import { Howl } from "howler";
 import { useLanguage } from "@/context/LanguageContext";
 
 export interface TemplateModalData {
@@ -22,6 +23,7 @@ export interface TemplateModalData {
   colorPalette?: string[];
   envelopeColor?: string;
   musicTitle?: string;
+  musicUrl?: string;
   eventDateText?: string;
   venueText?: string;
 }
@@ -239,11 +241,23 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
 }) => {
   const { t } = useLanguage();
   const [activePartIndex, setActivePartIndex] = useState(0);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const previewSoundRef = useRef<Howl | null>(null);
 
-  // Reset tab khi đổi template
+  // Reset tab & dừng nhạc khi đổi template hoặc đóng modal
   useEffect(() => {
     setActivePartIndex(0);
-  }, [template?.id]);
+    if (previewSoundRef.current) {
+      try {
+        previewSoundRef.current.stop();
+        previewSoundRef.current.unload();
+      } catch {
+        // ignore
+      }
+      previewSoundRef.current = null;
+    }
+    setIsPlayingMusic(false);
+  }, [template?.id, isOpen]);
 
   // Đóng modal khi bấm phím ESC
   useEffect(() => {
@@ -257,8 +271,48 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
     return () => {
       document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
+      if (previewSoundRef.current) {
+        try {
+          previewSoundRef.current.stop();
+          previewSoundRef.current.unload();
+        } catch {
+          // ignore
+        }
+      }
     };
   }, [isOpen, onClose]);
+
+  const togglePreviewMusic = () => {
+    const musicUrl = template?.musicUrl || "/music/le-duong.mp3";
+    if (isPlayingMusic) {
+      if (previewSoundRef.current) {
+        previewSoundRef.current.pause();
+      }
+      setIsPlayingMusic(false);
+      return;
+    }
+
+    if (!previewSoundRef.current) {
+      previewSoundRef.current = new Howl({
+        src: [musicUrl],
+        html5: true,
+        volume: 0.65,
+        onplay: () => setIsPlayingMusic(true),
+        onpause: () => setIsPlayingMusic(false),
+        onstop: () => setIsPlayingMusic(false),
+        onend: () => setIsPlayingMusic(false),
+        onloaderror: () => setIsPlayingMusic(false),
+        onplayerror: () => setIsPlayingMusic(false),
+      });
+    }
+
+    try {
+      previewSoundRef.current.play();
+      setIsPlayingMusic(true);
+    } catch {
+      setIsPlayingMusic(false);
+    }
+  };
 
   if (!isOpen || !template) return null;
 
@@ -466,6 +520,61 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
                     </div>
                   )}
                 </div>
+
+                {/* ÂM NHẠC MẪU THIỆP */}
+                {template.musicTitle && (
+                  <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#3D2C1E]/40 to-transparent border border-amber-400/25 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all ${
+                          isPlayingMusic
+                            ? "bg-amber-400 text-stone-950 border-amber-300 shadow-md shadow-amber-400/30 animate-spin"
+                            : "bg-white/10 text-amber-300 border-white/20"
+                        }`}
+                        style={{ animationDuration: "3s" }}
+                      >
+                        <Music className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="truncate">
+                        <div className="text-[10px] text-amber-300/90 font-bold uppercase tracking-wider flex items-center gap-1">
+                          <span>Nhạc nền mẫu</span>
+                          {isPlayingMusic && (
+                            <span className="flex items-center gap-0.5 ml-1">
+                              <span className="w-1 h-2 bg-amber-400 rounded-full animate-pulse" />
+                              <span className="w-1 h-3 bg-amber-300 rounded-full animate-pulse delay-75" />
+                              <span className="w-1 h-1.5 bg-amber-400 rounded-full animate-pulse delay-150" />
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-stone-200 font-medium truncate">
+                          {template.musicTitle}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={togglePreviewMusic}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
+                        isPlayingMusic
+                          ? "bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-sm"
+                          : "bg-white/10 hover:bg-white/20 text-white border border-white/20 active:scale-95"
+                      }`}
+                    >
+                      {isPlayingMusic ? (
+                        <>
+                          <Pause className="w-3 h-3 fill-current" />
+                          <span>Tạm dừng</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3 fill-current ml-0.5" />
+                          <span>Nghe thử</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
 
                 {/* FEATURES CHECKLIST SECTION */}
                 <div className="pt-2 border-t border-white/10">

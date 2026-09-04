@@ -50,7 +50,11 @@ export const BirthdayView: React.FC<{
       )}
 
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
-        <AudioPlayer musicUrl={card.musicUrl} autoPlay={false} startOnGesture={audioStarted && card.isAutoPlay} />
+      <AudioPlayer
+        musicUrl={card.musicUrl}
+        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
+      />
 
       <main className="max-w-md sm:max-w-lg mx-auto bg-stone-900 min-h-screen shadow-2xl overflow-hidden border-x border-stone-800 relative">
         <div className="absolute top-4 right-4 z-20">
@@ -70,7 +74,6 @@ export const BirthdayView: React.FC<{
             className="absolute inset-0 w-full h-full object-cover opacity-60"
           />
           <div className="absolute inset-0 bg-linear-to-br from-orange-950/70 via-stone-900/40 to-fuchsia-950/60" />
-
           <div className="relative z-10">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-[11px] font-bold tracking-widest uppercase mb-3 border border-amber-400/30">
               <Cake className="w-3.5 h-3.5" />

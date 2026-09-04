@@ -70,7 +70,11 @@ export const NewbornView: React.FC<{
       )}
 
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
-      <AudioPlayer musicUrl={card.musicUrl} autoPlay={false} startOnGesture={audioStarted && card.isAutoPlay} />
+      <AudioPlayer
+        musicUrl={card.musicUrl}
+        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
+      />
 
       <main className={`max-w-md sm:max-w-lg mx-auto min-h-screen shadow-2xl overflow-hidden relative ${variant === "sweet-angel" ? "bg-[#fffafd] border-x border-pink-100" : "bg-white border-x border-sky-100"}`}>
         <div className="absolute top-4 right-4 z-20">
