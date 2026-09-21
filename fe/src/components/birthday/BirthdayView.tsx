@@ -37,7 +37,7 @@ export const BirthdayView: React.FC<{
 
   return (
     <div data-template-variant={variant} className="relative min-h-screen bg-stone-950 text-stone-100 font-sans pb-24 overflow-x-hidden">
-      {!opened && card.openingEffect === "WAX_SEAL" && (
+      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${t("birthdayTitle")} - ${data.celebrantName}`}
@@ -52,8 +52,8 @@ export const BirthdayView: React.FC<{
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
       <AudioPlayer
         musicUrl={card.musicUrl}
-        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
+        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
       />
 
       <main className="max-w-md sm:max-w-lg mx-auto bg-stone-900 min-h-screen shadow-2xl overflow-hidden border-x border-stone-800 relative">

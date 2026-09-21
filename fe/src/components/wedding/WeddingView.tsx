@@ -105,8 +105,8 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       className="relative min-h-screen font-sans overflow-x-hidden selection:bg-amber-200"
       style={{ fontFamily: card.fontFamily || config?.defaultFontFamily || "inherit" }}
     >
-      {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN */}
-      {!opened && card.openingEffect === "WAX_SEAL" && (
+      {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN / MÀN KÉO SANG 2 BÊN */}
+      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${groomShortName} & ${brideShortName}`}
@@ -122,8 +122,8 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       <FallingEffect effect={card.fallingEffect || "PETAL"} />
       <AudioPlayer
         musicUrl={card.musicUrl}
-        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
+        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
       />
       <FloatingCelebrationWidget primaryColor={primaryColor} />
 

@@ -57,7 +57,7 @@ export const NewbornView: React.FC<{
 
   return (
     <div data-template-variant={variant} className={`relative min-h-screen text-stone-800 font-sans pb-24 overflow-x-hidden ${variant === "sweet-angel" ? "bg-[#fff4f8]" : "bg-[#f0f7ff]"}`}>
-      {!opened && card.openingEffect === "WAX_SEAL" && (
+      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${data.babyName}`}
@@ -72,8 +72,8 @@ export const NewbornView: React.FC<{
       <FallingEffect effect={card.fallingEffect || "BALLOON"} />
       <AudioPlayer
         musicUrl={card.musicUrl}
-        autoPlay={card.openingEffect === "WAX_SEAL" ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={card.openingEffect === "WAX_SEAL" ? audioStarted : (card.isAutoPlay ?? true)}
+        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
       />
 
       <main className={`max-w-md sm:max-w-lg mx-auto min-h-screen shadow-2xl overflow-hidden relative ${variant === "sweet-angel" ? "bg-[#fffafd] border-x border-pink-100" : "bg-white border-x border-sky-100"}`}>
