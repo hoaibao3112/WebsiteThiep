@@ -11,7 +11,7 @@ const ParentInfoSchema = z.object({
 const PersonBioSchema = z.object({
   fullName: z.string().min(1, "Họ tên không được để trống"),
   shortName: z.string().optional(),
-  avatarUrl: z.string().url("Avatar không hợp lệ").optional().or(z.literal("")),
+  avatarUrl: z.string().optional().or(z.literal("")),
   birthOrder: z.string().optional(), // "Trưởng nam", "Út nữ"...
   phone: z.string().optional(),
   parents: ParentInfoSchema.optional(),
@@ -22,7 +22,7 @@ const LoveStoryMilestoneSchema = z.object({
   title: z.string().min(1, "Tiêu đề mốc thời gian"),
   date: z.string().min(1, "Thời gian (VD: 10/2022)"),
   description: z.string().optional(),
-  imageUrl: z.string().url().optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
 });
 
 export const WeddingDataSchema = z.object({

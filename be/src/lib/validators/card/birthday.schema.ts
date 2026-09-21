@@ -4,7 +4,7 @@ import { EventSchema } from "./event.schema";
 export const BirthdayDataSchema = z.object({
   cardCategory: z.literal("BIRTHDAY"),
   celebrantName: z.string().min(2, "Vui lòng nhập tên chủ nhân bữa tiệc"),
-  avatarUrl: z.string().url().optional().or(z.literal("")),
+  avatarUrl: z.string().optional().or(z.literal("")),
   age: z.number().int().positive("Tuổi phải là số dương").optional(),
   birthDate: z.coerce.date().optional(),
   greeting: z.string().optional(),

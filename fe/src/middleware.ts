@@ -1,35 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * Next.js Middleware — bảo vệ các route trong /dashboard
+ * Next.js Middleware
  *
- * Logic:
- * - Nếu user vào /dashboard/* mà chưa có auth_token → redirect về / với query ?auth=login
- * - Frontend sẽ đọc query này và tự động mở modal đăng nhập
+ * Lưu ý: Việc xác thực và bảo vệ route /dashboard/* được thực hiện chuyên sâu
+ * bởi DashboardAuthGuard trong (dashboard)/layout.tsx (tương thích cross-domain
+ * giữa Vercel FE và Render BE, hỗ trợ cả sessionStorage Bearer token và HTTPS credentials cookie).
  */
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const response = NextResponse.next();
 
-  // Chỉ bảo vệ route /dashboard/*
-  if (pathname.startsWith("/dashboard")) {
-    const token = request.cookies.get("auth_token")?.value;
+  // Security headers
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
-    // Fallback: đọc từ header (một số browser không dùng cookie)
-    const authHeader = request.headers.get("authorization");
-    const hasAuth = token || authHeader?.startsWith("Bearer ");
-
-    if (!hasAuth) {
-      // Redirect về trang chủ với signal mở modal login
-      const loginUrl = new URL("/", request.url);
-      loginUrl.searchParams.set("auth", "login");
-      loginUrl.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: [
+    /*
+     * Match all request paths except for:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public assets
+     */
+    "/((?!_next/static|_next/image|favicon.ico|images|icons|music).*)",
+  ],
 };

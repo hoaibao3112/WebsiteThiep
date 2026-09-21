@@ -16,7 +16,7 @@ export const NewbornDataSchema = z.object({
   birthTime: z.string().optional(),
   weight: z.string().optional(),
   height: z.string().optional(),
-  avatarUrl: z.string().url().optional().or(z.literal("")),
+  avatarUrl: z.string().optional().or(z.literal("")),
   parents: z
     .object({
       fatherName: z.string().optional(),

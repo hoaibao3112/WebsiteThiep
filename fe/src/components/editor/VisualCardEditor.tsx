@@ -116,7 +116,7 @@ export function VisualCardEditor<T extends object>({
       {/* ───────────────────────────────────────────────────────────── */}
       <div className="hidden lg:grid min-h-[680px] gap-4 lg:grid-cols-[200px_minmax(320px,1fr)_300px]">
         {/* LEFT COLUMN: FIELD GROUPS */}
-        <aside className="rounded-2xl border border-stone-200 bg-white p-3.5 shadow-xs flex flex-col justify-between">
+        <aside className="relative z-20 rounded-2xl border border-stone-200 bg-white p-3.5 shadow-xs flex flex-col justify-between text-stone-900">
           <div>
             <p className="mb-3 px-2 text-xs font-bold uppercase tracking-wider text-stone-500">
               Chỉnh Trực Tiếp
@@ -179,13 +179,13 @@ export function VisualCardEditor<T extends object>({
             </span>
           </div>
 
-          <div className="relative mx-auto h-[640px] w-full max-w-[390px] overflow-hidden rounded-[36px] bg-white shadow-2xl border-4 border-stone-800">
+          <div className="relative mx-auto h-[640px] w-full max-w-[390px] overflow-hidden rounded-[36px] bg-white shadow-2xl border-4 border-stone-800 [transform:translateZ(0)] isolate">
             <div className="h-full overflow-y-auto overflow-x-hidden">{children}</div>
           </div>
         </section>
 
         {/* RIGHT COLUMN: INSPECTOR PANEL */}
-        <aside className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs flex flex-col justify-between">
+        <aside className="relative z-20 rounded-2xl border border-stone-200 bg-white p-4 shadow-xs flex flex-col justify-between text-stone-900">
           {selected ? (
             <div>
               <div className="mb-4 flex items-center justify-between pb-3 border-b border-stone-100">
@@ -263,65 +263,65 @@ export function VisualCardEditor<T extends object>({
         </div>
 
         {/* FULL MOBILE CARD PREVIEW */}
-        <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 bg-white">
+        <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-stone-200 bg-white [transform:translateZ(0)] isolate">
           {children}
         </div>
 
-        {/* FLOATING MOBILE BOTTOM TOOL DOCK */}
-        <div className="fixed bottom-3 left-3 right-3 z-40">
-          <div className="flex items-center justify-around rounded-2xl bg-stone-900/95 p-2 text-white shadow-2xl border border-stone-800/80 backdrop-blur-lg">
+        {/* FLOATING MOBILE BOTTOM TOOL DOCK (ERGONOMIC THUMB ZONE) */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 p-2 sm:p-3 pointer-events-none">
+          <div className="max-w-md mx-auto flex items-center justify-around rounded-2xl bg-stone-900/95 p-1.5 sm:p-2 text-white shadow-2xl border border-stone-800/80 backdrop-blur-xl pointer-events-auto pb-[max(env(safe-area-inset-bottom),0.5rem)]">
             <button
               type="button"
               onClick={() => handleOpenCategory("text")}
-              className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                activeCategory === "text" ? "bg-amber-500 text-stone-950 font-bold" : "text-stone-300 hover:text-white"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition active:scale-95 cursor-pointer ${
+                activeCategory === "text" ? "bg-amber-500 text-stone-950 font-bold shadow-sm" : "text-stone-300 hover:text-white"
               }`}
             >
-              <Type className="size-4" />
+              <Type className="size-4.5" />
               <span>Chữ & Tên</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleOpenCategory("image")}
-              className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                activeCategory === "image" ? "bg-amber-500 text-stone-950 font-bold" : "text-stone-300 hover:text-white"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition active:scale-95 cursor-pointer ${
+                activeCategory === "image" ? "bg-amber-500 text-stone-950 font-bold shadow-sm" : "text-stone-300 hover:text-white"
               }`}
             >
-              <ImageIcon className="size-4" />
+              <ImageIcon className="size-4.5" />
               <span>Hình ảnh</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleOpenCategory("music")}
-              className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                activeCategory === "music" ? "bg-amber-500 text-stone-950 font-bold" : "text-stone-300 hover:text-white"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition active:scale-95 cursor-pointer ${
+                activeCategory === "music" ? "bg-amber-500 text-stone-950 font-bold shadow-sm" : "text-stone-300 hover:text-white"
               }`}
             >
-              <Music className="size-4" />
+              <Music className="size-4.5" />
               <span>Nhạc nền</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleOpenCategory("style")}
-              className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                activeCategory === "style" ? "bg-amber-500 text-stone-950 font-bold" : "text-stone-300 hover:text-white"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition active:scale-95 cursor-pointer ${
+                activeCategory === "style" ? "bg-amber-500 text-stone-950 font-bold shadow-sm" : "text-stone-300 hover:text-white"
               }`}
             >
-              <Palette className="size-4" />
+              <Palette className="size-4.5" />
               <span>Màu & Font</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleOpenCategory("effect")}
-              className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition cursor-pointer ${
-                activeCategory === "effect" ? "bg-amber-500 text-stone-950 font-bold" : "text-stone-300 hover:text-white"
+              className={`flex flex-col items-center justify-center min-w-[56px] min-h-[48px] gap-1 px-2.5 py-1.5 rounded-xl text-[10px] font-semibold transition active:scale-95 cursor-pointer ${
+                activeCategory === "effect" ? "bg-amber-500 text-stone-950 font-bold shadow-sm" : "text-stone-300 hover:text-white"
               }`}
             >
-              <Sparkles className="size-4" />
+              <Sparkles className="size-4.5" />
               <span>Hiệu ứng</span>
             </button>
           </div>
@@ -340,7 +340,7 @@ export function VisualCardEditor<T extends object>({
                   setActiveCategory(null);
                   setSelected(null);
                 }}
-                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs"
+                className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs cursor-pointer"
               />
 
               {/* BOTTOM SHEET CONTAINER */}
@@ -349,7 +349,7 @@ export function VisualCardEditor<T extends object>({
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl border-t border-stone-200"
+                className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[max(env(safe-area-inset-bottom),1.75rem)] shadow-2xl border-t border-stone-200 text-stone-900"
               >
                 {/* DRAG HANDLE */}
                 <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-stone-300" />
@@ -451,16 +451,16 @@ function Inspector({
   if (field.type === "color")
     return (
       <div className="space-y-3">
-        <label className="text-xs text-stone-500 font-medium">Bảng màu chủ đạo:</label>
+        <label className="text-xs text-stone-600 font-semibold">Bảng màu chủ đạo:</label>
         <div className="flex items-center gap-3">
           <input
             aria-label={field.label}
             type="color"
             value={typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : "#BE944E"}
             onChange={(e) => onChange(e.target.value)}
-            className="h-12 w-16 cursor-pointer rounded-xl border border-stone-300 p-1"
+            className="h-12 w-16 cursor-pointer rounded-xl border border-stone-300 p-1 bg-white"
           />
-          <span className="font-mono text-xs font-bold text-stone-700 bg-stone-100 px-3 py-2 rounded-lg border border-stone-200">
+          <span className="font-mono text-xs font-bold text-stone-800 bg-stone-100 px-3 py-2 rounded-lg border border-stone-200">
             {typeof value === "string" ? value : "#BE944E"}
           </span>
         </div>
@@ -482,18 +482,18 @@ function Inspector({
   if (field.type === "font" || field.type === "effect")
     return (
       <div className="space-y-2">
-        <label className="text-xs text-stone-500 font-medium">Lựa chọn kiểu:</label>
+        <label className="text-xs text-stone-600 font-semibold">Lựa chọn kiểu:</label>
         <select
           aria-label={field.label}
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-sm font-medium focus:border-amber-500 focus:outline-none"
+          className="h-12 sm:h-11 w-full rounded-xl border border-stone-300 bg-white px-3 text-base sm:text-sm font-semibold text-stone-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none cursor-pointer"
         >
-          <option value="">Mặc định của mẫu</option>
+          <option value="" className="text-stone-900 bg-white">Mặc định của mẫu</option>
           {field.allowedValues
             ?.filter((option) => isVip || !["GATE_OPEN", "GIFT_BOX", "BALLOON"].includes(option))
             .map((option) => (
-              <option key={option} value={option}>
+              <option key={option} value={option} className="text-stone-900 bg-white">
                 {option}
               </option>
             ))}
@@ -509,14 +509,14 @@ function Inspector({
 
   return (
     <div className="space-y-2">
-      <label className="text-xs text-stone-500 font-medium">Nội dung văn bản:</label>
+      <label className="text-xs text-stone-600 font-semibold">Nội dung văn bản:</label>
       <textarea
         aria-label={field.label}
         value={typeof value === "string" ? value : ""}
         maxLength={field.maxLength}
         onChange={(e) => onChange(e.target.value)}
         rows={field.type === "text" && field.maxLength && field.maxLength > 150 ? 4 : 2}
-        className="w-full rounded-xl border border-stone-300 p-3 text-sm focus:border-amber-500 focus:outline-none leading-relaxed"
+        className="w-full rounded-xl border border-stone-300 bg-white p-3 text-base sm:text-sm font-semibold text-stone-900 placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none leading-relaxed shadow-xs"
         placeholder={`Nhập ${field.label.toLowerCase()}...`}
       />
     </div>

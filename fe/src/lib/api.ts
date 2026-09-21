@@ -7,17 +7,53 @@ export function setApiClientTokens(tokens: { csrfToken?: string | null; authToke
   if (tokens.csrfToken !== undefined) {
     memoryCsrfToken = tokens.csrfToken;
     if (typeof window !== "undefined") {
-      if (tokens.csrfToken) sessionStorage.setItem("csrf_token", tokens.csrfToken);
-      else sessionStorage.removeItem("csrf_token");
+      if (tokens.csrfToken) {
+        sessionStorage.setItem("csrf_token", tokens.csrfToken);
+        try {
+          document.cookie = `csrf_token=${encodeURIComponent(tokens.csrfToken)}; path=/; max-age=604800; SameSite=Lax`;
+        } catch {}
+      } else {
+        sessionStorage.removeItem("csrf_token");
+        try {
+          document.cookie = "csrf_token=; path=/; max-age=0; SameSite=Lax";
+        } catch {}
+      }
     }
   }
   if (tokens.authToken !== undefined) {
     memoryAuthToken = tokens.authToken;
     if (typeof window !== "undefined") {
-      if (tokens.authToken) sessionStorage.setItem("auth_token", tokens.authToken);
-      else sessionStorage.removeItem("auth_token");
+      if (tokens.authToken) {
+        sessionStorage.setItem("auth_token", tokens.authToken);
+        try {
+          const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+          document.cookie = `auth_token=${encodeURIComponent(tokens.authToken)}; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
+        } catch {}
+      } else {
+        sessionStorage.removeItem("auth_token");
+        try {
+          document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
+        } catch {}
+      }
     }
   }
+}
+
+// Auto-sync token giữa sessionStorage và document.cookie khi khởi tạo
+if (typeof window !== "undefined") {
+  try {
+    const cookieToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("auth_token="))
+      ?.split("=")[1];
+    const sessionToken = sessionStorage.getItem("auth_token");
+    if (sessionToken && !cookieToken) {
+      const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+      document.cookie = `auth_token=${encodeURIComponent(sessionToken)}; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
+    } else if (cookieToken && !sessionToken) {
+      sessionStorage.setItem("auth_token", decodeURIComponent(cookieToken));
+    }
+  } catch {}
 }
 
 /**

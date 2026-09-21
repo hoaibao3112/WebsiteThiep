@@ -8,6 +8,7 @@ import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
@@ -99,6 +100,7 @@ const DEFAULT_NEWBORN_DATA: NewbornDataPayload = {
 function CardBuilderContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, openAuthModal } = useAuth();
 
   const initialCategory = (searchParams.get("category")?.toUpperCase() as CardCategory) || "WEDDING";
   const initialTemplate = searchParams.get("template") || "wedding-heritage-crimson-gold";
@@ -251,6 +253,11 @@ function CardBuilderContent() {
 
   // Lưu và Xuất Bản Thiệp
   const handlePublish = async () => {
+    if (!user) {
+      openAuthModal("login");
+      return;
+    }
+
     setSaving(true);
     setErrorMsg("");
 
@@ -305,6 +312,7 @@ function CardBuilderContent() {
 
       const res = await ApiClient.request<{ id: string; slug: string }>("/cards", {
         method: "POST",
+        headers: { "Idempotency-Key": crypto.randomUUID() },
         body: JSON.stringify(payload),
       });
 
@@ -330,102 +338,46 @@ function CardBuilderContent() {
   );
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col">
+    <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col">
       {/* ───────────────────────────────────────────────────────────── */}
       {/* TOP COMPACT HEADER BAR                                        */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-stone-200 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-40 shadow-xs">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard/cards"
-            className="p-2 rounded-xl text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition"
-            title="Quay lại danh sách"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div>
-            <h1 className="text-base sm:text-lg font-bold font-serif text-stone-900 flex items-center gap-2">
-              <span>Trình Tạo Thiệp Trực Quan</span>
-              <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10px] font-sans font-bold border border-amber-200/80">
-                Visual Studio
-              </span>
-            </h1>
-            <p className="text-[11px] text-stone-400">
-              Chỉnh sửa thông số trực tiếp và xem thay đổi ngay lập tức
-            </p>
-          </div>
-        </div>
-
-        {/* CATEGORY SELECTOR TABS */}
-        <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-xl border border-stone-200">
-          <button
-            type="button"
-            onClick={() => handleCategoryChange("WEDDING")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-              category === "WEDDING"
-                ? "bg-white text-stone-900 shadow-xs font-bold"
-                : "text-stone-600 hover:text-stone-900"
-            }`}
-          >
-            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
-            <span>Thiệp Cưới</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCategoryChange("BIRTHDAY")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-              category === "BIRTHDAY"
-                ? "bg-white text-stone-900 shadow-xs font-bold"
-                : "text-stone-600 hover:text-stone-900"
-            }`}
-          >
-            <Cake className="w-3.5 h-3.5 text-amber-500" />
-            <span>Sinh Nhật</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCategoryChange("NEWBORN")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-              category === "NEWBORN"
-                ? "bg-white text-stone-900 shadow-xs font-bold"
-                : "text-stone-600 hover:text-stone-900"
-            }`}
-          >
-            <Baby className="w-3.5 h-3.5 text-blue-500" />
-            <span>Thôi Nôi / Báo Hỷ</span>
-          </button>
-        </div>
-
-        {/* TEMPLATE PRESET SELECTOR & ACTIONS */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto max-w-xl py-1 no-scrollbar">
-            <span className="text-[11px] text-stone-400 font-medium mr-1 shrink-0">Mẫu:</span>
-            {templatesForCategory.map((tpl) => (
-              <button
-                key={tpl.slug}
-                type="button"
-                onClick={() => handleTemplateChange(tpl.slug)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer border shrink-0 ${
-                  templateSlug === tpl.slug
-                    ? "bg-amber-50 border-amber-400 text-amber-900 font-bold shadow-2xs"
-                    : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
-                }`}
-              >
-                {tpl.label}
-              </button>
-            ))}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* TOP RESPONSIVE HEADER BAR (OPTIMIZED FOR MOBILE & DESKTOP)   */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      <header className="bg-white/95 border-b border-stone-200 sticky top-0 z-40 backdrop-blur-md shadow-2xs">
+        {/* ROW 1: BRAND TITLE & PRIMARY ACTION */}
+        <div className="px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Link
+              href="/dashboard/cards"
+              className="p-2 -ml-1 rounded-xl text-stone-600 hover:text-stone-950 hover:bg-stone-100 transition cursor-pointer shrink-0"
+              title="Quay lại danh sách"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-bold font-serif text-stone-900 flex items-center gap-1.5 truncate">
+                <span className="truncate">Trình Tạo Thiệp</span>
+                <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 text-[10px] font-sans font-bold border border-amber-200/80">
+                  Visual Studio
+                </span>
+              </h1>
+            </div>
           </div>
 
+          {/* PRIMARY ACTION: XUẤT BẢN THIỆP */}
           <button
             type="button"
             onClick={handlePublish}
             disabled={saving || saveSuccess}
-            className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#D4AF37] hover:from-[#A88240] hover:to-[#BE944E] text-white text-xs font-bold shadow-md hover:shadow-lg transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
+            className="min-h-10 px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#D4AF37] hover:from-[#A88240] hover:to-[#BE944E] text-white text-xs font-bold shadow-md active:scale-95 transition cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-50"
           >
             {saving ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Đang Khởi Tạo...</span>
+                <span className="hidden xs:inline">Đang Khởi Tạo...</span>
+                <span className="xs:hidden">Lưu...</span>
               </>
             ) : saveSuccess ? (
               <>
@@ -439,6 +391,70 @@ function CardBuilderContent() {
               </>
             )}
           </button>
+        </div>
+
+        {/* ROW 2: HORIZONTAL SWIPEABLE BAR (CATEGORIES + TEMPLATES) */}
+        <div className="px-3 sm:px-6 py-1.5 border-t border-stone-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {/* CATEGORY SELECTOR PILLS */}
+          <div className="flex items-center gap-1 shrink-0 p-0.5 bg-stone-100 rounded-xl border border-stone-200">
+            <button
+              type="button"
+              onClick={() => handleCategoryChange("WEDDING")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
+                category === "WEDDING"
+                  ? "bg-white text-stone-900 shadow-xs font-bold"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Heart className="w-3 h-3 text-rose-500 fill-rose-500/20" />
+              <span>Cưới</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCategoryChange("BIRTHDAY")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
+                category === "BIRTHDAY"
+                  ? "bg-white text-stone-900 shadow-xs font-bold"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Cake className="w-3 h-3 text-amber-500" />
+              <span>Sinh Nhật</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCategoryChange("NEWBORN")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
+                category === "NEWBORN"
+                  ? "bg-white text-stone-900 shadow-xs font-bold"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Baby className="w-3 h-3 text-blue-500" />
+              <span>Thôi Nôi</span>
+            </button>
+          </div>
+
+          <div className="h-5 w-px bg-stone-200 shrink-0" />
+
+          {/* TEMPLATE PRESET SELECTOR (TOUCH HORIZONTAL SCROLL) */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[11px] text-stone-400 font-medium shrink-0">Mẫu:</span>
+            {templatesForCategory.map((tpl) => (
+              <button
+                key={tpl.slug}
+                type="button"
+                onClick={() => handleTemplateChange(tpl.slug)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border shrink-0 min-h-[34px] flex items-center ${
+                  templateSlug === tpl.slug
+                    ? "bg-amber-50 border-amber-400 text-amber-900 font-bold shadow-2xs"
+                    : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                }`}
+              >
+                {tpl.label}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 

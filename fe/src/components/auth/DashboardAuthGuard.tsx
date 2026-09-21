@@ -23,15 +23,20 @@ export default function DashboardAuthGuard({
   const pathname = usePathname();
 
   useEffect(() => {
+    // Cho phép trải nghiệm thiết kế trực quan tại /dashboard/cards/new mà không bị đá về trang chủ
+    if (pathname === "/dashboard/cards/new") {
+      return;
+    }
+
     if (!isLoading && !isAuthenticated) {
       // Chuyển về trang chủ và kèm đường dẫn đích
-      const redirectPath = pathname || "/dashboard/cards/new";
+      const redirectPath = pathname || "/dashboard/cards";
       router.replace(`/?auth=login&redirect=${encodeURIComponent(redirectPath)}`);
     }
   }, [isAuthenticated, isLoading, router, pathname]);
 
-  // Đang kiểm tra auth → loading screen đẹp
-  if (isLoading) {
+  // Đang kiểm tra auth (trừ trang /dashboard/cards/new) → loading screen đẹp
+  if (isLoading && pathname !== "/dashboard/cards/new") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -54,11 +59,11 @@ export default function DashboardAuthGuard({
     );
   }
 
-  // Chưa đăng nhập → không render gì (đang redirect)
-  if (!isAuthenticated) {
+  // Chưa đăng nhập (trừ trang tạo thiệp mới) → không render gì (đang redirect)
+  if (!isAuthenticated && pathname !== "/dashboard/cards/new") {
     return null;
   }
 
-  // Đã đăng nhập → render dashboard bình thường
+  // Render dashboard
   return <>{children}</>;
 }

@@ -161,11 +161,7 @@ export default function CardViteHomePage() {
 
   const handleCreateCardClick = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    if (user) {
-      router.push("/dashboard/cards/new");
-    } else {
-      openAuthModal("login");
-    }
+    router.push("/dashboard/cards/new");
   };
 
   const displayedTemplates = MASTER_TEMPLATES.filter((tpl) => {

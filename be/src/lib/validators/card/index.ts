@@ -26,8 +26,13 @@ const normalizeSlug = (value: string) =>
     .replace(/^-+|-+$/g, "");
 
 const StoredImageUrlSchema = z.string().refine(
-  (value) => /^https?:\/\//i.test(value) || value.startsWith("/uploads/"),
-  "Ảnh phải được tải lên máy chủ trước khi lưu"
+  (value) =>
+    /^https?:\/\//i.test(value) ||
+    value.startsWith("/uploads/") ||
+    value.startsWith("/images/") ||
+    value.startsWith("data:image/") ||
+    (value.startsWith("/") && !value.startsWith("//")),
+  "Ảnh không hợp lệ hoặc chưa được tải lên máy chủ"
 );
 
 export const PhotoSchema = z.object({

@@ -5,5 +5,9 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <DashboardAuthGuard>{children}</DashboardAuthGuard>;
+  return (
+    <DashboardAuthGuard>
+      <div className="text-stone-900 min-h-screen">{children}</div>
+    </DashboardAuthGuard>
+  );
 }
