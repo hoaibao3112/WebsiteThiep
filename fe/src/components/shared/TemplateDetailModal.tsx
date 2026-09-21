@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Eye, Check, ChevronLeft, ChevronRight, Layers, Sparkles, Music, Play, Pause, Volume2 } from "lucide-react";
 import { Howl } from "howler";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 
 export interface TemplateModalData {
   id: string;
@@ -245,6 +247,8 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
   template,
 }) => {
   const { t } = useLanguage();
+  const { user, openAuthModal } = useAuth();
+  const router = useRouter();
   const [activePartIndex, setActivePartIndex] = useState(0);
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const previewSoundRef = useRef<Howl | null>(null);
@@ -614,12 +618,21 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
               {/* ------------------------------------------------------------- */}
               <div className="pt-6 mt-6 border-t border-white/10 flex flex-col sm:flex-row items-center gap-3">
                 {/* PRIMARY BUTTON: TẠO THIỆP */}
-                <Link
-                  href={`/dashboard/cards/new?category=${template.category}&template=${template.demoSlug || template.id}`}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetUrl = `/dashboard/cards/new?category=${template.category}&template=${template.demoSlug || template.id}`;
+                    if (!user) {
+                      onClose();
+                      openAuthModal("login");
+                    } else {
+                      router.push(targetUrl);
+                    }
+                  }}
                   className="w-full sm:flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#A87F39] hover:to-[#875E19] active:scale-[0.98] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg transition flex items-center justify-center gap-2 cursor-pointer border border-amber-300/30"
                 >
                   <span>✨ Sử Dụng Mẫu Này</span>
-                </Link>
+                </button>
 
                 {/* SECONDARY BUTTON: XEM DEMO TRỰC TIẾP */}
                 <Link

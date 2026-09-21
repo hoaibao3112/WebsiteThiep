@@ -23,20 +23,16 @@ export default function DashboardAuthGuard({
   const pathname = usePathname();
 
   useEffect(() => {
-    // Cho phép trải nghiệm thiết kế trực quan tại /dashboard/cards/new mà không bị đá về trang chủ
-    if (pathname === "/dashboard/cards/new") {
-      return;
-    }
-
     if (!isLoading && !isAuthenticated) {
-      // Chuyển về trang chủ và kèm đường dẫn đích
-      const redirectPath = pathname || "/dashboard/cards";
+      // Chuyển về trang chủ và kèm đường dẫn đích đầy đủ
+      const currentQuery = typeof window !== "undefined" ? window.location.search : "";
+      const redirectPath = `${pathname || "/dashboard/cards"}${currentQuery}`;
       router.replace(`/?auth=login&redirect=${encodeURIComponent(redirectPath)}`);
     }
   }, [isAuthenticated, isLoading, router, pathname]);
 
-  // Đang kiểm tra auth (trừ trang /dashboard/cards/new) → loading screen đẹp
-  if (isLoading && pathname !== "/dashboard/cards/new") {
+  // Đang kiểm tra auth → loading screen đẹp
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-stone-50 to-amber-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -53,14 +49,14 @@ export default function DashboardAuthGuard({
               />
             ))}
           </div>
-          <p className="text-stone-500 text-sm font-medium">Đang xác thực...</p>
+          <p className="text-stone-500 text-sm font-medium">Đang xác thực tài khoản...</p>
         </div>
       </div>
     );
   }
 
-  // Chưa đăng nhập (trừ trang tạo thiệp mới) → không render gì (đang redirect)
-  if (!isAuthenticated && pathname !== "/dashboard/cards/new") {
+  // Chưa đăng nhập → không render gì (đang redirect về login)
+  if (!isAuthenticated) {
     return null;
   }
 
