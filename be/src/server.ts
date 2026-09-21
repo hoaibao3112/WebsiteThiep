@@ -32,7 +32,8 @@ app.use(
 app.use(cookieParser());
 
 
-const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || "");
+const defaultOrigins = "https://website-thiep.vercel.app,http://localhost:3000,http://127.0.0.1:3000";
+const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || defaultOrigins);
 
 app.use(
   cors({

@@ -17,14 +17,29 @@ const BaseEnvSchema = z.object({
 export function validateRuntimeEnv(input: NodeJS.ProcessEnv) {
   const env = BaseEnvSchema.parse(input);
   if (env.NODE_ENV === "production") {
-    const required = [
-      "JWT_SECRET", "DATABASE_URL", "REDIS_HOST", "ALLOWED_ORIGINS",
-      "SEPAY_WEBHOOK_SECRET", "BANK_ACCOUNT", "CLOUDINARY_CLOUD_NAME",
-      "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET",
-    ] as const;
+    const required = ["JWT_SECRET", "DATABASE_URL"] as const;
     const missing = required.filter((key) => !env[key]);
-    if (missing.length) throw new Error(`Missing production environment variables: ${missing.join(", ")}`);
-    parseAllowedOrigins(env.ALLOWED_ORIGINS || "");
+    if (missing.length) {
+      throw new Error(`Missing production environment variables: ${missing.join(", ")}`);
+    }
+
+    const optionalServices = [
+      "REDIS_HOST",
+      "ALLOWED_ORIGINS",
+      "SEPAY_WEBHOOK_SECRET",
+      "BANK_ACCOUNT",
+      "CLOUDINARY_CLOUD_NAME",
+      "CLOUDINARY_API_KEY",
+      "CLOUDINARY_API_SECRET",
+    ] as const;
+    const missingOptional = optionalServices.filter((key) => !env[key]);
+    if (missingOptional.length > 0) {
+      console.warn(`[WARN] Chú ý: Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
+    }
+
+    if (env.ALLOWED_ORIGINS) {
+      parseAllowedOrigins(env.ALLOWED_ORIGINS);
+    }
   }
   return env;
 }
