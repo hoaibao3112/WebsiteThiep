@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CardDetail, WeddingDataPayload } from "@/types/card.types";
 import { WaxSealOpening } from "../shared/OpeningEffect/WaxSealOpening";
@@ -51,6 +51,36 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   const [showGift, setShowGift] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
+  const [resolvedGuestName, setResolvedGuestName] = useState<string | undefined>(guestName);
+  const [hasGuestQuery, setHasGuestQuery] = useState(false);
+
+  useEffect(() => {
+    if (guestName) {
+      setResolvedGuestName(guestName);
+      return;
+    }
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const g = params.get("g");
+      if (g) {
+        setHasGuestQuery(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://websitethiep.onrender.com/api";
+        fetch(`${apiUrl}/cards/by-slug/${card.slug}?g=${encodeURIComponent(g)}`)
+          .then((r) => r.json())
+          .then((res) => {
+            if (res.success && res.data?.guestInfo) {
+              const gInfo = res.data.guestInfo;
+              setResolvedGuestName(`${gInfo.salutation || ""} ${gInfo.fullName}`.trim());
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, [guestName, card.slug]);
+
+  const activeGuestName = resolvedGuestName || guestName;
+  const shouldShowOpening = !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(activeGuestName) || hasGuestQuery);
+
   const data = (card.categoryData as WeddingDataPayload) || {};
   const primaryColor = card.primaryColor || "#BE944E";
   const effectiveSlug = templateSlug || card.template?.slug;
@@ -64,7 +94,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     card,
     data,
     primaryColor,
-    guestName,
+    guestName: activeGuestName,
     guestPhone,
     isVipExperience,
     onOpenRsvp: () => setShowRsvp(true),
@@ -106,11 +136,11 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       style={{ fontFamily: card.fontFamily || config?.defaultFontFamily || "inherit" }}
     >
       {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN / MÀN KÉO SANG 2 BÊN */}
-      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
+      {shouldShowOpening && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${groomShortName} & ${brideShortName}`}
-          guestName={guestName}
+          guestName={activeGuestName}
           isVipExperience={isVipExperience}
           monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
           onOpenStart={() => setAudioStarted(true)}
@@ -122,8 +152,8 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       <FallingEffect effect={card.fallingEffect || "PETAL"} />
       <AudioPlayer
         musicUrl={card.musicUrl}
-        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
+        autoPlay={shouldShowOpening ? false : (card.isAutoPlay ?? true)}
+        startOnGesture={shouldShowOpening ? audioStarted : (card.isAutoPlay ?? true)}
       />
       <FloatingCelebrationWidget primaryColor={primaryColor} />
 

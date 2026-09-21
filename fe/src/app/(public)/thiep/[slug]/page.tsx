@@ -29,7 +29,7 @@ async function getCardData(slug: string, guestCode?: string) {
   // 3. Fetch từ backend database theo slug của người dùng tạo
   try {
     const url = `${API_BASE_URL}/cards/by-slug/${slug}${guestCode ? `?g=${guestCode}` : ""}`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       if (DEMO_TEMPLATES_MAP[slug]) return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null };
       return { card: DEMO_WEDDING_CARD, guestInfo: null };

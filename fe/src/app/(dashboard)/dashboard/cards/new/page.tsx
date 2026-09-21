@@ -319,6 +319,11 @@ function CardBuilderContent() {
       setSaving(false);
 
       if (res.success && res.data) {
+        // Tự động kích hoạt xuất bản thiệp ngay khi tạo thành công
+        await ApiClient.request(`/cards/${res.data.id}/publish`, {
+          method: "PATCH",
+        });
+
         setSaveSuccess(true);
         confetti({ particleCount: 80, spread: 80, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
         setTimeout(() => {
