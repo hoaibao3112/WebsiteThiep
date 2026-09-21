@@ -536,7 +536,6 @@ function ImageInspector({ value, onChange }: { value: string; onChange: (value: 
     setError("");
     try {
       const url = await uploadSingleImage(file);
-      if (url.startsWith("data:")) throw new Error("Không thể tải ảnh lên máy chủ. Vui lòng thử lại.");
       onChange(url);
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Tải ảnh thất bại");

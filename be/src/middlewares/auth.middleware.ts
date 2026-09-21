@@ -41,6 +41,32 @@ export function authGuard(
   }
 }
 
+export function optionalAuthGuard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const authHeader = req.headers.authorization;
+    let token: string | undefined;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else if (req.cookies && req.cookies.auth_token) {
+      token = req.cookies.auth_token;
+    }
+
+    if (token) {
+      const decoded = AuthService.verifyToken(token);
+      req.user = decoded;
+      req.userId = decoded.userId;
+    }
+    next();
+  } catch {
+    next();
+  }
+}
+
 export function adminGuard(
   req: AuthenticatedRequest,
   res: Response,
