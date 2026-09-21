@@ -214,7 +214,8 @@ export class AuthController {
         res.cookie("csrf_token", csrfToken, CSRF_COOKIE_OPTIONS);
       }
       res.setHeader("X-CSRF-Token", csrfToken);
-      res.status(200).json({ success: true, data: user, csrfToken });
+      const token = (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : req.cookies?.auth_token) || undefined;
+      res.status(200).json({ success: true, data: user, token, csrfToken });
     } catch (error: any) {
       next(error);
     }

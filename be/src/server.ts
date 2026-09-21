@@ -18,19 +18,32 @@ const PORT = process.env.PORT || 5000;
 // -----------------------------------------------------------------------
 // MIDDLEWARES — Security & Observability
 // -----------------------------------------------------------------------
-app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  })
+);
 app.use(cookieParser());
 
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-  : ["http://localhost:3000"];
+const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || "";
+const allowedOrigins = rawAllowedOrigins
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+      const isAllowed =
+        allowedOrigins.includes("*") ||
+        allowedOrigins.includes(origin) ||
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+        /\.vercel\.app$/.test(new URL(origin).hostname);
+
+      if (isAllowed) {
         return callback(null, true);
       }
       callback(new Error(`CORS: Origin ${origin} not allowed`));

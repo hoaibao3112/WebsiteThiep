@@ -9,11 +9,13 @@ export function setApiClientTokens(tokens: { csrfToken?: string | null; authToke
     if (typeof window !== "undefined") {
       if (tokens.csrfToken) {
         sessionStorage.setItem("csrf_token", tokens.csrfToken);
+        try { localStorage.setItem("csrf_token", tokens.csrfToken); } catch {}
         try {
           document.cookie = `csrf_token=${encodeURIComponent(tokens.csrfToken)}; path=/; max-age=604800; SameSite=Lax`;
         } catch {}
       } else {
         sessionStorage.removeItem("csrf_token");
+        try { localStorage.removeItem("csrf_token"); } catch {}
         try {
           document.cookie = "csrf_token=; path=/; max-age=0; SameSite=Lax";
         } catch {}
@@ -25,12 +27,14 @@ export function setApiClientTokens(tokens: { csrfToken?: string | null; authToke
     if (typeof window !== "undefined") {
       if (tokens.authToken) {
         sessionStorage.setItem("auth_token", tokens.authToken);
+        try { localStorage.setItem("auth_token", tokens.authToken); } catch {}
         try {
           const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
           document.cookie = `auth_token=${encodeURIComponent(tokens.authToken)}; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
         } catch {}
       } else {
         sessionStorage.removeItem("auth_token");
+        try { localStorage.removeItem("auth_token"); } catch {}
         try {
           document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
         } catch {}
@@ -39,19 +43,24 @@ export function setApiClientTokens(tokens: { csrfToken?: string | null; authToke
   }
 }
 
-// Auto-sync token giữa sessionStorage và document.cookie khi khởi tạo
+// Auto-sync token giữa sessionStorage, localStorage và document.cookie khi khởi tạo
 if (typeof window !== "undefined") {
   try {
     const cookieToken = document.cookie
       .split("; ")
       .find((row) => row.startsWith("auth_token="))
       ?.split("=")[1];
-    const sessionToken = sessionStorage.getItem("auth_token");
+    const sessionToken = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token");
     if (sessionToken && !cookieToken) {
       const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
       document.cookie = `auth_token=${encodeURIComponent(sessionToken)}; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
     } else if (cookieToken && !sessionToken) {
-      sessionStorage.setItem("auth_token", decodeURIComponent(cookieToken));
+      const val = decodeURIComponent(cookieToken);
+      sessionStorage.setItem("auth_token", val);
+      try { localStorage.setItem("auth_token", val); } catch {}
+    }
+    if (!sessionStorage.getItem("auth_token") && localStorage.getItem("auth_token")) {
+      sessionStorage.setItem("auth_token", localStorage.getItem("auth_token")!);
     }
   } catch {}
 }
@@ -79,7 +88,10 @@ export class ApiClient {
 
     // Đính kèm Authorization Bearer token nếu có (hỗ trợ cross-domain Render/Vercel)
     if (!headers["Authorization"] && typeof window !== "undefined") {
-      const storedToken = sessionStorage.getItem("auth_token") || memoryAuthToken;
+      const storedToken =
+        sessionStorage.getItem("auth_token") ||
+        localStorage.getItem("auth_token") ||
+        memoryAuthToken;
       if (storedToken) {
         headers["Authorization"] = `Bearer ${storedToken}`;
       }
@@ -91,7 +103,9 @@ export class ApiClient {
         .split("; ")
         .find((entry) => entry.startsWith("csrf_token="))
         ?.slice("csrf_token=".length);
-      const storageCsrf = sessionStorage.getItem("csrf_token");
+      const storageCsrf =
+        sessionStorage.getItem("csrf_token") ||
+        localStorage.getItem("csrf_token");
       const effectiveCsrf = cookieCsrf ? decodeURIComponent(cookieCsrf) : (storageCsrf || memoryCsrfToken);
       if (effectiveCsrf && !headers["X-CSRF-Token"]) {
         headers["X-CSRF-Token"] = effectiveCsrf;
