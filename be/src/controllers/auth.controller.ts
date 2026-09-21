@@ -88,7 +88,7 @@ export class AuthController {
       res.status(201).json({
         success: true,
         message: "Đăng ký và xác thực tài khoản thành công!",
-        data: { user: result.user, token: result.token, csrfToken },
+        data: { user: result.user },
       });
     } catch (error: any) {
       if (error instanceof ZodError) {
@@ -118,7 +118,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: "Đăng nhập với Google thành công!",
-        data: { user: result.user, token: result.token, csrfToken },
+        data: { user: result.user },
       });
     } catch (error: any) {
       if (error instanceof ZodError) {
@@ -146,7 +146,7 @@ export class AuthController {
       res.status(201).json({
         success: true,
         message: "Đăng ký tài khoản thành công!",
-        data: { user: result.user, token: result.token, csrfToken },
+        data: { user: result.user },
       });
     } catch (error: any) {
       if (error instanceof ZodError) {
@@ -174,7 +174,7 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công!",
-        data: { user: result.user, token: result.token, csrfToken },
+        data: { user: result.user },
       });
     } catch (error: any) {
       if (error instanceof ZodError) {
@@ -214,8 +214,7 @@ export class AuthController {
         res.cookie("csrf_token", csrfToken, CSRF_COOKIE_OPTIONS);
       }
       res.setHeader("X-CSRF-Token", csrfToken);
-      const token = (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : req.cookies?.auth_token) || undefined;
-      res.status(200).json({ success: true, data: user, token, csrfToken });
+      res.status(200).json({ success: true, data: user });
     } catch (error: any) {
       next(error);
     }

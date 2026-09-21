@@ -31,27 +31,37 @@ export class CardService {
             });
             if (existing) return existing;
 
+            const user = await tx.user.findUnique({
+              where: { id: userId },
+              select: { role: true },
+            });
+            const isVipUser = user?.role === "ADMIN";
+            const planCode = isVipUser ? "VIP" : "FREE";
+
             const [plan, template] = await Promise.all([
-              tx.plan.findFirst({ where: { code: "FREE", isActive: true } }),
+              tx.plan.findFirst({ where: { code: planCode, isActive: true } }),
               tx.template.findUnique({ where: { slug: input.templateSlug } }),
             ]);
 
-            if (!plan) throw new Error("Gói FREE chưa được cấu hình hoặc đã tạm ngưng");
+            if (!plan) throw new Error(`Gói ${planCode} chưa được cấu hình hoặc đã tạm ngưng`);
             if (
               !template ||
               !template.isActive ||
-              template.isPremium ||
+              (!isVipUser && template.isPremium) ||
               template.category !== input.data.cardCategory
             ) {
-              throw new Error("Mẫu thiệp không khả dụng cho gói FREE");
+              throw new Error("Mẫu thiệp không khả dụng cho gói hiện tại");
             }
 
-            const cardCount = await tx.card.count({ where: { accountId } });
-            if (cardCount >= 2) {
-              throw new Error("Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp");
+            if (!isVipUser) {
+              const cardCount = await tx.card.count({ where: { accountId } });
+              if (cardCount >= 2) {
+                throw new Error("Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp");
+              }
             }
+
             if (input.photos.length > plan.maxPhotos) {
-              throw new Error(`Gói FREE chỉ cho phép tối đa ${plan.maxPhotos} ảnh`);
+              throw new Error(`Gói ${plan.name} chỉ cho phép tối đa ${plan.maxPhotos} ảnh`);
             }
 
             const card = await tx.card.create({

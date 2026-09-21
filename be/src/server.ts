@@ -8,6 +8,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { apiRouter } from "./routes/api.router";
 import { logger } from "./lib/logger";
+import { isOriginAllowed, parseAllowedOrigins } from "./config/security";
 import "./queues/workers/mail.worker"; // Khởi động background worker xử lý gửi email bất đồng bộ
 
 dotenv.config();
@@ -27,23 +28,13 @@ app.use(
 app.use(cookieParser());
 
 
-const rawAllowedOrigins = process.env.ALLOWED_ORIGINS || "";
-const allowedOrigins = rawAllowedOrigins
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || "");
 
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      const isAllowed =
-        allowedOrigins.includes("*") ||
-        allowedOrigins.includes(origin) ||
-        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
-        /\.vercel\.app$/.test(new URL(origin).hostname);
-
-      if (isAllowed) {
+      if (isOriginAllowed(origin, allowedOrigins)) {
         return callback(null, true);
       }
       callback(new Error(`CORS: Origin ${origin} not allowed`));
