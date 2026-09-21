@@ -5,10 +5,10 @@ export class ExportService {
   /**
    * Xuất danh sách khách mời và RSVP ra file Excel
    */
-  static async exportRsvpToExcel(userId: string, cardId: string): Promise<Buffer> {
+  static async exportRsvpToExcel(accountId: string, cardId: string): Promise<Buffer> {
     // Multi-tenant check
     const card = await prisma.card.findFirst({
-      where: { id: cardId, userId },
+      where: { id: cardId, accountId },
       include: {
         rsvpResponses: {
           orderBy: { createdAt: "desc" },

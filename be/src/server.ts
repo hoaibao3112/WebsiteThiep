@@ -1,19 +1,23 @@
-import express, { Request, Response, NextFunction } from "express";
+import "dotenv/config";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-import dotenv from "dotenv";
 import path from "path";
 import { apiRouter } from "./routes/api.router";
 import { logger } from "./lib/logger";
 import { isOriginAllowed, parseAllowedOrigins } from "./config/security";
-import "./queues/workers/mail.worker"; // Khởi động background worker xử lý gửi email bất đồng bộ
+import { errorHandler } from "./middlewares/error.middleware";
+import { validateRuntimeEnv } from "./config/env";
+import { prisma } from "./lib/prisma";
+import { redis } from "./lib/redis";
 
-dotenv.config();
+validateRuntimeEnv(process.env);
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 
 // -----------------------------------------------------------------------
@@ -117,13 +121,7 @@ app.use("/api", apiRouter);
 // -----------------------------------------------------------------------
 // GLOBAL ERROR HANDLER
 // -----------------------------------------------------------------------
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  logger.error({ err }, "Unhandled Error");
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || "Internal Server Error",
-  });
-});
+app.use(errorHandler);
 
 // -----------------------------------------------------------------------
 // SERVER START + GRACEFUL SHUTDOWN
@@ -141,7 +139,6 @@ const gracefulShutdown = async (signal: string) => {
 
     // Đóng kết nối Database
     try {
-      const { prisma } = await import("./lib/prisma");
       await prisma.$disconnect();
       logger.info("Prisma disconnected.");
     } catch (err) {
@@ -150,7 +147,6 @@ const gracefulShutdown = async (signal: string) => {
 
     // Đóng kết nối Redis
     try {
-      const { redis } = await import("./lib/redis");
       await redis.quit();
       logger.info("Redis disconnected.");
     } catch (err) {

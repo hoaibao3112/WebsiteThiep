@@ -11,7 +11,8 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
-    "worker:rsvp": "tsx src/queues/workers/rsvp-notification.worker.ts",
+    "worker:rsvp": "tsx src/worker.ts",
+    "worker:start": "node dist/worker.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

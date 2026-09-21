@@ -42,6 +42,29 @@ describe("ApiClient", () => {
       const calledOptions = mockFetch.mock.calls[0][1];
       expect(calledOptions.credentials).toBe("include");
     });
+
+    it("does not send bearer tokens from browser storage", async () => {
+      mockLocalStorage.setItem("auth_token", "stolen-browser-token");
+
+      await ApiClient.request("/auth/me");
+
+      const calledHeaders = mockFetch.mock.calls[0][1].headers;
+      expect(calledHeaders.Authorization).toBeUndefined();
+    });
+
+    it("does not persist JWT values returned by an API", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        json: async () => ({ success: true, data: { token: "jwt-from-api" } }),
+      });
+
+      await ApiClient.request("/auth/login", { method: "POST" });
+
+      expect(mockLocalStorage.getItem("auth_token")).toBeNull();
+      expect(sessionStorage.getItem("auth_token")).toBeNull();
+    });
   });
 
   // ─────────────────────────────────────────────

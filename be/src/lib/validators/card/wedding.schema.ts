@@ -25,6 +25,12 @@ const LoveStoryMilestoneSchema = z.object({
   imageUrl: z.string().optional().or(z.literal("")),
 });
 
+const WeddingPhotoSchema = z.object({
+  url: z.string().min(1),
+  alt: z.string().optional(),
+  caption: z.string().optional(),
+});
+
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
   heroSubtitle: z.string().optional(),
@@ -35,7 +41,7 @@ export const WeddingDataSchema = z.object({
   greeting: z.string().optional(),
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
   events: z.array(EventSchema).optional().default([]),
-  photos: z.array(z.any()).optional().default([]),
+  photos: z.array(WeddingPhotoSchema).optional().default([]),
 });
 
 export type WeddingData = z.infer<typeof WeddingDataSchema>;

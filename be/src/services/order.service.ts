@@ -4,24 +4,24 @@ import { CreateOrderInput, SepayWebhookPayload } from "../lib/validators/order.s
 import { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
 import { logger } from "../lib/logger";
+import { PublishCardDataSchema } from "../lib/validators/card";
 
 export class OrderService {
   /**
    * Tạo đơn hàng nâng cấp gói và sinh link VietQR động
    */
-  static async createOrder(userId: string, input: CreateOrderInput, idempotencyKey: string) {
+  static async createOrder(userId: string, accountId: string, input: CreateOrderInput, idempotencyKey: string) {
     const { cardId, planId } = input;
 
     // 1. Kiểm tra card & plan
     const [card, plan] = await Promise.all([
-      prisma.card.findFirst({ where: { id: cardId, userId } }),
-      prisma.plan.findUnique({ where: { id: planId } }),
+      prisma.card.findFirst({ where: { id: cardId, accountId } }),
+      prisma.plan.findFirst({ where: { id: planId, isActive: true } }),
     ]);
 
     if (!card) throw new Error("Thiệp không tồn tại");
     if (!plan) throw new Error("Gói dịch vụ không tồn tại");
 
-    const accountId = card.accountId;
     const existingOrder = await prisma.order.findUnique({
       where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
       include: { plan: true },
@@ -34,15 +34,9 @@ export class OrderService {
     }
 
     if (plan.price <= 0) {
-      // Nếu là gói Free, nâng cấp trực tiếp
-      await prisma.card.update({
-        where: { id: cardId, accountId },
-        data: { planId: plan.id, status: "ACTIVE" },
-      });
-      return { success: true, message: "Kích hoạt gói miễn phí thành công" };
+      throw new Error("Gói miễn phí phải được xuất bản qua luồng xuất bản thiệp");
     }
 
-    // 2. Tạo mã đơn hàng ngẫu nhiên duy nhất (VD: THIEP + 8 ký tự alphanumeric)
     const generateOrderCode = () => `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
     let orderCode = generateOrderCode();
     const pollingToken = crypto.randomBytes(32).toString("base64url");
@@ -175,8 +169,21 @@ export class OrderService {
       return { success: true, ignored: true, message: "Insufficient transfer amount" };
     }
 
+    PublishCardDataSchema.parse(order.card.categoryData);
+
     // 5. Thực hiện Transaction: Cập nhật Order -> Kích hoạt Card -> Ghi log PaymentTransaction
-    await prisma.$transaction(async (tx) => {
+    const transitioned = await prisma.$transaction(async (tx) => {
+      const transition = await tx.order.updateMany({
+        where: {
+          id: order.id,
+          accountId: order.accountId,
+          status: "PENDING",
+          expiredAt: { gt: new Date() },
+        },
+        data: { status: "PAID", paidAt: new Date() },
+      });
+      if (transition.count !== 1) return false;
+
       // Ghi nhận PaymentTransaction
       await tx.paymentTransaction.create({
         data: {
@@ -188,15 +195,6 @@ export class OrderService {
           accountNumber,
           transactionTime: new Date(transactionDate),
           rawPayload: payload as unknown as Prisma.InputJsonValue,
-        },
-      });
-
-      // Cập nhật Order sang PAID
-      await tx.order.update({
-        where: { id: order.id, accountId: order.accountId },
-        data: {
-          status: "PAID",
-          paidAt: new Date(),
         },
       });
 
@@ -220,7 +218,12 @@ export class OrderService {
           expiredAt,
         },
       });
+      return true;
     });
+
+    if (!transitioned) {
+      return { success: true, ignored: true, message: "Order is not payable" };
+    }
 
     logger.info({ cardId: order.cardId, orderCode }, "[Webhook SePay] Successfully activated VIP");
     return { success: true, message: "Order activated successfully" };

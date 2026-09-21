@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
+  user: { findUnique: vi.fn() },
   plan: { findFirst: vi.fn() },
   template: { findUnique: vi.fn() },
   card: {
@@ -47,6 +48,7 @@ const input: DraftCardInput = {
 describe("CardService.createDraft", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    db.user.findUnique.mockResolvedValue({ role: "USER" });
     db.plan.findFirst.mockResolvedValue({ id: "free-id", code: "FREE", maxPhotos: 5 });
     db.template.findUnique.mockResolvedValue({
       id: "template-id",
@@ -104,7 +106,7 @@ describe("CardService.createDraft", () => {
 
     await expect(
       CardService.createDraft("user-1", "account-1", input, "request-3")
-    ).rejects.toThrow("không khả dụng cho gói FREE");
+    ).rejects.toThrow("không khả dụng cho gói hiện tại");
   });
 });
 
@@ -133,7 +135,10 @@ describe("CardService lifecycle reads and publish", () => {
       where: expect.objectContaining({
         slug: "minh-va-lan",
         status: "ACTIVE",
-        expiredAt: { gt: expect.any(Date) },
+        OR: [
+          { expiredAt: null },
+          { expiredAt: { gt: expect.any(Date) } },
+        ],
       }),
     }));
   });

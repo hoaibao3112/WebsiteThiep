@@ -1,8 +1,15 @@
 import React from "react";
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiClient } from "@/lib/api";
+
+vi.mock("next/navigation", () => ({
+  useParams: () => ({ cardId: "demo-card-1" }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => "/dashboard/cards/demo-card-1/edit",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const TEST_CARD = {
   id: "demo-card-1", slug: "quan-va-ha-wedding", cardCategory: "WEDDING" as const,
@@ -26,6 +33,11 @@ async function renderPage() {
 describe("EditCardPage owner flow", () => {
   beforeEach(() => {
     vi.mocked(ApiClient.request).mockResolvedValue({ success: true, data: TEST_CARD });
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it("loads the owner's card without demo fallback", async () => {

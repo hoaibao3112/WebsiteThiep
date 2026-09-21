@@ -1,4 +1,6 @@
 import { redis } from "./redis";
+import { HttpError } from "./http-error";
+import { logger } from "./logger";
 
 /**
  * Helper kiểm tra giới hạn tần suất request (Rate Limiter) dựa trên Redis
@@ -21,11 +23,14 @@ export async function checkRateLimit(
     if (count > maxCount) {
       throw new Error(errorMessage);
     }
-  } catch (error: any) {
-    if (error.message === errorMessage) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === errorMessage) {
       throw error;
     }
+    if (process.env.NODE_ENV === "production") {
+      throw new HttpError(503, "Redis rate-limit service unavailable", "RATE_LIMIT_UNAVAILABLE");
+    }
     // Nếu Redis có sự cố hoặc timeout, ghi log warning và không chặn luồng chính của người dùng
-    console.warn(`[RateLimiter] Redis warning for key "${key}":`, error?.message || error);
+    logger.warn({ err: error, key }, "Redis rate limiter unavailable; development fallback accepted");
   }
 }

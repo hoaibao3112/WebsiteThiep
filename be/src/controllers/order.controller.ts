@@ -4,12 +4,14 @@ import { OrderService } from "../services/order.service";
 import { CreateOrderSchema, SepayWebhookPayloadSchema } from "../lib/validators/order.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import crypto from "node:crypto";
+import { logger } from "../lib/logger";
 
 export class OrderController {
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
-      if (!userId) {
+      const accountId = req.user?.accountId;
+      if (!userId || !accountId) {
         return res.status(500).json({
           success: false,
           error: "Thiếu thông tin xác thực - lỗi hệ thống",
@@ -21,7 +23,7 @@ export class OrderController {
       if (!idempotencyKey || idempotencyKey.length < 16 || idempotencyKey.length > 128) {
         return res.status(400).json({ success: false, error: "Idempotency-Key không hợp lệ" });
       }
-      const result = await OrderService.createOrder(userId, validated, idempotencyKey);
+      const result = await OrderService.createOrder(userId, accountId, validated, idempotencyKey);
       res.status(201).json({ success: true, data: result });
     } catch (error: any) {
       if (error instanceof ZodError) {
@@ -72,7 +74,7 @@ export class OrderController {
         const received = typeof authHeader === "string" ? authHeader : "";
         const valid = received.length === expected.length && crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected));
         if (!valid) {
-          console.warn("[Webhook SePay] Cảnh báo truy cập trái phép - Header Authorization không hợp lệ hoặc bị thiếu!");
+          logger.warn({ ip: req.ip }, "[Webhook SePay] Invalid or missing authorization header");
           return res.status(401).json({
             success: false,
             error: "Unauthorized: Invalid or missing API key",

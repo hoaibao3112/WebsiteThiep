@@ -10,8 +10,8 @@ export class ExportController {
     next: NextFunction
   ) {
     try {
-      const userId = req.userId;
-      if (!userId) {
+      const accountId = req.user?.accountId;
+      if (!accountId) {
         return res.status(500).json({
           success: false,
           error: "Thiếu thông tin xác thực - lỗi hệ thống",
@@ -19,7 +19,7 @@ export class ExportController {
       }
 
       const cardId = req.params.cardId as string;
-      const buffer = await ExportService.exportRsvpToExcel(userId, cardId);
+      const buffer = await ExportService.exportRsvpToExcel(accountId, cardId);
 
       res.setHeader(
         "Content-Type",

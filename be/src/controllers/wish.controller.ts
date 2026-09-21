@@ -7,8 +7,7 @@ export class WishController {
   static async submit(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = WishSubmitSchema.parse(req.body);
-      const ipAddress =
-        (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+      const ipAddress = req.ip || req.socket.remoteAddress;
 
       const wish = await WishService.submitWish(validated, { ipAddress });
       res.status(201).json({

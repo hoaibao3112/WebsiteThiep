@@ -8,8 +8,7 @@ export class RsvpController {
   static async submit(req: Request, res: Response, next: NextFunction) {
     try {
       const validated = RsvpSubmitSchema.parse(req.body);
-      const ipAddress =
-        (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress;
+      const ipAddress = req.ip || req.socket.remoteAddress;
       const userAgent = req.headers["user-agent"];
 
       const rsvp = await RsvpService.submitRsvp(validated, {

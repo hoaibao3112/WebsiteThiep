@@ -4,6 +4,17 @@ import { checkRateLimit } from "../lib/rate-limiter";
 import { WishSubmitInput } from "../lib/validators/wish.schema";
 
 export class WishService {
+  private static async getPublicCard(cardId: string) {
+    return prisma.card.findFirst({
+      where: {
+        id: cardId,
+        status: "ACTIVE",
+        OR: [{ expiredAt: null }, { expiredAt: { gt: new Date() } }],
+      },
+      select: { id: true, status: true, accountId: true },
+    });
+  }
+
   /**
    * Gửi lời chúc mới kèm Rate Limiting
    */
@@ -24,10 +35,7 @@ export class WishService {
     }
 
     // 2. Kiểm tra thiệp tồn tại
-    const card = await prisma.card.findUnique({
-      where: { id: cardId },
-      select: { id: true, status: true, accountId: true },
-    });
+    const card = await this.getPublicCard(cardId);
 
     if (!card) {
       throw new Error("Thiệp không tồn tại");
@@ -64,8 +72,12 @@ export class WishService {
    * Lấy danh sách lời chúc công khai (Cursor-based Pagination)
    */
   static async listWishes(cardId: string, limit = 20, cursor?: string) {
+    const card = await this.getPublicCard(cardId);
+    if (!card) throw new Error("Thiệp không tồn tại hoặc đã ngừng nhận lời chúc");
+
     const items = await prisma.wish.findMany({
       where: {
+        accountId: card.accountId,
         cardId,
         isApproved: true,
       },

@@ -9,7 +9,7 @@ import { GuestController } from "../controllers/guest.controller";
 import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
-import { authGuard, optionalAuthGuard } from "../middlewares/auth.middleware";
+import { authGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
 import {
@@ -49,7 +49,7 @@ apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthCon
 // --- MEDIA UPLOAD ---
 apiRouter.post(
   "/media/upload",
-  optionalAuthGuard,
+  authGuard,
   upload.single("file"),
   MediaController.upload
 );

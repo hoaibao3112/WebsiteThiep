@@ -145,7 +145,10 @@ export class CardService {
       where: {
         slug,
         status: "ACTIVE",
-        expiredAt: { gt: new Date() },
+        OR: [
+          { expiredAt: null },
+          { expiredAt: { gt: new Date() } },
+        ],
       },
       include: this.cardAggregateInclude,
     });
@@ -168,6 +171,7 @@ export class CardService {
     if (guestCode) {
       guestInfo = await prisma.guest.findFirst({
         where: {
+          accountId: card.accountId,
           cardId: card.id,
           OR: [{ guestToken: guestCode }, { guestCode }],
         },

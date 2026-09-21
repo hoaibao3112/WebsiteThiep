@@ -1,7 +1,5 @@
-import fs from "fs";
-import path from "path";
+import crypto from "node:crypto";
 
-// Whitelist MIME type & đuôi file hợp lệ
 const ALLOWED_MIME_MAP: Record<string, string[]> = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
@@ -10,94 +8,58 @@ const ALLOWED_MIME_MAP: Record<string, string[]> = {
   "audio/mp3": [".mp3"],
 };
 
-/**
- * Kiểm tra magic bytes ở phần đầu buffer của file
- */
 function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
-  if (!buffer || buffer.length < 4) return false;
-
-  // JPEG: FF D8 FF
-  if (mimetype === "image/jpeg") {
-    return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
-  }
-
-  // PNG: 89 50 4E 47 (0x89, 'P', 'N', 'G')
-  if (mimetype === "image/png") {
-    return (
-      buffer[0] === 0x89 &&
-      buffer[1] === 0x50 &&
-      buffer[2] === 0x4e &&
-      buffer[3] === 0x47
-    );
-  }
-
-  // WEBP: RIFF....WEBP
-  if (mimetype === "image/webp") {
-    if (buffer.length < 12) return false;
-    const riff = buffer.toString("ascii", 0, 4);
-    const webp = buffer.toString("ascii", 8, 12);
-    return riff === "RIFF" && webp === "WEBP";
-  }
-
-  // MP3: ID3 header hoặc MPEG audio frame sync (0xFF 0xFB, 0xFF 0xF3, 0xFF 0xF2, 0xFF 0xE0)
+  if (buffer.length < 4) return false;
+  if (mimetype === "image/jpeg") return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  if (mimetype === "image/png") return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
+  if (mimetype === "image/webp") return buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP";
   if (mimetype === "audio/mpeg" || mimetype === "audio/mp3") {
-    const isId3 = buffer.toString("ascii", 0, 3) === "ID3";
-    const isMpegSync =
-      buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0;
-    return isId3 || isMpegSync;
+    return buffer.toString("ascii", 0, 3) === "ID3" || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0);
   }
-
   return false;
 }
 
 export class MediaService {
-  /**
-   * Upload file an toàn, kiểm tra MIME type & Magic bytes
-   */
-  static async handleFileUpload(file: Express.Multer.File): Promise<string> {
-    if (!file || !file.buffer) {
-      throw new Error("Không có file nào được tải lên hoặc file rỗng");
-    }
-
+  static async handleFileUpload(file: Express.Multer.File, accountId: string): Promise<string> {
+    if (!file?.buffer) throw new Error("Không có file nào được tải lên hoặc file rỗng");
     const mimetype = file.mimetype.toLowerCase();
-
-    // 1. Kiểm tra Whitelist Mime Type
-    const allowedExtensions = ALLOWED_MIME_MAP[mimetype];
-    if (!allowedExtensions) {
-      throw new Error(
-        "Định dạng file không hợp lệ! Hệ thống chỉ chấp nhận ảnh (JPG, PNG, WEBP) hoặc âm thanh (MP3)."
-      );
+    const extensions = ALLOWED_MIME_MAP[mimetype];
+    if (!extensions) throw new Error("Định dạng file không hợp lệ");
+    const extension = file.originalname.slice(file.originalname.lastIndexOf(".")).toLowerCase();
+    if (!extensions.includes(extension) || !validateMagicBytes(file.buffer, mimetype)) {
+      throw new Error("Nội dung file không khớp định dạng khai báo");
     }
 
-    // 2. Chống giả mạo extension: Extension phải thuộc whitelist của Mime Type
-    const originalExt = path.extname(file.originalname).toLowerCase();
-    if (!allowedExtensions.includes(originalExt)) {
-      throw new Error(
-        `Đuôi mở rộng của file (${originalExt}) không khớp với định dạng thực tế (${mimetype}).`
-      );
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error("Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.");
     }
 
-    // 3. Kiểm tra Magic Bytes chống tấn công Polyglot / Stored XSS / SVG spoofing
-    const isValidBytes = validateMagicBytes(file.buffer, mimetype);
-    if (!isValidBytes) {
-      throw new Error(
-        "Nội dung file bị lỗi hoặc không khớp với định dạng tiêu chuẩn. Tải lên bị từ chối."
-      );
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = `cardvite/${accountId}`;
+    const signature = crypto
+      .createHash("sha1")
+      .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+      .digest("hex");
+    const form = new FormData();
+    form.append("file", new Blob([file.buffer], { type: mimetype }), file.originalname);
+    form.append("api_key", apiKey);
+    form.append("timestamp", String(timestamp));
+    form.append("folder", folder);
+    form.append("signature", signature);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
+    if (!response.ok || !result.secure_url) {
+      throw new Error(`Cloudinary upload thất bại: ${result.error?.message || response.statusText}`);
     }
-
-    // 4. Tạo thư mục lưu trữ uploads an toàn nếu chưa có
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // 5. Sinh tên file ngẫu nhiên độc bản để chống Path Traversal
-    const safeExt = allowedExtensions[0];
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}${safeExt}`;
-    const filePath = path.join(uploadDir, fileName);
-
-    fs.writeFileSync(filePath, file.buffer);
-
-    return `/uploads/${fileName}`;
+    return result.secure_url;
   }
 }

@@ -18,7 +18,6 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null;
-  token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   isAuthModalOpen: boolean;
@@ -37,7 +36,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalTab, setAuthModalTab] = useState<"login" | "register">("login");
@@ -126,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = React.useCallback(async () => {
     await ApiClient.request("/auth/logout", { method: "POST" });
-    setApiClientTokens({ authToken: null, csrfToken: null });
+    setApiClientTokens({ csrfToken: null });
     setUser(null);
   }, []);
 
@@ -135,7 +133,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        token,
         isLoading,
         isAuthenticated: !!user,
         isAuthModalOpen,

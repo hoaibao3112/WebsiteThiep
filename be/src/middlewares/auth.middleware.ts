@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService, TokenPayload } from "../services/auth.service";
+import { prisma } from "../lib/prisma";
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;
   userId?: string;
 }
 
-export function authGuard(
+export async function authGuard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -29,6 +30,13 @@ export function authGuard(
     }
 
     const decoded = AuthService.verifyToken(token);
+    const membership = await prisma.accountMember.findUnique({
+      where: { accountId_userId: { accountId: decoded.accountId, userId: decoded.userId } },
+      select: { id: true },
+    });
+    if (!membership) {
+      return res.status(401).json({ success: false, error: "Phiên đăng nhập không còn quyền truy cập tài khoản" });
+    }
     req.user = decoded;
     req.userId = decoded.userId;
 
@@ -41,7 +49,7 @@ export function authGuard(
   }
 }
 
-export function optionalAuthGuard(
+export async function optionalAuthGuard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -58,8 +66,14 @@ export function optionalAuthGuard(
 
     if (token) {
       const decoded = AuthService.verifyToken(token);
-      req.user = decoded;
-      req.userId = decoded.userId;
+      const membership = await prisma.accountMember.findUnique({
+        where: { accountId_userId: { accountId: decoded.accountId, userId: decoded.userId } },
+        select: { id: true },
+      });
+      if (membership) {
+        req.user = decoded;
+        req.userId = decoded.userId;
+      }
     }
     next();
   } catch {

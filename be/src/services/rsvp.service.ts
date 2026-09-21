@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { RsvpSubmitInput } from "../lib/validators/rsvp.schema";
 import { rsvpNotificationQueue } from "../queues/rsvp-notification.queue";
+import { logger } from "../lib/logger";
 
 export class RsvpService {
   /**
@@ -51,7 +52,7 @@ export class RsvpService {
     let resolvedPhone = phone;
     if (guestCode || guestToken) {
       const guest = await prisma.guest.findFirst({
-        where: { cardId, OR: [...(guestToken ? [{ guestToken }] : []), ...(guestCode ? [{ guestCode }] : [])] },
+        where: { accountId: card.accountId, cardId, OR: [...(guestToken ? [{ guestToken }] : []), ...(guestCode ? [{ guestCode }] : [])] },
       });
       if (guest) { guestId = guest.id; resolvedName = guest.fullName; resolvedPhone = guest.phone || undefined; }
     }
@@ -85,6 +86,8 @@ export class RsvpService {
         guestCount,
         note: note || undefined,
         side,
+      }).catch((error: unknown) => {
+        logger.error({ error, cardId, rsvpId: rsvp.id }, "Không thể xếp hàng thông báo RSVP");
       });
     }
 

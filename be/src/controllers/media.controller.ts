@@ -14,7 +14,9 @@ export class MediaController {
         return res.status(400).json({ success: false, error: "Vui lòng chọn file" });
       }
 
-      const fileUrl = await MediaService.handleFileUpload(req.file);
+      const accountId = req.user?.accountId;
+      if (!accountId) return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
+      const fileUrl = await MediaService.handleFileUpload(req.file, accountId);
       res.status(200).json({
         success: true,
         message: "Tải file thành công!",
