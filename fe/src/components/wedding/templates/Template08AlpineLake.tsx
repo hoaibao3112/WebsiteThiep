@@ -25,6 +25,7 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
   onOpenRsvp,
   onOpenGift,
   onSelectPhoto,
+  isPreview = false,
 }) => {
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date("2026-12-10T12:00:00Z");
@@ -453,7 +454,7 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
         </section>
 
         {/* 6. BOTTOM DOCK CỐ ĐỊNH */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D5E5E6] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">
+        <div className={`${isPreview ? "sticky" : "fixed"} bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#D5E5E6] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto`}>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}

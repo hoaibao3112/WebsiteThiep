@@ -22,7 +22,8 @@ export const BirthdayView: React.FC<{
   isVipExperience?: boolean;
   guestCode?: string;
   templateSlug?: string;
-}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug }) => {
+  isPreview?: boolean;
+}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug, isPreview = false }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -36,8 +37,8 @@ export const BirthdayView: React.FC<{
   const targetDate = mainEvent ? mainEvent.eventDate : new Date();
 
   return (
-    <div data-template-variant={variant} className="relative min-h-screen bg-stone-950 text-stone-100 font-sans pb-24 overflow-x-hidden">
-      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
+    <div data-template-variant={variant} className={`relative min-h-screen bg-stone-950 text-stone-100 font-sans ${isPreview ? "pb-4 overflow-hidden" : "pb-24 overflow-x-hidden"}`}>
+      {!isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${t("birthdayTitle")} - ${data.celebrantName}`}
@@ -49,12 +50,14 @@ export const BirthdayView: React.FC<{
         />
       )}
 
-      <FallingEffect effect={card.fallingEffect || "BALLOON"} />
-      <AudioPlayer
-        musicUrl={card.musicUrl}
-        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
-      />
+      <FallingEffect effect={card.fallingEffect || "BALLOON"} scoped={isPreview} />
+      {!isPreview && (
+        <AudioPlayer
+          musicUrl={card.musicUrl}
+          autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
+          startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
+        />
+      )}
 
       <main className="max-w-md sm:max-w-lg mx-auto bg-stone-900 min-h-screen shadow-2xl overflow-hidden border-x border-stone-800 relative">
         <div className="absolute top-4 right-4 z-20">
@@ -177,7 +180,7 @@ export const BirthdayView: React.FC<{
         </div>
 
         {/* ACTION BAR */}
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-stone-900/95 backdrop-blur-md border-t border-stone-800 p-3 flex items-center justify-center gap-3 max-w-md sm:max-w-lg mx-auto">
+        <div className={`${isPreview ? "sticky" : "fixed"} bottom-0 left-0 right-0 z-30 bg-stone-900/95 backdrop-blur-md border-t border-stone-800 p-3 flex items-center justify-center gap-3 max-w-md sm:max-w-lg mx-auto`}>
           <button
             onClick={() => setShowRsvp(true)}
             className="flex-1 py-3 px-4 rounded-2xl text-white text-xs sm:text-sm font-bold shadow-lg cursor-pointer flex items-center justify-center gap-1.5"

@@ -33,7 +33,8 @@ export const NewbornView: React.FC<{
   isVipExperience?: boolean;
   guestCode?: string;
   templateSlug?: string;
-}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug }) => {
+  isPreview?: boolean;
+}> = ({ card, guestName, guestPhone, guestCode, isVipExperience = false, templateSlug, isPreview = false }) => {
   const { t } = useLanguage();
   const [opened, setOpened] = useState(false);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -56,8 +57,8 @@ export const NewbornView: React.FC<{
     : t("fullMonthCeremony");
 
   return (
-    <div data-template-variant={variant} className={`relative min-h-screen text-stone-800 font-sans pb-24 overflow-x-hidden ${variant === "sweet-angel" ? "bg-[#fff4f8]" : "bg-[#f0f7ff]"}`}>
-      {!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
+    <div data-template-variant={variant} className={`relative min-h-screen text-stone-800 font-sans ${isPreview ? "pb-4 overflow-hidden" : "pb-24 overflow-x-hidden"} ${variant === "sweet-angel" ? "bg-[#fff4f8]" : "bg-[#f0f7ff]"}`}>
+      {!isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
         <WaxSealOpening
           primaryColor={primaryColor}
           title={`${data.babyName}`}
@@ -69,12 +70,14 @@ export const NewbornView: React.FC<{
         />
       )}
 
-      <FallingEffect effect={card.fallingEffect || "BALLOON"} />
-      <AudioPlayer
-        musicUrl={card.musicUrl}
-        autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
-      />
+      <FallingEffect effect={card.fallingEffect || "BALLOON"} scoped={isPreview} />
+      {!isPreview && (
+        <AudioPlayer
+          musicUrl={card.musicUrl}
+          autoPlay={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? false : (card.isAutoPlay ?? true)}
+          startOnGesture={(!opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName))) ? audioStarted : (card.isAutoPlay ?? true)}
+        />
+      )}
 
       <main className={`max-w-md sm:max-w-lg mx-auto min-h-screen shadow-2xl overflow-hidden relative ${variant === "sweet-angel" ? "bg-[#fffafd] border-x border-pink-100" : "bg-white border-x border-sky-100"}`}>
         <div className="absolute top-4 right-4 z-20">
@@ -256,7 +259,7 @@ export const NewbornView: React.FC<{
         <GuestbookSection cardId={card.id} primaryColor={primaryColor} />
 
         {/* ACTION BAR */}
-        <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-sky-100 p-3 flex items-center justify-center gap-3 max-w-md sm:max-w-lg mx-auto">
+        <div className={`${isPreview ? "sticky" : "fixed"} bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-sky-100 p-3 flex items-center justify-center gap-3 max-w-md sm:max-w-lg mx-auto`}>
           {!isAnnouncementOnly ? (
             <button
               onClick={() => setShowRsvp(true)}

@@ -482,13 +482,13 @@ function CardBuilderContent() {
           isVip={false}
         >
           {category === "WEDDING" && (
-            <WeddingView card={previewCard} templateSlug={templateSlug} />
+            <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />
           )}
           {category === "BIRTHDAY" && (
-            <BirthdayView card={previewCard} templateSlug={templateSlug} />
+            <BirthdayView card={previewCard} templateSlug={templateSlug} isPreview={true} />
           )}
           {category === "NEWBORN" && (
-            <NewbornView card={previewCard} templateSlug={templateSlug} />
+            <NewbornView card={previewCard} templateSlug={templateSlug} isPreview={true} />
           )}
         </VisualCardEditor>
       </main>

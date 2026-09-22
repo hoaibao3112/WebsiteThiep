@@ -10,4 +10,5 @@ export interface WeddingTemplateProps {
   onOpenRsvp: () => void;
   onOpenGift: () => void;
   onSelectPhoto: (url: string) => void;
+  isPreview?: boolean;
 }

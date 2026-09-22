@@ -35,6 +35,7 @@ interface WeddingViewProps {
   isVipExperience?: boolean;
   guestCode?: string;
   templateSlug?: string;
+  isPreview?: boolean;
 }
 
 export const WeddingView: React.FC<WeddingViewProps> = ({
@@ -44,8 +45,9 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   isVipExperience = false,
   guestCode,
   templateSlug,
+  isPreview = false,
 }) => {
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(isPreview);
   const [audioStarted, setAudioStarted] = useState(false);
   const [showRsvp, setShowRsvp] = useState(false);
   const [showGift, setShowGift] = useState(false);
@@ -79,7 +81,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   }, [guestName, card.slug]);
 
   const activeGuestName = resolvedGuestName || guestName;
-  const shouldShowOpening = !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(activeGuestName) || hasGuestQuery);
+  const shouldShowOpening = !isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(activeGuestName) || hasGuestQuery);
 
   const data = (card.categoryData as WeddingDataPayload) || {};
   const primaryColor = card.primaryColor || "#BE944E";
@@ -100,6 +102,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     onOpenRsvp: () => setShowRsvp(true),
     onOpenGift: () => setShowGift(true),
     onSelectPhoto: (url: string) => setSelectedPhoto(url),
+    isPreview,
   };
 
   const renderTemplate = () => {
@@ -132,7 +135,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   return (
     <div
       data-template-variant={variant}
-      className="relative min-h-screen font-sans overflow-x-hidden selection:bg-amber-200"
+      className={`relative min-h-screen font-sans ${isPreview ? "overflow-hidden" : "overflow-x-hidden"} selection:bg-amber-200`}
       style={{ fontFamily: card.fontFamily || config?.defaultFontFamily || "inherit" }}
     >
       {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN / MÀN KÉO SANG 2 BÊN */}
@@ -149,18 +152,21 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       )}
 
       {/* 2. HIỆU ỨNG RƠI, NHẠC NỀN & NÚT THẢ TIM CHÚC PHÚC */}
-      <FallingEffect effect={card.fallingEffect || "PETAL"} />
-      <AudioPlayer
-        musicUrl={card.musicUrl}
-        autoPlay={shouldShowOpening ? false : (card.isAutoPlay ?? true)}
-        startOnGesture={shouldShowOpening ? audioStarted : (card.isAutoPlay ?? true)}
-      />
-      <FloatingCelebrationWidget primaryColor={primaryColor} />
-
-      {/* 3. NÚT ĐỔI NGÔN NGỮ FLOATING TRÊN ĐẦU THIỆP */}
-      <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-40">
-        <LanguageSwitcher />
-      </div>
+      <FallingEffect effect={card.fallingEffect || "PETAL"} scoped={isPreview} />
+      {!isPreview && (
+        <>
+          <AudioPlayer
+            musicUrl={card.musicUrl}
+            autoPlay={shouldShowOpening ? false : (card.isAutoPlay ?? true)}
+            startOnGesture={shouldShowOpening ? audioStarted : (card.isAutoPlay ?? true)}
+          />
+          <FloatingCelebrationWidget primaryColor={primaryColor} />
+          {/* 3. NÚT ĐỔI NGÔN NGỮ FLOATING TRÊN ĐẦU THIỆP */}
+          <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-40">
+            <LanguageSwitcher />
+          </div>
+        </>
+      )}
 
       {/* 4. RENDER TEMPLATE GIAO DIỆN TƯƠNG ỨNG */}
       {renderTemplate()}

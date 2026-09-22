@@ -6,10 +6,12 @@ import { FallingEffectType } from "@/types/card.types";
 
 interface FallingEffectProps {
   effect?: FallingEffectType;
+  scoped?: boolean;
 }
 
 export const FallingEffect: React.FC<FallingEffectProps> = ({
   effect = "PETAL",
+  scoped = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -34,13 +36,28 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    const getDimensions = () => {
+      if (scoped && canvas.parentElement) {
+        return {
+          w: canvas.parentElement.clientWidth || 390,
+          h: canvas.parentElement.clientHeight || 780,
+        };
+      }
+      return {
+        w: window.innerWidth,
+        h: window.innerHeight,
+      };
+    };
+
+    let { w: width, h: height } = getDimensions();
+    canvas.width = width;
+    canvas.height = height;
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      const dims = getDimensions();
+      width = canvas.width = dims.w;
+      height = canvas.height = dims.h;
     };
     window.addEventListener("resize", handleResize);
 
@@ -170,7 +187,7 @@ export const FallingEffect: React.FC<FallingEffectProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className="pointer-events-none fixed inset-0 z-10 h-full w-full"
+      className={`pointer-events-none ${scoped ? "absolute" : "fixed"} inset-0 z-10 h-full w-full overflow-hidden`}
     />
   );
 };

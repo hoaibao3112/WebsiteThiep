@@ -24,6 +24,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
   onOpenRsvp,
   onOpenGift,
   onSelectPhoto,
+  isPreview = false,
 }) => {
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date("2026-08-02T10:30:00Z");
@@ -544,7 +545,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
         </motion.section>
 
         {/* 8. THANH DOCK CỐ ĐỊNH CHÂN MÀN HÌNH */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#3E4E38]/95 backdrop-blur-md border-t border-white/20 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl flex items-center justify-between gap-2 max-w-md sm:max-w-lg mx-auto">
+        <div className={`${isPreview ? "sticky" : "fixed"} bottom-0 left-0 right-0 z-40 bg-[#3E4E38]/95 backdrop-blur-md border-t border-white/20 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl flex items-center justify-between gap-2 max-w-md sm:max-w-lg mx-auto`}>
           {/* Ô nhập nhanh lời chúc */}
           <form onSubmit={handleSendWish} className="flex-1 relative flex items-center">
             <input

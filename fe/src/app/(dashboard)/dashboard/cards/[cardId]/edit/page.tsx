@@ -1854,18 +1854,18 @@ function EditCardContent() {
                 : previewDevice === "tablet"
                 ? "w-full max-w-[640px] h-[820px] max-h-[85vh]"
                 : "w-full max-w-[960px] h-[720px] max-h-[85vh]"
-            } bg-stone-900 rounded-[44px] p-3 shadow-2xl border-4 border-stone-800 relative flex flex-col`}
+            } bg-stone-900 rounded-[44px] p-3 shadow-2xl border-4 border-stone-800 relative flex flex-col [transform:translateZ(0)] isolate overflow-hidden`}
           >
             {/* Dynamic Island / Notch for mobile */}
             {previewDevice === "mobile" && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40 flex items-center justify-end px-2.5">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40 flex items-center justify-end px-2.5 pointer-events-none">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#1c1c1e] border border-stone-700/50" />
               </div>
             )}
-            <div className="w-full h-full bg-[#FAF8F5] rounded-[34px] overflow-y-auto overflow-x-hidden relative shadow-inner">
-              {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
-              {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
-              {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
+            <div className="w-full h-full bg-[#FAF8F5] rounded-[34px] overflow-y-auto overflow-x-hidden relative shadow-inner [transform:translateZ(0)] isolate">
+              {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
+              {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
+              {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
             </div>
           </div>
 

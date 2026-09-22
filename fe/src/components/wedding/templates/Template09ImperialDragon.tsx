@@ -25,6 +25,7 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
   onOpenRsvp,
   onOpenGift,
   onSelectPhoto,
+  isPreview = false,
 }) => {
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date("2025-12-19T09:00:00Z");
@@ -449,7 +450,7 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
         </section>
 
         {/* 8. BOTTOM DOCK CỐ ĐỊNH */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#3B090B]/95 backdrop-blur-md border-t-2 border-[#D4AF37] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto">
+        <div className={`${isPreview ? "sticky" : "fixed"} bottom-0 left-0 right-0 z-40 bg-[#3B090B]/95 backdrop-blur-md border-t-2 border-[#D4AF37] px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl flex items-center justify-center gap-2.5 max-w-md sm:max-w-lg mx-auto`}>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
