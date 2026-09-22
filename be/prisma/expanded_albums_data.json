@@ -1,0 +1,455 @@
+{
+  "t03-sweet-pink": {
+    "cover": "/images/demo/templates/t03-sweet-pink/cover.jpg",
+    "groom": "/images/demo/templates/t03-sweet-pink/groom.jpg",
+    "bride": "/images/demo/templates/t03-sweet-pink/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t03-sweet-pink/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      }
+    ]
+  },
+  "t08-alpine": {
+    "cover": "/images/demo/templates/t08-alpine/cover.jpg",
+    "groom": "/images/demo/templates/t08-alpine/groom.jpg",
+    "bride": "/images/demo/templates/t08-alpine/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t08-alpine/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      }
+    ]
+  },
+  "t09-dragon": {
+    "cover": "/images/demo/templates/t09-dragon/cover.jpg",
+    "groom": "/images/demo/templates/t09-dragon/groom.jpg",
+    "bride": "/images/demo/templates/t09-dragon/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      },
+      {
+        "fileName": "gallery-9.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-9.jpg",
+        "caption": "Chung một lối về"
+      },
+      {
+        "fileName": "gallery-10.jpg",
+        "url": "/images/demo/templates/t09-dragon/gallery-10.jpg",
+        "caption": "Viên mãn ngày thành hôn"
+      }
+    ]
+  },
+  "t02-magazine": {
+    "cover": "/images/demo/templates/t02-magazine/cover.jpg",
+    "groom": "/images/demo/templates/t02-magazine/groom.jpg",
+    "bride": "/images/demo/templates/t02-magazine/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t02-magazine/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      }
+    ]
+  },
+  "t05-forest": {
+    "cover": "/images/demo/templates/t05-forest/cover.jpg",
+    "groom": "/images/demo/templates/t05-forest/groom.jpg",
+    "bride": "/images/demo/templates/t05-forest/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t05-forest/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      }
+    ]
+  },
+  "t07-cinematic": {
+    "cover": "/images/demo/templates/t07-cinematic/cover.jpg",
+    "groom": "/images/demo/templates/t07-cinematic/groom.jpg",
+    "bride": "/images/demo/templates/t07-cinematic/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      },
+      {
+        "fileName": "gallery-9.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-9.jpg",
+        "caption": "Chung một lối về"
+      },
+      {
+        "fileName": "gallery-10.jpg",
+        "url": "/images/demo/templates/t07-cinematic/gallery-10.jpg",
+        "caption": "Viên mãn ngày thành hôn"
+      }
+    ]
+  },
+  "t01-heritage": {
+    "cover": "/images/demo/templates/t01-heritage/cover.jpg",
+    "groom": "/images/demo/templates/t01-heritage/groom.jpg",
+    "bride": "/images/demo/templates/t01-heritage/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t01-heritage/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      }
+    ]
+  },
+  "t04-marsala": {
+    "cover": "/images/demo/templates/t04-marsala/cover.jpg",
+    "groom": "/images/demo/templates/t04-marsala/groom.jpg",
+    "bride": "/images/demo/templates/t04-marsala/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      },
+      {
+        "fileName": "gallery-9.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-9.jpg",
+        "caption": "Chung một lối về"
+      },
+      {
+        "fileName": "gallery-10.jpg",
+        "url": "/images/demo/templates/t04-marsala/gallery-10.jpg",
+        "caption": "Viên mãn ngày thành hôn"
+      }
+    ]
+  },
+  "t06-lotus": {
+    "cover": "/images/demo/templates/t06-lotus/cover.jpg",
+    "groom": "/images/demo/templates/t06-lotus/groom.jpg",
+    "bride": "/images/demo/templates/t06-lotus/bride.jpg",
+    "gallery": [
+      {
+        "fileName": "gallery-1.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-1.jpg",
+        "caption": "Khoảnh khắc ngọt ngào bên nhau"
+      },
+      {
+        "fileName": "gallery-2.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-2.jpg",
+        "caption": "Nụ cười rạng rỡ của đôi uyên ương"
+      },
+      {
+        "fileName": "gallery-3.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-3.jpg",
+        "caption": "Tình yêu đơm hoa kết trái"
+      },
+      {
+        "fileName": "gallery-4.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-4.jpg",
+        "caption": "Ánh mắt hẹn ước trăm năm"
+      },
+      {
+        "fileName": "gallery-5.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-5.jpg",
+        "caption": "Lời thề nguyện trọn đời"
+      },
+      {
+        "fileName": "gallery-6.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-6.jpg",
+        "caption": "Nắm tay đi qua giông bão"
+      },
+      {
+        "fileName": "gallery-7.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-7.jpg",
+        "caption": "Hạnh phúc giản đơn ngày chung đôi"
+      },
+      {
+        "fileName": "gallery-8.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-8.jpg",
+        "caption": "Kỷ niệm vĩnh cửu của tình yêu"
+      },
+      {
+        "fileName": "gallery-9.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-9.jpg",
+        "caption": "Chung một lối về"
+      },
+      {
+        "fileName": "gallery-10.jpg",
+        "url": "/images/demo/templates/t06-lotus/gallery-10.jpg",
+        "caption": "Viên mãn ngày thành hôn"
+      }
+    ]
+  }
+}

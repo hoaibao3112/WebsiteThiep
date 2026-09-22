@@ -1,6 +1,28 @@
 import { PrismaClient, CardCategory, CardStatus, OpeningEffect, FallingEffect } from "@prisma/client";
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
+
+const TEMPLATE_DIR_MAP: Record<string, string> = {
+  "wedding-heritage-crimson-gold": "t01-heritage",
+  "wedding-modern-editorial-magazine": "t02-magazine",
+  "wedding-sweet-editorial-romance": "t03-sweet-pink",
+  "wedding-crimson-wine-marsala": "t04-marsala",
+  "wedding-forest-green-botanical": "t05-forest",
+  "wedding-pure-lotus-heritage": "t06-lotus",
+  "wedding-cinematic-editorial": "t07-cinematic",
+  "wedding-alpine-lake-romance": "t08-alpine",
+  "wedding-imperial-dragon-crimson": "t09-dragon",
+};
+
+let expandedAlbums: Record<string, any> = {};
+const jsonPath = path.join(__dirname, "expanded_albums_data.json");
+if (fs.existsSync(jsonPath)) {
+  try {
+    expandedAlbums = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+  } catch (e) {}
+}
 
 const WEDDING_CARDS_DATA = [
   // 01. Á ĐÔNG CUNG ĐÌNH HOÀNG GIA
@@ -658,9 +680,20 @@ async function seedCards() {
       cardId = created.id;
     }
 
+    // Lấy danh sách ảnh đầy đủ từ expanded album (nếu có)
+    const tDir = TEMPLATE_DIR_MAP[item.slug];
+    const album = tDir ? expandedAlbums[tDir] : null;
+    const finalPhotos = album && album.gallery?.length
+      ? album.gallery.map((g: any, idx: number) => ({
+          url: g.url,
+          caption: g.caption,
+          isCover: idx === 0,
+        }))
+      : item.photos;
+
     // Thêm danh sách ảnh CardPhoto vào Backend DB
     await prisma.cardPhoto.createMany({
-      data: item.photos.map((p, idx) => ({
+      data: finalPhotos.map((p: any, idx: number) => ({
         accountId: adminAccount.id,
         cardId,
         url: p.url,
