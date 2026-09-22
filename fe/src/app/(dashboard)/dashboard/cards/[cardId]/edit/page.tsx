@@ -668,17 +668,25 @@ function EditCardContent() {
           }
         }
         return {
-          id: p.id?.startsWith("local-") || p.id?.startsWith("photo-") ? undefined : p.id,
+          id: p.id?.startsWith("local-") || p.id?.startsWith("photo-") ? undefined : p.id || undefined,
           url: safeUrl,
-          thumbUrl: p.thumbUrl,
-          caption: p.caption || undefined,
-          isCover: p.isCover,
+          thumbUrl: p.thumbUrl || undefined,
+          caption: p.caption?.trim() || undefined,
+          isCover: Boolean(p.isCover),
         };
       })
     );
 
-    // Lọc các ảnh rỗng hoặc không hợp lệ
-    const validPhotos = safePhotos.filter((p) => Boolean(p.url && !p.url.startsWith("blob:")));
+    // Lọc các ảnh rỗng hoặc không hợp lệ, loại bỏ hoàn toàn các trường null
+    const validPhotos = safePhotos
+      .filter((p) => Boolean(p.url && !p.url.startsWith("blob:")))
+      .map((p, idx) => ({
+        id: p.id || undefined,
+        url: p.url,
+        thumbUrl: p.thumbUrl || undefined,
+        caption: p.caption || undefined,
+        isCover: p.isCover ?? idx === 0,
+      }));
 
     // 2. Chuẩn hóa sự kiện: eventDate phải luôn là chuỗi ISO Date hợp lệ
     const formattedEvents = events.map((e) => {

@@ -284,11 +284,15 @@ function CardBuilderContent() {
               address: e.address,
             }));
 
-      const activePhotos = customPhotos.map((p, idx) => ({
-        url: p.url,
-        caption: p.caption,
-        isCover: p.isCover ?? idx === 0,
-      }));
+      const activePhotos = customPhotos
+        .filter((p) => Boolean(p.url && !p.url.startsWith("blob:")))
+        .map((p, idx) => ({
+          id: p.id?.startsWith("local-") || p.id?.startsWith("photo-") ? undefined : p.id || undefined,
+          url: p.url,
+          thumbUrl: p.thumbUrl || undefined,
+          caption: p.caption?.trim() || undefined,
+          isCover: p.isCover ?? idx === 0,
+        }));
 
       const payload = {
         slug,
