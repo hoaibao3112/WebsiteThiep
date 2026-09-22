@@ -64,7 +64,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
   const [successMsg, setSuccessMsg] = useState("");
 
   const fetchWishes = async () => {
-    if (!cardId || cardId.startsWith("demo-")) {
+    if (!cardId || cardId.startsWith("demo-") || cardId.startsWith("draft-")) {
       setWishes(SAMPLE_DEMO_WISHES);
       return;
     }

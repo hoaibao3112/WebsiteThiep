@@ -72,8 +72,13 @@ export class WishService {
    * Lấy danh sách lời chúc công khai (Cursor-based Pagination)
    */
   static async listWishes(cardId: string, limit = 20, cursor?: string) {
+    if (!cardId || cardId.startsWith("draft-") || cardId.startsWith("demo-")) {
+      return { items: [], nextCursor: undefined };
+    }
     const card = await this.getPublicCard(cardId);
-    if (!card) throw new Error("Thiệp không tồn tại hoặc đã ngừng nhận lời chúc");
+    if (!card) {
+      return { items: [], nextCursor: undefined };
+    }
 
     const items = await prisma.wish.findMany({
       where: {

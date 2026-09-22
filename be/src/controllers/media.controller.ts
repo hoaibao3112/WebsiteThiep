@@ -30,7 +30,10 @@ export class MediaController {
           fieldErrors: error.flatten().fieldErrors,
         });
       }
-      next(error);
+      return res.status(error.message?.includes("Cloudinary") ? 503 : 400).json({
+        success: false,
+        error: error.message || "Không thể tải lên file",
+      });
     }
   }
 }

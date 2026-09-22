@@ -9,7 +9,7 @@ import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
-import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
+import { uploadSingleImage } from "@/lib/image-upload";
 import {
   Heart,
   Cake,
@@ -452,36 +452,29 @@ function EditCardContent() {
       const newPhotos: PhotoItem[] = [];
 
       for (const file of fileArr) {
-        // Preview immediately via objectURL
-        const localUrl = URL.createObjectURL(file);
-        const tempId = `local-${Date.now()}-${Math.random()}`;
-        newPhotos.push({
-          id: tempId,
-          url: localUrl,
-          caption: file.name.replace(/\.[^.]+$/, ""),
-          isCover: photos.length === 0 && newPhotos.length === 0,
-        });
-
-        // Try to upload to server
+        const tempId = `photo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         try {
-          const formData = new FormData();
-          formData.append("file", file);
-          const res = await ApiClient.request<{ url: string; thumbUrl?: string }>("/upload/image", {
-            method: "POST",
-            body: formData,
+          // uploadSingleImage sẽ thử upload lên server, nếu server lỗi sẽ nén client-side ra Data URL base64 an toàn 100%
+          const safeUrl = await uploadSingleImage(file);
+          newPhotos.push({
+            id: tempId,
+            url: safeUrl,
+            caption: file.name.replace(/\.[^.]+$/, ""),
+            isCover: photos.length === 0 && newPhotos.length === 0,
           });
-          if (res.success && res.data?.url) {
-            // Replace local URL with real one
-            const realUrl = res.data.url;
-            setPhotos((prev) =>
-              prev.map((p) =>
-                p.id === tempId ? { ...p, url: realUrl, thumbUrl: res.data?.thumbUrl } : p
-              )
-            );
-            URL.revokeObjectURL(localUrl);
-          }
         } catch {
-          // Keep localUrl as fallback — preview still shows
+          // Fallback cuối cùng bằng FileReader base64
+          const base64Url = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          newPhotos.push({
+            id: tempId,
+            url: base64Url,
+            caption: file.name.replace(/\.[^.]+$/, ""),
+            isCover: photos.length === 0 && newPhotos.length === 0,
+          });
         }
       }
 
@@ -648,18 +641,6 @@ function EditCardContent() {
           },
   };
 
-  const handleVisualDraftChange = (next: CardDetail) => {
-    setPrimaryColor(next.primaryColor);
-    setFontFamily(next.fontFamily);
-    setGreetingMessage(next.greetingMessage || "");
-    setOpeningEffect(next.openingEffect as typeof openingEffect);
-    setFallingEffect(next.fallingEffect);
-    setSelectedMusicSrc(next.musicUrl || "");
-    if (next.categoryData.cardCategory === "WEDDING") {
-      setGroomName(next.categoryData.groom.fullName);
-      setBrideName(next.categoryData.bride.fullName);
-    }
-  };
 
   // ────────────────────────────────────────────────────────────────
   // SAVE (PUT)
@@ -667,57 +648,172 @@ function EditCardContent() {
 
   const handleSaveCard = async () => {
     setSaving(true);
-    confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
+    setSaveError(null);
+
+    // 1. Chuẩn hóa hình ảnh: chuyển đổi mọi blob URL thành Base64 Data URL nếu có
+    const safePhotos = await Promise.all(
+      photos.map(async (p) => {
+        let safeUrl = p.url;
+        if (safeUrl.startsWith("blob:")) {
+          try {
+            const resp = await fetch(safeUrl);
+            const blob = await resp.blob();
+            safeUrl = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          } catch {
+            safeUrl = "";
+          }
+        }
+        return {
+          id: p.id?.startsWith("local-") || p.id?.startsWith("photo-") ? undefined : p.id,
+          url: safeUrl,
+          thumbUrl: p.thumbUrl,
+          caption: p.caption || undefined,
+          isCover: p.isCover,
+        };
+      })
+    );
+
+    // Lọc các ảnh rỗng hoặc không hợp lệ
+    const validPhotos = safePhotos.filter((p) => Boolean(p.url && !p.url.startsWith("blob:")));
+
+    // 2. Chuẩn hóa sự kiện: eventDate phải luôn là chuỗi ISO Date hợp lệ
+    const formattedEvents = events.map((e) => {
+      let isoDate: string;
+      try {
+        const d = e.eventDate ? new Date(e.eventDate) : new Date();
+        isoDate = isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+      } catch {
+        isoDate = new Date().toISOString();
+      }
+      return {
+        id: e.id?.startsWith("local-") || e.id?.startsWith("event-") ? undefined : e.id,
+        eventName: e.eventName?.trim() || "Lễ Cưới",
+        eventDate: isoDate,
+        lunarDate: e.lunarDate?.trim() || undefined,
+        venueName: e.venueName?.trim() || "Chưa cập nhật",
+        address: e.address?.trim() || "Chưa cập nhật",
+        mapUrl: e.mapUrl?.trim() || undefined,
+      };
+    });
+
+    // 3. Chuẩn hóa tài khoản mừng cưới: chỉ gửi khi có số tài khoản và tên chủ thẻ
+    const hasGroomBank = Boolean(accNumGroom?.trim() && accNameGroom?.trim());
+    const hasBrideBank = Boolean(accNumBride?.trim() && accNameBride?.trim());
+
+    const bankingPrimary = hasGroomBank
+      ? {
+          bankCode: bankCodeGroom?.trim() || "MB",
+          accountNumber: accNumGroom.trim(),
+          accountName: accNameGroom.trim(),
+        }
+      : undefined;
+
+    const bankingSecondary = hasBrideBank
+      ? {
+          bankCode: bankCodeBride?.trim() || "VCB",
+          accountNumber: accNumBride.trim(),
+          accountName: accNameBride.trim(),
+        }
+      : undefined;
+
+    // 4. Chuẩn hóa slug và templateSlug
+    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
+    const cleanTemplateSlug = templateSlug || selectedTemplate || "wedding-heritage-crimson-gold";
+    const cleanMusicUrl = selectedMusicSrc?.startsWith("blob:") ? undefined : (selectedMusicSrc?.trim() || undefined);
+
+    // 5. Chuẩn hóa Category Data
+    const categoryDataPayload = {
+      cardCategory: category,
+      events: formattedEvents,
+      ...(category === "WEDDING"
+        ? {
+            groom: {
+              fullName: groomName?.trim() || "Chú Rể",
+              shortName: groomShort?.trim() || undefined,
+              birthOrder: groomBirthOrder?.trim() || undefined,
+              parents: (groomFather?.trim() || groomMother?.trim())
+                ? { fatherName: groomFather?.trim() || undefined, motherName: groomMother?.trim() || undefined }
+                : undefined,
+            },
+            bride: {
+              fullName: brideName?.trim() || "Cô Dâu",
+              shortName: brideShort?.trim() || undefined,
+              birthOrder: brideBirthOrder?.trim() || undefined,
+              parents: (brideFather?.trim() || brideMother?.trim())
+                ? { fatherName: brideFather?.trim() || undefined, motherName: brideMother?.trim() || undefined }
+                : undefined,
+            },
+            loveStory: loveStory.map((item) => ({
+              title: item.title?.trim() || "Kỷ niệm",
+              date: item.date?.trim() || "",
+              description: item.description?.trim() || undefined,
+              imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl || undefined,
+            })),
+            photos: validPhotos,
+          }
+        : category === "BIRTHDAY"
+        ? { celebrantName: celebrantName?.trim() || "Chủ Tiệc", age: Number(age) || 18, events: formattedEvents }
+        : {
+            babyName: babyName?.trim() || "Bé Yêu",
+            nickname: nickname?.trim() || undefined,
+            gender: "GIRL" as const,
+            birthDate: new Date().toISOString(),
+            weight: weight?.trim() || undefined,
+            height: height?.trim() || undefined,
+            ceremonyType,
+            events: formattedEvents,
+          }),
+    };
 
     const payload = {
-      slug,
-      templateSlug,
+      slug: cleanSlug,
+      templateSlug: cleanTemplateSlug,
       openingEffect,
       fallingEffect,
       primaryColor,
       fontFamily,
-      musicUrl: selectedMusicSrc,
+      musicUrl: cleanMusicUrl,
       isAutoPlay,
-      greetingMessage,
-      bankingPrimary: { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom },
-      bankingSecondary: { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride },
-      photos: photos.map((p) => ({
-        id: p.id?.startsWith("local-") ? undefined : p.id,
-        url: p.url,
-        thumbUrl: p.thumbUrl,
-        caption: p.caption,
-        isCover: p.isCover,
-      })),
-      data: {
-        cardCategory: category,
-        events: events.map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
-        ...(category === "WEDDING"
-          ? {
-              groom: { fullName: groomName, shortName: groomShort, birthOrder: groomBirthOrder, parents: { fatherName: groomFather, motherName: groomMother } },
-              bride: { fullName: brideName, shortName: brideShort, birthOrder: brideBirthOrder, parents: { fatherName: brideFather, motherName: brideMother } },
-              loveStory,
-            }
-          : category === "BIRTHDAY"
-          ? { celebrantName, age }
-          : { babyName, nickname, gender: "GIRL", birthDate: new Date(), weight, height, ceremonyType }),
-      },
+      greetingMessage: greetingMessage?.trim() || undefined,
+      bankingPrimary,
+      bankingSecondary,
+      photos: validPhotos,
+      events: formattedEvents,
+      data: categoryDataPayload,
     };
 
     try {
-      const res = await ApiClient.request(`/cards/${cardId}`, {
+      const res = await ApiClient.request<{ id: string; slug: string }>(`/cards/${cardId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
+
       setSaving(false);
+
       if (!res.success) {
-        setSaveError(res.error || "Không thể lưu thay đổi. Vui lòng thử lại.");
+        const errorDetails = (res as any).fieldErrors
+          ? Object.entries((res as any).fieldErrors)
+              .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(", ")}`)
+              .join("; ")
+          : "";
+        setSaveError(
+          res.error
+            ? `${res.error}${errorDetails ? ` (${errorDetails})` : ""}`
+            : "Không thể lưu thay đổi. Vui lòng kiểm tra lại thông tin."
+        );
         return;
       }
+
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
       setSaveError(null);
       setSuccessToast(true);
       setTimeout(() => {
         setSuccessToast(false);
-        router.push(`/thiep/${slug}`);
+        router.push(`/thiep/${cleanSlug}`);
       }, 1800);
     } catch {
       setSaving(false);
@@ -800,8 +896,8 @@ function EditCardContent() {
                 <Pencil className="w-4 h-4 text-[#BE944E]" />
                 <span>Chỉnh Sửa Thiệp</span>
               </h1>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[10px] font-bold uppercase tracking-wider">
-                Visual Studio
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[11px] font-bold">
+                {category === "WEDDING" ? "Thiệp Cưới" : category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
               </span>
             </div>
             <p className="hidden sm:block text-[11px] text-stone-400 font-mono">
@@ -1738,46 +1834,44 @@ function EditCardContent() {
         {/* ══════════════════════════════════════════════════ */}
         {/* CỘT PHẢI: LIVE PREVIEW                          */}
         {/* ══════════════════════════════════════════════════ */}
-        <div className="flex-1 bg-[#EBE7DF] p-4 sm:p-8 flex flex-col items-center justify-center overflow-y-auto relative">
-          {/* Badge */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="px-3.5 py-1 rounded-full bg-white/90 text-stone-700 border border-stone-200/80 text-xs font-semibold shadow-2xs flex items-center gap-1.5">
-              <Sparkle className="w-3.5 h-3.5 text-[#BE944E]" />
-              <span>Cập nhật trực quan theo thời gian thực</span>
+        <div className="flex-1 bg-gradient-to-br from-[#F5F2EB] to-[#ECE7DC] p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center overflow-y-auto relative min-h-[640px]">
+          {/* Status info bar */}
+          <div className="flex items-center justify-between w-full max-w-[390px] mb-3 px-1 text-xs text-stone-500">
+            <span className="flex items-center gap-1.5 font-semibold text-stone-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Xem trước trực tiếp (Live Preview)
+            </span>
+            <span className="text-[11px] font-mono text-stone-400">
+              {previewDevice === "mobile" ? "390 × 844" : previewDevice === "tablet" ? "768 × 1024" : "1024 × 768"}
             </span>
           </div>
 
           {/* Device Mockup */}
-          <VisualCardEditor
-            templateSlug={templateSlug || selectedTemplate}
-            draft={previewCard}
-            onDraftChange={handleVisualDraftChange}
-            onSave={handleSaveCard}
-            isVip={isVipExperience}
-          >
           <div
             className={`transition-all duration-300 ${
               previewDevice === "mobile"
-                ? "w-full max-w-[390px] aspect-[9/19]"
+                ? "w-full max-w-[390px] h-[780px] max-h-[82vh]"
                 : previewDevice === "tablet"
-                ? "w-full max-w-[640px] aspect-[4/5]"
-                : "w-full max-w-[900px] aspect-[16/10]"
-            } bg-black rounded-[48px] p-3 shadow-2xl border-4 border-stone-800 relative`}
+                ? "w-full max-w-[640px] h-[820px] max-h-[85vh]"
+                : "w-full max-w-[960px] h-[720px] max-h-[85vh]"
+            } bg-stone-900 rounded-[44px] p-3 shadow-2xl border-4 border-stone-800 relative flex flex-col`}
           >
+            {/* Dynamic Island / Notch for mobile */}
             {previewDevice === "mobile" && (
-              <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40" />
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40 flex items-center justify-end px-2.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#1c1c1e] border border-stone-700/50" />
+              </div>
             )}
-            <div className="w-full h-full bg-[#FAF8F5] rounded-[38px] overflow-y-auto overflow-x-hidden relative shadow-inner">
+            <div className="w-full h-full bg-[#FAF8F5] rounded-[34px] overflow-y-auto overflow-x-hidden relative shadow-inner">
               {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
               {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
               {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} />}
             </div>
           </div>
-          </VisualCardEditor>
 
           {/* Bottom hint */}
-          <p className="mt-4 text-xs text-stone-400 text-center">
-            Thiệp được xem trước trong khung điện thoại — bố cục thực tế có thể khác nhẹ
+          <p className="mt-3 text-xs text-stone-400 text-center">
+            Mọi chỉnh sửa bên trái sẽ cập nhật ngay lập tức vào thiệp xem trước
           </p>
         </div>
       </div>
