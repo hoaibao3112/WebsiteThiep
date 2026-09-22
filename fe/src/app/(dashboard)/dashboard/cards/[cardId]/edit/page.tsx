@@ -990,34 +990,6 @@ function EditCardContent() {
         {/* ══════════════════════════════════════════════════ */}
         <div className="w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-64px)] shadow-xs">
 
-          {/* TABS NAV */}
-          <div className="flex items-center gap-1 px-4 py-2.5 border-b border-stone-100 overflow-x-auto no-scrollbar bg-[#FAF8F5]">
-            {[
-              { key: "theme", label: "Giao Diện", icon: <Palette className="w-3.5 h-3.5" /> },
-              { key: "couple", label: "Cặp Đôi", icon: <Heart className="w-3.5 h-3.5" /> },
-              { key: "story", label: "Câu Chuyện", icon: <BookOpen className="w-3.5 h-3.5" /> },
-              { key: "events", label: "Lịch Trình", icon: <Calendar className="w-3.5 h-3.5" /> },
-              { key: "gallery", label: "Album Ảnh", icon: <ImageIcon className="w-3.5 h-3.5" /> },
-              { key: "music", label: "Nhạc Nền", icon: <Music className="w-3.5 h-3.5" /> },
-              { key: "banking", label: "Mừng Cưới", icon: <Gift className="w-3.5 h-3.5" /> },
-              { key: "rsvp", label: "RSVP", icon: <Users className="w-3.5 h-3.5" /> },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition cursor-pointer ${
-                  activeTab === tab.key
-                    ? "bg-[#BE944E] text-white shadow-xs"
-                    : "text-stone-600 hover:bg-stone-200/60 hover:text-stone-900"
-                }`}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
           {/* TAB CONTENT */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
 
@@ -1828,6 +1800,34 @@ function EditCardContent() {
                 </Link>
               </div>
             )}
+          </div>
+
+          {/* TABS NAV (BOTTOM NAVIGATION BAR) */}
+          <div className="border-t border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-[0_-4px_16px_rgba(0,0,0,0.04)] shrink-0 sticky bottom-0 z-30">
+            {[
+              { key: "theme", label: "Giao Diện", icon: <Palette className="w-3.5 h-3.5" /> },
+              { key: "couple", label: "Cặp Đôi", icon: <Heart className="w-3.5 h-3.5" /> },
+              { key: "story", label: "Câu Chuyện", icon: <BookOpen className="w-3.5 h-3.5" /> },
+              { key: "events", label: "Lịch Trình", icon: <Calendar className="w-3.5 h-3.5" /> },
+              { key: "gallery", label: "Album Ảnh", icon: <ImageIcon className="w-3.5 h-3.5" /> },
+              { key: "music", label: "Nhạc Nền", icon: <Music className="w-3.5 h-3.5" /> },
+              { key: "banking", label: "Mừng Cưới", icon: <Gift className="w-3.5 h-3.5" /> },
+              { key: "rsvp", label: "RSVP", icon: <Users className="w-3.5 h-3.5" /> },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition cursor-pointer ${
+                  activeTab === tab.key
+                    ? "bg-[#BE944E] text-white shadow-xs"
+                    : "text-stone-600 bg-white/80 hover:bg-stone-200/70 hover:text-stone-900 border border-stone-200/60"
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
