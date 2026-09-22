@@ -25,7 +25,7 @@ export class OrderController {
       }
       const result = await OrderService.createOrder(userId, accountId, validated, idempotencyKey);
       res.status(201).json({ success: true, data: result });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           success: false,
@@ -49,7 +49,7 @@ export class OrderController {
       }
 
       res.status(200).json({ success: true, data: order });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           success: false,
@@ -86,7 +86,7 @@ export class OrderController {
       const result = await OrderService.processSepayWebhook(validated);
 
       res.status(200).json(result);
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ZodError) {
         return res.status(400).json({
           success: false,

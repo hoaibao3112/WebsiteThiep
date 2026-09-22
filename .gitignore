@@ -41,3 +41,6 @@ public/uploads/*
 be/public/uploads/*
 !be/public/uploads/.gitkeep
 
+# Antigravity CLI
+.antigravitycli/
+

@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
 import { logger } from "../lib/logger";
 import { PublishCardDataSchema } from "../lib/validators/card";
+import { HttpError } from "../lib/http-error";
 
 export class OrderService {
   /**
@@ -19,8 +20,8 @@ export class OrderService {
       prisma.plan.findFirst({ where: { id: planId, isActive: true } }),
     ]);
 
-    if (!card) throw new Error("Thiệp không tồn tại");
-    if (!plan) throw new Error("Gói dịch vụ không tồn tại");
+    if (!card) throw new HttpError(404, "Thiệp không tồn tại", "CARD_NOT_FOUND");
+    if (!plan) throw new HttpError(404, "Gói dịch vụ không tồn tại", "PLAN_NOT_FOUND");
 
     const existingOrder = await prisma.order.findUnique({
       where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
@@ -28,13 +29,13 @@ export class OrderService {
     });
     if (existingOrder) {
       if (existingOrder.cardId !== cardId || existingOrder.planId !== planId) {
-        throw new Error("Idempotency-Key đã được dùng cho yêu cầu khác");
+        throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
       }
       return { order: existingOrder, replayed: true };
     }
 
     if (plan.price <= 0) {
-      throw new Error("Gói miễn phí phải được xuất bản qua luồng xuất bản thiệp");
+      throw new HttpError(400, "Gói miễn phí phải được xuất bản qua luồng xuất bản thiệp", "FREE_PLAN_NOT_PURCHASABLE");
     }
 
     const generateOrderCode = () => `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
@@ -67,14 +68,54 @@ export class OrderService {
         });
         break;
       } catch (err) {
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002" && attempt < 3) {
+        if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== "P2002") {
+          throw err;
+        }
+
+        const rawTarget = err.meta?.target;
+        const targets = Array.isArray(rawTarget)
+          ? rawTarget.filter((target): target is string => typeof target === "string")
+          : typeof rawTarget === "string"
+            ? [rawTarget]
+            : [];
+        const isIdempotencyConflict = targets.some((target) =>
+          target.toLowerCase().includes("idempotencykey"),
+        );
+        const isOrderCodeConflict = targets.some((target) =>
+          target.toLowerCase().includes("ordercode"),
+        );
+
+        if (isIdempotencyConflict) {
+          const racedOrder = await prisma.order.findUnique({
+            where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
+            include: { plan: true },
+          });
+          if (racedOrder?.cardId === cardId && racedOrder.planId === planId) {
+            return { order: racedOrder, replayed: true };
+          }
+          throw new HttpError(
+            409,
+            "Idempotency-Key đã được dùng cho yêu cầu khác",
+            "IDEMPOTENCY_CONFLICT",
+          );
+        }
+
+        if (isOrderCodeConflict) {
+          if (attempt === 3) {
+            throw new HttpError(
+              503,
+              "Không thể tạo mã đơn hàng sau nhiều lần thử",
+              "ORDER_CREATE_RETRY_EXHAUSTED",
+            );
+          }
           orderCode = generateOrderCode();
           continue;
         }
+
         throw err;
       }
     }
-    if (!order) throw new Error("Không thể tạo mã đơn hàng sau nhiều lần thử");
+    if (!order) throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
 
     // 3. Sinh VietQR động chuẩn Napas 247
     const bankCode = process.env.BANK_CODE || "VCB";
@@ -155,7 +196,7 @@ export class OrderService {
     }
 
     const expectedAccount = process.env.BANK_ACCOUNT;
-    if (!expectedAccount) throw new Error("BANK_ACCOUNT chưa được cấu hình");
+    if (!expectedAccount) throw new HttpError(503, "BANK_ACCOUNT chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
     if (accountNumber !== expectedAccount) {
       return { success: true, ignored: true, message: "Unexpected receiving account" };
     }

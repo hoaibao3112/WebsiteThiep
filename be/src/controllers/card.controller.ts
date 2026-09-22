@@ -116,7 +116,7 @@ export class CardController {
       }
 
       res.status(200).json({ success: true, data: result });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -142,7 +142,7 @@ export class CardController {
       if (!accountId) return res.status(401).json({ success: false, error: "Thiếu accountId" });
       const cards = await CardService.getUserCards(accountId);
       res.status(200).json({ success: true, data: cards });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,
@@ -169,7 +169,7 @@ export class CardController {
       if (!accountId) return res.status(401).json({ success: false, error: "Thiếu accountId" });
       const card = await CardService.publishCard(accountId, id);
       res.status(200).json({ success: true, data: card });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           success: false,

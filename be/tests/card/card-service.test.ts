@@ -25,6 +25,7 @@ vi.mock("../../src/lib/prisma", () => ({ prisma: prismaMock }));
 
 import { CardService } from "../../src/services/card.service";
 import type { DraftCardInput } from "../../src/lib/validators/card";
+import { Prisma } from "@prisma/client";
 
 const input: DraftCardInput = {
   slug: "minh-va-lan",
@@ -47,7 +48,10 @@ const input: DraftCardInput = {
 
 describe("CardService.createDraft", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    prismaMock.$transaction.mockImplementation(
+      async (callback: (tx: typeof db) => Promise<unknown>) => callback(db),
+    );
     db.user.findUnique.mockResolvedValue({ role: "USER" });
     db.plan.findFirst.mockResolvedValue({ id: "free-id", code: "FREE", maxPhotos: 5 });
     db.template.findUnique.mockResolvedValue({
@@ -96,6 +100,34 @@ describe("CardService.createDraft", () => {
     expect(db.card.count).not.toHaveBeenCalled();
   });
 
+  it("classifies the FREE card limit as a conflict", async () => {
+    db.card.count.mockResolvedValue(2);
+
+    await expect(
+      CardService.createDraft("user-1", "account-1", input, "request-limit"),
+    ).rejects.toMatchObject({
+      status: 409,
+      code: "CARD_LIMIT_REACHED",
+    });
+  });
+
+  it("returns a typed unavailable error after serialization retries are exhausted", async () => {
+    prismaMock.$transaction.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("serialization conflict", {
+        code: "P2034",
+        clientVersion: "5.22.0",
+      }),
+    );
+
+    await expect(
+      CardService.createDraft("user-1", "account-1", input, "request-retry"),
+    ).rejects.toMatchObject({
+      status: 503,
+      code: "CARD_CREATE_RETRY_EXHAUSTED",
+    });
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(3);
+  });
+
   it("rejects a premium template in the FREE flow", async () => {
     db.template.findUnique.mockResolvedValue({
       id: "premium-id",
@@ -112,7 +144,7 @@ describe("CardService.createDraft", () => {
 
 describe("CardService lifecycle reads and publish", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("loads an owner card using accountId", async () => {
@@ -175,6 +207,56 @@ describe("CardService lifecycle reads and publish", () => {
     }));
   });
 
+  it("scopes the public view-count mutation to the resolved account", async () => {
+    db.card.findFirst
+      .mockResolvedValueOnce({ id: "card-1", accountId: "account-1" })
+      .mockResolvedValueOnce({
+        id: "card-1",
+        accountId: "account-1",
+        plan: { code: "FREE" },
+      });
+    db.card.update.mockResolvedValue({ id: "card-1" });
+
+    await CardService.getCardBySlug("minh-va-lan");
+
+    expect(db.card.update).toHaveBeenCalledWith({
+      where: { id: "card-1", accountId: "account-1" },
+      data: { viewCount: { increment: 1 } },
+    });
+  });
+
+  it("rechecks public eligibility on the tenant-scoped aggregate read", async () => {
+    db.card.findFirst
+      .mockResolvedValueOnce({ id: "card-1", accountId: "account-1" })
+      .mockResolvedValueOnce(null);
+
+    const result = await CardService.getCardBySlug("minh-va-lan");
+
+    expect(result).toBeNull();
+    expect(db.card.findFirst).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        where: {
+          id: "card-1",
+          accountId: "account-1",
+          status: "ACTIVE",
+          OR: [
+            { expiredAt: null },
+            { expiredAt: { gt: expect.any(Date) } },
+          ],
+        },
+      }),
+    );
+  });
+
+  it("returns a typed not-found error when an account cannot access a card", async () => {
+    db.card.findFirst.mockResolvedValue(null);
+
+    await expect(
+      CardService.updateDraft("account-1", "card-from-account-2", input),
+    ).rejects.toMatchObject({ status: 404, code: "CARD_NOT_FOUND" });
+  });
+
   it("does not extend expiry when an active card is published again", async () => {
     const publishedAt = new Date("2026-09-02T00:00:00.000Z");
     const expiredAt = new Date("2026-09-09T00:00:00.000Z");
@@ -211,7 +293,10 @@ describe("CardService lifecycle reads and publish", () => {
 
 describe("CardService.updateDraft template premium & plan permissions", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    prismaMock.$transaction.mockImplementation(
+      async (callback: (tx: typeof db) => Promise<unknown>) => callback(db),
+    );
   });
 
   it("rejects updating to a premium template when the card is on a FREE plan", async () => {

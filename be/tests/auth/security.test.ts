@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { isOriginAllowed, parseAllowedOrigins } from "../../src/config/security";
+import cors from "cors";
+import {
+  createCorsOptions,
+  isOriginAllowed,
+  parseAllowedOrigins,
+} from "../../src/config/security";
 import { csrfGuard } from "../../src/middlewares/csrf.middleware";
 
 describe("credentialed CORS", () => {
@@ -13,6 +18,39 @@ describe("credentialed CORS", () => {
 
   it("rejects wildcard origins", () => {
     expect(() => parseAllowedOrigins("*")).toThrow("wildcard");
+  });
+
+  it("allows the polling token header used by the billing page", () => {
+    const middleware = cors(
+      createCorsOptions(parseAllowedOrigins("https://app.cardvite.vn")),
+    );
+    const responseHeaders = new Map<string, string>();
+    const end = vi.fn();
+    const request = {
+      method: "OPTIONS",
+      headers: {
+        origin: "https://app.cardvite.vn",
+        "access-control-request-method": "GET",
+        "access-control-request-headers": "X-Polling-Token",
+      },
+    };
+    const response = {
+      statusCode: 200,
+      setHeader(name: string, value: string | readonly string[]) {
+        responseHeaders.set(name.toLowerCase(), Array.isArray(value) ? value.join(",") : String(value));
+      },
+      getHeader(name: string) {
+        return responseHeaders.get(name.toLowerCase());
+      },
+      end,
+    };
+
+    middleware(request as never, response as never, vi.fn());
+
+    expect(end).toHaveBeenCalledOnce();
+    expect(responseHeaders.get("access-control-allow-headers")?.toLowerCase()).toContain(
+      "x-polling-token",
+    );
   });
 });
 

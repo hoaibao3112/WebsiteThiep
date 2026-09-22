@@ -5,14 +5,23 @@ import {
   PublishCardDataSchema,
 } from "../lib/validators/card";
 import { Prisma } from "@prisma/client";
+import { HttpError } from "../lib/http-error";
 
 export class CardService {
-  private static readonly cardAggregateInclude = {
-    template: true,
-    plan: true,
-    events: { orderBy: { sortOrder: "asc" as const } },
-    photos: { orderBy: { sortOrder: "asc" as const } },
-  };
+  private static cardAggregateInclude(accountId: string) {
+    return {
+      template: true,
+      plan: true,
+      events: {
+        where: { accountId },
+        orderBy: { sortOrder: "asc" as const },
+      },
+      photos: {
+        where: { accountId },
+        orderBy: { sortOrder: "asc" as const },
+      },
+    };
+  }
 
   static async createDraft(
     userId: string,
@@ -43,25 +52,27 @@ export class CardService {
               tx.template.findUnique({ where: { slug: input.templateSlug } }),
             ]);
 
-            if (!plan) throw new Error(`Gói ${planCode} chưa được cấu hình hoặc đã tạm ngưng`);
+            if (!plan) {
+              throw new HttpError(503, `Gói ${planCode} chưa được cấu hình hoặc đã tạm ngưng`, "PLAN_UNAVAILABLE");
+            }
             if (
               !template ||
               !template.isActive ||
               (!isVipUser && template.isPremium) ||
               template.category !== input.data.cardCategory
             ) {
-              throw new Error("Mẫu thiệp không khả dụng cho gói hiện tại");
+              throw new HttpError(400, "Mẫu thiệp không khả dụng cho gói hiện tại", "TEMPLATE_UNAVAILABLE");
             }
 
             if (!isVipUser) {
               const cardCount = await tx.card.count({ where: { accountId } });
               if (cardCount >= 2) {
-                throw new Error("Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp");
+                throw new HttpError(409, "Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp", "CARD_LIMIT_REACHED");
               }
             }
 
             if (input.photos.length > plan.maxPhotos) {
-              throw new Error(`Gói ${plan.name} chỉ cho phép tối đa ${plan.maxPhotos} ảnh`);
+              throw new HttpError(400, `Gói ${plan.name} chỉ cho phép tối đa ${plan.maxPhotos} ảnh`, "PHOTO_LIMIT_EXCEEDED");
             }
 
             const card = await tx.card.create({
@@ -129,11 +140,18 @@ export class CardService {
       } catch (error: unknown) {
         const isRetryable =
           error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
-        if (!isRetryable || attempt === maxAttempts) throw error;
+        if (!isRetryable) throw error;
+        if (attempt === maxAttempts) {
+          throw new HttpError(
+            503,
+            "Không thể tạo thiệp sau nhiều lần thử",
+            "CARD_CREATE_RETRY_EXHAUSTED",
+          );
+        }
       }
     }
 
-    throw new Error("Không thể tạo thiệp sau nhiều lần thử");
+    throw new HttpError(503, "Không thể tạo thiệp sau nhiều lần thử", "CARD_CREATE_RETRY_EXHAUSTED");
   }
 
   /**
@@ -141,26 +159,38 @@ export class CardService {
    * Tăng viewCount bất đồng bộ (không chặn response)
    */
   static async getCardBySlug(slug: string, guestCode?: string) {
-    const card = await prisma.card.findFirst({
+    const now = new Date();
+    const identity = await prisma.card.findFirst({
       where: {
         slug,
         status: "ACTIVE",
         OR: [
           { expiredAt: null },
-          { expiredAt: { gt: new Date() } },
+          { expiredAt: { gt: now } },
         ],
       },
-      include: this.cardAggregateInclude,
+      select: { id: true, accountId: true },
     });
 
-    if (!card) {
+    if (!identity) {
       return null;
     }
+
+    const card = await prisma.card.findFirst({
+      where: {
+        id: identity.id,
+        accountId: identity.accountId,
+        status: "ACTIVE",
+        OR: [{ expiredAt: null }, { expiredAt: { gt: now } }],
+      },
+      include: this.cardAggregateInclude(identity.accountId),
+    });
+    if (!card) return null;
 
     // [LOW] Tăng viewCount bất đồng bộ (Fire-and-forget, không chặn response chính)
     prisma.card
       .update({
-        where: { id: card.id },
+        where: { id: card.id, accountId: card.accountId },
         data: { viewCount: { increment: 1 } },
       })
       .catch((err) => {
@@ -189,7 +219,7 @@ export class CardService {
   static async getOwnerCard(accountId: string, cardId: string) {
     return prisma.card.findFirst({
       where: { id: cardId, accountId },
-      include: this.cardAggregateInclude,
+      include: this.cardAggregateInclude(accountId),
     });
   }
 
@@ -198,7 +228,9 @@ export class CardService {
       where: { id: cardId, accountId },
       select: { id: true },
     });
-    if (!existing) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền xóa");
+    if (!existing) {
+      throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền xóa", "CARD_NOT_FOUND");
+    }
 
     return prisma.card.delete({ where: { id: cardId, accountId } });
   }
@@ -216,10 +248,14 @@ export class CardService {
       where: { id: cardId, accountId },
       include: { plan: true },
     });
-    if (!existing) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa");
-    if (existing.status === "EXPIRED") throw new Error("Thiệp đã hết hạn và không thể chỉnh sửa");
+    if (!existing) {
+      throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa", "CARD_NOT_FOUND");
+    }
+    if (existing.status === "EXPIRED") {
+      throw new HttpError(409, "Thiệp đã hết hạn và không thể chỉnh sửa", "CARD_STATE_CONFLICT");
+    }
     if (input.photos.length > existing.plan.maxPhotos) {
-      throw new Error(`Gói ${existing.plan.name || existing.plan.code} chỉ cho phép tối đa ${existing.plan.maxPhotos} ảnh`);
+      throw new HttpError(400, `Gói ${existing.plan.name || existing.plan.code} chỉ cho phép tối đa ${existing.plan.maxPhotos} ảnh`, "PHOTO_LIMIT_EXCEEDED");
     }
 
     const template = await prisma.template.findUnique({ where: { slug: input.templateSlug } });
@@ -228,14 +264,16 @@ export class CardService {
       !template.isActive ||
       template.category !== input.data.cardCategory
     ) {
-      throw new Error("Mẫu thiệp không tồn tại hoặc không phù hợp với danh mục thiệp");
+      throw new HttpError(400, "Mẫu thiệp không tồn tại hoặc không phù hợp với danh mục thiệp", "TEMPLATE_UNAVAILABLE");
     }
 
     if (template.isPremium && !existing.plan.allowPremiumTemplates) {
-      throw new Error(
+      throw new HttpError(
+        403,
         existing.plan.code === "FREE"
           ? "Mẫu thiệp không khả dụng cho gói FREE"
-          : `Mẫu thiệp Premium không khả dụng cho gói ${existing.plan.name}`
+          : `Mẫu thiệp Premium không khả dụng cho gói ${existing.plan.name}`,
+        "PLAN_ENTITLEMENT_REQUIRED",
       );
     }
 
@@ -317,14 +355,14 @@ export class CardService {
     });
 
     if (!card) {
-      throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền thao tác");
+      throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền thao tác", "CARD_NOT_FOUND");
     }
 
     if (card.status === "EXPIRED") {
-      throw new Error("Thiệp FREE đã hết hạn và chưa thể xuất bản lại");
+      throw new HttpError(409, "Thiệp FREE đã hết hạn và chưa thể xuất bản lại", "CARD_STATE_CONFLICT");
     }
     if (card.status === "ARCHIVED") {
-      throw new Error("Vui lòng khôi phục thiệp khỏi lưu trữ trước khi xuất bản");
+      throw new HttpError(409, "Vui lòng khôi phục thiệp khỏi lưu trữ trước khi xuất bản", "CARD_STATE_CONFLICT");
     }
     if (card.status === "ACTIVE") return card;
 

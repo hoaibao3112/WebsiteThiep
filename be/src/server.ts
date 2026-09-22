@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import path from "path";
 import { apiRouter } from "./routes/api.router";
 import { logger } from "./lib/logger";
-import { isOriginAllowed, parseAllowedOrigins } from "./config/security";
+import { createCorsOptions, parseAllowedOrigins } from "./config/security";
 import { errorHandler } from "./middlewares/error.middleware";
 import { validateRuntimeEnv } from "./config/env";
 import { prisma } from "./lib/prisma";
@@ -35,21 +35,7 @@ app.use(cookieParser());
 const defaultOrigins = "https://website-thiep.vercel.app,http://localhost:3000,http://127.0.0.1:3000";
 const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || defaultOrigins);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (isOriginAllowed(origin, allowedOrigins)) {
-        return callback(null, true);
-      }
-      callback(new Error(`CORS: Origin ${origin} not allowed`));
-    },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Idempotency-Key", "X-CSRF-Token"],
-    exposedHeaders: ["X-CSRF-Token"],
-    credentials: true,
-  })
-);
+app.use(cors(createCorsOptions(allowedOrigins)));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));

@@ -1,3 +1,5 @@
+import type { CorsOptions } from "cors";
+
 export function parseAllowedOrigins(raw: string): ReadonlySet<string> {
   const origins = raw
     .split(",")
@@ -29,4 +31,27 @@ export function isOriginAllowed(
   } catch {
     return false;
   }
+}
+
+export function createCorsOptions(
+  allowedOrigins: ReadonlySet<string>,
+): CorsOptions {
+  return {
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin, allowedOrigins)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS: Origin ${origin} not allowed`));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Idempotency-Key",
+      "X-CSRF-Token",
+      "X-Polling-Token",
+    ],
+    exposedHeaders: ["X-CSRF-Token"],
+    credentials: true,
+  };
 }
