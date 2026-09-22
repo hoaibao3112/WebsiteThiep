@@ -183,17 +183,17 @@ const TEMPLATE_REFERENCE_PARTS: Record<
     parts: [
       {
         label: "Phần 1: Poster Lookbook Đường Phố & Kính Râm",
-        url: "/images/demo/cinematic-couple-street.jpg",
+        url: "/images/demo/templates/t07-cinematic/cover.jpg",
         desc: "Poster cinematic lookbook đen trắng phong cách Vogue thời thượng, kính râm và kiến trúc Châu Âu cổ điển.",
       },
       {
         label: "Phần 2: Xe Mui Trần Vintage & Nụ Hôn Ngọt Ngào",
-        url: "/images/demo/cinematic-couple-car.jpg",
+        url: "/images/demo/templates/t07-cinematic/gallery-1.jpg",
         desc: "Bộ ảnh xe cổ mui trần lãng mạn, nụ hôn ngọt ngào giữa phố, lịch tháng 12 và chuyện tình Fall In Love.",
       },
       {
         label: "Phần 3: Váy Cưới Lộng Lẫy & Sân Khấu Hoàng Gia",
-        url: "/images/demo/cinematic-couple-stage.jpg",
+        url: "/images/demo/templates/t07-cinematic/gallery-2.jpg",
         desc: "Khoảnh khắc cô dâu diện váy cưới đuôi dài lấp lánh bước lên lễ đường dưới ánh đèn spotlight hôn lễ hoành tráng.",
       },
     ],

@@ -130,12 +130,12 @@ export const PhotoGalleryLightbox: React.FC<PhotoGalleryLightboxProps> = ({
 
             {/* Central Image with Navigation */}
             <div
-              className="relative flex-1 flex items-center justify-center max-w-2xl mx-auto w-full my-auto px-2"
+              className="relative flex-1 flex items-center justify-center max-w-4xl mx-auto w-full my-auto px-2"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={handlePrev}
-                className="absolute left-1 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs"
+                className="absolute left-2 z-20 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-md shadow-lg"
                 aria-label="Ảnh trước"
               >
                 <ChevronLeft className="w-6 h-6" />
@@ -143,23 +143,23 @@ export const PhotoGalleryLightbox: React.FC<PhotoGalleryLightboxProps> = ({
 
               <motion.div
                 key={lightboxIndex}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3 }}
-                className="max-h-[75vh] max-w-full rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center"
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.25 }}
+                className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl max-h-[82vh] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center bg-black/40"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photos[lightboxIndex].url}
                   alt={photos[lightboxIndex].caption || "Phóng to ảnh cưới"}
-                  className="max-h-[75vh] w-auto object-contain rounded-xl"
+                  className="w-full h-auto max-h-[80vh] min-h-[360px] sm:min-h-[480px] object-contain rounded-xl"
                 />
               </motion.div>
 
               <button
                 onClick={handleNext}
-                className="absolute right-1 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-xs"
+                className="absolute right-2 z-20 w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-md shadow-lg"
                 aria-label="Ảnh sau"
               >
                 <ChevronRight className="w-6 h-6" />

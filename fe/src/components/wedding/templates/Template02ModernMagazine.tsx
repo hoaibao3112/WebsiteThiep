@@ -34,18 +34,18 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
   const brideShort = data.bride?.shortName || "Hải Yến";
 
   const heroPhoto =
-    data.coverPhotoUrl || card.photos?.[0]?.url || "/images/demo/editorial-couple-hero.png";
+    data.coverPhotoUrl || card.photos?.[0]?.url || "/images/demo/templates/t02-magazine/cover.jpg";
   const bridePhoto =
-    data.bride?.avatarUrl || card.photos?.[1]?.url || "/images/demo/editorial-couple-pose.jpg";
+    data.bride?.avatarUrl || card.photos?.[1]?.url || "/images/demo/templates/t02-magazine/bride.jpg";
   const groomPhoto =
-    data.groom?.avatarUrl || card.photos?.[2]?.url || "/images/demo/editorial-couple-hero.png";
+    data.groom?.avatarUrl || card.photos?.[2]?.url || "/images/demo/templates/t02-magazine/groom.jpg";
   const calendarPhoto =
-    card.photos?.[3]?.url || "/images/demo/editorial-couple-love.jpg";
+    card.photos?.[3]?.url || "/images/demo/templates/t02-magazine/gallery-1.jpg";
 
   const defaultGalleryPhotos = [
     { url: heroPhoto, caption: "Khoảnh khắc hẹn ước" },
     { url: bridePhoto, caption: "Nụ cười rạng rỡ của cô dâu" },
-    { url: "/images/demo/editorial-couple-love.jpg", caption: "Fall In Love With You" },
+    { url: "/images/demo/templates/t02-magazine/gallery-1.jpg", caption: "Fall In Love With You" },
     { url: groomPhoto, caption: "Ánh mắt ấm áp của chú rể" },
   ];
 

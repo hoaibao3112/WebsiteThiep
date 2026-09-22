@@ -47,18 +47,18 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/demo/couple-aodai.png";
+    "/images/demo/templates/t01-heritage/cover.jpg";
 
-  const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
-  const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+  const groomAvatar = data.groom?.avatarUrl || "/images/demo/templates/t01-heritage/groom.jpg";
+  const brideAvatar = data.bride?.avatarUrl || "/images/demo/templates/t01-heritage/bride.jpg";
 
   const defaultGalleryPhotos = [
-    { url: "/images/demo/couple-aodai.png", caption: "Nụ cười rạng rỡ ngày hẹn ước" },
-    { url: "/images/demo/couple-kiss.png", caption: "Khoảnh khắc ngọt ngào bên nhau" },
-    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
-    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
-    { url: "/images/demo/gallery-rings.png", caption: "Kỷ vật trăm năm hẹn ước" },
-    { url: "/images/demo/gallery-shoes.png", caption: "Từng bước chân về chung một nhà" },
+    { url: "/images/demo/templates/t01-heritage/gallery-1.jpg", caption: "Nụ cười rạng rỡ ngày hẹn ước" },
+    { url: "/images/demo/templates/t01-heritage/gallery-2.jpg", caption: "Khoảnh khắc ngọt ngào bên nhau" },
+    { url: "/images/demo/templates/t01-heritage/gallery-3.jpg", caption: "Hoàng hôn lãng mạn" },
+    { url: "/images/demo/templates/t01-heritage/gallery-4.jpg", caption: "Bên nhau trên mọi nẻo đường" },
+    { url: "/images/demo/templates/t01-heritage/gallery-5.jpg", caption: "Kỷ vật trăm năm hẹn ước" },
+    { url: "/images/demo/templates/t01-heritage/gallery-6.jpg", caption: "Từng bước chân về chung một nhà" },
   ];
 
   const galleryPhotos =

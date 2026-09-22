@@ -37,15 +37,15 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/demo/imperial-dragon-couple.jpg";
+    "/images/demo/templates/t09-dragon/cover.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Long Phụng Sum Vầy - Hạnh Phúc Trăm Năm" },
-    { url: "/images/demo/couple-aodai.png", caption: "Lễ gia tiên truyền thống uy nghiêm" },
-    { url: "/images/templates/references/mau-09-imperial-dragon-crimson-part-01.png", caption: "Minh họa cổng Song Hỷ hoàng gia" },
-    { url: "/images/demo/couple-kiss.png", caption: "Hẹn ước bền chặt, keo sơn gắn bó" },
-    { url: "/images/demo/couple-sunset.png", caption: "Ánh kim hoàng cung chiều hẹn ước" },
-    { url: "/images/demo/gallery-rings.png", caption: "Kỷ vật trao tay trọn đời trọn kiếp" },
+    { url: "/images/demo/templates/t09-dragon/gallery-1.jpg", caption: "Lễ gia tiên truyền thống uy nghiêm" },
+    { url: "/images/demo/templates/t09-dragon/gallery-2.jpg", caption: "Minh họa cổng Song Hỷ hoàng gia" },
+    { url: "/images/demo/templates/t09-dragon/gallery-3.jpg", caption: "Hẹn ước bền chặt, keo sơn gắn bó" },
+    { url: "/images/demo/templates/t09-dragon/gallery-4.jpg", caption: "Ánh kim hoàng cung chiều hẹn ước" },
+    { url: "/images/demo/templates/t09-dragon/gallery-5.jpg", caption: "Kỷ vật trao tay trọn đời trọn kiếp" },
   ];
 
   const galleryPhotos =

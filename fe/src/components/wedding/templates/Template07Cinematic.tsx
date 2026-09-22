@@ -36,29 +36,29 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos?.[0]?.url ||
-    "/images/demo/cinematic-couple-street.jpg";
+    "/images/demo/templates/t07-cinematic/cover.jpg";
 
   const carPhoto =
     card.photos?.[1]?.url ||
-    "/images/demo/cinematic-couple-car.jpg";
+    "/images/demo/templates/t07-cinematic/gallery-1.jpg";
 
   const studioPhoto =
     card.photos?.[2]?.url ||
     data.groom?.avatarUrl ||
-    "/images/demo/cinematic-couple-studio.jpg";
+    "/images/demo/templates/t07-cinematic/groom.jpg";
 
   const stagePhoto =
     card.photos?.[3]?.url ||
     data.bride?.avatarUrl ||
-    "/images/demo/cinematic-couple-stage.jpg";
+    "/images/demo/templates/t07-cinematic/bride.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Ánh nhìn điện ảnh giữa khung cảnh lãng mạn" },
-    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn buông trên ngọn đồi thông" },
-    { url: "/images/demo/couple-street.png", caption: "Từng bước chân song hành qua phố quen" },
-    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn ngọt ngào trong khung hình 35mm" },
-    { url: "/images/demo/couple-aodai.png", caption: "Khoảnh khắc hẹn ước trao nhau" },
-    { url: "/images/demo/gallery-rings.png", caption: "Chiếc nhẫn minh chứng cho tình yêu vĩnh cửu" },
+    { url: "/images/demo/templates/t07-cinematic/gallery-1.jpg", caption: "Hoàng hôn buông trên ngọn đồi thông" },
+    { url: "/images/demo/templates/t07-cinematic/gallery-2.jpg", caption: "Từng bước chân song hành qua phố quen" },
+    { url: "/images/demo/templates/t07-cinematic/gallery-3.jpg", caption: "Nụ hôn ngọt ngào trong khung hình 35mm" },
+    { url: "/images/demo/templates/t07-cinematic/gallery-4.jpg", caption: "Khoảnh khắc hẹn ước trao nhau" },
+    { url: "/images/demo/templates/t07-cinematic/gallery-5.jpg", caption: "Chiếc nhẫn minh chứng cho tình yêu vĩnh cửu" },
   ];
 
   const galleryPhotos =

@@ -37,18 +37,18 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/templates/template-03-sweet-pink.png";
+    "/images/demo/templates/t03-sweet-pink/cover.jpg";
 
-  const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
-  const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
+  const brideAvatar = data.bride?.avatarUrl || "/images/demo/templates/t03-sweet-pink/bride.jpg";
+  const groomAvatar = data.groom?.avatarUrl || "/images/demo/templates/t03-sweet-pink/groom.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Nụ cười rạng rỡ của đôi uyên ương" },
     { url: brideAvatar, caption: "Vẻ đẹp dịu dàng của cô dâu" },
     { url: groomAvatar, caption: "Ánh mắt ấm áp của chú rể" },
-    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn ngọt ngào ngày chung đôi" },
-    { url: "/images/demo/couple-sunset.png", caption: "Hoàng hôn lãng mạn" },
-    { url: "/images/demo/couple-street.png", caption: "Bên nhau trên mọi nẻo đường" },
+    { url: "/images/demo/templates/t03-sweet-pink/gallery-1.jpg", caption: "Nụ hôn ngọt ngào ngày chung đôi" },
+    { url: "/images/demo/templates/t03-sweet-pink/gallery-2.jpg", caption: "Hoàng hôn lãng mạn" },
+    { url: "/images/demo/templates/t03-sweet-pink/gallery-3.jpg", caption: "Bên nhau trên mọi nẻo đường" },
   ];
 
   const galleryPhotos =

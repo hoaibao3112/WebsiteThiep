@@ -174,7 +174,7 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     style: "Minimalist Luxury",
     price: "299.000đ",
     originalPrice: "480.000đ",
-    imageUrl: "/images/demo/cinematic-couple-street.jpg",
+    imageUrl: "/images/demo/templates/t07-cinematic/cover.jpg",
     isNew: true,
     description: "Phim điện ảnh & tạp chí thời trang Vogue Lookbook, nhiều chương tình yêu Our Love Story & Fall In Love, lịch nụ hôn và poster You are my Sunshine.",
     tags: ["Cinematic", "Vogue", "Lookbook"],

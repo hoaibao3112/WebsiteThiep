@@ -34,7 +34,8 @@ Thumbs.db
 *.swo
 *.tsbuildinfo
 
-# Uploads
+# Uploads & Raw Assets
+anhchuanhd/
 public/uploads/*
 !public/uploads/.gitkeep
 be/public/uploads/*

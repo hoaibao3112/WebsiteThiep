@@ -16,31 +16,30 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/a
 const DEMO_WEDDING_CARD: CardDetail = DEMO_TEMPLATES_MAP["wedding-heritage-crimson-gold"];
 
 async function getCardData(slug: string, guestCode?: string) {
-  // 1. Kiểm tra nếu slug khớp 1 trong 9 template demo độc bản
+  // 1. Luôn ưu tiên fetch trực tiếp từ Backend Database API
+  try {
+    const url = `${API_BASE_URL}/cards/by-slug/${slug}${guestCode ? `?g=${guestCode}` : ""}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data?.card) {
+        return json.data;
+      }
+    }
+  } catch (error) {
+    console.warn("[getCardData] Backend API fetch error, falling back:", error);
+  }
+
+  // 2. Dự phòng dữ liệu mẫu nếu Backend chưa phản hồi
   if (DEMO_TEMPLATES_MAP[slug]) {
     return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null };
   }
 
-  // 2. Slug demo mặc định
   if (slug === "demo-wedding" || slug.startsWith("demo-")) {
     return { card: DEMO_WEDDING_CARD, guestInfo: null };
   }
 
-  // 3. Fetch từ backend database theo slug của người dùng tạo
-  try {
-    const url = `${API_BASE_URL}/cards/by-slug/${slug}${guestCode ? `?g=${guestCode}` : ""}`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) {
-      if (DEMO_TEMPLATES_MAP[slug]) return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null };
-      return { card: DEMO_WEDDING_CARD, guestInfo: null };
-    }
-    const json = await res.json();
-    return json.data || { card: DEMO_WEDDING_CARD, guestInfo: null };
-  } catch (error) {
-    console.error("Fetch card error:", error);
-    if (DEMO_TEMPLATES_MAP[slug]) return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null };
-    return { card: DEMO_WEDDING_CARD, guestInfo: null };
-  }
+  return { card: DEMO_WEDDING_CARD, guestInfo: null };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

@@ -101,6 +101,7 @@ app.use(globalLimiter);
 // STATIC FILES & HEALTH CHECK
 // -----------------------------------------------------------------------
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
+app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
 
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({

@@ -36,19 +36,18 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/templates/template-05-forest.png";
+    "/images/demo/templates/t05-forest/cover.jpg";
 
-  const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
-  const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+  const groomAvatar = data.groom?.avatarUrl || "/images/demo/templates/t05-forest/groom.jpg";
+  const brideAvatar = data.bride?.avatarUrl || "/images/demo/templates/t05-forest/bride.jpg";
 
-  const photos = card.photos && card.photos.length >= 7 ? card.photos : [
-    { id: "p1", url: "/images/demo/couple-cover.png", caption: "Nụ cười ngày chung đôi" },
-    { id: "p2", url: "/images/demo/couple-studio.png", caption: "Hạnh phúc ngập tràn" },
-    { id: "p3", url: "/images/demo/couple-aodai.png", caption: "Tình yêu thảo mộc" },
-    { id: "p4", url: "/images/templates/template-05-forest.png", caption: "Tà voan trắng giữa rừng thông" },
-    { id: "p5", url: "/images/demo/groom-avatar.png", caption: "Chú rể Tuấn Minh" },
-    { id: "p6", url: "/images/demo/bride-avatar.png", caption: "Cô dâu Mai Lan" },
-    { id: "p7", url: "/images/templates/references/mau-05-rustic-forest-green-part-02.png", caption: "Kỷ niệm sân vườn ngoài trời" },
+  const photos = card.photos && card.photos.length >= 6 ? card.photos : [
+    { id: "p1", url: "/images/demo/templates/t05-forest/gallery-1.jpg", caption: "Nụ cười ngày chung đôi" },
+    { id: "p2", url: "/images/demo/templates/t05-forest/gallery-2.jpg", caption: "Hạnh phúc ngập tràn" },
+    { id: "p3", url: "/images/demo/templates/t05-forest/gallery-3.jpg", caption: "Tình yêu thảo mộc" },
+    { id: "p4", url: "/images/demo/templates/t05-forest/gallery-4.jpg", caption: "Tà voan trắng giữa rừng thông" },
+    { id: "p5", url: "/images/demo/templates/t05-forest/groom.jpg", caption: "Chú rể Tuấn Minh" },
+    { id: "p6", url: "/images/demo/templates/t05-forest/bride.jpg", caption: "Cô dâu Mai Lan" },
   ];
 
   const [wishInput, setWishInput] = useState("");

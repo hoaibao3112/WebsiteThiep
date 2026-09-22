@@ -36,15 +36,15 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/templates/template-06-lotus.png";
+    "/images/demo/templates/t06-lotus/cover.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Thanh tao như hoa sen ngát hương" },
-    { url: "/images/demo/couple-aodai.png", caption: "Áo dài truyền thống rạng rỡ duyên lành" },
-    { url: "/images/demo/couple-kiss.png", caption: "Nụ hôn hẹn ước trăm năm viên mãn" },
-    { url: "/images/demo/couple-sunset.png", caption: "Bên hồ sen chiều hoàng hôn yên bình" },
-    { url: "/images/demo/gallery-rings.png", caption: "Kỷ vật trăm năm kết tóc xe duyên" },
-    { url: "/images/demo/couple-studio.png", caption: "Nụ cười rạng rỡ của đôi uyên ương" },
+    { url: "/images/demo/templates/t06-lotus/gallery-1.jpg", caption: "Áo dài truyền thống rạng rỡ duyên lành" },
+    { url: "/images/demo/templates/t06-lotus/gallery-2.jpg", caption: "Nụ hôn hẹn ước trăm năm viên mãn" },
+    { url: "/images/demo/templates/t06-lotus/gallery-3.jpg", caption: "Bên hồ sen chiều hoàng hôn yên bình" },
+    { url: "/images/demo/templates/t06-lotus/gallery-4.jpg", caption: "Kỷ vật trăm năm kết tóc xe duyên" },
+    { url: "/images/demo/templates/t06-lotus/gallery-5.jpg", caption: "Nụ cười rạng rỡ của đôi uyên ương" },
   ];
 
   const galleryPhotos =

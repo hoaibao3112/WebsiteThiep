@@ -37,18 +37,18 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/templates/template-04-marsala.png";
+    "/images/demo/templates/t04-marsala/cover.jpg";
 
-  const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
-  const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+  const groomAvatar = data.groom?.avatarUrl || "/images/demo/templates/t04-marsala/groom.jpg";
+  const brideAvatar = data.bride?.avatarUrl || "/images/demo/templates/t04-marsala/bride.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Nét sang trọng cổ điển của lễ cưới" },
     { url: groomAvatar, caption: "Chú rể lịch lãm ngày vu quy" },
     { url: brideAvatar, caption: "Cô dâu kiêu sa trong tà áo lụa" },
-    { url: "/images/demo/couple-kiss.png", caption: "Khoảnh khắc hẹn ước trao duyên" },
-    { url: "/images/demo/couple-sunset.png", caption: "Ánh hoàng hôn vương màu rượu vang" },
-    { url: "/images/demo/couple-street.png", caption: "Bên nhau xây đắp hạnh phúc dài lâu" },
+    { url: "/images/demo/templates/t04-marsala/gallery-1.jpg", caption: "Khoảnh khắc hẹn ước trao duyên" },
+    { url: "/images/demo/templates/t04-marsala/gallery-2.jpg", caption: "Ánh hoàng hôn vương màu rượu vang" },
+    { url: "/images/demo/templates/t04-marsala/gallery-3.jpg", caption: "Bên nhau xây đắp hạnh phúc dài lâu" },
   ];
 
   const galleryPhotos =

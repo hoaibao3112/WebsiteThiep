@@ -37,16 +37,16 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
   const coverPhoto =
     data.coverPhotoUrl ||
     card.photos[0]?.url ||
-    "/images/templates/template-08-alpine.png";
+    "/images/demo/templates/t08-alpine/cover.jpg";
 
-  const groomAvatar = data.groom?.avatarUrl || "/images/demo/groom-avatar.png";
-  const brideAvatar = data.bride?.avatarUrl || "/images/demo/bride-avatar.png";
+  const groomAvatar = data.groom?.avatarUrl || "/images/demo/templates/t08-alpine/groom.jpg";
+  const brideAvatar = data.bride?.avatarUrl || "/images/demo/templates/t08-alpine/bride.jpg";
 
   const defaultGalleryPhotos = [
     { url: coverPhoto, caption: "Hồ nước biếc và hàng thông xanh ngắt" },
-    { url: "/images/demo/couple-sunset.png", caption: "Chiều hoàng hôn soi bóng hồ phẳng lặng" },
-    { url: "/images/demo/couple-kiss.png", caption: "Lời thề ước trăm năm bên làn nước trong xanh" },
-    { url: "/images/demo/couple-street.png", caption: "Bên nhau thong dong qua bốn mùa" },
+    { url: "/images/demo/templates/t08-alpine/gallery-1.jpg", caption: "Chiều hoàng hôn soi bóng hồ phẳng lặng" },
+    { url: "/images/demo/templates/t08-alpine/gallery-2.jpg", caption: "Lời thề ước trăm năm bên làn nước trong xanh" },
+    { url: "/images/demo/templates/t08-alpine/gallery-3.jpg", caption: "Bên nhau thong dong qua bốn mùa" },
     { url: groomAvatar, caption: "Chú rể Nguyễn Dương" },
     { url: brideAvatar, caption: "Cô dâu Khánh Thy" },
   ];
