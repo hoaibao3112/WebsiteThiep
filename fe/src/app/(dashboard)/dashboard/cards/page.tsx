@@ -108,12 +108,11 @@ export default function MyCardsPage() {
 
           {/* USER PROFILE & ACTIONS */}
           <div className="flex items-center gap-2.5 sm:gap-3">
-            {/* HỒ SƠ CƯỚI BUTTON */}
-            <button
-              type="button"
-              onClick={() => setShowQuickFill(true)}
+            {/* HỒ SƠ CƯỚI LINK */}
+            <Link
+              href="/dashboard/profile/wedding"
               className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-2xs cursor-pointer shrink-0"
-              title="Điền hoặc chỉnh sửa hồ sơ cưới tài khoản"
+              title="Điền hoặc chỉnh sửa đầy đủ 23 mục hồ sơ cưới tài khoản"
             >
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/25" />
               <span>Hồ Sơ Cưới</span>
@@ -122,7 +121,7 @@ export default function MyCardsPage() {
               ) : (
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Chưa điền" />
               )}
-            </button>
+            </Link>
 
             {user && (
               <div className="flex items-center gap-2 bg-stone-100/80 px-3 py-1.5 rounded-full border border-stone-200/60">
@@ -170,14 +169,13 @@ export default function MyCardsPage() {
           </div>
 
           <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0 self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setShowQuickFill(true)}
+            <Link
+              href="/dashboard/profile/wedding"
               className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md backdrop-blur-md transition cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
-              <span>{weddingProfile ? "💍 Sửa Hồ Sơ Cưới" : "💍 Điền Hồ Sơ Cưới"}</span>
-            </button>
+              <span>{weddingProfile ? "💍 Hồ Sơ Cưới 23 Mục" : "💍 Điền Hồ Sơ Cưới 23 Mục"}</span>
+            </Link>
 
             <Link
               href="/dashboard/cards/new"

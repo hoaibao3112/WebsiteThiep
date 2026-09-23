@@ -12,6 +12,7 @@ import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { ApiClient } from "@/lib/api";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyProfileModal";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import {
   Heart,
@@ -516,6 +517,165 @@ function EditCardContent() {
       }
     }
   }, []);
+
+  // ── WEDDING PROFILE INTEGRATION (TÙY CHỌN MỤC ÁP DỤNG) ──
+  const [showApplyProfileModal, setShowApplyProfileModal] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveProfileSuccess, setSaveProfileSuccess] = useState(false);
+
+  const handleApplyProfileSections = (profile: any, selectedKeys: WeddingSectionKey[]) => {
+    if (!profile) return;
+
+    if (selectedKeys.includes("couple")) {
+      if (profile.groomName) setGroomName(profile.groomName);
+      if (profile.groomShort !== undefined) setGroomShort(profile.groomShort);
+      if (profile.groomBirthOrder !== undefined) setGroomBirthOrder(profile.groomBirthOrder);
+      if (profile.groomPhone !== undefined) setGroomPhone(profile.groomPhone);
+      if (profile.groomAddress !== undefined) setGroomAddress(profile.groomAddress);
+
+      if (profile.brideName) setBrideName(profile.brideName);
+      if (profile.brideShort !== undefined) setBrideShort(profile.brideShort);
+      if (profile.brideBirthOrder !== undefined) setBrideBirthOrder(profile.brideBirthOrder);
+      if (profile.bridePhone !== undefined) setBridePhone(profile.bridePhone);
+      if (profile.brideAddress !== undefined) setBrideAddress(profile.brideAddress);
+
+      if (profile.isReverseOrder !== undefined) setIsReverseOrder(profile.isReverseOrder);
+    }
+
+    if (selectedKeys.includes("parents")) {
+      if (profile.groomFather !== undefined) setGroomFather(profile.groomFather);
+      if (profile.groomMother !== undefined) setGroomMother(profile.groomMother);
+      if (profile.brideFather !== undefined) setBrideFather(profile.brideFather);
+      if (profile.brideMother !== undefined) setBrideMother(profile.brideMother);
+    }
+
+    if (selectedKeys.includes("datetime_venue") || selectedKeys.includes("schedule")) {
+      if (profile.events && Array.isArray(profile.events) && profile.events.length > 0) {
+        setEvents(profile.events);
+      } else if (profile.eventDate) {
+        setEvents([
+          {
+            id: "ev-main",
+            eventName: "Lễ Thành Hôn",
+            eventDate: profile.eventDate,
+            venueName: "Trung tâm tiệc cưới",
+            address: profile.address || "Tư gia",
+          },
+        ]);
+      }
+    }
+
+    if (selectedKeys.includes("greeting")) {
+      if (profile.greetingMessage) setGreetingMessage(profile.greetingMessage);
+    }
+
+    if (selectedKeys.includes("loveStory")) {
+      if (profile.loveStory && Array.isArray(profile.loveStory)) {
+        setLoveStory(profile.loveStory);
+      }
+    }
+
+    if (selectedKeys.includes("photos")) {
+      if (profile.photos && Array.isArray(profile.photos) && profile.photos.length > 0) {
+        setPhotos(
+          profile.photos.map((p: any, idx: number) => ({
+            id: p.id || `ph-${idx}`,
+            url: p.url,
+            caption: p.caption,
+            isCover: p.isCover || idx === 0,
+          }))
+        );
+      }
+    }
+
+    if (selectedKeys.includes("banking")) {
+      const gBank = profile.bankCodeGroom || profile.bankGroom?.bankCode;
+      const gNum = profile.accNumGroom || profile.bankGroom?.accountNumber;
+      const gName = profile.accNameGroom || profile.bankGroom?.accountName;
+      const bBank = profile.bankCodeBride || profile.bankBride?.bankCode;
+      const bNum = profile.accNumBride || profile.bankBride?.accountNumber;
+      const bName = profile.accNameBride || profile.bankBride?.accountName;
+
+      if (gBank) setBankCodeGroom(gBank);
+      if (gNum !== undefined) setAccNumGroom(gNum);
+      if (gName !== undefined) setAccNameGroom(gName);
+
+      if (bBank) setBankCodeBride(bBank);
+      if (bNum !== undefined) setAccNumBride(bNum);
+      if (bName !== undefined) setAccNameBride(bName);
+    }
+
+    if (selectedKeys.includes("music")) {
+      if (profile.selectedMusicSrc || profile.musicUrl) {
+        setSelectedMusicSrc(profile.selectedMusicSrc || profile.musicUrl);
+      }
+      if (profile.videoUrl !== undefined) {
+        setVideoUrl(profile.videoUrl);
+      }
+    }
+
+    if (selectedKeys.includes("theme")) {
+      if (profile.templateSlug) setTemplateSlug(profile.templateSlug);
+      if (profile.primaryColor) setPrimaryColor(profile.primaryColor);
+      if (profile.openingEffect) setOpeningEffect(profile.openingEffect);
+    }
+
+    confetti({ particleCount: 45, spread: 60, origin: { y: 0.3 } });
+  };
+
+  const handleSaveToProfile = async () => {
+    setSavingProfile(true);
+    setSaveProfileSuccess(false);
+    try {
+      const payload = {
+        templateSlug: templateSlug || selectedTemplate,
+        primaryColor,
+        openingEffect,
+        groomName,
+        groomShort,
+        groomBirthOrder,
+        groomFather,
+        groomMother,
+        groomPhone,
+        groomAddress,
+        brideName,
+        brideShort,
+        brideBirthOrder,
+        brideFather,
+        brideMother,
+        bridePhone,
+        brideAddress,
+        isReverseOrder,
+        greetingMessage,
+        loveStory,
+        events,
+        photos,
+        bankCodeGroom,
+        accNumGroom,
+        accNameGroom,
+        bankCodeBride,
+        accNumBride,
+        accNameBride,
+        selectedMusicSrc,
+        videoUrl,
+      };
+
+      const res = await ApiClient.request("/user/wedding-profile", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.success) {
+        setSaveProfileSuccess(true);
+        confetti({ particleCount: 30, spread: 50, origin: { y: 0.2 } });
+        setTimeout(() => setSaveProfileSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error("Save profile error:", err);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -1242,19 +1402,29 @@ function EditCardContent() {
         }`}>
           {category === "WEDDING" ? (
             <div className="flex-1 overflow-y-auto">
-              <div className="p-3 bg-amber-50/80 border-b border-amber-200/60 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="text-xs font-bold text-amber-900">Thiết lập 23 mục thiệp cưới chi tiết</span>
+              <div className="p-3 bg-amber-50/80 border-b border-amber-200/60 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className="text-xs font-bold text-amber-900 truncate">Thiết lập 23 mục thiệp cưới chi tiết</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowQuickFill(true)}
-                  className="px-2.5 py-1 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>⚡ Điền Nhanh</span>
-                </button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowApplyProfileModal(true)}
+                    className="px-2.5 py-1 text-xs bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
+                    title="Tùy chọn các mục từ hồ sơ tài khoản để áp dụng vào thiệp"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Áp Dụng Hồ Sơ</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickFill(true)}
+                    className="px-2.5 py-1 text-xs bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Điền Nhanh</span>
+                  </button>
+                </div>
               </div>
               <WeddingAccordionForm
                 templateSlug={templateSlug || selectedTemplate}
@@ -1320,6 +1490,10 @@ function EditCardContent() {
                 onVideoUrlChange={setVideoUrl}
                 isRsvpEnabled={isRsvpEnabled}
                 onRsvpToggle={setIsRsvpEnabled}
+                onOpenApplyProfile={() => setShowApplyProfileModal(true)}
+                onSaveToProfile={handleSaveToProfile}
+                isSavingProfile={savingProfile}
+                saveProfileSuccess={saveProfileSuccess}
               />
             </div>
           ) : (
@@ -2310,6 +2484,13 @@ function EditCardContent() {
           address: events[0]?.address || "",
           photos: photos.map((p, idx) => ({ id: p.id || `photo-${idx}`, url: p.url, caption: p.caption })),
         }}
+      />
+
+      {/* ── SELECTIVE WEDDING PROFILE MODAL (TÙY CHỌN MỤC ÁP DỤNG) ── */}
+      <ApplyProfileModal
+        isOpen={showApplyProfileModal}
+        onClose={() => setShowApplyProfileModal(false)}
+        onApply={handleApplyProfileSections}
       />
     </div>
   );

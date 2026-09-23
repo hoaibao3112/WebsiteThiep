@@ -11,6 +11,7 @@ import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyProfileModal";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
@@ -210,6 +211,207 @@ function CardBuilderContent() {
       );
     }
   }, []);
+
+  // ── WEDDING PROFILE INTEGRATION (TÙY CHỌN MỤC ÁP DỤNG) ──
+  const [showApplyProfileModal, setShowApplyProfileModal] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveProfileSuccess, setSaveProfileSuccess] = useState(false);
+
+  const handleApplyProfileSections = (profile: any, selectedKeys: WeddingSectionKey[]) => {
+    if (!profile) return;
+
+    if (selectedKeys.includes("couple")) {
+      setWeddingData((prev) => ({
+        ...prev,
+        groom: {
+          ...prev.groom,
+          fullName: profile.groomName || prev.groom.fullName,
+          shortName: profile.groomShort ?? prev.groom.shortName,
+          birthOrder: profile.groomBirthOrder ?? prev.groom.birthOrder,
+          phone: profile.groomPhone ?? prev.groom.phone,
+          address: profile.groomAddress ?? prev.groom.address,
+        },
+        bride: {
+          ...prev.bride,
+          fullName: profile.brideName || prev.bride.fullName,
+          shortName: profile.brideShort ?? prev.bride.shortName,
+          birthOrder: profile.brideBirthOrder ?? prev.bride.birthOrder,
+          phone: profile.bridePhone ?? prev.bride.phone,
+          address: profile.brideAddress ?? prev.bride.address,
+        },
+        isReverseOrder: profile.isReverseOrder !== undefined ? profile.isReverseOrder : prev.isReverseOrder,
+      }));
+    }
+
+    if (selectedKeys.includes("parents")) {
+      setWeddingData((prev) => ({
+        ...prev,
+        groom: {
+          ...prev.groom,
+          parents: {
+            fatherName: profile.groomFather ?? prev.groom.parents?.fatherName,
+            motherName: profile.groomMother ?? prev.groom.parents?.motherName,
+          },
+        },
+        bride: {
+          ...prev.bride,
+          parents: {
+            fatherName: profile.brideFather ?? prev.bride.parents?.fatherName,
+            motherName: profile.brideMother ?? prev.bride.parents?.motherName,
+          },
+        },
+      }));
+    }
+
+    if (selectedKeys.includes("datetime_venue") || selectedKeys.includes("schedule")) {
+      if (profile.events && Array.isArray(profile.events) && profile.events.length > 0) {
+        setWeddingData((prev) => ({
+          ...prev,
+          events: profile.events.map((ev: any, idx: number) => ({
+            id: ev.id || `ev-${idx + 1}`,
+            eventName: ev.eventName || "Lễ cưới",
+            eventDate: ev.eventDate ? new Date(ev.eventDate) : new Date(),
+            venueName: ev.venueName || "Tư gia",
+            address: ev.address || "",
+          })),
+        }));
+      } else if (profile.eventDate) {
+        setWeddingData((prev) => ({
+          ...prev,
+          events: [
+            {
+              id: "ev-main",
+              eventName: "Lễ Thành Hôn",
+              eventDate: new Date(profile.eventDate),
+              venueName: "Trung tâm tiệc cưới",
+              address: profile.address || "Tư gia",
+            },
+          ],
+        }));
+      }
+    }
+
+    if (selectedKeys.includes("greeting")) {
+      if (profile.greetingMessage) {
+        setGreetingMessage(profile.greetingMessage);
+      }
+    }
+
+    if (selectedKeys.includes("loveStory")) {
+      if (profile.loveStory && Array.isArray(profile.loveStory)) {
+        setWeddingData((prev) => ({
+          ...prev,
+          loveStory: profile.loveStory,
+        }));
+      }
+    }
+
+    if (selectedKeys.includes("photos")) {
+      if (profile.photos && Array.isArray(profile.photos) && profile.photos.length > 0) {
+        setCustomPhotos(
+          profile.photos.map((p: any, idx: number) => ({
+            id: p.id || `ph-${idx}`,
+            url: p.url,
+            caption: p.caption,
+            isCover: p.isCover || idx === 0,
+          }))
+        );
+      }
+    }
+
+    if (selectedKeys.includes("banking")) {
+      const gBank = profile.bankCodeGroom || profile.bankGroom?.bankCode;
+      const gNum = profile.accNumGroom || profile.bankGroom?.accountNumber;
+      const gName = profile.accNameGroom || profile.bankGroom?.accountName;
+      const bBank = profile.bankCodeBride || profile.bankBride?.bankCode;
+      const bNum = profile.accNumBride || profile.bankBride?.accountNumber;
+      const bName = profile.accNameBride || profile.bankBride?.accountName;
+
+      setWeddingData((prev) => ({
+        ...prev,
+        bankCodeGroom: gBank ?? (prev as any).bankCodeGroom,
+        accNumGroom: gNum ?? (prev as any).accNumGroom,
+        accNameGroom: gName ?? (prev as any).accNameGroom,
+        bankCodeBride: bBank ?? (prev as any).bankCodeBride,
+        accNumBride: bNum ?? (prev as any).accNumBride,
+        accNameBride: bName ?? (prev as any).accNameBride,
+      } as any));
+    }
+
+    if (selectedKeys.includes("music")) {
+      if (profile.selectedMusicSrc || profile.musicUrl) {
+        setMusicUrl(profile.selectedMusicSrc || profile.musicUrl);
+      }
+      if (profile.videoUrl !== undefined) {
+        setWeddingData((prev) => ({
+          ...prev,
+          videoUrl: profile.videoUrl,
+        } as any));
+      }
+    }
+
+    if (selectedKeys.includes("theme")) {
+      if (profile.templateSlug) setTemplateSlug(profile.templateSlug);
+      if (profile.primaryColor) setPrimaryColor(profile.primaryColor);
+      if (profile.openingEffect) setOpeningEffect(profile.openingEffect);
+    }
+
+    confetti({ particleCount: 45, spread: 60, origin: { y: 0.3 } });
+  };
+
+  const handleSaveToProfile = async () => {
+    setSavingProfile(true);
+    setSaveProfileSuccess(false);
+    try {
+      const payload = {
+        templateSlug,
+        primaryColor,
+        openingEffect,
+        groomName: weddingData.groom.fullName,
+        groomShort: weddingData.groom.shortName,
+        groomBirthOrder: weddingData.groom.birthOrder,
+        groomFather: weddingData.groom.parents?.fatherName,
+        groomMother: weddingData.groom.parents?.motherName,
+        groomPhone: weddingData.groom.phone,
+        groomAddress: weddingData.groom.address,
+        brideName: weddingData.bride.fullName,
+        brideShort: weddingData.bride.shortName,
+        brideBirthOrder: weddingData.bride.birthOrder,
+        brideFather: weddingData.bride.parents?.fatherName,
+        brideMother: weddingData.bride.parents?.motherName,
+        bridePhone: weddingData.bride.phone,
+        brideAddress: weddingData.bride.address,
+        isReverseOrder: weddingData.isReverseOrder,
+        greetingMessage,
+        loveStory: weddingData.loveStory,
+        events: weddingData.events,
+        photos: customPhotos,
+        bankCodeGroom: (weddingData as any).bankCodeGroom,
+        accNumGroom: (weddingData as any).accNumGroom,
+        accNameGroom: (weddingData as any).accNameGroom,
+        bankCodeBride: (weddingData as any).bankCodeBride,
+        accNumBride: (weddingData as any).accNumBride,
+        accNameBride: (weddingData as any).accNameBride,
+        selectedMusicSrc: musicUrl,
+        videoUrl: (weddingData as any).videoUrl,
+      };
+
+      const res = await ApiClient.request("/user/wedding-profile", {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      if (res.success) {
+        setSaveProfileSuccess(true);
+        confetti({ particleCount: 30, spread: 50, origin: { y: 0.2 } });
+        setTimeout(() => setSaveProfileSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error("Save profile error:", err);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   // Chuyển Category
   const handleCategoryChange = (newCat: CardCategory) => {
@@ -620,6 +822,11 @@ function CardBuilderContent() {
                 onMusicChange={setMusicUrl}
                 videoUrl={(weddingData as any).videoUrl || ""}
                 onVideoUrlChange={(val) => setWeddingData((p) => ({ ...p, videoUrl: val } as any))}
+
+                onOpenApplyProfile={() => setShowApplyProfileModal(true)}
+                onSaveToProfile={handleSaveToProfile}
+                isSavingProfile={savingProfile}
+                saveProfileSuccess={saveProfileSuccess}
               />
             </div>
           </div>
@@ -661,6 +868,13 @@ function CardBuilderContent() {
           address: weddingData.events?.[0]?.address || "",
           photos: customPhotos.map((p, idx) => ({ id: p.id || `photo-${idx}`, url: p.url, caption: p.caption })),
         }}
+      />
+
+      {/* ── SELECTIVE WEDDING PROFILE MODAL (TÙY CHỌN MỤC ÁP DỤNG) ── */}
+      <ApplyProfileModal
+        isOpen={showApplyProfileModal}
+        onClose={() => setShowApplyProfileModal(false)}
+        onApply={handleApplyProfileSections}
       />
     </div>
   );

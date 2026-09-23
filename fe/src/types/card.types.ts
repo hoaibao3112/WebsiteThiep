@@ -28,12 +28,14 @@ export interface WeddingDataPayload {
   heroSubtitle?: string;
   invitationTitle?: string;
   coverPhotoUrl?: string;
+  isReverseOrder?: boolean;
   groom: {
     fullName: string;
     shortName?: string;
     avatarUrl?: string;
     birthOrder?: string;
     phone?: string;
+    address?: string;
     parents?: {
       fatherName?: string;
       motherName?: string;
@@ -48,6 +50,7 @@ export interface WeddingDataPayload {
     avatarUrl?: string;
     birthOrder?: string;
     phone?: string;
+    address?: string;
     parents?: {
       fatherName?: string;
       motherName?: string;
