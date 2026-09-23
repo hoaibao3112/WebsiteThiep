@@ -1,9 +1,28 @@
 "use client";
 
-import React from "react";
-import { Shapes, Minus, Square, Circle } from "lucide-react";
+import React, { useState } from "react";
+import { Shapes, Minus, Square, Circle, Check } from "lucide-react";
+import { useEditor } from "../EditorContext";
+
+const SHAPES = [
+  { id: "line", title: "Đường kẻ vàng", shapeType: "line" as const, icon: Minus },
+  { id: "rect", title: "Khung viền vuông", shapeType: "rect" as const, icon: Square },
+  { id: "circle", title: "Khung tròn cổ điển", shapeType: "circle" as const, icon: Circle },
+  { id: "corner", title: "Hoa văn góc", shapeType: "corner" as const, icon: Shapes },
+];
 
 export function ShapeTool() {
+  const { addShapeElement } = useEditor();
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+
+  const handleAdd = (item: (typeof SHAPES)[number]) => {
+    addShapeElement({ shapeType: item.shapeType, title: item.title });
+    setRecentlyAddedId(item.id);
+    setTimeout(() => {
+      setRecentlyAddedId((curr) => (curr === item.id ? null : curr));
+    }, 1200);
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -16,22 +35,38 @@ export function ShapeTool() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition text-center cursor-pointer">
-          <Minus className="size-6 mx-auto text-amber-700 mb-1" />
-          <span className="text-xs font-semibold text-stone-700">Đường kẻ vàng</span>
-        </div>
-        <div className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition text-center cursor-pointer">
-          <Square className="size-6 mx-auto text-amber-700 mb-1" />
-          <span className="text-xs font-semibold text-stone-700">Khung viền vuông</span>
-        </div>
-        <div className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition text-center cursor-pointer">
-          <Circle className="size-6 mx-auto text-amber-700 mb-1" />
-          <span className="text-xs font-semibold text-stone-700">Khung tròn cổ điển</span>
-        </div>
-        <div className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 transition text-center cursor-pointer">
-          <Shapes className="size-6 mx-auto text-amber-700 mb-1" />
-          <span className="text-xs font-semibold text-stone-700">Hoa văn góc</span>
-        </div>
+        {SHAPES.map((item) => {
+          const Icon = item.icon;
+          const isJustAdded = recentlyAddedId === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleAdd(item)}
+              className={`p-3 rounded-xl border text-center transition cursor-pointer flex flex-col items-center justify-center active:scale-95 shadow-2xs ${
+                isJustAdded
+                  ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
+                  : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"
+              }`}
+            >
+              <Icon className="size-6 mx-auto text-amber-700 mb-1" />
+              <span className="text-xs font-semibold text-stone-700">{item.title}</span>
+              <span
+                className={`text-[9px] mt-1 font-semibold flex items-center gap-0.5 ${
+                  isJustAdded ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                {isJustAdded ? (
+                  <>
+                    <Check className="size-2.5" /> Đã thêm vào thiệp
+                  </>
+                ) : (
+                  "+ Chạm để thêm"
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

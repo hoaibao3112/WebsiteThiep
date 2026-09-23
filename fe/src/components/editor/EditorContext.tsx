@@ -18,7 +18,7 @@ export type ToolCategory =
 
 export interface CanvasElement {
   id: string;
-  type: "text" | "image" | "shape" | "sticker";
+  type: "text" | "image" | "shape" | "sticker" | "preset";
   content: string;
   x: number; // in px
   y: number; // in px
@@ -44,6 +44,10 @@ export interface CanvasElement {
   shadow?: string;
   zIndex: number;
   isLocked?: boolean;
+  shapeType?: "line" | "rect" | "circle" | "corner";
+  presetId?: string;
+  imageUrl?: string;
+  title?: string;
 }
 
 export interface EditorContextValue<T extends object = Record<string, unknown>> {
@@ -58,12 +62,17 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   selectedCanvasElement: CanvasElement | null;
   fieldOffsets: Record<string, { x: number; y: number }>;
   addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }) => string;
+  addStickerElement: (item: { icon: string; title: string }) => string;
+  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }) => string;
+  addPresetElement: (item: { id: string; title: string; cat: string }) => string;
+  addImageElement: (url: string, caption?: string) => string;
   updateCanvasElement: (id: string, patch: Partial<CanvasElement>) => void;
   removeCanvasElement: (id: string) => void;
   duplicateCanvasElement: (id: string) => string | null;
   reorderElementLayer: (id: string, action: "top" | "bottom" | "up" | "down") => void;
   toggleLockElement: (id: string) => void;
   updateFieldPositionOffset: (fieldId: string, deltaX: number, deltaY: number) => void;
+  resetFieldPositionOffset: (fieldId: string) => void;
   copySelectedElement: () => void;
   cutSelectedElement: () => void;
   pasteElement: () => void;
@@ -238,6 +247,265 @@ export function EditorProvider<T extends object>({
     [canvasElements, draft, persistElements]
   );
 
+  const addStickerElement = useCallback(
+    (item: { icon: string; title: string }) => {
+      const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const newEl: CanvasElement = {
+        id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: "sticker",
+        content: item.icon,
+        title: item.title,
+        x: 140,
+        y: 280,
+        width: 100,
+        height: 100,
+        fontSize: 60,
+        zIndex: maxZ + 1,
+        isLocked: false,
+        opacity: 1,
+      };
+      const updated = [...canvasElements, newEl];
+      persistElements(updated);
+      setSelectedElementId(newEl.id);
+      setSelectedElementType("canvas-element");
+      setSelectedField(null);
+      return newEl.id;
+    },
+    [canvasElements, persistElements]
+  );
+
+  const addShapeElement = useCallback(
+    (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }) => {
+      const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      let newEl: CanvasElement;
+
+      if (item.shapeType === "line") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "line",
+          content: "—",
+          title: item.title,
+          x: 45,
+          y: 300,
+          width: 300,
+          height: 14,
+          backgroundColor: "#BE944E",
+          color: "#BE944E",
+          borderRadius: 4,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "rect") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "rect",
+          content: "",
+          title: item.title,
+          x: 55,
+          y: 240,
+          width: 280,
+          height: 180,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "rgba(190, 148, 78, 0.05)",
+          borderRadius: 16,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "circle") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "circle",
+          content: "",
+          title: item.title,
+          x: 105,
+          y: 240,
+          width: 180,
+          height: 180,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "rgba(190, 148, 78, 0.05)",
+          borderRadius: 999,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "corner",
+          content: "⚜️",
+          title: item.title,
+          x: 150,
+          y: 280,
+          width: 80,
+          height: 80,
+          fontSize: 48,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      }
+
+      const updated = [...canvasElements, newEl];
+      persistElements(updated);
+      setSelectedElementId(newEl.id);
+      setSelectedElementType("canvas-element");
+      setSelectedField(null);
+      return newEl.id;
+    },
+    [canvasElements, persistElements]
+  );
+
+  const addPresetElement = useCallback(
+    (item: { id: string; title: string; cat: string }) => {
+      const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      let newEl: CanvasElement;
+
+      if (item.id === "p1") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p1",
+          title: "Khung Ảnh Cổng Vòm",
+          content: "/images/demo/couple-cover.png",
+          x: 55,
+          y: 200,
+          width: 280,
+          height: 330,
+          borderRadius: 140,
+          borderWidth: 3,
+          borderColor: "#BE944E",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p2") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p2",
+          title: "Khung Ảnh Polaroids",
+          content: "polaroids",
+          x: 40,
+          y: 220,
+          width: 310,
+          height: 240,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p3") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p3",
+          title: "Khối Lịch Trình Tiệc Đầy Đủ",
+          content: "schedule",
+          x: 35,
+          y: 240,
+          width: 320,
+          height: 230,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p4") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p4",
+          title: "Thẻ Song Thân 2 Cột Cân Đối",
+          content: "parents",
+          x: 35,
+          y: 250,
+          width: 320,
+          height: 180,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p5",
+          title: "Khối Lời Ngỏ Cổ Điển",
+          content: "“Tình yêu không phải là nhìn nhau, mà là cùng nhau nhìn về một hướng. Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!”",
+          x: 35,
+          y: 260,
+          width: 320,
+          height: 160,
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#D4AF37",
+          fontFamily: "Playfair Display",
+          fontSize: 14,
+          color: "#4A3E3D",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      }
+
+      const updated = [...canvasElements, newEl];
+      persistElements(updated);
+      setSelectedElementId(newEl.id);
+      setSelectedElementType("canvas-element");
+      setSelectedField(null);
+      return newEl.id;
+    },
+    [canvasElements, persistElements]
+  );
+
+  const addImageElement = useCallback(
+    (url: string, caption?: string) => {
+      const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const newEl: CanvasElement = {
+        id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: "image",
+        imageUrl: url,
+        content: url,
+        title: caption || "Ảnh mới",
+        x: 65,
+        y: 220,
+        width: 260,
+        height: 200,
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: "#FFFFFF",
+        shadow: "0 10px 20px -5px rgba(0,0,0,0.15)",
+        zIndex: maxZ + 1,
+        isLocked: false,
+        opacity: 1,
+      };
+      const updated = [...canvasElements, newEl];
+      persistElements(updated);
+      setSelectedElementId(newEl.id);
+      setSelectedElementType("canvas-element");
+      setSelectedField(null);
+      return newEl.id;
+    },
+    [canvasElements, persistElements]
+  );
+
   const updateCanvasElement = useCallback(
     (id: string, patch: Partial<CanvasElement>) => {
       const updated = canvasElements.map((el) => (el.id === id ? { ...el, ...patch } : el));
@@ -314,6 +582,15 @@ export function EditorProvider<T extends object>({
         ...fieldOffsets,
         [fieldId]: { x: curr.x + deltaX, y: curr.y + deltaY },
       };
+      persistOffsets(updated);
+    },
+    [fieldOffsets, persistOffsets]
+  );
+
+  const resetFieldPositionOffset = useCallback(
+    (fieldId: string) => {
+      const updated = { ...fieldOffsets };
+      delete updated[fieldId];
       persistOffsets(updated);
     },
     [fieldOffsets, persistOffsets]
@@ -472,12 +749,17 @@ export function EditorProvider<T extends object>({
     selectedCanvasElement,
     fieldOffsets,
     addTextElement,
+    addStickerElement,
+    addShapeElement,
+    addPresetElement,
+    addImageElement,
     updateCanvasElement,
     removeCanvasElement,
     duplicateCanvasElement,
     reorderElementLayer,
     toggleLockElement,
     updateFieldPositionOffset,
+    resetFieldPositionOffset,
     copySelectedElement,
     cutSelectedElement,
     pasteElement,

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { LayoutGrid, Sparkles } from "lucide-react";
+import { Sparkles, Check, Plus } from "lucide-react";
+import { useEditor } from "../EditorContext";
 
 const PRESETS = [
   { id: "p1", title: "Khung Ảnh Cổng Vòm", cat: "photo", desc: "Ảnh chân dung vòm cong hoàng gia Á Đông" },
@@ -13,8 +14,18 @@ const PRESETS = [
 
 export function PresetTool() {
   const [tab, setTab] = useState<"all" | "photo" | "info" | "invite">("all");
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+  const { addPresetElement } = useEditor();
 
   const filtered = PRESETS.filter((p) => tab === "all" || p.cat === tab);
+
+  const handleAdd = (item: (typeof PRESETS)[number]) => {
+    addPresetElement({ id: item.id, title: item.title, cat: item.cat });
+    setRecentlyAddedId(item.id);
+    setTimeout(() => {
+      setRecentlyAddedId((curr) => (curr === item.id ? null : curr));
+    }, 1200);
+  };
 
   return (
     <div className="space-y-4">
@@ -48,18 +59,44 @@ export function PresetTool() {
       </div>
 
       <div className="space-y-2">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 transition cursor-pointer space-y-1 shadow-2xs"
-          >
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="size-3 text-amber-600" />
-              <h4 className="text-xs font-bold text-stone-800">{item.title}</h4>
-            </div>
-            <p className="text-[11px] text-stone-500">{item.desc}</p>
-          </div>
-        ))}
+        {filtered.map((item) => {
+          const isJustAdded = recentlyAddedId === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleAdd(item)}
+              className={`w-full text-left p-3 rounded-xl border transition cursor-pointer space-y-1 shadow-2xs active:scale-[0.99] relative ${
+                isJustAdded
+                  ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
+                  : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-amber-600" />
+                  <h4 className="text-xs font-bold text-stone-800">{item.title}</h4>
+                </div>
+                <span
+                  className={`text-[10px] font-semibold flex items-center gap-0.5 ${
+                    isJustAdded ? "text-emerald-700" : "text-amber-700"
+                  }`}
+                >
+                  {isJustAdded ? (
+                    <>
+                      <Check className="size-3" /> Đã thêm
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="size-3" /> Chèn khối
+                    </>
+                  )}
+                </span>
+              </div>
+              <p className="text-[11px] text-stone-500 line-clamp-1">{item.desc}</p>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

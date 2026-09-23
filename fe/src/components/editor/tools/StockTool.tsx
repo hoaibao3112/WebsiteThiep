@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ShoppingBag, Sparkles, Heart } from "lucide-react";
+import { Sparkles, Check } from "lucide-react";
+import { useEditor } from "../EditorContext";
 
 const STOCK_ITEMS = [
   { id: "s1", title: "Chữ Hỷ Song Hỷ Đỏ", cat: "wedding", icon: "囍" },
@@ -16,8 +17,18 @@ const STOCK_ITEMS = [
 
 export function StockTool() {
   const [filter, setFilter] = useState<"all" | "wedding" | "chibi">("all");
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
+  const { addStickerElement } = useEditor();
 
   const filtered = STOCK_ITEMS.filter((item) => filter === "all" || item.cat === filter);
+
+  const handleAdd = (item: { icon: string; title: string; id: string }) => {
+    addStickerElement({ icon: item.icon, title: item.title });
+    setRecentlyAddedId(item.id);
+    setTimeout(() => {
+      setRecentlyAddedId((curr) => (curr === item.id ? null : curr));
+    }, 1200);
+  };
 
   return (
     <div className="space-y-4">
@@ -50,16 +61,37 @@ export function StockTool() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="p-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 transition text-center cursor-pointer group shadow-2xs"
-          >
-            <div className="text-3xl mb-1 group-hover:scale-110 transition">{item.icon}</div>
-            <p className="text-[11px] font-bold text-stone-700">{item.title}</p>
-            <span className="text-[9px] text-amber-700 font-medium">Chạm để thêm</span>
-          </div>
-        ))}
+        {filtered.map((item) => {
+          const isJustAdded = recentlyAddedId === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => handleAdd(item)}
+              className={`p-3 rounded-xl border text-center transition cursor-pointer group shadow-2xs relative flex flex-col items-center justify-center active:scale-95 ${
+                isJustAdded
+                  ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
+                  : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"
+              }`}
+            >
+              <div className="text-3xl mb-1 group-hover:scale-110 transition drop-shadow-sm">{item.icon}</div>
+              <p className="text-[11px] font-bold text-stone-700 leading-tight">{item.title}</p>
+              <span
+                className={`text-[9px] mt-1 font-semibold flex items-center gap-0.5 ${
+                  isJustAdded ? "text-emerald-700" : "text-amber-700"
+                }`}
+              >
+                {isJustAdded ? (
+                  <>
+                    <Check className="size-2.5" /> Đã thêm vào thiệp
+                  </>
+                ) : (
+                  "+ Chạm để thêm"
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
