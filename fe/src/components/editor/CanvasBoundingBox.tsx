@@ -24,6 +24,7 @@ interface CanvasBoundingBoxProps {
 
 export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxProps) {
   const {
+    zoomLevel,
     updateCanvasElement,
     removeCanvasElement,
     duplicateCanvasElement,
@@ -98,9 +99,11 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         elY: element.y,
       };
 
+      const zoomFactor = Math.max(0.5, zoomLevel / 100);
+
       const handlePointerMove = (moveEvt: PointerEvent) => {
-        const deltaX = moveEvt.clientX - dragStartRef.current.startX;
-        const deltaY = moveEvt.clientY - dragStartRef.current.startY;
+        const deltaX = (moveEvt.clientX - dragStartRef.current.startX) / zoomFactor;
+        const deltaY = (moveEvt.clientY - dragStartRef.current.startY) / zoomFactor;
 
         const newX = Math.round(dragStartRef.current.elX + deltaX);
         const newY = Math.round(dragStartRef.current.elY + deltaY);
@@ -117,7 +120,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
     },
-    [element.id, element.isLocked, element.x, element.y, updateCanvasElement]
+    [element.id, element.isLocked, element.x, element.y, zoomLevel, updateCanvasElement]
   );
 
   // Handle Resize Handles
@@ -138,9 +141,11 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         handle,
       };
 
+      const zoomFactor = Math.max(0.5, zoomLevel / 100);
+
       const handlePointerMove = (moveEvt: PointerEvent) => {
-        const deltaX = moveEvt.clientX - resizeStartRef.current.startX;
-        const deltaY = moveEvt.clientY - resizeStartRef.current.startY;
+        const deltaX = (moveEvt.clientX - resizeStartRef.current.startX) / zoomFactor;
+        const deltaY = (moveEvt.clientY - resizeStartRef.current.startY) / zoomFactor;
         const { startWidth, startHeight, startElX, startElY } = resizeStartRef.current;
 
         let newWidth = startWidth;
@@ -149,28 +154,37 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         let newY = startElY;
 
         if (handle.includes("e")) {
-          newWidth = Math.max(50, startWidth + deltaX);
+          newWidth = Math.max(30, startWidth + deltaX);
         }
         if (handle.includes("w")) {
-          const w = Math.max(50, startWidth - deltaX);
+          const w = Math.max(30, startWidth - deltaX);
           newWidth = w;
           newX = startElX + (startWidth - w);
         }
         if (handle.includes("s")) {
-          newHeight = Math.max(24, startHeight + deltaY);
+          newHeight = Math.max(20, startHeight + deltaY);
         }
         if (handle.includes("n")) {
-          const h = Math.max(24, startHeight - deltaY);
+          const h = Math.max(20, startHeight - deltaY);
           newHeight = h;
           newY = startElY + (startHeight - h);
         }
 
-        updateCanvasElement(element.id, {
+        const patch: Partial<CanvasElement> = {
           x: Math.round(newX),
           y: Math.round(newY),
           width: Math.round(newWidth),
           height: Math.round(newHeight),
-        });
+        };
+
+        // Proportionally scale fontSize for stickers and text so dragging larger makes them visibly bigger
+        if (element.type === "sticker" || element.type === "text") {
+          const scaleRatio = newHeight / Math.max(20, startHeight);
+          const baseSize = element.fontSize || (element.type === "sticker" ? 60 : 28);
+          patch.fontSize = Math.max(14, Math.min(240, Math.round(baseSize * scaleRatio)));
+        }
+
+        updateCanvasElement(element.id, patch);
       };
 
       const handlePointerUp = () => {
@@ -182,7 +196,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
     },
-    [element.id, element.isLocked, element.width, element.height, element.x, element.y, updateCanvasElement]
+    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, zoomLevel, updateCanvasElement]
   );
 
   return (

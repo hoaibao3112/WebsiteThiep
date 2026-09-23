@@ -67,8 +67,20 @@ export function StockTool() {
             <button
               key={item.id}
               type="button"
+              draggable={true}
+              onDragStart={(e) => {
+                e.dataTransfer.setData(
+                  "application/json",
+                  JSON.stringify({
+                    type: "sticker",
+                    icon: item.icon,
+                    title: item.title,
+                  })
+                );
+                e.dataTransfer.effectAllowed = "copy";
+              }}
               onClick={() => handleAdd(item)}
-              className={`p-3 rounded-xl border text-center transition cursor-pointer group shadow-2xs relative flex flex-col items-center justify-center active:scale-95 ${
+              className={`p-3 rounded-xl border text-center transition cursor-grab active:cursor-grabbing group shadow-2xs relative flex flex-col items-center justify-center active:scale-95 ${
                 isJustAdded
                   ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
                   : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"

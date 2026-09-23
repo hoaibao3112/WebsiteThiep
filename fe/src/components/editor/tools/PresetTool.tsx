@@ -65,8 +65,21 @@ export function PresetTool() {
             <button
               key={item.id}
               type="button"
+              draggable={true}
+              onDragStart={(e) => {
+                e.dataTransfer.setData(
+                  "application/json",
+                  JSON.stringify({
+                    type: "preset",
+                    id: item.id,
+                    title: item.title,
+                    cat: item.cat,
+                  })
+                );
+                e.dataTransfer.effectAllowed = "copy";
+              }}
               onClick={() => handleAdd(item)}
-              className={`w-full text-left p-3 rounded-xl border transition cursor-pointer space-y-1 shadow-2xs active:scale-[0.99] relative ${
+              className={`w-full text-left p-3 rounded-xl border transition cursor-grab active:cursor-grabbing space-y-1 shadow-2xs active:scale-[0.99] relative ${
                 isJustAdded
                   ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
                   : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"

@@ -61,11 +61,12 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   canvasElements: CanvasElement[];
   selectedCanvasElement: CanvasElement | null;
   fieldOffsets: Record<string, { x: number; y: number }>;
-  addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }) => string;
-  addStickerElement: (item: { icon: string; title: string }) => string;
-  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }) => string;
-  addPresetElement: (item: { id: string; title: string; cat: string }) => string;
-  addImageElement: (url: string, caption?: string) => string;
+  fieldScales: Record<string, number>;
+  addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => string;
+  addStickerElement: (item: { icon: string; title: string }, pos?: { x?: number; y?: number }) => string;
+  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => string;
+  addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
+  addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
   updateCanvasElement: (id: string, patch: Partial<CanvasElement>) => void;
   removeCanvasElement: (id: string) => void;
   duplicateCanvasElement: (id: string) => string | null;
@@ -73,6 +74,8 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   toggleLockElement: (id: string) => void;
   updateFieldPositionOffset: (fieldId: string, deltaX: number, deltaY: number) => void;
   resetFieldPositionOffset: (fieldId: string) => void;
+  updateFieldScale: (fieldId: string, scale: number) => void;
+  resetFieldScale: (fieldId: string) => void;
   copySelectedElement: () => void;
   cutSelectedElement: () => void;
   pasteElement: () => void;
@@ -180,6 +183,11 @@ export function EditorProvider<T extends object>({
     [categoryData.fieldPositions]
   );
 
+  const fieldScales: Record<string, number> = useMemo(
+    () => categoryData.fieldScales || {},
+    [categoryData.fieldScales]
+  );
+
   const selectedCanvasElement = useMemo(
     () => canvasElements.find((el) => el.id === selectedElementId) || null,
     [canvasElements, selectedElementId]
@@ -217,15 +225,49 @@ export function EditorProvider<T extends object>({
     [draft, onDraftChange]
   );
 
+  const persistScales = useCallback(
+    (nextScales: Record<string, number>) => {
+      try {
+        const next = applyDraftPatch(draft, "categoryData.fieldScales", nextScales);
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi lưu fieldScales:", err);
+      }
+    },
+    [draft, onDraftChange]
+  );
+
+  const updateFieldScale = useCallback(
+    (fieldId: string, scale: number) => {
+      const updated = {
+        ...fieldScales,
+        [fieldId]: Math.max(0.3, Math.min(3, Math.round(scale * 100) / 100)),
+      };
+      persistScales(updated);
+    },
+    [fieldScales, persistScales]
+  );
+
+  const resetFieldScale = useCallback(
+    (fieldId: string) => {
+      const updated = { ...fieldScales };
+      delete updated[fieldId];
+      persistScales(updated);
+    },
+    [fieldScales, persistScales]
+  );
+
   const addTextElement = useCallback(
-    (preset?: { text?: string; fontSize?: number; isBold?: boolean }) => {
+    (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const newEl: CanvasElement = {
         id: `elem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "text",
         content: preset?.text || "Văn bản mới",
-        x: 45,
-        y: 280,
+        x: pos?.x ?? 45,
+        y: pos?.y ?? 280,
         width: 300,
         height: 54,
         fontSize: preset?.fontSize || 28,
@@ -248,15 +290,15 @@ export function EditorProvider<T extends object>({
   );
 
   const addStickerElement = useCallback(
-    (item: { icon: string; title: string }) => {
+    (item: { icon: string; title: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const newEl: CanvasElement = {
         id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "sticker",
         content: item.icon,
         title: item.title,
-        x: 140,
-        y: 280,
+        x: pos?.x ?? 140,
+        y: pos?.y ?? 280,
         width: 100,
         height: 100,
         fontSize: 60,
@@ -275,7 +317,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addShapeElement = useCallback(
-    (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }) => {
+    (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
@@ -286,8 +328,8 @@ export function EditorProvider<T extends object>({
           shapeType: "line",
           content: "—",
           title: item.title,
-          x: 45,
-          y: 300,
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 300,
           width: 300,
           height: 14,
           backgroundColor: "#BE944E",
@@ -304,8 +346,8 @@ export function EditorProvider<T extends object>({
           shapeType: "rect",
           content: "",
           title: item.title,
-          x: 55,
-          y: 240,
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 240,
           width: 280,
           height: 180,
           borderWidth: 2,
@@ -323,8 +365,8 @@ export function EditorProvider<T extends object>({
           shapeType: "circle",
           content: "",
           title: item.title,
-          x: 105,
-          y: 240,
+          x: pos?.x ?? 105,
+          y: pos?.y ?? 240,
           width: 180,
           height: 180,
           borderWidth: 2,
@@ -342,8 +384,8 @@ export function EditorProvider<T extends object>({
           shapeType: "corner",
           content: "⚜️",
           title: item.title,
-          x: 150,
-          y: 280,
+          x: pos?.x ?? 150,
+          y: pos?.y ?? 280,
           width: 80,
           height: 80,
           fontSize: 48,
@@ -364,7 +406,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addPresetElement = useCallback(
-    (item: { id: string; title: string; cat: string }) => {
+    (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
@@ -375,8 +417,8 @@ export function EditorProvider<T extends object>({
           presetId: "p1",
           title: "Khung Ảnh Cổng Vòm",
           content: "/images/demo/couple-cover.png",
-          x: 55,
-          y: 200,
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 200,
           width: 280,
           height: 330,
           borderRadius: 140,
@@ -393,8 +435,8 @@ export function EditorProvider<T extends object>({
           presetId: "p2",
           title: "Khung Ảnh Polaroids",
           content: "polaroids",
-          x: 40,
-          y: 220,
+          x: pos?.x ?? 40,
+          y: pos?.y ?? 220,
           width: 310,
           height: 240,
           zIndex: maxZ + 1,
@@ -408,8 +450,8 @@ export function EditorProvider<T extends object>({
           presetId: "p3",
           title: "Khối Lịch Trình Tiệc Đầy Đủ",
           content: "schedule",
-          x: 35,
-          y: 240,
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 240,
           width: 320,
           height: 230,
           backgroundColor: "#FFFFFF",
@@ -428,8 +470,8 @@ export function EditorProvider<T extends object>({
           presetId: "p4",
           title: "Thẻ Song Thân 2 Cột Cân Đối",
           content: "parents",
-          x: 35,
-          y: 250,
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 250,
           width: 320,
           height: 180,
           backgroundColor: "#FFFFFF",
@@ -448,8 +490,8 @@ export function EditorProvider<T extends object>({
           presetId: "p5",
           title: "Khối Lời Ngỏ Cổ Điển",
           content: "“Tình yêu không phải là nhìn nhau, mà là cùng nhau nhìn về một hướng. Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!”",
-          x: 35,
-          y: 260,
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 260,
           width: 320,
           height: 160,
           backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -476,7 +518,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addImageElement = useCallback(
-    (url: string, caption?: string) => {
+    (url: string, caption?: string, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const newEl: CanvasElement = {
         id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -484,8 +526,8 @@ export function EditorProvider<T extends object>({
         imageUrl: url,
         content: url,
         title: caption || "Ảnh mới",
-        x: 65,
-        y: 220,
+        x: pos?.x ?? 65,
+        y: pos?.y ?? 220,
         width: 260,
         height: 200,
         borderRadius: 16,
@@ -748,6 +790,7 @@ export function EditorProvider<T extends object>({
     canvasElements,
     selectedCanvasElement,
     fieldOffsets,
+    fieldScales,
     addTextElement,
     addStickerElement,
     addShapeElement,
@@ -760,6 +803,8 @@ export function EditorProvider<T extends object>({
     toggleLockElement,
     updateFieldPositionOffset,
     resetFieldPositionOffset,
+    updateFieldScale,
+    resetFieldScale,
     copySelectedElement,
     cutSelectedElement,
     pasteElement,
