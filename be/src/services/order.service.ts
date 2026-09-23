@@ -1,50 +1,128 @@
 import { prisma } from "../lib/prisma";
 import { generateVietQrUrl } from "../lib/vietqr";
-import { CreateOrderInput, SepayWebhookPayload } from "../lib/validators/order.schema";
 import { Prisma } from "@prisma/client";
 import crypto from "node:crypto";
 import { logger } from "../lib/logger";
-import { PublishCardDataSchema } from "../lib/validators/card";
 import { HttpError } from "../lib/http-error";
+import { AccountEntitlementService } from "./account-entitlement.service";
+
+// ────────────────────────────────────────────────────────────
+// TYPES
+// ────────────────────────────────────────────────────────────
+
+export interface CreateAccountOrderInput {
+  planCode: "BASIC" | "VIP";
+}
+
+export interface OrderSafeDTO {
+  id: string;
+  orderCode: string;
+  planCode: string;
+  planName: string;
+  amount: number;
+  status: string;
+  paidAt: Date | null;
+  expiredAt: Date;
+  submittedAt: Date | null;
+  reviewedAt: Date | null;
+  reviewNote: string | null;
+  createdAt: Date;
+}
+
+// ────────────────────────────────────────────────────────────
+// SERVICE
+// ────────────────────────────────────────────────────────────
 
 export class OrderService {
+  private static readonly ORDER_EXPIRY_MS = 48 * 60 * 60 * 1000; // 48 hours
+
   /**
-   * Tạo đơn hàng nâng cấp gói và sinh link VietQR động
+   * Create an account-level order for BASIC/VIP.
+   * - Backend-authoritative pricing.
+   * - 48-hour expiry.
+   * - MANUAL gateway.
+   * - Reuses active same-Plan order.
+   * - Prevents VIP repurchase and BASIC→VIP downgrade via order.
    */
-  static async createOrder(userId: string, accountId: string, input: CreateOrderInput, idempotencyKey: string) {
-    const { cardId, planId } = input;
+  static async createOrder(
+    userId: string,
+    accountId: string,
+    input: CreateAccountOrderInput,
+    idempotencyKey: string,
+  ) {
+    // 1. Verify OWNER role
+    const membership = await prisma.accountMember.findUnique({
+      where: { accountId_userId: { accountId, userId } },
+      select: { role: true },
+    });
+    if (!membership || membership.role !== "OWNER") {
+      throw new HttpError(403, "Chỉ chủ tài khoản (OWNER) mới có thể tạo đơn hàng", "OWNER_REQUIRED");
+    }
 
-    // 1. Kiểm tra card & plan
-    const [card, plan] = await Promise.all([
-      prisma.card.findFirst({ where: { id: cardId, accountId } }),
-      prisma.plan.findFirst({ where: { id: planId, isActive: true } }),
-    ]);
+    // 2. Resolve target Plan
+    const targetPlan = await prisma.plan.findFirst({
+      where: { code: input.planCode, isActive: true },
+    });
+    if (!targetPlan) {
+      throw new HttpError(404, "Gói dịch vụ không tồn tại hoặc đã ngưng", "PLAN_NOT_FOUND");
+    }
+    if (targetPlan.price <= 0) {
+      throw new HttpError(400, "Gói miễn phí không cần thanh toán", "FREE_PLAN_NOT_PURCHASABLE");
+    }
 
-    if (!card) throw new HttpError(404, "Thiệp không tồn tại", "CARD_NOT_FOUND");
-    if (!plan) throw new HttpError(404, "Gói dịch vụ không tồn tại", "PLAN_NOT_FOUND");
+    // 3. Check current entitlement
+    const effective = await AccountEntitlementService.getEffectivePlan(accountId);
+    if (effective.planCode === "VIP") {
+      throw new HttpError(409, "Tài khoản đã là VIP vĩnh viễn, không cần mua thêm", "ALREADY_VIP");
+    }
+    if (effective.planCode === "BASIC" && input.planCode === "BASIC" && !effective.isExpired) {
+      // Allow BASIC extension — this is renewal
+    }
 
+    // 4. Expire stale orders for this account
+    await prisma.order.updateMany({
+      where: {
+        accountId,
+        status: "PENDING",
+        expiredAt: { lte: new Date() },
+      },
+      data: { status: "EXPIRED" },
+    });
+
+    // 5. Idempotency check
     const existingOrder = await prisma.order.findUnique({
       where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
       include: { plan: true },
     });
     if (existingOrder) {
-      if (existingOrder.cardId !== cardId || existingOrder.planId !== planId) {
+      if (existingOrder.planId !== targetPlan.id) {
         throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
       }
-      return { order: existingOrder, replayed: true };
+      return this.formatOrderResult(existingOrder, true);
     }
 
-    if (plan.price <= 0) {
-      throw new HttpError(400, "Gói miễn phí phải được xuất bản qua luồng xuất bản thiệp", "FREE_PLAN_NOT_PURCHASABLE");
+    // 6. Reuse active same-Plan order
+    const activeOrder = await prisma.order.findFirst({
+      where: {
+        accountId,
+        planId: targetPlan.id,
+        status: { in: ["PENDING", "AWAITING_REVIEW"] },
+        expiredAt: { gt: new Date() },
+      },
+      include: { plan: true },
+    });
+    if (activeOrder) {
+      return this.formatOrderResult(activeOrder, true);
     }
 
-    const generateOrderCode = () => `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
+    // 7. Create new order
+    const generateOrderCode = () =>
+      `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
     let orderCode = generateOrderCode();
     const pollingToken = crypto.randomBytes(32).toString("base64url");
     const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
-    const expiredAt = new Date(Date.now() + 30 * 60 * 1000); // 30 phút
+    const expiredAt = new Date(Date.now() + this.ORDER_EXPIRY_MS);
 
-    // Retry loop cho trường hợp orderCode bị trùng (P2002 unique constraint)
     let order;
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
@@ -55,16 +133,14 @@ export class OrderService {
             pollingTokenHash,
             orderCode,
             userId,
-            cardId,
-            planId,
-            amount: plan.price,
+            cardId: null, // Account-level order, no cardId
+            planId: targetPlan.id,
+            amount: targetPlan.price, // Backend-authoritative
             status: "PENDING",
-            paymentGateway: "VIETQR_SEPAY",
+            paymentGateway: "MANUAL",
             expiredAt,
           },
-          include: {
-            plan: true,
-          },
+          include: { plan: true },
         });
         break;
       } catch (err) {
@@ -78,35 +154,24 @@ export class OrderService {
           : typeof rawTarget === "string"
             ? [rawTarget]
             : [];
-        const isIdempotencyConflict = targets.some((target) =>
-          target.toLowerCase().includes("idempotencykey"),
-        );
-        const isOrderCodeConflict = targets.some((target) =>
-          target.toLowerCase().includes("ordercode"),
-        );
+
+        const isIdempotencyConflict = targets.some((t) => t.toLowerCase().includes("idempotencykey"));
+        const isOrderCodeConflict = targets.some((t) => t.toLowerCase().includes("ordercode"));
 
         if (isIdempotencyConflict) {
           const racedOrder = await prisma.order.findUnique({
             where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
             include: { plan: true },
           });
-          if (racedOrder?.cardId === cardId && racedOrder.planId === planId) {
-            return { order: racedOrder, replayed: true };
+          if (racedOrder?.planId === targetPlan.id) {
+            return this.formatOrderResult(racedOrder, true);
           }
-          throw new HttpError(
-            409,
-            "Idempotency-Key đã được dùng cho yêu cầu khác",
-            "IDEMPOTENCY_CONFLICT",
-          );
+          throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
         }
 
         if (isOrderCodeConflict) {
           if (attempt === 3) {
-            throw new HttpError(
-              503,
-              "Không thể tạo mã đơn hàng sau nhiều lần thử",
-              "ORDER_CREATE_RETRY_EXHAUSTED",
-            );
+            throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
           }
           orderCode = generateOrderCode();
           continue;
@@ -115,26 +180,32 @@ export class OrderService {
         throw err;
       }
     }
-    if (!order) throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
+    if (!order) {
+      throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
+    }
 
-    // 3. Sinh VietQR động chuẩn Napas 247
-    const bankCode = process.env.BANK_CODE || "VCB";
-    const bankAccount = process.env.BANK_ACCOUNT || "1034829596";
-    const bankAccountName = process.env.BANK_ACCOUNT_NAME || "TRAN HOAI BAO";
+    // 8. Generate VietQR
+    const bankCode = process.env.BANK_CODE;
+    const bankAccount = process.env.BANK_ACCOUNT;
+    const bankAccountName = process.env.BANK_ACCOUNT_NAME;
+
+    if (!bankCode || !bankAccount || !bankAccountName) {
+      throw new HttpError(503, "Hệ thống thanh toán chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
+    }
 
     const qrUrl = generateVietQrUrl({
       bankCode,
       accountNumber: bankAccount,
       accountName: bankAccountName,
-      amount: plan.price,
-      description: orderCode, // Nội dung chuyển khoản là OrderCode để webhook tự nhận diện
+      amount: targetPlan.price,
+      description: orderCode,
     });
 
     return {
-      order,
+      order: this.toSafeDTO(order),
       paymentInfo: {
         orderCode,
-        amount: plan.price,
+        amount: targetPlan.price,
         bankCode,
         bankAccount,
         bankAccountName,
@@ -142,136 +213,64 @@ export class OrderService {
         expiredAt,
         pollingToken,
       },
+      replayed: false,
     };
   }
 
   /**
-   * Xử lý Webhook tự động từ SePay (Idempotent Webhook Processing)
+   * Submit transfer confirmation: PENDING → AWAITING_REVIEW
    */
-  static async processSepayWebhook(payload: SepayWebhookPayload) {
-    const {
-      id: gatewayTxId,
-      gateway,
-      content,
-      transferAmount,
-      accountNumber,
-      transactionDate,
-    } = payload;
-
-    logger.info({ gatewayTxId, transferAmount }, "[Webhook SePay] Received payload");
-
-    // 1. Chống lặp giao dịch (Idempotency): Kiểm tra transaction đã xử lý chưa
-    const existingTx = await prisma.paymentTransaction.findUnique({
+  static async submitTransfer(accountId: string, orderId: string): Promise<OrderSafeDTO> {
+    const result = await prisma.order.updateMany({
       where: {
-        gateway_gatewayTxId: {
-          gateway: "VIETQR_SEPAY",
-          gatewayTxId: String(gatewayTxId),
-        },
+        id: orderId,
+        accountId,
+        status: "PENDING",
+        expiredAt: { gt: new Date() },
+      },
+      data: {
+        status: "AWAITING_REVIEW",
+        submittedAt: new Date(),
       },
     });
 
-    if (existingTx) {
-      logger.info({ gatewayTxId }, "[Webhook SePay] Transaction already processed");
-      return { success: true, message: "Transaction already processed" };
+    if (result.count !== 1) {
+      throw new HttpError(409, "Đơn hàng không ở trạng thái chờ thanh toán hoặc đã hết hạn", "ORDER_NOT_SUBMITTABLE");
     }
 
-    // 2. Tìm mã đơn hàng trong nội dung chuyển khoản (THIEP + 5-8 ký tự alphanumeric)
-    const match = content.match(/THIEP[A-Z0-9]{5,8}/i);
-    if (!match) {
-      logger.warn({ content }, "[Webhook SePay] No OrderCode found in content");
-      return { success: false, message: "OrderCode not found in transaction content" };
-    }
-
-    const orderCode = match[0].toUpperCase();
-
-    // 3. Tìm đơn hàng tương ứng trong Database
-    const order = await prisma.order.findUnique({
-      where: { orderCode },
-      include: { plan: true, card: true },
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { plan: true },
     });
 
-    if (!order) {
-      logger.warn({ orderCode }, "[Webhook SePay] Order not found in database");
-      return { success: true, ignored: true, message: "Order not found" };
-    }
-
-    const expectedAccount = process.env.BANK_ACCOUNT;
-    if (!expectedAccount) throw new HttpError(503, "BANK_ACCOUNT chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
-    if (accountNumber !== expectedAccount) {
-      return { success: true, ignored: true, message: "Unexpected receiving account" };
-    }
-    if (order.status !== "PENDING" || order.expiredAt <= new Date()) {
-      return { success: true, ignored: true, message: "Order is not payable" };
-    }
-
-    // 4. Kiểm tra số tiền chuyển khoản
-    if (transferAmount < order.amount) {
-      logger.warn({ expected: order.amount, received: transferAmount, orderCode }, "[Webhook SePay] Amount mismatch");
-      return { success: true, ignored: true, message: "Insufficient transfer amount" };
-    }
-
-    PublishCardDataSchema.parse(order.card.categoryData);
-
-    // 5. Thực hiện Transaction: Cập nhật Order -> Kích hoạt Card -> Ghi log PaymentTransaction
-    const transitioned = await prisma.$transaction(async (tx) => {
-      const transition = await tx.order.updateMany({
-        where: {
-          id: order.id,
-          accountId: order.accountId,
-          status: "PENDING",
-          expiredAt: { gt: new Date() },
-        },
-        data: { status: "PAID", paidAt: new Date() },
-      });
-      if (transition.count !== 1) return false;
-
-      // Ghi nhận PaymentTransaction
-      await tx.paymentTransaction.create({
-        data: {
-          accountId: order.accountId,
-          orderId: order.id,
-          gateway: "VIETQR_SEPAY",
-          gatewayTxId: String(gatewayTxId),
-          amount: transferAmount,
-          accountNumber,
-          transactionTime: new Date(transactionDate),
-          rawPayload: payload as unknown as Prisma.InputJsonValue,
-        },
-      });
-
-      // Kích hoạt / Gia hạn thời hạn gói cho Card (Cộng dồn nếu thiệp vẫn còn hạn)
-      const durationDays = order.plan.durationDays;
-      let expiredAt: Date | null = null;
-
-      if (durationDays) {
-        const now = new Date();
-        const currentExpiredAt = order.card.expiredAt;
-        const baseDate =
-          currentExpiredAt && currentExpiredAt > now ? currentExpiredAt : now;
-        expiredAt = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
-      }
-
-      await tx.card.update({
-        where: { id: order.cardId, accountId: order.accountId },
-        data: {
-          planId: order.planId,
-          status: "ACTIVE",
-          expiredAt,
-        },
-      });
-      return true;
-    });
-
-    if (!transitioned) {
-      return { success: true, ignored: true, message: "Order is not payable" };
-    }
-
-    logger.info({ cardId: order.cardId, orderCode }, "[Webhook SePay] Successfully activated VIP");
-    return { success: true, message: "Order activated successfully" };
+    return this.toSafeDTO(order);
   }
 
   /**
-   * Kiểm tra trạng thái đơn hàng (Polling từ Frontend)
+   * Get a single order for the authenticated account owner (safe DTO).
+   */
+  static async getAccountOrder(accountId: string, orderId: string): Promise<OrderSafeDTO | null> {
+    const order = await prisma.order.findFirst({
+      where: { id: orderId, accountId },
+      include: { plan: true },
+    });
+
+    if (!order) return null;
+
+    // Opportunistically expire
+    if (order.status === "PENDING" && order.expiredAt <= new Date()) {
+      await prisma.order.updateMany({
+        where: { id: order.id, accountId, status: "PENDING" },
+        data: { status: "EXPIRED" },
+      });
+      return { ...this.toSafeDTO(order), status: "EXPIRED" };
+    }
+
+    return this.toSafeDTO(order);
+  }
+
+  /**
+   * Legacy polling-based status check (kept for backward compatibility).
    */
   static async checkOrderStatus(orderCode: string, pollingToken: string) {
     const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
@@ -285,6 +284,7 @@ export class OrderService {
         status: true,
         paidAt: true,
         expiredAt: true,
+        submittedAt: true,
         card: {
           select: {
             slug: true,
@@ -295,7 +295,65 @@ export class OrderService {
     });
 
     if (!order || order.pollingTokenHash !== pollingTokenHash) return null;
-    const { pollingTokenHash: _pollingTokenHash, ...safeOrder } = order;
+    const { pollingTokenHash: _hash, ...safeOrder } = order;
     return safeOrder;
+  }
+
+  // ────────────────────────────────────────────────────────
+  // Helpers
+  // ────────────────────────────────────────────────────────
+
+  private static formatOrderResult(
+    order: Prisma.OrderGetPayload<{ include: { plan: true } }>,
+    replayed: boolean,
+  ) {
+    const bankCode = process.env.BANK_CODE;
+    const bankAccount = process.env.BANK_ACCOUNT;
+    const bankAccountName = process.env.BANK_ACCOUNT_NAME;
+
+    let qrUrl: string | null = null;
+    if (bankCode && bankAccount && bankAccountName) {
+      qrUrl = generateVietQrUrl({
+        bankCode,
+        accountNumber: bankAccount,
+        accountName: bankAccountName,
+        amount: order.amount,
+        description: order.orderCode,
+      });
+    }
+
+    return {
+      order: this.toSafeDTO(order),
+      paymentInfo: {
+        orderCode: order.orderCode,
+        amount: order.amount,
+        bankCode: bankCode ?? null,
+        bankAccount: bankAccount ?? null,
+        bankAccountName: bankAccountName ?? null,
+        qrUrl,
+        expiredAt: order.expiredAt,
+        pollingToken: null, // Not returned on replays
+      },
+      replayed,
+    };
+  }
+
+  private static toSafeDTO(
+    order: Prisma.OrderGetPayload<{ include: { plan: true } }>,
+  ): OrderSafeDTO {
+    return {
+      id: order.id,
+      orderCode: order.orderCode,
+      planCode: order.plan.code,
+      planName: order.plan.name,
+      amount: order.amount,
+      status: order.status,
+      paidAt: order.paidAt,
+      expiredAt: order.expiredAt,
+      submittedAt: order.submittedAt,
+      reviewedAt: order.reviewedAt,
+      reviewNote: order.reviewNote,
+      createdAt: order.createdAt,
+    };
   }
 }

@@ -59,13 +59,16 @@ export const WishSchema = z.object({
 });
 
 // -----------------------------------------------------------------------
-// ORDER SCHEMA
+// ORDER SCHEMA (re-exported from canonical source)
 // -----------------------------------------------------------------------
 
-export const CreateOrderSchema = z.object({
-  cardId: z.string().min(1, "cardId không được để trống"),
-  planId: z.string().min(1, "planId không được để trống"),
-});
+export {
+  CreateOrderSchema,
+  ApproveOrderSchema,
+  RejectOrderSchema,
+  AdminListQuerySchema,
+  SubmitTransferParamsSchema,
+} from "../lib/validators/order.schema";
 
 // -----------------------------------------------------------------------
 // CONCIERGE SCHEMA
@@ -88,5 +91,13 @@ export type RegisterWithOtpInput = z.infer<typeof RegisterWithOtpSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type RsvpInput = z.infer<typeof RsvpSchema>;
 export type WishInput = z.infer<typeof WishSchema>;
-export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
 export type ConciergeInput = z.infer<typeof ConciergeSchema>;
+
+export type {
+  CreateOrderInput,
+  ApproveOrderInput,
+  RejectOrderInput,
+  AdminListQuery,
+  SubmitTransferParams,
+} from "../lib/validators/order.schema";
+

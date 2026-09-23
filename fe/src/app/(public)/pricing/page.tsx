@@ -28,14 +28,19 @@ export default function PricingPage() {
   const router = useRouter();
 
   const handleAction = (plan: "free" | "basic" | "vip") => {
-    if (!user) {
-      openAuthModal("login");
-      return;
-    }
     if (plan === "free") {
+      if (!user) {
+        openAuthModal("login");
+        return;
+      }
       router.push("/dashboard/cards/new");
     } else {
-      router.push("/dashboard/billing");
+      const planCode = plan.toUpperCase();
+      if (!user) {
+        openAuthModal("login");
+        return;
+      }
+      router.push(`/dashboard/billing?plan=${planCode}`);
     }
   };
 
@@ -320,7 +325,7 @@ export default function PricingPage() {
           </motion.div>
 
           {/* ========================================================= */}
-          {/* TIER 3: VIP HOÀNG GIA (249.000đ) - HIGHLIGHTED */}
+          {/* TIER 3: VIP HOÀNG GIA (399.000đ) - HIGHLIGHTED */}
           {/* ========================================================= */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -350,7 +355,7 @@ export default function PricingPage() {
               {/* Price */}
               <div className="my-3 text-center">
                 <span className="text-3xl sm:text-4xl font-serif font-bold text-[#B68837]">
-                  {t("planVipPrice") || "249.000đ"}
+                  {t("planVipPrice") || "399.000đ"}
                 </span>
               </div>
 

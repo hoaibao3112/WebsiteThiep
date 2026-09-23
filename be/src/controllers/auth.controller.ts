@@ -197,13 +197,14 @@ export class AuthController {
   static async getMe(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.userId;
-      if (!userId) {
+      const accountId = req.user?.accountId;
+      if (!userId || !accountId) {
         const error: any = new Error("Chưa đăng nhập");
         error.status = 401;
         throw error;
       }
 
-      const user = await AuthService.getMe(userId);
+      const user = await AuthService.getMe(userId, accountId);
       let csrfToken = req.cookies?.csrf_token;
       if (!csrfToken) {
         csrfToken = crypto.randomBytes(32).toString("base64url");

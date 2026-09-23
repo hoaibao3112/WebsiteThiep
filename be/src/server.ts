@@ -31,7 +31,6 @@ app.use(
 );
 app.use(cookieParser());
 
-
 const defaultOrigins = "https://website-thiep.vercel.app,http://localhost:3000,http://127.0.0.1:3000";
 const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || defaultOrigins);
 
@@ -60,7 +59,6 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
-  skip: (req) => (req.originalUrl || req.path).startsWith("/api/webhooks"), // Bỏ qua webhook SePay
 });
 
 // Auth routes: 15 requests / 15 phút / IP (chống brute-force)

@@ -29,6 +29,13 @@ model Account {
   name                String
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+
+  // Account-level entitlement (source of truth)
+  currentPlanId       String?
+  currentPlan         Plan?                @relation("AccountCurrentPlan", fields: [currentPlanId], references: [id], onDelete: Restrict)
+  planStartedAt       DateTime?
+  planExpiresAt       DateTime?
+
   members             AccountMember[]
   cards               Card[]
   cardEvents          CardEvent[]
@@ -39,6 +46,8 @@ model Account {
   orders              Order[]
   paymentTransactions PaymentTransaction[]
 
+  @@index([currentPlanId])
+  @@index([planExpiresAt])
   @@map("accounts")
 }
 
@@ -71,7 +80,8 @@ model User {
   updatedAt     DateTime @updatedAt
 
   cards          Card[]
-  orders         Order[]
+  purchasedOrders Order[]  @relation("OrderPurchaser")
+  reviewedOrders  Order[]  @relation("OrderReviewer")
   accountMembers AccountMember[]
 
   @@map("users")
@@ -104,8 +114,9 @@ model Plan {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  cards  Card[]
-  orders Order[]
+  cards           Card[]
+  orders          Order[]
+  currentAccounts Account[] @relation("AccountCurrentPlan")
 
   @@map("plans")
 }
@@ -389,7 +400,9 @@ model Wish {
 // ---------------------------------------------------------
 enum OrderStatus {
   PENDING
+  AWAITING_REVIEW
   PAID
+  REJECTED
   CANCELLED
   EXPIRED
 }
@@ -404,21 +417,28 @@ model Order {
   id               String  @id @default(cuid())
   accountId        String
   account          Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  orderCode        String  @unique // Mã đơn: "WD10982" (nội dung chuyển khoản)
+  orderCode        String  @unique // Mã đơn: "THIEP..." (nội dung chuyển khoản)
   idempotencyKey   String
   pollingTokenHash String
   userId           String
-  user             User    @relation(fields: [userId], references: [id])
-  cardId           String
-  card             Card    @relation(fields: [cardId], references: [id])
+  user             User    @relation("OrderPurchaser", fields: [userId], references: [id])
+  cardId           String? // Nullable: legacy orders targeted a Card; account-level orders do not
+  card             Card?   @relation(fields: [cardId], references: [id])
   planId           String
   plan             Plan    @relation(fields: [planId], references: [id])
 
-  amount         Int // Số tiền phải thanh toán VND
+  amount         Int // Số tiền phải thanh toán VND (backend-authoritative)
   status         OrderStatus    @default(PENDING)
-  paymentGateway PaymentGateway @default(VIETQR_SEPAY)
+  paymentGateway PaymentGateway @default(MANUAL)
   paidAt         DateTime?
-  expiredAt      DateTime // Hạn thanh toán (thường sau 30 phút tạo đơn)
+  expiredAt      DateTime // Hạn thanh toán (48 giờ cho manual transfer)
+
+  // Manual review audit fields
+  submittedAt    DateTime? // Thời điểm OWNER xác nhận đã chuyển khoản
+  reviewedAt     DateTime? // Thời điểm ADMIN duyệt/từ chối
+  reviewedById   String?   // ADMIN user ID đã duyệt
+  reviewedBy     User?     @relation("OrderReviewer", fields: [reviewedById], references: [id])
+  reviewNote     String?   // Ghi chú của ADMIN (lý do từ chối hoặc ghi chú duyệt)
 
   transactions PaymentTransaction[]
 
@@ -429,7 +449,7 @@ model Order {
   @@index([orderCode])
   @@index([userId])
   @@index([accountId, status])
-  @@index([status])
+  @@index([status, submittedAt])
   @@map("orders")
 }
 

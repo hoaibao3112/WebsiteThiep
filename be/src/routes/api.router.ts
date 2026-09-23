@@ -5,11 +5,13 @@ import { CardController } from "../controllers/card.controller";
 import { RsvpController } from "../controllers/rsvp.controller";
 import { WishController } from "../controllers/wish.controller";
 import { OrderController } from "../controllers/order.controller";
+import { BillingController } from "../controllers/billing.controller";
+import { AdminPaymentController } from "../controllers/admin-payment.controller";
 import { GuestController } from "../controllers/guest.controller";
 import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
-import { authGuard } from "../middlewares/auth.middleware";
+import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
 import {
@@ -83,7 +85,18 @@ apiRouter.post("/cards/:cardId/guests/:guestId/regenerate-token", authGuard, Gue
 apiRouter.put("/cards/:cardId/guests/:guestId", authGuard, GuestController.update);
 apiRouter.delete("/cards/:cardId/guests/:guestId", authGuard, GuestController.remove);
 
-// --- ORDER & PAYMENT ROUTES ---
-apiRouter.post("/orders", authGuard, validate(CreateOrderSchema), OrderController.create);
-apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus);
-apiRouter.post("/webhooks/sepay", OrderController.handleSepayWebhook);
+// --- BILLING & PLAN CATALOG ---
+apiRouter.get("/plans", BillingController.getPlans); // Public: active Plan catalog
+apiRouter.get("/billing/summary", authGuard, BillingController.getSummary); // Authenticated: billing summary
+
+// --- ORDER & PAYMENT ROUTES (OWNER) ---
+apiRouter.post("/orders", authGuard, ownerGuard, validate(CreateOrderSchema), OrderController.create);
+apiRouter.post("/orders/:orderId/submit-transfer", authGuard, ownerGuard, OrderController.submitTransfer);
+apiRouter.get("/orders/:orderId", authGuard, OrderController.getOrder);
+apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus); // Legacy polling
+
+// --- ADMIN: PAYMENT REVIEW ---
+apiRouter.get("/admin/payment-orders", adminGuard, AdminPaymentController.listQueue);
+apiRouter.get("/admin/payment-orders/:orderId", adminGuard, AdminPaymentController.getDetail);
+apiRouter.post("/admin/payment-orders/:orderId/approve", adminGuard, AdminPaymentController.approve);
+apiRouter.post("/admin/payment-orders/:orderId/reject", adminGuard, AdminPaymentController.reject);

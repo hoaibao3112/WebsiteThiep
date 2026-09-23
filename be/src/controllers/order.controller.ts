@@ -1,12 +1,14 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { OrderService } from "../services/order.service";
-import { CreateOrderSchema, SepayWebhookPayloadSchema } from "../lib/validators/order.schema";
+import { CreateOrderSchema, SubmitTransferParamsSchema } from "../lib/validators/order.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
-import crypto from "node:crypto";
-import { logger } from "../lib/logger";
+import { HttpError } from "../lib/http-error";
 
 export class OrderController {
+  /**
+   * POST /orders — Create an account-level order (OWNER only).
+   */
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.userId;
@@ -23,8 +25,9 @@ export class OrderController {
       if (!idempotencyKey || idempotencyKey.length < 16 || idempotencyKey.length > 128) {
         return res.status(400).json({ success: false, error: "Idempotency-Key không hợp lệ" });
       }
+
       const result = await OrderService.createOrder(userId, accountId, validated, idempotencyKey);
-      res.status(201).json({ success: true, data: result });
+      res.status(result.replayed ? 200 : 201).json({ success: true, data: result });
     } catch (error: unknown) {
       if (error instanceof ZodError) {
         return res.status(400).json({
@@ -37,7 +40,55 @@ export class OrderController {
     }
   }
 
-  static async checkStatus(req: Request, res: Response, next: NextFunction) {
+  /**
+   * POST /orders/:orderId/submit-transfer — Confirm bank transfer (OWNER only).
+   */
+  static async submitTransfer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const accountId = req.user?.accountId;
+      if (!accountId) {
+        return res.status(500).json({ success: false, error: "Thiếu thông tin xác thực" });
+      }
+
+      const { orderId } = SubmitTransferParamsSchema.parse(req.params);
+      const order = await OrderService.submitTransfer(accountId, orderId);
+      res.status(200).json({ success: true, data: order });
+    } catch (error: unknown) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
+        });
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * GET /orders/:orderId — Get order detail (authenticated OWNER).
+   */
+  static async getOrder(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const accountId = req.user?.accountId;
+      if (!accountId) {
+        return res.status(500).json({ success: false, error: "Thiếu thông tin xác thực" });
+      }
+
+      const orderId = req.params.orderId as string;
+      const order = await OrderService.getAccountOrder(accountId, orderId);
+      if (!order) {
+        return res.status(404).json({ success: false, error: "Đơn hàng không tồn tại" });
+      }
+      res.status(200).json({ success: true, data: order });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /orders/:orderCode/status — Legacy polling (backward compatibility).
+   */
+  static async checkStatus(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const orderCode = req.params.orderCode as string;
       const pollingToken = req.header("X-Polling-Token");
@@ -50,50 +101,6 @@ export class OrderController {
 
       res.status(200).json({ success: true, data: order });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
-      next(error);
-    }
-  }
-
-  static async handleSepayWebhook(req: Request, res: Response, next: NextFunction) {
-    try {
-      // 1. Xác thực Webhook SePay theo nguyên tắc Default Deny
-      const secret = process.env.SEPAY_WEBHOOK_SECRET;
-      if (!secret) {
-        return res.status(503).json({ success: false, error: "Webhook chưa được cấu hình" });
-      }
-      {
-        const authHeader = req.headers["authorization"];
-        const expected = `Apikey ${secret}`;
-        const received = typeof authHeader === "string" ? authHeader : "";
-        const valid = received.length === expected.length && crypto.timingSafeEqual(Buffer.from(received), Buffer.from(expected));
-        if (!valid) {
-          logger.warn({ ip: req.ip }, "[Webhook SePay] Invalid or missing authorization header");
-          return res.status(401).json({
-            success: false,
-            error: "Unauthorized: Invalid or missing API key",
-          });
-        }
-      }
-
-      const validated = SepayWebhookPayloadSchema.parse(req.body);
-      const result = await OrderService.processSepayWebhook(validated);
-
-      res.status(200).json(result);
-    } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
       next(error);
     }
   }

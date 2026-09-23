@@ -6,9 +6,21 @@ async function main() {
   console.log("🌱 Bắt đầu gieo mầm dữ liệu (Database Seeding)...");
 
   // 1. Tạo Gói Dịch Vụ (Plans)
+  // Authoritative Plan catalog — prices and capabilities are enforced on every seed run
   const freePlan = await prisma.plan.upsert({
     where: { code: "FREE" },
-    update: {},
+    update: {
+      name: "Gói Dùng Thử",
+      price: 0,
+      durationDays: 7,
+      maxPhotos: 5,
+      hasWatermark: true,
+      allowCustomDomain: false,
+      allowMusicUpload: false,
+      allowTelegramNoti: false,
+      allowPremiumTemplates: false,
+      sortOrder: 1,
+    },
     create: {
       code: "FREE",
       name: "Gói Dùng Thử",
@@ -33,7 +45,18 @@ async function main() {
 
   const basicPlan = await prisma.plan.upsert({
     where: { code: "BASIC" },
-    update: { allowPremiumTemplates: true },
+    update: {
+      name: "Gói Tiêu Chuẩn",
+      price: 199000,
+      durationDays: 180,
+      maxPhotos: 20,
+      hasWatermark: false,
+      allowCustomDomain: false,
+      allowMusicUpload: true,
+      allowTelegramNoti: false,
+      allowPremiumTemplates: true,
+      sortOrder: 2,
+    },
     create: {
       code: "BASIC",
       name: "Gói Tiêu Chuẩn",
@@ -59,7 +82,18 @@ async function main() {
 
   const vipPlan = await prisma.plan.upsert({
     where: { code: "VIP" },
-    update: { allowPremiumTemplates: true },
+    update: {
+      name: "Gói Cao Cấp (VIP)",
+      price: 399000,
+      durationDays: null,
+      maxPhotos: 50,
+      hasWatermark: false,
+      allowCustomDomain: true,
+      allowMusicUpload: true,
+      allowTelegramNoti: true,
+      allowPremiumTemplates: true,
+      sortOrder: 3,
+    },
     create: {
       code: "VIP",
       name: "Gói Cao Cấp (VIP)",

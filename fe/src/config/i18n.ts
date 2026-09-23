@@ -206,7 +206,7 @@ export const DICTIONARY = {
     btnSelectBasic: "CHỌN TIÊU CHUẨN",
 
     planVipTitle: "VIP HOÀNG GIA",
-    planVipPrice: "249.000đ",
+    planVipPrice: "399.000đ",
     planVipPopular: "★ PHỔ BIẾN NHẤT",
     planVipDesc: "Trải nghiệm sang trọng tuyệt đối, thiết kế tinh xảo không tì vết.",
     planVipFeat1: "Mọi tính năng của Tiêu Chuẩn",

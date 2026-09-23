@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { ApiClient, setApiClientTokens } from "@/lib/api";
+import { EffectivePlanSummary, AccountMemberRole } from "@/types/billing.types";
 
 export interface AuthUser {
   id: string;
@@ -14,6 +15,11 @@ export interface AuthUser {
   hasPassword: boolean;
   googleId?: string;
   telegramId?: string;
+  account?: {
+    id: string;
+    role: AccountMemberRole;
+    entitlement: EffectivePlanSummary;
+  };
 }
 
 interface AuthContextType {

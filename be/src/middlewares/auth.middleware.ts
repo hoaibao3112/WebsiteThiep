@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService, TokenPayload } from "../services/auth.service";
 import { prisma } from "../lib/prisma";
+import { AccountMemberRole } from "@prisma/client";
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;
   userId?: string;
+  accountMemberRole?: AccountMemberRole;
 }
 
 export async function authGuard(
@@ -32,13 +34,14 @@ export async function authGuard(
     const decoded = AuthService.verifyToken(token);
     const membership = await prisma.accountMember.findUnique({
       where: { accountId_userId: { accountId: decoded.accountId, userId: decoded.userId } },
-      select: { id: true },
+      select: { id: true, role: true },
     });
     if (!membership) {
       return res.status(401).json({ success: false, error: "Phiên đăng nhập không còn quyền truy cập tài khoản" });
     }
     req.user = decoded;
     req.userId = decoded.userId;
+    req.accountMemberRole = membership.role;
 
     next();
   } catch (error) {
@@ -68,11 +71,12 @@ export async function optionalAuthGuard(
       const decoded = AuthService.verifyToken(token);
       const membership = await prisma.accountMember.findUnique({
         where: { accountId_userId: { accountId: decoded.accountId, userId: decoded.userId } },
-        select: { id: true },
+        select: { id: true, role: true },
       });
       if (membership) {
         req.user = decoded;
         req.userId = decoded.userId;
+        req.accountMemberRole = membership.role;
       }
     }
     next();
@@ -96,3 +100,23 @@ export function adminGuard(
     next();
   });
 }
+
+/**
+ * Post-auth guard: requires OWNER membership role.
+ * Must be used AFTER authGuard (which populates accountMemberRole).
+ */
+export function ownerGuard(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  if (req.accountMemberRole !== "OWNER") {
+    return res.status(403).json({
+      success: false,
+      error: "Chỉ chủ tài khoản (OWNER) mới có thể thực hiện thao tác này",
+      code: "OWNER_REQUIRED",
+    });
+  }
+  next();
+}
+

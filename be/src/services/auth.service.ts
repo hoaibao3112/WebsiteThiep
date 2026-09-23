@@ -310,27 +310,42 @@ export class AuthService {
   }
 
   /**
-   * Lấy thông tin user hiện tại (Me)
+   * Lấy thông tin user hiện tại (Me) + Account entitlement summary
    */
-  static async getMe(userId: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        avatar: true,
-        role: true,
-        googleId: true,
-        emailVerified: true,
-        password: true,
-        telegramId: true,
-        createdAt: true,
-      },
-    });
+  static async getMe(userId: string, accountId: string) {
+    const [user, membership] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          avatar: true,
+          role: true,
+          googleId: true,
+          emailVerified: true,
+          password: true,
+          telegramId: true,
+          createdAt: true,
+        },
+      }),
+      prisma.accountMember.findUnique({
+        where: { accountId_userId: { accountId, userId } },
+        select: { role: true },
+      }),
+    ]);
 
     if (!user) throw new Error("Người dùng không tồn tại");
+
+    // Import here to avoid circular dependency at module level
+    const { AccountEntitlementService } = await import("./account-entitlement.service");
+    let effectivePlan = null;
+    try {
+      effectivePlan = await AccountEntitlementService.getEffectivePlan(accountId);
+    } catch {
+      // If entitlement cannot be resolved (e.g. Account not found), return null
+    }
 
     return {
       id: user.id,
@@ -344,6 +359,9 @@ export class AuthService {
       hasPassword: !!user.password,
       telegramId: user.telegramId,
       createdAt: user.createdAt,
+      accountId,
+      accountMemberRole: membership?.role ?? null,
+      effectivePlan,
     };
   }
 

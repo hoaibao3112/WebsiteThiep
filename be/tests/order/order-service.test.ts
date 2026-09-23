@@ -1,127 +1,123 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const prismaMock = vi.hoisted(() => ({
-  card: { findFirst: vi.fn(), update: vi.fn() },
+  accountMember: { findUnique: vi.fn() },
+  account: { findUnique: vi.fn(), updateMany: vi.fn() },
   plan: { findFirst: vi.fn() },
-  order: { findUnique: vi.fn(), create: vi.fn() },
+  order: {
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    updateMany: vi.fn(),
+  },
 }));
 
 vi.mock("../../src/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("../../src/lib/vietqr", () => ({ generateVietQrUrl: () => "https://qr.test" }));
+vi.mock("../../src/services/account-entitlement.service", () => ({
+  AccountEntitlementService: {
+    getEffectivePlan: vi.fn(),
+  },
+}));
 
 import { OrderService } from "../../src/services/order.service";
+import { AccountEntitlementService } from "../../src/services/account-entitlement.service";
 import { Prisma } from "@prisma/client";
 
-describe("OrderService.createOrder authorization", () => {
+describe("OrderService.createOrder authorization & validation", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    prismaMock.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1" });
+    process.env.BANK_CODE = "970407";
+    process.env.BANK_ACCOUNT = "123456789";
+    process.env.BANK_ACCOUNT_NAME = "TEST MERCHANT";
+
+    prismaMock.accountMember.findUnique.mockResolvedValue({
+      role: "OWNER",
+    });
+
+    vi.mocked(AccountEntitlementService.getEffectivePlan).mockResolvedValue({
+      planCode: "FREE",
+      planName: "Gói Dùng Thử",
+      isPaid: false,
+      isExpired: false,
+      daysRemaining: null,
+      planExpiresAt: null,
+      capabilities: {
+        maxPhotos: 5,
+        hasWatermark: true,
+        allowCustomDomain: false,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
+
     prismaMock.plan.findFirst.mockResolvedValue({
-      id: "vip-plan",
+      id: "vip-plan-id",
       code: "VIP",
+      name: "Gói Cao Cấp",
       price: 399000,
+      durationDays: null,
       isActive: true,
     });
+
     prismaMock.order.findUnique.mockResolvedValue(null);
-    prismaMock.order.create.mockResolvedValue({ id: "order-1", orderCode: "THIEPABC123" });
-  });
-
-  it("authorizes the card by accountId and selects only an active plan", async () => {
-    await OrderService.createOrder(
-      "user-1",
-      "account-1",
-      { cardId: "card-1", planId: "vip-plan" },
-      "0123456789abcdef",
-    );
-
-    expect(prismaMock.card.findFirst).toHaveBeenCalledWith({
-      where: { id: "card-1", accountId: "account-1" },
-    });
-    expect(prismaMock.plan.findFirst).toHaveBeenCalledWith({
-      where: { id: "vip-plan", isActive: true },
+    prismaMock.order.findFirst.mockResolvedValue(null);
+    prismaMock.order.create.mockResolvedValue({
+      id: "order-1",
+      orderCode: "THIEP123456",
+      amount: 399000,
+      status: "PENDING",
+      expiredAt: new Date(Date.now() + 48 * 3600 * 1000),
+      plan: { code: "VIP", name: "Gói Cao Cấp" },
     });
   });
 
-  it("returns a typed not-found error for a card outside the account", async () => {
-    prismaMock.card.findFirst.mockResolvedValue(null);
+  it("verifies the user is OWNER of the account", async () => {
+    await OrderService.createOrder("user-1", "acc-1", { planCode: "VIP" }, "idem-key-1");
 
-    await expect(
-      OrderService.createOrder(
-        "user-1",
-        "account-1",
-        { cardId: "card-from-account-2", planId: "vip-plan" },
-        "0123456789abcdef",
-      ),
-    ).rejects.toMatchObject({ status: 404, code: "CARD_NOT_FOUND" });
+    expect(prismaMock.accountMember.findUnique).toHaveBeenCalledWith({
+      where: { accountId_userId: { accountId: "acc-1", userId: "user-1" } },
+      select: { role: true },
+    });
   });
 
-  it("returns a conflict when an idempotency key is reused for another request", async () => {
-    prismaMock.order.findUnique.mockResolvedValue({
-      id: "existing-order",
-      cardId: "different-card",
-      planId: "vip-plan",
-      plan: { id: "vip-plan" },
+  it("rejects non-OWNER members with 403 FORBIDDEN", async () => {
+    prismaMock.accountMember.findUnique.mockResolvedValue({
+      role: "MEMBER",
     });
 
     await expect(
-      OrderService.createOrder(
-        "user-1",
-        "account-1",
-        { cardId: "card-1", planId: "vip-plan" },
-        "0123456789abcdef",
-      ),
-    ).rejects.toMatchObject({ status: 409, code: "IDEMPOTENCY_CONFLICT" });
+      OrderService.createOrder("user-1", "acc-1", { planCode: "VIP" }, "idem-key-1"),
+    ).rejects.toMatchObject({ status: 403, code: "OWNER_REQUIRED" });
   });
 
-  it("replays an order when a concurrent request wins the idempotency race", async () => {
-    const existingOrder = {
-      id: "existing-order",
-      cardId: "card-1",
-      planId: "vip-plan",
-      plan: { id: "vip-plan" },
-    };
-    prismaMock.order.findUnique
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(existingOrder);
-    prismaMock.order.create.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("unique conflict", {
-        code: "P2002",
-        clientVersion: "5.22.0",
-        meta: { target: ["accountId", "idempotencyKey"] },
+  it("rejects ordering when account already has active VIP", async () => {
+    vi.mocked(AccountEntitlementService.getEffectivePlan).mockResolvedValue({
+      planCode: "VIP",
+      planName: "Gói Cao Cấp",
+      isPaid: true,
+      isExpired: false,
+      daysRemaining: null,
+      planExpiresAt: null,
+      capabilities: {} as any,
+    });
+
+    await expect(
+      OrderService.createOrder("user-1", "acc-1", { planCode: "VIP" }, "idem-key-1"),
+    ).rejects.toMatchObject({ status: 409, code: "ALREADY_VIP" });
+  });
+
+  it("uses backend-authoritative price from plan query", async () => {
+    await OrderService.createOrder("user-1", "acc-1", { planCode: "VIP" }, "idem-key-1");
+
+    expect(prismaMock.order.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          amount: 399000,
+          paymentGateway: "MANUAL",
+        }),
       }),
     );
-
-    const result = await OrderService.createOrder(
-      "user-1",
-      "account-1",
-      { cardId: "card-1", planId: "vip-plan" },
-      "0123456789abcdef",
-    );
-
-    expect(result).toEqual({ order: existingOrder, replayed: true });
-    expect(prismaMock.order.create).toHaveBeenCalledOnce();
-  });
-
-  it("returns a typed unavailable error after order-code retries are exhausted", async () => {
-    prismaMock.order.create.mockRejectedValue(
-      new Prisma.PrismaClientKnownRequestError("unique conflict", {
-        code: "P2002",
-        clientVersion: "5.22.0",
-        meta: { target: ["orderCode"] },
-      }),
-    );
-
-    await expect(
-      OrderService.createOrder(
-        "user-1",
-        "account-1",
-        { cardId: "card-1", planId: "vip-plan" },
-        "0123456789abcdef",
-      ),
-    ).rejects.toMatchObject({
-      status: 503,
-      code: "ORDER_CREATE_RETRY_EXHAUSTED",
-    });
-    expect(prismaMock.order.create).toHaveBeenCalledTimes(3);
   });
 });
