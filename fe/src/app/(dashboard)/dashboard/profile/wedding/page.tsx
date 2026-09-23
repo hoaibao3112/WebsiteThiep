@@ -2,35 +2,101 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Sparkles, Check, Loader2, Heart, Calendar, MapPin, Users, QrCode } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Save, Sparkles, Check, Loader2, Heart, Plus } from "lucide-react";
 import { ApiClient } from "@/lib/api";
+import { CardDetail, EventItem, PhotoItem } from "@/types/card.types";
+import { WeddingView } from "@/components/wedding/WeddingView";
+import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
+import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import confetti from "canvas-confetti";
 
 export default function WeddingProfilePage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [creatingCard, setCreatingCard] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showQuickFill, setShowQuickFill] = useState(false);
 
-  // Profile fields
+  // ── 23 SECTIONS STATE ──
+  const [templateSlug, setTemplateSlug] = useState("wedding-heritage-crimson-gold");
+  const [primaryColor, setPrimaryColor] = useState("#8B1E2D");
+  const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX" | "NONE">("WAX_SEAL");
+
   const [groomName, setGroomName] = useState("");
+  const [groomShort, setGroomShort] = useState("");
+  const [groomBirthOrder, setGroomBirthOrder] = useState("");
   const [groomFather, setGroomFather] = useState("");
   const [groomMother, setGroomMother] = useState("");
   const [groomPhone, setGroomPhone] = useState("");
   const [groomAddress, setGroomAddress] = useState("");
 
   const [brideName, setBrideName] = useState("");
+  const [brideShort, setBrideShort] = useState("");
+  const [brideBirthOrder, setBrideBirthOrder] = useState("");
   const [brideFather, setBrideFather] = useState("");
   const [brideMother, setBrideMother] = useState("");
   const [bridePhone, setBridePhone] = useState("");
   const [brideAddress, setBrideAddress] = useState("");
 
-  const [eventDate, setEventDate] = useState("");
-  const [eventHour, setEventHour] = useState("10 AM");
-  const [eventMinute, setEventMinute] = useState("30");
-  const [address, setAddress] = useState("");
+  const [isReverseOrder, setIsReverseOrder] = useState(false);
 
-  const [bankGroom, setBankGroom] = useState({ bankCode: "MB", accountNumber: "", accountName: "" });
-  const [bankBride, setBankBride] = useState({ bankCode: "VCB", accountNumber: "", accountName: "" });
+  const [greetingMessage, setGreetingMessage] = useState(
+    "Tình yêu không phải là nhìn nhau, mà là cùng nhìn về một hướng. Trân trọng kính mời bạn đến chung vui cùng chúng tôi."
+  );
 
+  const [loveStory, setLoveStory] = useState<{ title: string; date: string; description?: string; imageUrl?: string }[]>([
+    {
+      title: "Lần Đầu Gặp Gỡ",
+      date: "14/02/2022",
+      description: "Một chiều mưa cà phê tại góc phố quen, ánh mắt chạm nhau mở đầu cho bản tình ca.",
+      imageUrl: "/images/demo/couple-cover.png",
+    },
+    {
+      title: "Lời Hẹn Ước Trăm Năm",
+      date: "24/12/2024",
+      description: "Chuyến đi Đà Lạt mộng mơ và chiếc nhẫn cầu hôn đong đầy lời hứa trăm năm.",
+      imageUrl: "/images/demo/couple-studio.png",
+    },
+  ]);
+
+  const [events, setEvents] = useState<EventItem[]>([
+    {
+      id: "ev-vuquy",
+      eventName: "LỄ VU QUY (NHÀ GÁI)",
+      eventDate: "2026-11-20T09:00",
+      venueName: "Tư gia nhà gái",
+      address: "123 Đường Hoa Hồng, Phường Bến Nghé, Quận 1, TP. HCM",
+    },
+    {
+      id: "ev-thanhhon",
+      eventName: "TIỆC CƯỚI CHÍNH THỨC",
+      eventDate: "2026-11-20T18:00",
+      venueName: "Trung tâm tiệc cưới White Palace",
+      address: "194 Hoàng Văn Thụ, Phường 9, Phú Nhuận, TP. HCM",
+    },
+  ]);
+
+  const [photos, setPhotos] = useState<PhotoItem[]>([
+    { id: "ph-1", url: "/images/demo/couple-cover.png", caption: "Khoảnh khắc hạnh phúc", isCover: true },
+    { id: "ph-2", url: "/images/demo/couple-studio.png", caption: "Bên nhau trọn đời" },
+    { id: "ph-3", url: "/images/demo/couple-aodai.png", caption: "Lễ thành hôn truyền thống" },
+  ]);
+
+  const [bankCodeGroom, setBankCodeGroom] = useState("MB");
+  const [accNumGroom, setAccNumGroom] = useState("");
+  const [accNameGroom, setAccNameGroom] = useState("");
+
+  const [bankCodeBride, setBankCodeBride] = useState("VCB");
+  const [accNumBride, setAccNumBride] = useState("");
+  const [accNameBride, setAccNameBride] = useState("");
+
+  const [selectedMusicSrc, setSelectedMusicSrc] = useState("/music/le-duong.mp3");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [isRsvpEnabled, setIsRsvpEnabled] = useState(true);
+
+  // ── LOAD USER WEDDING PROFILE FROM DATABASE ──
   useEffect(() => {
     let isMounted = true;
     ApiClient.request<any>("/user/wedding-profile")
@@ -38,22 +104,54 @@ export default function WeddingProfilePage() {
         if (!isMounted) return;
         if (res.success && res.data) {
           const d = res.data;
-          setGroomName(d.groomName || "");
-          setGroomFather(d.groomFather || "");
-          setGroomMother(d.groomMother || "");
-          setGroomPhone(d.groomPhone || "");
-          setGroomAddress(d.groomAddress || "");
-          setBrideName(d.brideName || "");
-          setBrideFather(d.brideFather || "");
-          setBrideMother(d.brideMother || "");
-          setBridePhone(d.bridePhone || "");
-          setBrideAddress(d.brideAddress || "");
-          setEventDate(d.eventDate || "");
-          setEventHour(d.eventHour || "10 AM");
-          setEventMinute(d.eventMinute || "30");
-          setAddress(d.address || "");
-          if (d.bankGroom) setBankGroom(d.bankGroom);
-          if (d.bankBride) setBankBride(d.bankBride);
+          if (d.templateSlug) setTemplateSlug(d.templateSlug);
+          if (d.primaryColor) setPrimaryColor(d.primaryColor);
+          if (d.openingEffect) setOpeningEffect(d.openingEffect);
+
+          if (d.groomName) setGroomName(d.groomName);
+          if (d.groomShort) setGroomShort(d.groomShort);
+          if (d.groomBirthOrder) setGroomBirthOrder(d.groomBirthOrder);
+          if (d.groomFather) setGroomFather(d.groomFather);
+          if (d.groomMother) setGroomMother(d.groomMother);
+          if (d.groomPhone) setGroomPhone(d.groomPhone);
+          if (d.groomAddress) setGroomAddress(d.groomAddress);
+
+          if (d.brideName) setBrideName(d.brideName);
+          if (d.brideShort) setBrideShort(d.brideShort);
+          if (d.brideBirthOrder) setBrideBirthOrder(d.brideBirthOrder);
+          if (d.brideFather) setBrideFather(d.brideFather);
+          if (d.brideMother) setBrideMother(d.brideMother);
+          if (d.bridePhone) setBridePhone(d.bridePhone);
+          if (d.brideAddress) setBrideAddress(d.brideAddress);
+
+          if (d.isReverseOrder !== undefined) setIsReverseOrder(d.isReverseOrder);
+          if (d.greetingMessage) setGreetingMessage(d.greetingMessage);
+          if (d.loveStory && Array.isArray(d.loveStory) && d.loveStory.length > 0) setLoveStory(d.loveStory);
+          if (d.events && Array.isArray(d.events) && d.events.length > 0) setEvents(d.events);
+          if (d.photos && Array.isArray(d.photos) && d.photos.length > 0) setPhotos(d.photos);
+
+          if (d.bankCodeGroom) setBankCodeGroom(d.bankCodeGroom);
+          if (d.accNumGroom) setAccNumGroom(d.accNumGroom);
+          if (d.accNameGroom) setAccNameGroom(d.accNameGroom);
+
+          if (d.bankCodeBride) setBankCodeBride(d.bankCodeBride);
+          if (d.accNumBride) setAccNumBride(d.accNumBride);
+          if (d.accNameBride) setAccNameBride(d.accNameBride);
+
+          if (d.bankGroom) {
+            setBankCodeGroom(d.bankGroom.bankCode || "MB");
+            setAccNumGroom(d.bankGroom.accountNumber || "");
+            setAccNameGroom(d.bankGroom.accountName || "");
+          }
+          if (d.bankBride) {
+            setBankCodeBride(d.bankBride.bankCode || "VCB");
+            setAccNumBride(d.bankBride.accountNumber || "");
+            setAccNameBride(d.bankBride.accountName || "");
+          }
+
+          if (d.selectedMusicSrc) setSelectedMusicSrc(d.selectedMusicSrc);
+          if (d.videoUrl) setVideoUrl(d.videoUrl);
+          if (d.isRsvpEnabled !== undefined) setIsRsvpEnabled(d.isRsvpEnabled);
         }
       })
       .finally(() => {
@@ -65,29 +163,131 @@ export default function WeddingProfilePage() {
     };
   }, []);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // ── QUICK FILL HANDLER ──
+  const handleApplyQuickFill = (data: QuickFillData) => {
+    if (data.groomName) setGroomName(data.groomName);
+    if (data.groomFather) setGroomFather(data.groomFather);
+    if (data.groomMother) setGroomMother(data.groomMother);
+    if (data.brideName) setBrideName(data.brideName);
+    if (data.brideFather) setBrideFather(data.brideFather);
+    if (data.brideMother) setBrideMother(data.brideMother);
+
+    if (data.eventDate) {
+      const hour = parseInt(data.eventHour || "10", 10);
+      const minute = parseInt(data.eventMinute || "0", 10);
+      const dateStr = `${data.eventDate}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      setEvents((prev) => {
+        if (prev.length > 0) {
+          return [{ ...prev[0], eventDate: dateStr, address: data.address || prev[0].address }, ...prev.slice(1)];
+        }
+        return [
+          {
+            id: "ev-main",
+            eventName: "LỄ THÀNH HÔN",
+            eventDate: dateStr,
+            venueName: "Trung tâm tiệc cưới",
+            address: data.address || "Tư gia",
+          },
+        ];
+      });
+    }
+
+    if (data.photos && data.photos.length > 0) {
+      setPhotos(
+        data.photos.map((p, idx) => ({
+          id: p.id || `ph-${idx}`,
+          url: p.url,
+          caption: p.caption,
+          isCover: idx === 0,
+        }))
+      );
+    }
+    setShowQuickFill(false);
+  };
+
+  // ── LIVE PREVIEW DATA ──
+  const previewCard: CardDetail = {
+    id: "profile-preview",
+    slug: "ho-so-cuoi-preview",
+    cardCategory: "WEDDING",
+    status: "ACTIVE",
+    openingEffect,
+    fallingEffect: "PETAL",
+    primaryColor,
+    fontFamily: "Playfair Display",
+    musicUrl: selectedMusicSrc,
+    greetingMessage,
+    isAutoPlay: true,
+    bankingPrimary: { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom },
+    bankingSecondary: { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride },
+    events: events.map((e) => ({
+      ...e,
+      eventDate: new Date(e.eventDate),
+    })),
+    photos,
+    categoryData: {
+      cardCategory: "WEDDING",
+      coverPhotoUrl: photos.find((p) => p.isCover)?.url || photos[0]?.url || "/images/demo/couple-cover.png",
+      groom: {
+        fullName: groomName || "Chú Rể",
+        shortName: groomShort,
+        birthOrder: groomBirthOrder,
+        parents: { fatherName: groomFather, motherName: groomMother },
+      },
+      bride: {
+        fullName: brideName || "Cô Dâu",
+        shortName: brideShort,
+        birthOrder: brideBirthOrder,
+        parents: { fatherName: brideFather, motherName: brideMother },
+      },
+      loveStory,
+      events: [],
+    },
+  };
+
+  // ── SAVE FULL 23 SECTIONS TO PROFILE ──
+  const handleSaveProfile = async () => {
     setSaving(true);
     setSuccess(false);
 
     try {
       const payload = {
+        templateSlug,
+        primaryColor,
+        openingEffect,
         groomName,
+        groomShort,
+        groomBirthOrder,
         groomFather,
         groomMother,
         groomPhone,
         groomAddress,
         brideName,
+        brideShort,
+        brideBirthOrder,
         brideFather,
         brideMother,
         bridePhone,
         brideAddress,
-        eventDate,
-        eventHour,
-        eventMinute,
-        address,
-        bankGroom,
-        bankBride,
+        isReverseOrder,
+        greetingMessage,
+        loveStory,
+        events,
+        photos,
+        bankCodeGroom,
+        accNumGroom,
+        accNameGroom,
+        bankCodeBride,
+        accNumBride,
+        accNameBride,
+        selectedMusicSrc,
+        videoUrl,
+        isRsvpEnabled,
+        // Legacy compatibility
+        eventDate: events[0]?.eventDate ? new Date(events[0].eventDate).toISOString().slice(0, 10) : "",
+        address: events[0]?.address || "",
+        bankGroom: { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom },
+        bankBride: { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride },
       };
 
       const res = await ApiClient.request("/user/wedding-profile", {
@@ -97,12 +297,84 @@ export default function WeddingProfilePage() {
 
       if (res.success) {
         setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.2 } });
+        setTimeout(() => setSuccess(false), 3500);
       }
     } catch (err) {
       console.error(err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ── CREATE NEW CARD FROM PROFILE ──
+  const handleCreateCardFromProfile = async () => {
+    setCreatingCard(true);
+    try {
+      // First save current profile
+      await handleSaveProfile();
+
+      const newSlug = `thiep-${Math.floor(100000 + Math.random() * 900000)}`;
+      const payload = {
+        slug: newSlug,
+        cardCategory: "WEDDING",
+        templateSlug,
+        primaryColor,
+        fontFamily: "Playfair Display",
+        openingEffect,
+        fallingEffect: "PETAL",
+        musicUrl: selectedMusicSrc,
+        isAutoPlay: true,
+        greetingMessage,
+        bankingPrimary: accNumGroom ? { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom } : undefined,
+        bankingSecondary: accNumBride ? { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride } : undefined,
+        events: events.map((e) => ({
+          eventName: e.eventName,
+          eventDate: new Date(e.eventDate).toISOString(),
+          venueName: e.venueName,
+          address: e.address,
+        })),
+        photos,
+        categoryData: {
+          cardCategory: "WEDDING",
+          coverPhotoUrl: photos[0]?.url || "/images/demo/couple-cover.png",
+          groom: {
+            fullName: groomName || "Chú Rể",
+            shortName: groomShort,
+            birthOrder: groomBirthOrder,
+            phone: groomPhone,
+            address: groomAddress,
+            parents: { fatherName: groomFather, motherName: groomMother },
+          },
+          bride: {
+            fullName: brideName || "Cô Dâu",
+            shortName: brideShort,
+            birthOrder: brideBirthOrder,
+            phone: bridePhone,
+            address: brideAddress,
+            parents: { fatherName: brideFather, motherName: brideMother },
+          },
+          loveStory,
+          events: [],
+          videoUrl,
+          isReverseOrder,
+        },
+      };
+
+      const res = await ApiClient.request<{ id: string; slug: string }>("/cards", {
+        method: "POST",
+        headers: { "Idempotency-Key": crypto.randomUUID() },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.success && res.data) {
+        await ApiClient.request(`/cards/${res.data.id}/publish`, { method: "PATCH" });
+        router.push(`/dashboard/cards/${res.data.id}/edit`);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCreatingCard(false);
     }
   };
 
@@ -115,322 +387,181 @@ export default function WeddingProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-8 px-4 sm:px-6 lg:px-8 font-sans text-stone-900">
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Top Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[#ECEEF1] font-sans text-stone-900 flex flex-col">
+      {/* ── HEADER BAR ── */}
+      <header className="bg-white/95 border-b border-stone-200 sticky top-0 z-40 backdrop-blur-md shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/cards"
-              className="w-9 h-9 rounded-full bg-white border border-stone-200 flex items-center justify-center text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition shadow-2xs"
+              className="w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-700 transition"
+              title="Quay lại danh sách thiệp"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold font-serif text-stone-900 flex items-center gap-2">
-                <span>Hồ Sơ Cưới Của Tôi</span>
-                <Sparkles className="w-5 h-5 text-[#BE944E]" />
+              <h1 className="text-sm sm:text-base font-bold font-serif text-stone-900 flex items-center gap-1.5">
+                <span>Hồ Sơ Cưới Của Tôi (23 Mục Đầy Đủ)</span>
+                <Sparkles className="w-4 h-4 text-amber-600" />
               </h1>
-              <p className="text-xs text-stone-500">
-                Lưu thông tin 1 lần để hệ thống tự động điền sẵn mỗi khi bạn tạo thiệp mới.
+              <p className="text-[11px] text-stone-500 hidden sm:block">
+                Lưu 1 lần vào tài khoản — Tự động điền đầy đủ mọi mục khi tạo thiệp cưới.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#BE944E] to-[#966E29] hover:opacity-95 text-white text-xs font-bold shadow-md flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>{saving ? "Đang lưu..." : "Lưu Hồ Sơ"}</span>
-          </button>
-        </div>
-
-        {/* Success Alert */}
-        {success && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-            <Check className="w-4 h-4 text-emerald-600" />
-            <span>Đã lưu thông tin hồ sơ cưới thành công! Các thiệp mới tạo sẽ tự động được điền sẵn.</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSave} className="space-y-6">
-          {/* 1. THÔNG TIN CHÚ RỂ */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EAE2D6] shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-stone-100">
-              <Heart className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-bold text-stone-800 uppercase tracking-wider">Nhà Trai (Chú Rể)</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Tên chú rể</label>
-                <input
-                  type="text"
-                  placeholder="VD: Trần Minh Quân"
-                  value={groomName}
-                  onChange={(e) => setGroomName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Số điện thoại chú rể</label>
-                <input
-                  type="text"
-                  placeholder="VD: 0988 888 888"
-                  value={groomPhone}
-                  onChange={(e) => setGroomPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-stone-600 block mb-1">Bố chú rể</label>
-                <input
-                  type="text"
-                  placeholder="Họ tên bố"
-                  value={groomFather}
-                  onChange={(e) => setGroomFather(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-stone-600 block mb-1">Mẹ chú rể</label>
-                <input
-                  type="text"
-                  placeholder="Họ tên mẹ"
-                  value={groomMother}
-                  onChange={(e) => setGroomMother(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="font-semibold text-stone-600 block mb-1">Địa chỉ nhà trai</label>
-                <input
-                  type="text"
-                  placeholder="VD: 45 Đường ABC, Phường 1, TP. Đà Lạt"
-                  value={groomAddress}
-                  onChange={(e) => setGroomAddress(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 2. THÔNG TIN CÔ DÂU */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EAE2D6] shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-stone-100">
-              <Heart className="w-4 h-4 text-rose-600" />
-              <h2 className="text-sm font-bold text-stone-800 uppercase tracking-wider">Nhà Gái (Cô Dâu)</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Tên cô dâu</label>
-                <input
-                  type="text"
-                  placeholder="VD: Nguyễn Thu Hà"
-                  value={brideName}
-                  onChange={(e) => setBrideName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Số điện thoại cô dâu</label>
-                <input
-                  type="text"
-                  placeholder="VD: 0977 777 777"
-                  value={bridePhone}
-                  onChange={(e) => setBridePhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-stone-600 block mb-1">Bố cô dâu</label>
-                <input
-                  type="text"
-                  placeholder="Họ tên bố"
-                  value={brideFather}
-                  onChange={(e) => setBrideFather(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-stone-600 block mb-1">Mẹ cô dâu</label>
-                <input
-                  type="text"
-                  placeholder="Họ tên mẹ"
-                  value={brideMother}
-                  onChange={(e) => setBrideMother(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="font-semibold text-stone-600 block mb-1">Địa chỉ nhà gái</label>
-                <input
-                  type="text"
-                  placeholder="VD: 78 Đường XYZ, Quận 3, TP.HCM"
-                  value={brideAddress}
-                  onChange={(e) => setBrideAddress(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 3. NGÀY GIỜ & ĐỊA ĐIỂM TIỆC CHÍNH */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EAE2D6] shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-stone-100">
-              <Calendar className="w-4 h-4 text-amber-600" />
-              <h2 className="text-sm font-bold text-stone-800 uppercase tracking-wider">Thời Gian & Địa Điểm Tiệc</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Ngày tổ chức tiệc cưới</label>
-                <input
-                  type="date"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-stone-700 block mb-1">Giờ tổ chức</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    placeholder="VD: 11:00 AM"
-                    value={eventHour}
-                    onChange={(e) => setEventHour(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                  />
-                  <input
-                    type="text"
-                    placeholder="30"
-                    value={eventMinute}
-                    onChange={(e) => setEventMinute(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="font-bold text-stone-700 block mb-1">Địa chỉ trung tâm tiệc cưới</label>
-                <input
-                  type="text"
-                  placeholder="VD: Trung tâm Hội nghị Asiana Plaza, 45 Phan Đăng Lưu, Bình Thạnh"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 4. TÀI KHOẢN MỪNG CƯỚI VIETQR */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#EAE2D6] shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-stone-100">
-              <QrCode className="w-4 h-4 text-emerald-600" />
-              <h2 className="text-sm font-bold text-stone-800 uppercase tracking-wider">Tài Khoản Mừng Cưới (VietQR)</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              {/* Chú rể */}
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <span className="font-bold text-stone-800 block">Tài khoản Chú Rể</span>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Ngân hàng</label>
-                  <input
-                    type="text"
-                    placeholder="VD: MB, VCB, Techcombank"
-                    value={bankGroom.bankCode}
-                    onChange={(e) => setBankGroom({ ...bankGroom, bankCode: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Số tài khoản</label>
-                  <input
-                    type="text"
-                    placeholder="VD: 0988888888"
-                    value={bankGroom.accountNumber}
-                    onChange={(e) => setBankGroom({ ...bankGroom, accountNumber: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Chủ tài khoản</label>
-                  <input
-                    type="text"
-                    placeholder="VD: TRAN MINH QUAN"
-                    value={bankGroom.accountName}
-                    onChange={(e) => setBankGroom({ ...bankGroom, accountName: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white uppercase"
-                  />
-                </div>
-              </div>
-
-              {/* Cô dâu */}
-              <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
-                <span className="font-bold text-stone-800 block">Tài khoản Cô Dâu</span>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Ngân hàng</label>
-                  <input
-                    type="text"
-                    placeholder="VD: VCB, MB, ACB"
-                    value={bankBride.bankCode}
-                    onChange={(e) => setBankBride({ ...bankBride, bankCode: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Số tài khoản</label>
-                  <input
-                    type="text"
-                    placeholder="VD: 9988776655"
-                    value={bankBride.accountNumber}
-                    onChange={(e) => setBankBride({ ...bankBride, accountNumber: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-stone-500 block mb-0.5">Chủ tài khoản</label>
-                  <input
-                    type="text"
-                    placeholder="VD: NGUYEN THU HA"
-                    value={bankBride.accountName}
-                    onChange={(e) => setBankBride({ ...bankBride, accountName: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 bg-white uppercase"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Save Button */}
-          <div className="pt-2 flex justify-end">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
-              type="submit"
-              disabled={saving}
-              className="w-full sm:w-auto px-8 py-3 rounded-full bg-gradient-to-r from-[#BE944E] to-[#966E29] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition disabled:opacity-50 cursor-pointer"
+              type="button"
+              onClick={() => setShowQuickFill(true)}
+              className="px-3 sm:px-4 py-2 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{saving ? "Đang lưu..." : "Lưu Thay Đổi Hồ Sơ Cưới"}</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <span>⚡ Điền Nhanh</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveProfile}
+              disabled={saving}
+              className="px-4 sm:px-6 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              <span>{saving ? "Đang lưu..." : "Lưu Hồ Sơ"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCreateCardFromProfile}
+              disabled={creatingCard}
+              className="hidden md:flex items-center gap-1.5 px-4 sm:px-5 py-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-stone-950 font-bold text-xs shadow-md transition cursor-pointer disabled:opacity-50"
+            >
+              {creatingCard ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5 stroke-[3]" />}
+              <span>Tạo Thiệp Ngay</span>
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </header>
+
+      {/* ── TOAST NOTIFICATION ── */}
+      {success && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-4">
+          <Check className="w-4 h-4 stroke-[3]" />
+          <span>Đã lưu thành công toàn bộ 23 mục vào hồ sơ tài khoản!</span>
+        </div>
+      )}
+
+      {/* ── MAIN 2-COLUMN WORKSPACE (LIVE PREVIEW TRÁI + 23 ACCORDIONS PHẢI) ── */}
+      <main className="flex-1 w-full p-3 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
+          {/* CỘT TRÁI: LIVE PREVIEW (STICKY) */}
+          <div className="w-full lg:w-[410px] xl:w-[430px] shrink-0 lg:sticky lg:top-20">
+            <div className="bg-white rounded-3xl p-3 shadow-md border border-stone-200/90 overflow-hidden">
+              <div className="h-[760px] max-h-[82vh] overflow-y-auto overflow-x-hidden rounded-2xl relative bg-[#FAF8F5]">
+                <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+              </div>
+            </div>
+            <p className="text-center text-[11px] text-stone-500 mt-2">
+              Khung xem trước thiệp cưới thực tế theo thời gian thực
+            </p>
+          </div>
+
+          {/* CỘT PHẢI: 23 ACCORDION ITEMS ĐẦY ĐỦ */}
+          <div className="flex-1 w-full min-w-0">
+            <WeddingAccordionForm
+              templateSlug={templateSlug}
+              onSelectTemplate={(s) => setTemplateSlug(s)}
+              primaryColor={primaryColor}
+              onColorChange={setPrimaryColor}
+              openingEffect={openingEffect}
+              onOpeningEffectChange={setOpeningEffect}
+              groomName={groomName}
+              onGroomNameChange={setGroomName}
+              groomShort={groomShort}
+              onGroomShortChange={setGroomShort}
+              groomBirthOrder={groomBirthOrder}
+              onGroomBirthOrderChange={setGroomBirthOrder}
+              groomFather={groomFather}
+              onGroomFatherChange={setGroomFather}
+              groomMother={groomMother}
+              onGroomMotherChange={setGroomMother}
+              groomPhone={groomPhone}
+              onGroomPhoneChange={setGroomPhone}
+              groomAddress={groomAddress}
+              onGroomAddressChange={setGroomAddress}
+
+              brideName={brideName}
+              onBrideNameChange={setBrideName}
+              brideShort={brideShort}
+              onBrideShortChange={setBrideShort}
+              brideBirthOrder={brideBirthOrder}
+              onBrideBirthOrderChange={setBrideBirthOrder}
+              brideFather={brideFather}
+              onBrideFatherChange={setBrideFather}
+              brideMother={brideMother}
+              onBrideMotherChange={setBrideMother}
+              bridePhone={bridePhone}
+              onBridePhoneChange={setBridePhone}
+              brideAddress={brideAddress}
+              onBrideAddressChange={setBrideAddress}
+
+              isReverseOrder={isReverseOrder}
+              onReverseOrderChange={setIsReverseOrder}
+
+              greetingMessage={greetingMessage}
+              onGreetingChange={setGreetingMessage}
+              loveStory={loveStory}
+              onLoveStoryChange={setLoveStory}
+
+              events={events}
+              onEventsChange={setEvents}
+
+              photos={photos}
+              onPhotosChange={setPhotos}
+              onUploadPhotos={() => setShowQuickFill(true)}
+
+              bankCodeGroom={bankCodeGroom}
+              onBankCodeGroomChange={setBankCodeGroom}
+              accNumGroom={accNumGroom}
+              onAccNumGroomChange={setAccNumGroom}
+              accNameGroom={accNameGroom}
+              onAccNameGroomChange={setAccNameGroom}
+
+              bankCodeBride={bankCodeBride}
+              onBankCodeBrideChange={setBankCodeBride}
+              accNumBride={accNumBride}
+              onAccNumBrideChange={setAccNumBride}
+              accNameBride={accNameBride}
+              onAccNameBrideChange={setAccNameBride}
+
+              selectedMusicSrc={selectedMusicSrc}
+              onMusicChange={setSelectedMusicSrc}
+              videoUrl={videoUrl}
+              onVideoUrlChange={setVideoUrl}
+              isRsvpEnabled={isRsvpEnabled}
+              onRsvpToggle={setIsRsvpEnabled}
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* ── QUICK FILL MODAL ── */}
+      <QuickFillModal
+        isOpen={showQuickFill}
+        onClose={() => setShowQuickFill(false)}
+        onApply={handleApplyQuickFill}
+        initialData={{
+          groomName,
+          groomFather,
+          groomMother,
+          brideName,
+          brideFather,
+          brideMother,
+          eventDate: events[0]?.eventDate ? new Date(events[0].eventDate).toISOString().slice(0, 10) : "",
+          address: events[0]?.address || "",
+          photos: photos.map((p, idx) => ({ id: p.id || `ph-${idx}`, url: p.url, caption: p.caption })),
+        }}
+      />
     </div>
   );
 }
