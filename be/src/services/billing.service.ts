@@ -24,8 +24,24 @@ export interface PlanCatalogItem {
 export interface BillingSummary {
   accountId: string;
   effectivePlan: EffectivePlanDTO;
+  activeOrder: {
+    id: string;
+    orderCode: string;
+    planCode: string;
+    planName: string;
+    amount: number;
+    status: string;
+    paidAt: Date | null;
+    expiredAt: Date;
+    submittedAt: Date | null;
+    reviewedAt: Date | null;
+    reviewNote: string | null;
+    createdAt: Date;
+  } | null;
   activeOrderId: string | null;
   activeOrderStatus: string | null;
+  isOwner: boolean;
+  accountRole: "OWNER" | "MEMBER";
 }
 
 // ────────────────────────────────────────────────────────────
@@ -62,10 +78,10 @@ export class BillingService {
   }
 
   /**
-   * Account billing summary: effective plan + active order (if any).
+   * Account billing summary: effective plan + active order + ownership.
    */
-  static async getBillingSummary(accountId: string): Promise<BillingSummary> {
-    const [effectivePlan, activeOrder] = await Promise.all([
+  static async getBillingSummary(accountId: string, userId?: string): Promise<BillingSummary> {
+    const [effectivePlan, activeOrderRecord, membership] = await Promise.all([
       AccountEntitlementService.getEffectivePlan(accountId),
       prisma.order.findFirst({
         where: {
@@ -74,15 +90,44 @@ export class BillingService {
           expiredAt: { gt: new Date() },
         },
         orderBy: { createdAt: "desc" },
-        select: { id: true, status: true },
+        include: { plan: true },
       }),
+      userId
+        ? prisma.accountMember.findUnique({
+            where: { accountId_userId: { accountId, userId } },
+            select: { role: true },
+          })
+        : null,
     ]);
+
+    const role = membership?.role ?? "OWNER";
+    const isOwner = role === "OWNER";
+
+    const activeOrder = activeOrderRecord
+      ? {
+          id: activeOrderRecord.id,
+          orderCode: activeOrderRecord.orderCode,
+          planCode: activeOrderRecord.plan.code,
+          planName: activeOrderRecord.plan.name,
+          amount: activeOrderRecord.amount,
+          status: activeOrderRecord.status,
+          paidAt: activeOrderRecord.paidAt,
+          expiredAt: activeOrderRecord.expiredAt,
+          submittedAt: activeOrderRecord.submittedAt,
+          reviewedAt: activeOrderRecord.reviewedAt,
+          reviewNote: activeOrderRecord.reviewNote,
+          createdAt: activeOrderRecord.createdAt,
+        }
+      : null;
 
     return {
       accountId,
       effectivePlan,
+      activeOrder,
       activeOrderId: activeOrder?.id ?? null,
       activeOrderStatus: activeOrder?.status ?? null,
+      isOwner,
+      accountRole: role,
     };
   }
 }

@@ -179,7 +179,8 @@ function BillingContent() {
     );
   }
 
-  const isOwner = billingSummary?.isOwner ?? false;
+  const userRole = billingSummary?.accountRole || user?.account?.role || "OWNER";
+  const isOwner = billingSummary?.isOwner ?? (userRole === "OWNER");
   const currentPlan = billingSummary?.effectivePlan;
   const isVipUser = currentPlan?.planCode === "VIP" && !currentPlan.isExpired;
 
@@ -222,7 +223,7 @@ function BillingContent() {
                   )}
                 </div>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  Vai trò của bạn: <strong className="text-stone-700">{billingSummary?.accountRole}</strong>
+                  Vai trò của bạn: <strong className="text-stone-700">{userRole}</strong>
                 </p>
               </div>
             </div>
@@ -236,7 +237,7 @@ function BillingContent() {
         )}
 
         {/* MEMBER WARNING (NON-OWNER) */}
-        {!isOwner && (
+        {userRole === "MEMBER" && (
           <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-5 flex items-start gap-3 text-amber-900">
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs sm:text-sm space-y-1">

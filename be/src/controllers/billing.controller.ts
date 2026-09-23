@@ -21,11 +21,12 @@ export class BillingController {
   static async getSummary(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const accountId = req.user?.accountId;
-      if (!accountId) {
+      const userId = req.user?.userId;
+      if (!accountId || !userId) {
         return res.status(500).json({ success: false, error: "Thiếu thông tin xác thực" });
       }
 
-      const summary = await BillingService.getBillingSummary(accountId);
+      const summary = await BillingService.getBillingSummary(accountId, userId);
       res.status(200).json({ success: true, data: summary });
     } catch (error: unknown) {
       next(error);
