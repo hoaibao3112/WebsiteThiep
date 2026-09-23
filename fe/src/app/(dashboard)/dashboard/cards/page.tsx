@@ -22,7 +22,9 @@ import {
   MailOpen,
   Sparkle,
   Send,
+  Heart,
 } from "lucide-react";
+import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 
 interface DashboardCard {
   id: string; slug: string; cardCategory: "WEDDING" | "BIRTHDAY" | "NEWBORN";
@@ -36,6 +38,9 @@ export default function MyCardsPage() {
   const [cards, setCards] = useState<DashboardCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [weddingProfile, setWeddingProfile] = useState<any>(null);
+  const [showQuickFill, setShowQuickFill] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const fetchCards = async () => {
     setLoading(true);
@@ -48,9 +53,26 @@ export default function MyCardsPage() {
     setLoading(false);
   };
 
+  const fetchProfile = async () => {
+    try {
+      const res = await ApiClient.request<{ weddingProfile?: any }>("/user/wedding-profile");
+      if (res.success && res.data) {
+        setWeddingProfile(res.data);
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     fetchCards();
+    fetchProfile();
   }, []);
+
+  const handleApplyQuickFill = (data: QuickFillData) => {
+    setWeddingProfile(data);
+    setShowQuickFill(false);
+    setToastMessage("Đã lưu hồ sơ cưới thành công! Khi tạo thiệp mới sẽ được tự động điền.");
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const handleCopyLink = (slug: string, id: string) => {
     const fullUrl = `${window.location.origin}/thiep/${slug}`;
@@ -85,7 +107,23 @@ export default function MyCardsPage() {
           </div>
 
           {/* USER PROFILE & ACTIONS */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* HỒ SƠ CƯỚI BUTTON */}
+            <button
+              type="button"
+              onClick={() => setShowQuickFill(true)}
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-2xs cursor-pointer shrink-0"
+              title="Điền hoặc chỉnh sửa hồ sơ cưới tài khoản"
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/25" />
+              <span>Hồ Sơ Cưới</span>
+              {weddingProfile ? (
+                <span className="w-2 h-2 rounded-full bg-emerald-500" title="Đã có hồ sơ" />
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Chưa điền" />
+              )}
+            </button>
+
             {user && (
               <div className="flex items-center gap-2 bg-stone-100/80 px-3 py-1.5 rounded-full border border-stone-200/60">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-rose-400 text-white font-bold text-xs flex items-center justify-center">
@@ -131,13 +169,80 @@ export default function MyCardsPage() {
             </p>
           </div>
 
-          <Link
-            href="/dashboard/cards/new"
-            className="relative z-10 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-stone-950 font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition transform hover:-translate-y-0.5 cursor-pointer self-start sm:self-auto shrink-0"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>Tạo Thiệp Mới</span>
-          </Link>
+          <div className="relative z-10 flex flex-wrap items-center gap-3 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowQuickFill(true)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md backdrop-blur-md transition cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <span>{weddingProfile ? "💍 Sửa Hồ Sơ Cưới" : "💍 Điền Hồ Sơ Cưới"}</span>
+            </button>
+
+            <Link
+              href="/dashboard/cards/new"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-stone-950 font-bold text-xs sm:text-sm rounded-2xl shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition transform hover:-translate-y-0.5 cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Tạo Thiệp Mới</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* BANNER HỒ SƠ CƯỚI TÀI KHOẢN (ĐIỀN 1 LẦN DÙNG CHO MỌI THIỆP) */}
+        <div className="bg-gradient-to-r from-amber-50/90 via-white to-rose-50/60 rounded-3xl p-5 sm:p-6 border border-amber-200/90 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Heart className="w-6 h-6 sm:w-7 sm:h-7 fill-white/25" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-stone-900 font-serif">
+                  Hồ Sơ Cưới Của Bạn
+                </h2>
+                {weddingProfile ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center gap-1 border border-emerald-200">
+                    <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                    <span>Đã lưu hồ sơ</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-bold border border-amber-300 animate-pulse flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-600" />
+                    <span>⚡ Khuyên dùng: Điền trước 1 lần</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-2xl">
+                {weddingProfile ? (
+                  <>
+                    Đang lưu: <strong className="text-stone-900">{weddingProfile.groomName || "Chú rể"}</strong> & <strong className="text-stone-900">{weddingProfile.brideName || "Cô dâu"}</strong>
+                    {weddingProfile.eventDate ? ` • Ngày cưới: ${weddingProfile.eventDate}` : ""}
+                    {weddingProfile.photos?.length ? ` • ${weddingProfile.photos.length} ảnh album` : ""}.
+                    Bất kỳ khi nào tạo thiệp mới, chỉ cần 1 click là tự động điền toàn bộ!
+                  </>
+                ) : (
+                  "Điền trước thông tin Chú rể, Cô dâu, Phụ mẫu 2 bên, Ngày cưới & 20 ảnh album một lần duy nhất vào tài khoản. Khi tạo thiệp mới hay đổi sang mẫu thiệp khác, bạn chỉ cần 1 cú click là tự động điền trong 1 giây!"
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowQuickFill(true)}
+              className="flex-1 md:flex-initial px-5 py-3 rounded-2xl bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs sm:text-sm font-bold shadow-md transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-amber-100" />
+              <span>{weddingProfile ? "Chỉnh Sửa Hồ Sơ Cưới" : "⚡ Điền Thông Tin Cưới Ngay"}</span>
+            </button>
+            <Link
+              href="/dashboard/profile/wedding"
+              className="px-4 py-3 rounded-2xl border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-50 text-xs sm:text-sm font-semibold transition text-center"
+            >
+              Xem Chi Tiết
+            </Link>
+          </div>
         </div>
 
         {/* LOADING STATE */}
@@ -171,13 +276,23 @@ export default function MyCardsPage() {
                 Hãy bắt đầu tạo tấm thiệp điện tử đầu tiên dành cho ngày vui của bạn với đầy đủ album ảnh, nhạc nền MP3 và RSVP!
               </p>
             </div>
-            <Link
-              href="/dashboard/cards/new"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 hover:bg-black text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md transition"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Bắt Đầu Tạo Thiệp Ngay</span>
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowQuickFill(true)}
+                className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-stone-950 font-bold text-xs sm:text-sm rounded-xl shadow-md transition cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>💍 Điền Thông Tin Cưới Trước</span>
+              </button>
+              <Link
+                href="/dashboard/cards/new"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-stone-900 hover:bg-black text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md transition"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Bắt Đầu Tạo Thiệp Ngay</span>
+              </Link>
+            </div>
           </div>
         )}
 
@@ -305,6 +420,22 @@ export default function MyCardsPage() {
           </div>
         )}
       </main>
+
+      {/* ── TOAST NOTIFICATION ── */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-2xl flex items-center gap-2 animate-bounce">
+          <Check className="w-4 h-4 text-emerald-200 stroke-[3]" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ── QUICK FILL MODAL ── */}
+      <QuickFillModal
+        isOpen={showQuickFill}
+        onClose={() => setShowQuickFill(false)}
+        onApply={handleApplyQuickFill}
+        initialData={weddingProfile || undefined}
+      />
     </div>
   );
 }
