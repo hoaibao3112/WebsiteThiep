@@ -322,19 +322,23 @@ function AdminPaymentsContent() {
                       </td>
 
                       <td className="py-4 px-4">
-                        <div className="font-semibold text-stone-900">{order.account.name}</div>
-                        <div className="text-stone-500 text-[11px]">{order.user.email}</div>
-                        {order.user.phone && (
+                        <div className="font-semibold text-stone-900">
+                          {order.accountName || order.account?.name || "Tài khoản"}
+                        </div>
+                        <div className="text-stone-500 text-[11px]">
+                          {order.buyerEmail || order.user?.email || "—"}
+                        </div>
+                        {order.user?.phone && (
                           <div className="text-stone-400 text-[11px]">{order.user.phone}</div>
                         )}
                       </td>
 
                       <td className="py-4 px-4">
                         <span className="px-2 py-0.5 bg-stone-100 text-stone-800 rounded-md font-bold uppercase text-[11px]">
-                          {order.plan.name}
+                          {order.planName || order.plan?.name || "Gói dịch vụ"}
                         </span>
                         <div className="text-[10px] text-stone-400 mt-1">
-                          Hiện tại: {order.account.currentPlan?.name || "FREE"}
+                          Hiện tại: {order.account?.currentPlan?.name || "FREE"}
                         </div>
                       </td>
 
@@ -431,11 +435,15 @@ function AdminPaymentsContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Tài khoản:</span>
-                  <span className="font-medium text-stone-900">{approveModalOrder.account.name}</span>
+                  <span className="font-medium text-stone-900">
+                    {approveModalOrder.accountName || approveModalOrder.account?.name || "Tài khoản"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Gói nâng cấp:</span>
-                  <span className="font-bold text-amber-700">{approveModalOrder.plan.name}</span>
+                  <span className="font-bold text-amber-700">
+                    {approveModalOrder.planName || approveModalOrder.plan?.name || "Gói dịch vụ"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-stone-500">Số tiền đơn:</span>
@@ -601,7 +609,7 @@ function AdminPaymentsContent() {
                   <div>
                     <span className="text-stone-400 block text-[10px] uppercase font-bold">Gói dịch vụ</span>
                     <span className="text-stone-900 font-bold block mt-1">
-                      {detailModalOrder.plan.name} ({detailModalOrder.amount.toLocaleString("vi-VN")} đ)
+                      {detailModalOrder.planName || detailModalOrder.plan?.name || "Gói dịch vụ"} ({detailModalOrder.amount.toLocaleString("vi-VN")} đ)
                     </span>
                   </div>
                 </div>
@@ -614,20 +622,26 @@ function AdminPaymentsContent() {
                   <div className="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 space-y-1.5">
                     <div className="flex justify-between">
                       <span className="text-stone-500">Tài khoản:</span>
-                      <strong className="text-stone-900">{detailModalOrder.account.name}</strong>
+                      <strong className="text-stone-900">
+                        {detailModalOrder.accountName || detailModalOrder.account?.name || "Tài khoản"}
+                      </strong>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-500">Người mua:</span>
-                      <span className="text-stone-900">{detailModalOrder.user.name || "—"}</span>
+                      <span className="text-stone-900">
+                        {detailModalOrder.buyerName || detailModalOrder.user?.name || "—"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-500">Email:</span>
-                      <span className="text-stone-900">{detailModalOrder.user.email}</span>
+                      <span className="text-stone-900">
+                        {detailModalOrder.buyerEmail || detailModalOrder.user?.email || "—"}
+                      </span>
                     </div>
-                    {detailModalOrder.user.phone && (
+                    {detailModalOrder.user?.phone && (
                       <div className="flex justify-between">
                         <span className="text-stone-500">Số điện thoại:</span>
-                        <span className="text-stone-900">{detailModalOrder.user.phone}</span>
+                        <span className="text-stone-900">{detailModalOrder.user?.phone}</span>
                       </div>
                     )}
                   </div>

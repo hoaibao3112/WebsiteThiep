@@ -22,6 +22,9 @@ export interface ReviewQueueItem {
   submittedAt: Date | null;
   createdAt: Date;
   expiredAt: Date;
+  account: { id: string; name: string };
+  user: { email: string; name: string | null };
+  plan: { code: string; name: string };
 }
 
 export interface ReviewOrderDetail extends ReviewQueueItem {
@@ -82,7 +85,7 @@ export class ManualPaymentReviewService {
           createdAt: true,
           expiredAt: true,
           plan: { select: { code: true, name: true } },
-          account: { select: { name: true } },
+          account: { select: { id: true, name: true } },
           user: { select: { email: true, name: true } },
         },
       }),
@@ -98,12 +101,24 @@ export class ManualPaymentReviewService {
         planCode: o.plan.code,
         planName: o.plan.name,
         accountId: o.accountId,
-        accountName: o.account.name,
-        buyerEmail: o.user.email,
-        buyerName: o.user.name,
+        accountName: o.account?.name || "Tài khoản",
+        buyerEmail: o.user?.email || "—",
+        buyerName: o.user?.name || null,
         submittedAt: o.submittedAt,
         createdAt: o.createdAt,
         expiredAt: o.expiredAt,
+        account: {
+          id: o.accountId,
+          name: o.account?.name || "Tài khoản",
+        },
+        user: {
+          email: o.user?.email || "—",
+          name: o.user?.name || null,
+        },
+        plan: {
+          code: o.plan.code,
+          name: o.plan.name,
+        },
       })),
       total,
     };
@@ -128,7 +143,7 @@ export class ManualPaymentReviewService {
         reviewedAt: true,
         reviewNote: true,
         plan: { select: { code: true, name: true } },
-        account: { select: { name: true } },
+        account: { select: { id: true, name: true } },
         user: { select: { email: true, name: true } },
         reviewedBy: { select: { email: true } },
       },
@@ -144,9 +159,9 @@ export class ManualPaymentReviewService {
       planCode: o.plan.code,
       planName: o.plan.name,
       accountId: o.accountId,
-      accountName: o.account.name,
-      buyerEmail: o.user.email,
-      buyerName: o.user.name,
+      accountName: o.account?.name || "Tài khoản",
+      buyerEmail: o.user?.email || "—",
+      buyerName: o.user?.name || null,
       submittedAt: o.submittedAt,
       createdAt: o.createdAt,
       expiredAt: o.expiredAt,
@@ -154,6 +169,18 @@ export class ManualPaymentReviewService {
       reviewedAt: o.reviewedAt,
       reviewedByEmail: o.reviewedBy?.email ?? null,
       reviewNote: o.reviewNote,
+      account: {
+        id: o.accountId,
+        name: o.account?.name || "Tài khoản",
+      },
+      user: {
+        email: o.user?.email || "—",
+        name: o.user?.name || null,
+      },
+      plan: {
+        code: o.plan.code,
+        name: o.plan.name,
+      },
     };
   }
 

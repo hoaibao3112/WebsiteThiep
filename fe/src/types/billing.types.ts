@@ -83,37 +83,43 @@ export interface AdminPaymentOrder {
   orderCode: string;
   amount: number;
   status: OrderStatus;
-  paymentGateway: string;
+  paymentGateway?: string;
   expiredAt: string;
   submittedAt: string | null;
   paidAt: string | null;
   reviewedAt: string | null;
   reviewNote: string | null;
   createdAt: string;
-  account: {
-    id: string;
-    name: string;
-    currentPlan: {
-      code: PlanCode;
-      name: string;
+  accountId?: string;
+  accountName?: string;
+  buyerEmail?: string;
+  buyerName?: string | null;
+  planCode?: PlanCode | string;
+  planName?: string;
+  account?: {
+    id?: string;
+    name?: string;
+    currentPlan?: {
+      code?: PlanCode;
+      name?: string;
     };
   };
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-    phone: string | null;
+  user?: {
+    id?: string;
+    email?: string;
+    name?: string | null;
+    phone?: string | null;
   };
   reviewer?: {
-    id: string;
-    name: string | null;
-    email: string;
+    id?: string;
+    name?: string | null;
+    email?: string;
   } | null;
-  plan: {
-    id: string;
-    code: PlanCode;
-    name: string;
-    price: number;
+  plan?: {
+    id?: string;
+    code?: PlanCode | string;
+    name?: string;
+    price?: number;
   };
 }
 
