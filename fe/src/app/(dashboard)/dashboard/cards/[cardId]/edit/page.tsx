@@ -340,8 +340,8 @@ function EditCardContent() {
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [showQuickFill, setShowQuickFill] = useState(false);
 
-  // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = 8-Tab Form) ──
-  const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
+  // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = Accordion Form) ──
+  const [editorMode, setEditorMode] = useState<"canvas" | "form">("form");
 
   // ── Love story ──
   const [loveStory, setLoveStory] = useState<
@@ -1232,12 +1232,12 @@ function EditCardContent() {
           )}
         </VisualCardEditor>
       ) : (
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row-reverse overflow-hidden">
 
         {/* ══════════════════════════════════════════════════ */}
-        {/* CỘT TRÁI: TABS CHỈNH SỬA                        */}
+        {/* CỘT PHẢI: FORM CHỈNH SỬA                         */}
         {/* ══════════════════════════════════════════════════ */}
-        <div className={`w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] shadow-xs ${
+        <div className={`w-full lg:w-[500px] xl:w-[580px] bg-white lg:border-l border-[#EAE2D6] flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] shadow-xs ${
           mobileViewMode === "preview" ? "hidden lg:flex" : "flex"
         }`}>
           {category === "WEDDING" ? (

@@ -11,6 +11,7 @@ import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import {
@@ -163,7 +164,7 @@ function CardBuilderContent() {
           { id: "p-3", url: "/images/demo/couple-aodai.png", caption: "Lễ Gia Tiên truyền thống" },
         ]
   );
-  const [showQuickFill, setShowQuickFill] = useState(false);
+  const [showQuickFill, setShowQuickFill] = useState(true);
 
   const handleApplyQuickFill = useCallback((data: QuickFillData) => {
     setWeddingData((prev) => ({
@@ -533,27 +534,114 @@ function CardBuilderContent() {
       )}
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* MAIN FULL-WIDTH VISUAL CARD EDITOR WORKSPACE                   */}
+      {/* MAIN 2-COLUMN ACCORDION & PREVIEW WORKSPACE (THEO NGAYCHUNGDOI) */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
-        <VisualCardEditor
-          templateSlug={templateSlug}
-          draft={previewCard}
-          onDraftChange={handleVisualDraftChange}
-          onSave={handlePublish}
-          isVip={false}
-        >
-          {category === "WEDDING" && (
-            <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />
-          )}
-          {category === "BIRTHDAY" && (
-            <BirthdayView card={previewCard} templateSlug={templateSlug} isPreview={true} />
-          )}
-          {category === "NEWBORN" && (
-            <NewbornView card={previewCard} templateSlug={templateSlug} isPreview={true} />
-          )}
-        </VisualCardEditor>
-      </main>
+      {category === "WEDDING" ? (
+        <main className="flex-1 w-full bg-[#ECEEF1] p-3 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-start gap-6 lg:gap-8">
+            {/* CỘT TRÁI: LIVE PREVIEW (STICKY) */}
+            <div className="w-full lg:w-[410px] xl:w-[430px] shrink-0 lg:sticky lg:top-20">
+              <div className="bg-white rounded-3xl p-3 shadow-md border border-stone-200/90 overflow-hidden">
+                <div className="h-[760px] max-h-[82vh] overflow-y-auto overflow-x-hidden rounded-2xl relative bg-[#FAF8F5]">
+                  <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+                </div>
+              </div>
+            </div>
+
+            {/* CỘT PHẢI: 23 ACCORDION ITEMS */}
+            <div className="flex-1 w-full min-w-0">
+              <WeddingAccordionForm
+                templateSlug={templateSlug}
+                onSelectTemplate={(s) => handleTemplateChange(s)}
+                primaryColor={primaryColor}
+                onColorChange={setPrimaryColor}
+                openingEffect={openingEffect as any}
+                onOpeningEffectChange={(e) => setOpeningEffect(e as any)}
+                groomName={weddingData.groom.fullName}
+                onGroomNameChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, fullName: val } }))}
+                groomShort={weddingData.groom.shortName || ""}
+                onGroomShortChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, shortName: val } }))}
+                groomBirthOrder={weddingData.groom.birthOrder || ""}
+                onGroomBirthOrderChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, birthOrder: val } }))}
+                groomFather={weddingData.groom.parents?.fatherName || ""}
+                onGroomFatherChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, parents: { ...p.groom.parents, fatherName: val } } }))}
+                groomMother={weddingData.groom.parents?.motherName || ""}
+                onGroomMotherChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, parents: { ...p.groom.parents, motherName: val } } }))}
+                groomPhone={(weddingData.groom as any).phone || ""}
+                onGroomPhoneChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, phone: val } as any }))}
+                groomAddress={(weddingData.groom as any).address || ""}
+                onGroomAddressChange={(val) => setWeddingData((p) => ({ ...p, groom: { ...p.groom, address: val } as any }))}
+
+                brideName={weddingData.bride.fullName}
+                onBrideNameChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, fullName: val } }))}
+                brideShort={weddingData.bride.shortName || ""}
+                onBrideShortChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, shortName: val } }))}
+                brideBirthOrder={weddingData.bride.birthOrder || ""}
+                onBrideBirthOrderChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, birthOrder: val } }))}
+                brideFather={weddingData.bride.parents?.fatherName || ""}
+                onBrideFatherChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, parents: { ...p.bride.parents, fatherName: val } } }))}
+                brideMother={weddingData.bride.parents?.motherName || ""}
+                onBrideMotherChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, parents: { ...p.bride.parents, motherName: val } } }))}
+                bridePhone={(weddingData.bride as any).phone || ""}
+                onBridePhoneChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, phone: val } as any }))}
+                brideAddress={(weddingData.bride as any).address || ""}
+                onBrideAddressChange={(val) => setWeddingData((p) => ({ ...p, bride: { ...p.bride, address: val } as any }))}
+
+                isReverseOrder={(weddingData as any).isReverseOrder || false}
+                onReverseOrderChange={(val) => setWeddingData((p) => ({ ...p, isReverseOrder: val } as any))}
+
+                greetingMessage={greetingMessage}
+                onGreetingChange={setGreetingMessage}
+                loveStory={weddingData.loveStory || []}
+                onLoveStoryChange={(story) => setWeddingData((p) => ({ ...p, loveStory: story }))}
+
+                events={weddingData.events || []}
+                onEventsChange={(evs) => setWeddingData((p) => ({ ...p, events: evs }))}
+
+                photos={customPhotos}
+                onPhotosChange={setCustomPhotos}
+                onUploadPhotos={() => setShowQuickFill(true)}
+
+                bankCodeGroom={(weddingData as any).bankCodeGroom || "MB"}
+                onBankCodeGroomChange={(val) => setWeddingData((p) => ({ ...p, bankCodeGroom: val } as any))}
+                accNumGroom={(weddingData as any).accNumGroom || ""}
+                onAccNumGroomChange={(val) => setWeddingData((p) => ({ ...p, accNumGroom: val } as any))}
+                accNameGroom={(weddingData as any).accNameGroom || ""}
+                onAccNameGroomChange={(val) => setWeddingData((p) => ({ ...p, accNameGroom: val } as any))}
+
+                bankCodeBride={(weddingData as any).bankCodeBride || "VCB"}
+                onBankCodeBrideChange={(val) => setWeddingData((p) => ({ ...p, bankCodeBride: val } as any))}
+                accNumBride={(weddingData as any).accNumBride || ""}
+                onAccNumBrideChange={(val) => setWeddingData((p) => ({ ...p, accNumBride: val } as any))}
+                accNameBride={(weddingData as any).accNameBride || ""}
+                onAccNameBrideChange={(val) => setWeddingData((p) => ({ ...p, accNameBride: val } as any))}
+
+                selectedMusicSrc={musicUrl}
+                onMusicChange={setMusicUrl}
+                videoUrl={(weddingData as any).videoUrl || ""}
+                onVideoUrlChange={(val) => setWeddingData((p) => ({ ...p, videoUrl: val } as any))}
+              />
+            </div>
+          </div>
+        </main>
+      ) : (
+        <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+          <VisualCardEditor
+            templateSlug={templateSlug}
+            draft={previewCard}
+            onDraftChange={handleVisualDraftChange}
+            onSave={handlePublish}
+            isVip={false}
+          >
+            {category === "BIRTHDAY" && (
+              <BirthdayView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+            )}
+            {category === "NEWBORN" && (
+              <NewbornView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+            )}
+          </VisualCardEditor>
+        </main>
+      )}
 
       {/* ── QUICK FILL MODAL ── */}
       <QuickFillModal
