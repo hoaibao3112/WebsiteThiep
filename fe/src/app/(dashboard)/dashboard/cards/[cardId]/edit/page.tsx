@@ -43,6 +43,9 @@ import {
   RefreshCw,
   Loader2,
   Pencil,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -179,6 +182,17 @@ const COLOR_PRESETS = [
   { name: "Plum Tím Quý Phái", hex: "#6B3074" },
 ];
 
+const EDIT_TABS = [
+  { key: "theme", label: "Giao Diện", icon: Palette },
+  { key: "couple", label: "Cặp Đôi", icon: Heart },
+  { key: "story", label: "Câu Chuyện", icon: BookOpen },
+  { key: "events", label: "Lịch Trình", icon: Calendar },
+  { key: "gallery", label: "Album Ảnh", icon: ImageIcon },
+  { key: "music", label: "Nhạc Nền", icon: Music },
+  { key: "banking", label: "Mừng Cưới", icon: Gift },
+  { key: "rsvp", label: "RSVP", icon: Users },
+] as const;
+
 // ────────────────────────────────────────────────────────────────
 // DEMO FALLBACK DATA
 // ────────────────────────────────────────────────────────────────
@@ -285,6 +299,8 @@ function EditCardContent() {
     "theme" | "couple" | "story" | "events" | "gallery" | "music" | "banking" | "rsvp"
   >("theme");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
+  const [mobileViewMode, setMobileViewMode] = useState<"edit" | "preview">("edit");
+  const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
 
   // ── Base config ──
   const [category, setCategory] = useState<CardCategory>("WEDDING");
@@ -888,34 +904,62 @@ function EditCardContent() {
       />
 
       {/* ── TOP HEADER ── */}
-      <header className="h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-4 sm:px-8 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
-        <div className="flex items-center gap-4">
+      <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
+        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
           <Link
             href="/dashboard/cards"
-            className="w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
             title="Quay lại danh sách thiệp"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
 
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="font-serif font-bold text-base sm:text-lg text-stone-900 tracking-tight flex items-center gap-1.5">
-                <Pencil className="w-4 h-4 text-[#BE944E]" />
-                <span>Chỉnh Sửa Thiệp</span>
+              <h1 className="font-serif font-bold text-sm sm:text-lg text-stone-900 tracking-tight flex items-center gap-1.5 truncate">
+                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#BE944E] shrink-0" />
+                <span className="truncate">Chỉnh Sửa Thiệp</span>
               </h1>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[11px] font-bold">
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[11px] font-bold shrink-0">
                 {category === "WEDDING" ? "Thiệp Cưới" : category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
               </span>
             </div>
-            <p className="hidden sm:block text-[11px] text-stone-400 font-mono">
+            <p className="hidden sm:block text-[11px] text-stone-400 font-mono truncate">
               /thiep/<span className="text-[#BE944E] font-bold">{slug}</span>
             </p>
           </div>
         </div>
 
-        {/* CENTER: DEVICE PREVIEW TOGGLE */}
-        <div className="hidden md:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
+        {/* CENTER ON MOBILE: EDIT / PREVIEW SWITCHER */}
+        <div className="flex lg:hidden items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 shrink-0 mx-1">
+          <button
+            type="button"
+            onClick={() => setMobileViewMode("edit")}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+              mobileViewMode === "edit"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Pencil className="w-3 h-3 text-[#BE944E]" />
+            <span>Sửa</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileViewMode("preview")}
+            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+              mobileViewMode === "preview"
+                ? "bg-[#BE944E] text-white shadow-2xs"
+                : "text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <Eye className="w-3 h-3" />
+            <span>Xem</span>
+          </button>
+        </div>
+
+        {/* CENTER ON DESKTOP: DEVICE PREVIEW TOGGLE */}
+        <div className="hidden lg:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
           {[
             { key: "mobile", icon: <Smartphone className="w-3.5 h-3.5" />, label: "Mobile" },
             { key: "tablet", icon: <Tablet className="w-3.5 h-3.5" />, label: "Tablet" },
@@ -936,7 +980,7 @@ function EditCardContent() {
         </div>
 
         {/* RIGHT: SAVE & PREVIEW */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href={`/thiep/${slug}`}
             target="_blank"
@@ -950,7 +994,7 @@ function EditCardContent() {
             whileTap={{ scale: 0.97 }}
             onClick={handleSaveCard}
             disabled={saving}
-            className="px-5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-widest shadow-md flex items-center gap-2 cursor-pointer transition disabled:opacity-60"
+            className="px-3.5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider sm:tracking-widest shadow-md flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
           >
             {saving ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -996,14 +1040,38 @@ function EditCardContent() {
         {/* ══════════════════════════════════════════════════ */}
         {/* CỘT TRÁI: TABS CHỈNH SỬA                        */}
         {/* ══════════════════════════════════════════════════ */}
-        <div className="w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100vh-64px)] shadow-xs">
+        <div className={`w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] shadow-xs ${
+          mobileViewMode === "preview" ? "hidden lg:flex" : "flex"
+        }`}>
 
-          {/* TAB CONTENT */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* STICKY TOP TAB BAR */}
+          <div className="border-b border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 sticky top-0 z-30 shadow-2xs">
+            {EDIT_TABS.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition cursor-pointer min-h-[38px] ${
+                    activeTab === tab.key
+                      ? "bg-[#BE944E] text-white shadow-xs"
+                      : "text-stone-600 bg-white hover:bg-stone-100 hover:text-stone-900 border border-stone-200/80"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* TAB CONTENT (SCROLLABLE) */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
 
             {/* ══ TAB 1: GIAO DIỆN ══ */}
             {activeTab === "theme" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Palette className="w-4 h-4 text-[#BE944E]" />
@@ -1023,14 +1091,14 @@ function EditCardContent() {
                       key={c.key}
                       type="button"
                       onClick={() => setCategory(c.key as CardCategory)}
-                      className={`p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer ${
+                      className={`p-2.5 sm:p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer min-h-[52px] ${
                         category === c.key
                           ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-md"
                           : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
                       }`}
                     >
                       {c.icon}
-                      <span>{c.label}</span>
+                      <span className="text-[11px] sm:text-xs text-center">{c.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1040,12 +1108,12 @@ function EditCardContent() {
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2.5">
                     Bộ Sưu Tập Mẫu Thiệp
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                     {TEMPLATE_PRESETS.map((tpl) => (
                       <div
                         key={tpl.id}
                         onClick={() => { setSelectedTemplate(tpl.id); setTemplateSlug(tpl.id); setPrimaryColor(tpl.color); setFontFamily(tpl.font); }}
-                        className={`rounded-2xl border p-3 cursor-pointer transition relative overflow-hidden flex flex-col justify-between h-28 group ${
+                        className={`rounded-2xl border p-3 cursor-pointer transition relative overflow-hidden flex flex-col justify-between h-28 sm:h-32 group ${
                           selectedTemplate === tpl.id
                             ? "border-2 border-[#BE944E] ring-2 ring-[#BE944E]/30 bg-amber-50/40 shadow-md"
                             : "border-stone-200 hover:border-[#BE944E]/50 bg-white"
@@ -1060,7 +1128,7 @@ function EditCardContent() {
                           <span className="w-3.5 h-3.5 rounded-full border border-white shadow-xs" style={{ backgroundColor: tpl.color }} />
                         </div>
                         <div className="relative z-10">
-                          <h4 className="text-xs font-serif font-bold text-stone-900">{tpl.name}</h4>
+                          <h4 className="text-xs font-serif font-bold text-stone-900 leading-snug">{tpl.name}</h4>
                           <span className="text-[10px] text-stone-500 font-mono">{tpl.font}</span>
                         </div>
                       </div>
@@ -1069,22 +1137,22 @@ function EditCardContent() {
                 </div>
 
                 {/* Màu sắc */}
-                <div className="space-y-3 p-4 rounded-2xl bg-stone-50 border border-stone-200">
+                <div className="space-y-3 p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200">
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">Màu Chủ Đạo</label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {COLOR_PRESETS.map((clr) => (
                       <button
                         key={clr.hex}
                         type="button"
                         onClick={() => setPrimaryColor(clr.hex)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition cursor-pointer ${
+                        className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition cursor-pointer min-h-[38px] ${
                           primaryColor === clr.hex
                             ? "bg-white border-stone-800 text-stone-900 shadow-sm"
                             : "bg-white/80 border-stone-200 text-stone-600 hover:bg-white"
                         }`}
                       >
-                        <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: clr.hex }} />
-                        <span>{clr.name}</span>
+                        <span className="w-3 h-3 rounded-full border shrink-0" style={{ backgroundColor: clr.hex }} />
+                        <span className="text-[11px] sm:text-xs">{clr.name}</span>
                       </button>
                     ))}
                   </div>
@@ -1093,20 +1161,20 @@ function EditCardContent() {
                       type="color"
                       value={primaryColor}
                       onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-stone-200 p-0.5"
+                      className="w-9 h-9 rounded-lg cursor-pointer border border-stone-200 p-0.5"
                     />
                     <span className="text-xs font-mono font-bold text-stone-700">Mã màu: {primaryColor}</span>
                   </div>
                 </div>
 
                 {/* Hiệu ứng */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1.5">Hiệu Ứng Phong Bì</label>
                     <select
                       value={openingEffect}
                       onChange={(e) => setOpeningEffect(e.target.value as any)}
-                      className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-stone-200 font-medium"
+                      className="w-full px-3 py-2.5 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-medium min-h-[44px] sm:min-h-[38px]"
                     >
                       <option value="WAX_SEAL">Sáp Niêm Phong Vàng</option>
                       <option value="GATE_OPEN">Cổng Hoa Mở</option>
@@ -1118,7 +1186,7 @@ function EditCardContent() {
                     <select
                       value={fallingEffect}
                       onChange={(e) => setFallingEffect(e.target.value as any)}
-                      className="w-full px-3 py-2.5 text-xs rounded-xl bg-white border border-stone-200 font-medium"
+                      className="w-full px-3 py-2.5 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-medium min-h-[44px] sm:min-h-[38px]"
                     >
                       <option value="PETAL">Cánh Hoa Hồng Bay</option>
                       <option value="HEART">Trái Tim Tình Yêu</option>
@@ -1135,13 +1203,13 @@ function EditCardContent() {
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
                     Đường Dẫn Thiệp (Slug URL)
                   </label>
-                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5">
-                    <span className="text-stone-400 font-mono">cardvite.vn/thiep/</span>
+                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2 sm:py-2.5 min-h-[44px] sm:min-h-[38px]">
+                    <span className="text-stone-400 font-mono shrink-0">cardvite.vn/thiep/</span>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                      className="font-bold font-mono text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1"
+                      className="font-bold font-mono text-base sm:text-xs text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1 py-1"
                     />
                   </div>
                 </div>
@@ -1150,7 +1218,7 @@ function EditCardContent() {
 
             {/* ══ TAB 2: CẶP ĐÔI ══ */}
             {activeTab === "couple" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Heart className="w-4 h-4 text-[#BE944E]" />
@@ -1160,65 +1228,65 @@ function EditCardContent() {
                 </div>
 
                 {/* Chú Rể */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3.5">
+                <div className="p-3.5 sm:p-5 rounded-2xl bg-amber-50/40 border border-amber-200/60 space-y-3.5">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
                     <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Nhà Trai • Chú Rể</h4>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Đầy đủ</label>
-                      <input type="text" value={groomName} onChange={(e) => setGroomName(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                      <input type="text" value={groomName} onChange={(e) => setGroomName(e.target.value)} placeholder="Trần Minh Quân" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Thân Mật</label>
-                      <input type="text" value={groomShort} onChange={(e) => setGroomShort(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={groomShort} onChange={(e) => setGroomShort(e.target.value)} placeholder="Minh Quân" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
-                      <input type="text" value={groomBirthOrder} onChange={(e) => setGroomBirthOrder(e.target.value)} placeholder="Trưởng Nam" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={groomBirthOrder} onChange={(e) => setGroomBirthOrder(e.target.value)} placeholder="Trưởng Nam" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
-                      <input type="text" value={groomFather} onChange={(e) => setGroomFather(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={groomFather} onChange={(e) => setGroomFather(e.target.value)} placeholder="Trần Văn Hùng" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
-                      <input type="text" value={groomMother} onChange={(e) => setGroomMother(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={groomMother} onChange={(e) => setGroomMother(e.target.value)} placeholder="Lê Thị Mai" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
                 </div>
 
                 {/* Cô Dâu */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3.5">
+                <div className="p-3.5 sm:p-5 rounded-2xl bg-rose-50/40 border border-rose-200/60 space-y-3.5">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
                     <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Nhà Gái • Cô Dâu</h4>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Đầy đủ</label>
-                      <input type="text" value={brideName} onChange={(e) => setBrideName(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                      <input type="text" value={brideName} onChange={(e) => setBrideName(e.target.value)} placeholder="Nguyễn Thu Hà" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Thân Mật</label>
-                      <input type="text" value={brideShort} onChange={(e) => setBrideShort(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={brideShort} onChange={(e) => setBrideShort(e.target.value)} placeholder="Thu Hà" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Thứ Bậc</label>
-                      <input type="text" value={brideBirthOrder} onChange={(e) => setBrideBirthOrder(e.target.value)} placeholder="Út Nữ" className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={brideBirthOrder} onChange={(e) => setBrideBirthOrder(e.target.value)} placeholder="Út Nữ" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Cha</label>
-                      <input type="text" value={brideFather} onChange={(e) => setBrideFather(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={brideFather} onChange={(e) => setBrideFather(e.target.value)} placeholder="Nguyễn Văn Dũng" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
-                      <input type="text" value={brideMother} onChange={(e) => setBrideMother(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                      <input type="text" value={brideMother} onChange={(e) => setBrideMother(e.target.value)} placeholder="Phạm Thu Cúc" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
                 </div>
@@ -1230,7 +1298,7 @@ function EditCardContent() {
                     rows={3}
                     value={greetingMessage}
                     onChange={(e) => setGreetingMessage(e.target.value)}
-                    className="w-full p-3 text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30"
+                    className="w-full p-3 text-base sm:text-xs rounded-xl bg-stone-50 border border-stone-200 leading-relaxed focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 min-h-[88px]"
                   />
                 </div>
               </div>
@@ -1238,7 +1306,7 @@ function EditCardContent() {
 
             {/* ══ TAB 3: CÂU CHUYỆN ══ */}
             {activeTab === "story" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
@@ -1250,7 +1318,7 @@ function EditCardContent() {
                   <button
                     type="button"
                     onClick={() => setLoveStory([...loveStory, { title: "Kỷ Niệm Mới", date: "20 . 10 . 2025", description: "Khoảnh khắc đáng nhớ cùng nhau sẻ chia." }])}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1.5 hover:bg-[#BE944E] hover:text-white transition cursor-pointer min-h-[40px]"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Thêm Mốc</span>
@@ -1259,30 +1327,30 @@ function EditCardContent() {
 
                 <div className="space-y-4">
                   {loveStory.map((item, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 relative group">
+                    <div key={idx} className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 relative group">
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-[#BE944E] bg-white px-2.5 py-0.5 rounded-full border border-stone-200">
                           Cột mốc 0{idx + 1}
                         </span>
                         {loveStory.length > 1 && (
-                          <button type="button" onClick={() => setLoveStory(loveStory.filter((_, i) => i !== idx))} className="text-stone-400 hover:text-rose-500 p-1">
-                            <Trash2 className="w-3.5 h-3.5" />
+                          <button type="button" onClick={() => setLoveStory(loveStory.filter((_, i) => i !== idx))} className="text-stone-400 hover:text-rose-500 p-1.5 min-h-[36px] flex items-center justify-center">
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[10px] font-semibold text-stone-500 mb-1">Tiêu Đề</label>
-                          <input type="text" value={item.title} onChange={(e) => { const u = [...loveStory]; u[idx].title = e.target.value; setLoveStory(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                          <input type="text" value={item.title} onChange={(e) => { const u = [...loveStory]; u[idx].title = e.target.value; setLoveStory(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                         </div>
                         <div>
                           <label className="block text-[10px] font-semibold text-stone-500 mb-1">Thời Gian</label>
-                          <input type="text" value={item.date} onChange={(e) => { const u = [...loveStory]; u[idx].date = e.target.value; setLoveStory(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                          <input type="text" value={item.date} onChange={(e) => { const u = [...loveStory]; u[idx].date = e.target.value; setLoveStory(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                         </div>
                       </div>
                       <div>
                         <label className="block text-[10px] font-semibold text-stone-500 mb-1">Nội Dung</label>
-                        <textarea rows={2} value={item.description} onChange={(e) => { const u = [...loveStory]; u[idx].description = e.target.value; setLoveStory(u); }} className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200" />
+                        <textarea rows={2} value={item.description} onChange={(e) => { const u = [...loveStory]; u[idx].description = e.target.value; setLoveStory(u); }} className="w-full p-2.5 sm:p-3 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[72px]" />
                       </div>
                     </div>
                   ))}
@@ -1292,7 +1360,7 @@ function EditCardContent() {
 
             {/* ══ TAB 4: LỊCH TRÌNH ══ */}
             {activeTab === "events" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
@@ -1304,7 +1372,7 @@ function EditCardContent() {
                   <button
                     type="button"
                     onClick={() => setEvents([...events, { id: `event-${Date.now()}`, eventName: "Tiệc Cưới Báo Hỷ", eventDate: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), venueName: "Trung tâm Tiệc Cưới", address: "Địa chỉ tổ chức", mapUrl: "https://maps.google.com" }])}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1 hover:bg-[#BE944E] hover:text-white transition cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] text-xs font-bold flex items-center gap-1.5 hover:bg-[#BE944E] hover:text-white transition cursor-pointer min-h-[40px]"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Thêm Buổi Lễ</span>
@@ -1312,41 +1380,41 @@ function EditCardContent() {
                 </div>
                 <div className="space-y-4">
                   {events.map((ev, idx) => (
-                    <div key={ev.id || idx} className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3.5">
+                    <div key={ev.id || idx} className="p-3.5 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200 space-y-3.5">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-[#BE944E] flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-[#BE944E]" />
                           <span>Buổi Lễ 0{idx + 1}</span>
                         </span>
                         {events.length > 1 && (
-                          <button type="button" onClick={() => setEvents(events.filter((_, i) => i !== idx))} className="text-stone-400 hover:text-rose-500 p-1">
+                          <button type="button" onClick={() => setEvents(events.filter((_, i) => i !== idx))} className="text-stone-400 hover:text-rose-500 p-1.5 min-h-[36px] flex items-center justify-center">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Sự Kiện</label>
-                          <input type="text" value={ev.eventName} onChange={(e) => { const u = [...events]; u[idx].eventName = e.target.value; setEvents(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                          <input type="text" value={ev.eventName} onChange={(e) => { const u = [...events]; u[idx].eventName = e.target.value; setEvents(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">Thời Gian</label>
-                          <input type="datetime-local" value={typeof ev.eventDate === "string" ? ev.eventDate : new Date(ev.eventDate).toISOString().slice(0, 16)} onChange={(e) => { const u = [...events]; u[idx].eventDate = e.target.value; setEvents(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono" />
+                          <input type="datetime-local" value={typeof ev.eventDate === "string" ? ev.eventDate : new Date(ev.eventDate).toISOString().slice(0, 16)} onChange={(e) => { const u = [...events]; u[idx].eventDate = e.target.value; setEvents(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono min-h-[44px] sm:min-h-[38px]" />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Địa Điểm</label>
-                          <input type="text" value={ev.venueName} onChange={(e) => { const u = [...events]; u[idx].venueName = e.target.value; setEvents(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                          <input type="text" value={ev.venueName} onChange={(e) => { const u = [...events]; u[idx].venueName = e.target.value; setEvents(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                         </div>
                         <div>
                           <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngày Âm Lịch</label>
-                          <input type="text" value={ev.lunarDate || ""} onChange={(e) => { const u = [...events]; u[idx].lunarDate = e.target.value; setEvents(u); }} placeholder="Ngày 16 Tháng 09 Năm..." className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                          <input type="text" value={ev.lunarDate || ""} onChange={(e) => { const u = [...events]; u[idx].lunarDate = e.target.value; setEvents(u); }} placeholder="Ngày 16 Tháng 09 Năm..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                         </div>
                       </div>
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Địa Chỉ Chi Tiết</label>
-                        <input type="text" value={ev.address} onChange={(e) => { const u = [...events]; u[idx].address = e.target.value; setEvents(u); }} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200" />
+                        <input type="text" value={ev.address} onChange={(e) => { const u = [...events]; u[idx].address = e.target.value; setEvents(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                       </div>
                     </div>
                   ))}
@@ -1356,41 +1424,41 @@ function EditCardContent() {
 
             {/* ══ TAB 5: ALBUM ẢNH (với Upload Thực) ══ */}
             {activeTab === "gallery" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <ImageIcon className="w-4 h-4 text-[#BE944E]" />
                     <span>Album Ảnh Cưới</span>
                   </h3>
                   <p className="text-xs text-stone-500">
-                    Kéo thả hoặc chọn ảnh để tải lên. Hỗ trợ JPG, PNG, WEBP — tối đa 5MB/ảnh.
+                    Kéo thả hoặc chạm để chọn ảnh tải lên. Hỗ trợ JPG, PNG, WEBP — tối đa 5MB/ảnh.
                   </p>
                 </div>
 
-                {/* DRAG & DROP UPLOAD ZONE */}
+                {/* UPLOAD ZONE */}
                 <div
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                   onDragLeave={() => setIsDragOver(false)}
                   onDrop={handlePhotoDrop}
                   onClick={() => photoInputRef.current?.click()}
-                  className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+                  className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
                     isDragOver
                       ? "border-[#BE944E] bg-amber-50/80 scale-[1.01]"
                       : "border-stone-300 bg-stone-50 hover:border-[#BE944E]/60 hover:bg-amber-50/30"
                   }`}
                 >
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${isDragOver ? "bg-[#BE944E] text-white" : "bg-white border border-stone-200 text-stone-400"}`}>
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all ${isDragOver ? "bg-[#BE944E] text-white" : "bg-white border border-stone-200 text-stone-400"}`}>
                     {uploadingPhotos ? (
-                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <Loader2 className="w-6 h-6 animate-spin text-[#BE944E]" />
                     ) : (
                       <Upload className="w-6 h-6" />
                     )}
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold text-stone-700">
-                      {uploadingPhotos ? "Đang tải lên..." : isDragOver ? "Thả ảnh vào đây!" : "Kéo thả ảnh vào đây"}
+                      {uploadingPhotos ? "Đang tải ảnh lên..." : isDragOver ? "Thả ảnh vào đây!" : "Chạm để chọn ảnh từ máy"}
                     </p>
-                    <p className="text-xs text-stone-400 mt-0.5">hoặc bấm để chọn từ thiết bị</p>
+                    <p className="text-xs text-stone-400 mt-0.5">hoặc kéo thả ảnh vào khung này</p>
                   </div>
                   {!uploadingPhotos && (
                     <span className="text-[11px] px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-500">
@@ -1407,14 +1475,14 @@ function EditCardContent() {
                       <button
                         type="button"
                         onClick={() => photoInputRef.current?.click()}
-                        className="text-xs text-[#BE944E] font-semibold hover:underline flex items-center gap-1"
+                        className="text-xs text-[#BE944E] font-semibold hover:underline flex items-center gap-1 min-h-[36px]"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Thêm ảnh
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                       {photos.map((photo, idx) => (
                         <div
                           key={photo.id || idx}
@@ -1432,14 +1500,36 @@ function EditCardContent() {
 
                           {/* Cover badge */}
                           {photo.isCover && (
-                            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center gap-1">
+                            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
                               <Star className="w-2.5 h-2.5 fill-white" />
                               Ảnh Bìa
                             </div>
                           )}
 
-                          {/* Action overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                          {/* Mobile Action Buttons (Visible for touch screens) */}
+                          <div className="absolute top-2 right-2 flex items-center gap-1.5 sm:hidden">
+                            <button
+                              type="button"
+                              onClick={() => handleSetCover(photo.id!)}
+                              title="Đặt làm ảnh bìa"
+                              className={`w-7 h-7 rounded-full flex items-center justify-center shadow-md transition ${
+                                photo.isCover ? "bg-amber-500 text-white" : "bg-black/60 text-white"
+                              }`}
+                            >
+                              <Star className="w-3.5 h-3.5 fill-white" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePhoto(photo.id!)}
+                              title="Xóa ảnh"
+                              className="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          {/* Desktop Action Overlay (Hover) */}
+                          <div className="hidden sm:flex absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                             <button
                               type="button"
                               onClick={() => handleSetCover(photo.id!)}
@@ -1476,12 +1566,17 @@ function EditCardContent() {
                                 onChange={(e) => handleUpdateCaption(photo.id!, e.target.value)}
                                 onBlur={() => setEditingCaption(null)}
                                 onKeyDown={(e) => e.key === "Enter" && setEditingCaption(null)}
-                                className="w-full text-[11px] px-2 py-1 rounded-lg border border-[#BE944E] focus:outline-none bg-amber-50"
+                                className="w-full text-base sm:text-[11px] px-2 py-1 rounded-lg border border-[#BE944E] focus:outline-none bg-amber-50 min-h-[36px]"
                               />
                             ) : (
-                              <p className="text-[11px] text-stone-500 truncate px-1">
-                                {photo.caption || <span className="italic text-stone-300">Chưa có caption</span>}
-                              </p>
+                              <div
+                                onClick={() => setEditingCaption(photo.id!)}
+                                className="cursor-pointer hover:bg-stone-50 rounded px-1 py-0.5"
+                              >
+                                <p className="text-[11px] text-stone-500 truncate">
+                                  {photo.caption || <span className="italic text-stone-300">Chạm để thêm caption</span>}
+                                </p>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -1491,7 +1586,7 @@ function EditCardContent() {
                 )}
 
                 {/* Video URL */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2">
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
                     Video Phim Cưới / Pre-Wedding (YouTube)
                   </label>
@@ -1500,7 +1595,7 @@ function EditCardContent() {
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700"
+                    className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 min-h-[44px] sm:min-h-[38px]"
                   />
                 </div>
               </div>
@@ -1508,7 +1603,7 @@ function EditCardContent() {
 
             {/* ══ TAB 6: NHẠC NỀN (với Upload MP3) ══ */}
             {activeTab === "music" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Music className="w-4 h-4 text-[#BE944E]" />
@@ -1522,7 +1617,7 @@ function EditCardContent() {
                   <button
                     type="button"
                     onClick={() => setMusicTab("library")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                    className={`flex-1 py-2.5 sm:py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition min-h-[40px] ${
                       musicTab === "library" ? "bg-white text-stone-900 shadow-xs" : "text-stone-500 hover:text-stone-700"
                     }`}
                   >
@@ -1532,7 +1627,7 @@ function EditCardContent() {
                   <button
                     type="button"
                     onClick={() => setMusicTab("upload")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                    className={`flex-1 py-2.5 sm:py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition min-h-[40px] ${
                       musicTab === "upload" ? "bg-white text-stone-900 shadow-xs" : "text-stone-500 hover:text-stone-700"
                     }`}
                   >
@@ -1543,7 +1638,7 @@ function EditCardContent() {
 
                 {/* LIBRARY TAB */}
                 {musicTab === "library" && (
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     {MUSIC_OPTIONS.map((track) => {
                       const isSelected = selectedMusicSrc === track.src;
                       const isPlayingThis = testPlayingSrc === track.src;
@@ -1551,29 +1646,29 @@ function EditCardContent() {
                         <div
                           key={track.src}
                           onClick={() => setSelectedMusicSrc(track.src)}
-                          className={`p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer ${
+                          className={`p-3 sm:p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer min-h-[56px] ${
                             isSelected
                               ? "bg-amber-50/60 border-[#BE944E] ring-2 ring-[#BE944E]/20 shadow-xs"
                               : "bg-white border-stone-200 hover:border-stone-300"
                           }`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
                             <button
                               type="button"
                               onClick={(e) => { e.stopPropagation(); handleToggleTestMusic(track.src); }}
-                              className={`w-9 h-9 rounded-full flex items-center justify-center transition shadow-xs ${
+                              className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition shadow-xs shrink-0 ${
                                 isPlayingThis ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                               }`}
                               title="Nghe thử"
                             >
                               {isPlayingThis ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 ml-0.5" />}
                             </button>
-                            <div>
-                              <h4 className="text-xs font-bold text-stone-900">{track.title}</h4>
-                              <span className="text-[11px] text-stone-500">{track.artist}</span>
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-stone-900 truncate">{track.title}</h4>
+                              <span className="text-[11px] text-stone-500 truncate block">{track.artist}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 shrink-0">
                             <span className="text-[11px] font-mono text-stone-400">{track.duration}</span>
                             <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? "border-[#BE944E] bg-[#BE944E] text-white" : "border-stone-300"}`}>
                               {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1592,9 +1687,9 @@ function EditCardContent() {
                     {!uploadedMusic ? (
                       <div
                         onClick={() => musicInputRef.current?.click()}
-                        className="border-2 border-dashed border-stone-300 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#BE944E]/60 hover:bg-amber-50/30 transition"
+                        className="border-2 border-dashed border-stone-300 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#BE944E]/60 hover:bg-amber-50/30 transition"
                       >
-                        <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white border border-stone-200 flex items-center justify-center text-stone-400">
                           {uploadingMusic ? (
                             <Loader2 className="w-6 h-6 animate-spin text-[#BE944E]" />
                           ) : (
@@ -1605,7 +1700,7 @@ function EditCardContent() {
                           <p className="text-sm font-semibold text-stone-700">
                             {uploadingMusic ? "Đang xử lý nhạc..." : "Tải file nhạc của bạn lên"}
                           </p>
-                          <p className="text-xs text-stone-400 mt-0.5">hoặc bấm để chọn từ thiết bị</p>
+                          <p className="text-xs text-stone-400 mt-0.5">hoặc chạm để chọn từ máy</p>
                         </div>
                         <span className="text-[11px] px-3 py-1 rounded-full bg-white border border-stone-200 text-stone-500">
                           MP3 · WAV · OGG · M4A — Tối đa 10MB
@@ -1615,11 +1710,11 @@ function EditCardContent() {
                       /* Uploaded music card */
                       <div className={`p-4 rounded-2xl border-2 ${selectedMusicSrc === uploadedMusic.src ? "border-[#BE944E] bg-amber-50/60 ring-2 ring-[#BE944E]/20" : "border-stone-200 bg-white"}`}>
                         <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
                             <button
                               type="button"
                               onClick={() => handleToggleTestMusic(uploadedMusic.src)}
-                              className={`w-10 h-10 rounded-full flex items-center justify-center transition shadow-xs ${
+                              className={`w-10 h-10 rounded-full flex items-center justify-center transition shadow-xs shrink-0 ${
                                 testPlayingSrc === uploadedMusic.src ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"
                               }`}
                             >
@@ -1639,16 +1734,16 @@ function EditCardContent() {
                             <button
                               type="button"
                               onClick={() => setSelectedMusicSrc(uploadedMusic.src)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${selectedMusicSrc === uploadedMusic.src ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`}
+                              className={`px-3 py-2 rounded-xl text-xs font-bold transition min-h-[38px] ${selectedMusicSrc === uploadedMusic.src ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`}
                             >
                               {selectedMusicSrc === uploadedMusic.src ? "✓ Đang dùng" : "Chọn bài này"}
                             </button>
                             <button
                               type="button"
                               onClick={() => { setUploadedMusic(null); setSelectedMusicSrc(MUSIC_OPTIONS[0].src); }}
-                              className="w-7 h-7 rounded-full bg-stone-100 text-stone-500 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center transition"
+                              className="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center transition"
                             >
-                              <X className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -1657,7 +1752,7 @@ function EditCardContent() {
                         <button
                           type="button"
                           onClick={() => musicInputRef.current?.click()}
-                          className="mt-3 w-full py-2 rounded-xl border border-dashed border-stone-300 text-xs text-stone-500 font-semibold hover:border-[#BE944E] hover:text-[#BE944E] transition flex items-center justify-center gap-1.5"
+                          className="mt-3 w-full py-2.5 rounded-xl border border-dashed border-stone-300 text-xs text-stone-500 font-semibold hover:border-[#BE944E] hover:text-[#BE944E] transition flex items-center justify-center gap-1.5 min-h-[40px]"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
                           Đổi File Nhạc Khác
@@ -1680,24 +1775,24 @@ function EditCardContent() {
                 )}
 
                 {/* Auto play toggle */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-3">
                   <div>
                     <span className="text-xs font-bold text-stone-800 block">Tự Động Phát Nhạc (Auto Play)</span>
                     <span className="text-[11px] text-stone-500">Phát giai điệu khi khách mở phong bì</span>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       checked={isAutoPlay}
                       onChange={(e) => setIsAutoPlay(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-10 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BE944E]"></div>
+                    <div className="w-11 h-6.5 sm:w-10 sm:h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5.5 after:w-5.5 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-[#BE944E]"></div>
                   </label>
                 </div>
 
                 {/* Currently selected info */}
-                <div className="p-3 rounded-xl bg-[#FAF5EE] border border-[#EAE0CD] flex items-center gap-3">
+                <div className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5EE] border border-[#EAE0CD] flex items-center gap-3">
                   <Music className="w-4 h-4 text-[#BE944E] shrink-0" />
                   <div className="min-w-0">
                     <span className="text-[11px] text-stone-500 block">Nhạc đang chọn:</span>
@@ -1713,7 +1808,7 @@ function EditCardContent() {
 
             {/* ══ TAB 7: MỪNG CƯỚI VIETQR ══ */}
             {activeTab === "banking" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Gift className="w-4 h-4 text-[#BE944E]" />
@@ -1723,40 +1818,40 @@ function EditCardContent() {
                 </div>
 
                 {/* Chú rể */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
                   <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">1. Tài Khoản Chú Rể</span>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input type="text" value={bankCodeGroom} onChange={(e) => setBankCodeGroom(e.target.value)} placeholder="MB, VCB, ACB..." className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                      <input type="text" value={bankCodeGroom} onChange={(e) => setBankCodeGroom(e.target.value)} placeholder="MB, VCB, ACB..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input type="text" value={accNumGroom} onChange={(e) => setAccNumGroom(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold" />
+                      <input type="text" value={accNumGroom} onChange={(e) => setAccNumGroom(e.target.value)} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ TK (Không dấu)</label>
-                    <input type="text" value={accNameGroom} onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-bold" />
+                    <input type="text" value={accNameGroom} onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]" />
                   </div>
                 </div>
 
                 {/* Cô dâu */}
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
                   <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">2. Tài Khoản Cô Dâu</span>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input type="text" value={bankCodeBride} onChange={(e) => setBankCodeBride(e.target.value)} placeholder="VCB, Techcombank..." className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold" />
+                      <input type="text" value={bankCodeBride} onChange={(e) => setBankCodeBride(e.target.value)} placeholder="VCB, Techcombank..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input type="text" value={accNumBride} onChange={(e) => setAccNumBride(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold" />
+                      <input type="text" value={accNumBride} onChange={(e) => setAccNumBride(e.target.value)} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ TK (Không dấu)</label>
-                    <input type="text" value={accNameBride} onChange={(e) => setAccNameBride(e.target.value.toUpperCase())} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-bold" />
+                    <input type="text" value={accNameBride} onChange={(e) => setAccNameBride(e.target.value.toUpperCase())} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]" />
                   </div>
                 </div>
               </div>
@@ -1764,7 +1859,7 @@ function EditCardContent() {
 
             {/* ══ TAB 8: RSVP ══ */}
             {activeTab === "rsvp" && (
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
                   <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
                     <Users className="w-4 h-4 text-[#BE944E]" />
@@ -1773,78 +1868,98 @@ function EditCardContent() {
                   <p className="text-xs text-stone-500">Thu thập phản hồi số lượng khách để đặt bàn tiệc chính xác.</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between gap-3">
                   <div>
                     <span className="text-xs font-bold text-stone-800 block">Kích Hoạt Form Xác Nhận RSVP</span>
                     <span className="text-[11px] text-stone-500">Cho phép khách bấm xác nhận & gửi lời chúc</span>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input type="checkbox" checked={isRsvpEnabled} onChange={(e) => setIsRsvpEnabled(e.target.checked)} className="sr-only peer" />
-                    <div className="w-10 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BE944E]"></div>
+                    <div className="w-11 h-6.5 sm:w-10 sm:h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5.5 after:w-5.5 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-[#BE944E]"></div>
                   </label>
                 </div>
 
                 <div className="space-y-3">
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Hạn Chót Xác Nhận Tham Dự</label>
-                    <input type="date" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono" />
+                    <input type="date" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono min-h-[44px] sm:min-h-[38px]" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">Ghi Chú Đón Tiếp</label>
-                    <textarea rows={2} value={rsvpCustomNote} onChange={(e) => setRsvpCustomNote(e.target.value)} className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200" />
+                    <textarea rows={2} value={rsvpCustomNote} onChange={(e) => setRsvpCustomNote(e.target.value)} className="w-full p-3 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[72px]" />
                   </div>
                 </div>
 
                 {/* Quick link to RSVP management */}
                 <Link
                   href={`/dashboard/cards/${cardId}/rsvp`}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-stone-900 text-white hover:bg-stone-800 transition"
+                  className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-stone-900 text-white hover:bg-stone-800 transition min-h-[52px]"
                 >
                   <div>
                     <span className="text-xs font-bold block">Quản Lý Danh Sách Khách RSVP</span>
                     <span className="text-[11px] text-stone-400">Xem và xuất danh sách khách xác nhận</span>
                   </div>
-                  <Users className="w-5 h-5 text-stone-400" />
+                  <Users className="w-5 h-5 text-stone-400 shrink-0" />
                 </Link>
               </div>
             )}
-          </div>
+            {/* STEP NAVIGATION FOOTER */}
+            <div className="pt-4 border-t border-stone-200/80 flex items-center justify-between gap-2">
+              {currentTabIndex > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab(EDIT_TABS[currentTabIndex - 1].key as any)}
+                  className="px-3 sm:px-3.5 py-2.5 rounded-xl border border-stone-200 text-stone-700 bg-white hover:bg-stone-50 text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition min-h-[42px]"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Quay lại:</span>
+                  <span>{EDIT_TABS[currentTabIndex - 1].label}</span>
+                </button>
+              ) : <div />}
 
-          {/* TABS NAV (BOTTOM NAVIGATION BAR) */}
-          <div className="border-t border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar shadow-[0_-4px_16px_rgba(0,0,0,0.04)] shrink-0 sticky bottom-0 z-30">
-            {[
-              { key: "theme", label: "Giao Diện", icon: <Palette className="w-3.5 h-3.5" /> },
-              { key: "couple", label: "Cặp Đôi", icon: <Heart className="w-3.5 h-3.5" /> },
-              { key: "story", label: "Câu Chuyện", icon: <BookOpen className="w-3.5 h-3.5" /> },
-              { key: "events", label: "Lịch Trình", icon: <Calendar className="w-3.5 h-3.5" /> },
-              { key: "gallery", label: "Album Ảnh", icon: <ImageIcon className="w-3.5 h-3.5" /> },
-              { key: "music", label: "Nhạc Nền", icon: <Music className="w-3.5 h-3.5" /> },
-              { key: "banking", label: "Mừng Cưới", icon: <Gift className="w-3.5 h-3.5" /> },
-              { key: "rsvp", label: "RSVP", icon: <Users className="w-3.5 h-3.5" /> },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 transition cursor-pointer ${
-                  activeTab === tab.key
-                    ? "bg-[#BE944E] text-white shadow-xs"
-                    : "text-stone-600 bg-white/80 hover:bg-stone-200/70 hover:text-stone-900 border border-stone-200/60"
-                }`}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode("preview")}
+                  className="lg:hidden px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[#966E29] text-xs font-bold flex items-center gap-1.5 shadow-2xs min-h-[42px]"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Xem thử</span>
+                </button>
+
+                {currentTabIndex < EDIT_TABS.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab(EDIT_TABS[currentTabIndex + 1].key as any)}
+                    className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#BE944E] hover:bg-[#a8813f] text-white text-xs font-bold flex items-center gap-1 sm:gap-1.5 shadow-xs transition min-h-[42px]"
+                  >
+                    <span>Tiếp: {EDIT_TABS[currentTabIndex + 1].label}</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSaveCard}
+                    disabled={saving}
+                    className="px-4 py-2.5 rounded-xl bg-[#BE944E] hover:bg-[#a8813f] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition min-h-[42px]"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    <span>{saving ? "Đang lưu..." : "Lưu Thiệp"}</span>
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════════ */}
         {/* CỘT PHẢI: LIVE PREVIEW                          */}
         {/* ══════════════════════════════════════════════════ */}
-        <div className="flex-1 bg-gradient-to-br from-[#F5F2EB] to-[#ECE7DC] p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center overflow-y-auto relative min-h-[640px]">
+        <div className={`flex-1 bg-gradient-to-br from-[#F5F2EB] to-[#ECE7DC] p-0 sm:p-4 lg:p-8 flex flex-col items-center justify-center overflow-y-auto relative h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] ${
+          mobileViewMode === "edit" ? "hidden lg:flex" : "flex"
+        }`}>
           {/* Status info bar */}
-          <div className="flex items-center justify-between w-full max-w-[390px] mb-3 px-1 text-xs text-stone-500">
+          <div className="hidden lg:flex items-center justify-between w-full max-w-[390px] mb-3 px-1 text-xs text-stone-500">
             <span className="flex items-center gap-1.5 font-semibold text-stone-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               Xem trước trực tiếp (Live Preview)
@@ -1854,31 +1969,43 @@ function EditCardContent() {
             </span>
           </div>
 
-          {/* Device Mockup */}
+          {/* Device Mockup: Edge-to-edge on mobile, sleek frame on desktop */}
           <div
-            className={`transition-all duration-300 ${
+            className={`transition-all duration-300 w-full h-full lg:h-auto ${
               previewDevice === "mobile"
-                ? "w-full max-w-[390px] h-[780px] max-h-[82vh]"
+                ? "lg:max-w-[390px] lg:h-[780px] lg:max-h-[82vh]"
                 : previewDevice === "tablet"
-                ? "w-full max-w-[640px] h-[820px] max-h-[85vh]"
-                : "w-full max-w-[960px] h-[720px] max-h-[85vh]"
-            } bg-stone-900 rounded-[44px] p-3 shadow-2xl border-4 border-stone-800 relative flex flex-col [transform:translateZ(0)] isolate overflow-hidden`}
+                ? "lg:max-w-[640px] lg:h-[820px] lg:max-h-[85vh]"
+                : "lg:max-w-[960px] lg:h-[720px] lg:max-h-[85vh]"
+            } lg:bg-stone-900 lg:rounded-[44px] lg:p-3 lg:shadow-2xl lg:border-4 lg:border-stone-800 relative flex flex-col [transform:translateZ(0)] isolate overflow-hidden`}
           >
-            {/* Dynamic Island / Notch for mobile */}
+            {/* Dynamic Island / Notch for desktop mockup */}
             {previewDevice === "mobile" && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40 flex items-center justify-end px-2.5 pointer-events-none">
+              <div className="hidden lg:flex absolute top-4 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-40 items-center justify-end px-2.5 pointer-events-none">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#1c1c1e] border border-stone-700/50" />
               </div>
             )}
-            <div className="w-full h-full bg-[#FAF8F5] rounded-[34px] overflow-y-auto overflow-x-hidden relative shadow-inner [transform:translateZ(0)] isolate">
+            <div className="w-full h-full bg-[#FAF8F5] lg:rounded-[34px] overflow-y-auto overflow-x-hidden relative shadow-inner [transform:translateZ(0)] isolate pb-20 lg:pb-0">
               {category === "WEDDING" && <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
               {category === "BIRTHDAY" && <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
               {category === "NEWBORN" && <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />}
             </div>
           </div>
 
+          {/* Floating Return Button for Mobile Preview */}
+          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 lg:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileViewMode("edit")}
+              className="px-5 py-2.5 rounded-full bg-stone-900/90 text-white text-xs font-bold shadow-2xl backdrop-blur-md flex items-center gap-2 border border-white/20 active:scale-95 transition"
+            >
+              <Pencil className="w-3.5 h-3.5 text-[#BE944E]" />
+              <span>Quay lại chỉnh sửa</span>
+            </button>
+          </div>
+
           {/* Bottom hint */}
-          <p className="mt-3 text-xs text-stone-400 text-center">
+          <p className="hidden lg:block mt-3 text-xs text-stone-400 text-center">
             Mọi chỉnh sửa bên trái sẽ cập nhật ngay lập tức vào thiệp xem trước
           </p>
         </div>

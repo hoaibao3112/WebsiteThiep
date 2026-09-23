@@ -102,7 +102,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
         onClick={onClose}
       >
         <motion.div
-          className="relative w-full max-w-sm sm:max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-stone-100 overflow-hidden max-h-[92vh] overflow-y-auto my-auto"
+          className="relative w-full max-w-sm sm:max-w-md bg-white font-sans rounded-3xl p-5 sm:p-6 shadow-2xl border border-stone-100 overflow-hidden max-h-[92vh] overflow-y-auto my-auto"
           initial={{ scale: 0.92, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.92, y: 20 }}
