@@ -63,7 +63,7 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   fieldOffsets: Record<string, { x: number; y: number }>;
   fieldScales: Record<string, number>;
   addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => string;
-  addStickerElement: (item: { icon: string; title: string }, pos?: { x?: number; y?: number }) => string;
+  addStickerElement: (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
   addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => string;
   addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
   addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
@@ -290,18 +290,20 @@ export function EditorProvider<T extends object>({
   );
 
   const addStickerElement = useCallback(
-    (item: { icon: string; title: string }, pos?: { x?: number; y?: number }) => {
+    (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const newEl: CanvasElement = {
         id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "sticker",
         content: item.icon,
+        imageUrl: item.imageUrl,
         title: item.title,
+        color: item.color,
         x: pos?.x ?? 140,
         y: pos?.y ?? 280,
-        width: 100,
-        height: 100,
-        fontSize: 60,
+        width: item.width || 100,
+        height: item.height || 100,
+        fontSize: item.width ? Math.round(item.width * 0.5) : 60,
         zIndex: maxZ + 1,
         isLocked: false,
         opacity: 1,

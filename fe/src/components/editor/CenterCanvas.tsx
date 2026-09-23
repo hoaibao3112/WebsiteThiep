@@ -459,17 +459,33 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
   // Render content according to element type
   const renderElementContent = (el: CanvasElement, isInlineEditing: boolean) => {
     if (el.type === "sticker") {
+      const isImg = Boolean(
+        el.imageUrl ||
+          (typeof el.content === "string" &&
+            (el.content.startsWith("http") ||
+              el.content.startsWith("/images") ||
+              el.content.startsWith("data:image")))
+      );
       return (
         <div className="w-full h-full flex items-center justify-center select-none pointer-events-none">
-          <span
-            style={{
-              fontSize: `${el.fontSize || Math.round(el.height * 0.75)}px`,
-              lineHeight: 1,
-            }}
-            className="filter drop-shadow-md select-none transform transition-transform"
-          >
-            {el.content}
-          </span>
+          {isImg ? (
+            <img
+              src={el.imageUrl || el.content}
+              alt={el.title || "Sticker"}
+              className="w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none"
+            />
+          ) : (
+            <span
+              style={{
+                fontSize: `${el.fontSize || Math.round(el.height * 0.75)}px`,
+                color: el.color || undefined,
+                lineHeight: 1,
+              }}
+              className="filter drop-shadow-md select-none transform transition-transform"
+            >
+              {el.content}
+            </span>
+          )}
         </div>
       );
     }
