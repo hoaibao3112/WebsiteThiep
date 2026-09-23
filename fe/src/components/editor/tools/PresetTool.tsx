@@ -67,15 +67,19 @@ export function PresetTool() {
               type="button"
               draggable={true}
               onDragStart={(e) => {
-                e.dataTransfer.setData(
-                  "application/json",
-                  JSON.stringify({
-                    type: "preset",
-                    id: item.id,
-                    title: item.title,
-                    cat: item.cat,
-                  })
-                );
+                const payload = {
+                  type: "preset",
+                  id: item.id,
+                  title: item.title,
+                  cat: item.cat,
+                };
+                if (typeof window !== "undefined") {
+                  (window as any).__DRAGGED_STOCK_ITEM__ = payload;
+                }
+                try {
+                  e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+                  e.dataTransfer.setData("application/json", JSON.stringify(payload));
+                } catch {}
                 e.dataTransfer.effectAllowed = "copy";
               }}
               onClick={() => handleAdd(item)}

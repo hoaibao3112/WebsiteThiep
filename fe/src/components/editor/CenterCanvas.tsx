@@ -337,12 +337,13 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
   // HTML5 Drag & Drop from Sidebar onto Canvas
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = "copy";
     if (!isDragOver) setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Only leave if exiting the scroll container
+    e.preventDefault();
     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
       setIsDragOver(false);
     }
@@ -350,13 +351,31 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(false);
-    const raw = e.dataTransfer.getData("application/json");
-    if (!raw) return;
+
+    let data: any = typeof window !== "undefined" ? (window as any).__DRAGGED_STOCK_ITEM__ : null;
+    if (!data) {
+      const raw =
+        e.dataTransfer.getData("application/json") ||
+        e.dataTransfer.getData("text/plain") ||
+        e.dataTransfer.getData("text");
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch {}
+      }
+    }
+
+    if (!data) {
+      console.warn("No drag data found on drop");
+      return;
+    }
 
     try {
-      const data = JSON.parse(raw);
-      const rect = scrollContainerRef.current?.getBoundingClientRect();
+      const rect =
+        scrollContainerRef.current?.getBoundingClientRect() ||
+        containerRef.current?.getBoundingClientRect();
       if (!rect) return;
 
       const zoomFactor = Math.max(0.5, zoomLevel / 100);
@@ -367,14 +386,34 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       const dropY = Math.round((e.clientY - rect.top) / zoomFactor + scrollTop);
 
       if (data.type === "sticker") {
-        addStickerElement({ icon: data.icon, title: data.title }, { x: dropX - 50, y: dropY - 50 });
+        addStickerElement(
+          {
+            icon: data.icon,
+            title: data.title,
+            color: data.color,
+            imageUrl: data.imageUrl,
+            width: data.width || (data.isWide ? 150 : 100),
+            height: data.height || (data.isWide ? 80 : 100),
+          },
+          { x: Math.max(10, dropX - 50), y: Math.max(10, dropY - 50) }
+        );
       } else if (data.type === "shape") {
-        addShapeElement({ shapeType: data.shapeType, title: data.title }, { x: dropX - 100, y: dropY - 20 });
+        addShapeElement(
+          { shapeType: data.shapeType, title: data.title },
+          { x: Math.max(10, dropX - 100), y: Math.max(10, dropY - 20) }
+        );
       } else if (data.type === "preset") {
-        addPresetElement({ id: data.id, title: data.title, cat: data.cat }, { x: dropX - 150, y: dropY - 80 });
+        addPresetElement(
+          { id: data.id, title: data.title, cat: data.cat },
+          { x: Math.max(10, dropX - 150), y: Math.max(10, dropY - 80) }
+        );
       }
     } catch (err) {
       console.error("Drop JSON error:", err);
+    } finally {
+      if (typeof window !== "undefined") {
+        (window as any).__DRAGGED_STOCK_ITEM__ = null;
+      }
     }
   };
 
@@ -707,6 +746,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       <div className="relative w-full flex-1 flex items-center justify-center min-h-0 overflow-auto">
         <div
           ref={containerRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           style={{
             transform: `scale(${zoomLevel / 100})`,
             transformOrigin: "center center",

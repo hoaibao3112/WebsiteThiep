@@ -112,17 +112,22 @@ export function StockTool() {
         type="button"
         draggable={true}
         onDragStart={(e) => {
-          e.dataTransfer.setData(
-            "application/json",
-            JSON.stringify({
-              type: "sticker",
-              icon: item.icon,
-              title: item.title,
-              color: item.color,
-              width: item.isWide ? 150 : 100,
-              height: item.isWide ? 80 : 100,
-            })
-          );
+          const payload = {
+            type: "sticker",
+            icon: item.icon,
+            title: item.title,
+            color: item.color,
+            isWide: item.isWide,
+            width: item.isWide ? 150 : 100,
+            height: item.isWide ? 80 : 100,
+          };
+          if (typeof window !== "undefined") {
+            (window as any).__DRAGGED_STOCK_ITEM__ = payload;
+          }
+          try {
+            e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+            e.dataTransfer.setData("application/json", JSON.stringify(payload));
+          } catch {}
           e.dataTransfer.effectAllowed = "copy";
         }}
         onClick={() => handleAdd(item)}
