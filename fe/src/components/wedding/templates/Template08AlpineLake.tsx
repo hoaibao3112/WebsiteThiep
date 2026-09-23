@@ -75,12 +75,13 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
               Wedding Invitation · 10/12/2026 · 12:00
             </p>
             <h3 className="text-base font-serif italic font-bold animate-shimmer-text text-[#2B6B6D] pt-1">
-              {groomName} &amp; {brideName}
+              <span data-editable-field="groom-name" data-editable-type="text">{groomName}</span> &amp;{" "}
+              <span data-editable-field="bride-name" data-editable-type="text">{brideName}</span>
             </h3>
           </div>
 
           {/* LivingPhoto ảnh đi dạo bên hồ: lượn sóng nhẹ + vệt sáng phản chiếu + số 10/12 */}
-          <div className="relative">
+          <div data-editable-field="cover-photo" data-editable-type="image" className="relative cursor-pointer">
             <LivingPhoto
               src={coverPhoto}
               alt="Alpine Lake Couple"
@@ -121,13 +122,13 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
           <div className="grid grid-cols-2 gap-4 text-xs font-sans">
             <div className="space-y-0.5 text-stone-700">
               <span className="font-bold text-[#1E3E40] block uppercase text-[11px]">Nhà Trai</span>
-              <p className="font-semibold">{data.groom?.parents?.fatherName || "Ông: Nguyễn Văn Thắng"}</p>
-              <p className="font-semibold">{data.groom?.parents?.motherName || "Bà: Trần Thị Ánh"}</p>
+              <p data-editable-field="groom-father" data-editable-type="text" className="font-semibold">{data.groom?.parents?.fatherName || "Ông: Nguyễn Văn Thắng"}</p>
+              <p data-editable-field="groom-mother" data-editable-type="text" className="font-semibold">{data.groom?.parents?.motherName || "Bà: Trần Thị Ánh"}</p>
             </div>
             <div className="space-y-0.5 text-stone-700">
               <span className="font-bold text-[#1E3E40] block uppercase text-[11px]">Nhà Gái</span>
-              <p className="font-semibold">{data.bride?.parents?.fatherName || "Ông: Lê Hữu Đạt"}</p>
-              <p className="font-semibold">{data.bride?.parents?.motherName || "Bà: Phạm Hồng Vân"}</p>
+              <p data-editable-field="bride-father" data-editable-type="text" className="font-semibold">{data.bride?.parents?.fatherName || "Ông: Lê Hữu Đạt"}</p>
+              <p data-editable-field="bride-mother" data-editable-type="text" className="font-semibold">{data.bride?.parents?.motherName || "Bà: Phạm Hồng Vân"}</p>
             </div>
           </div>
 

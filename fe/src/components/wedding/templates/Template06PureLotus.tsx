@@ -74,7 +74,9 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
               className="text-xl sm:text-2xl font-serif tracking-[0.25em] text-[#334E38] font-normal uppercase block"
             />
             <h1 className="text-3xl sm:text-4xl font-serif italic text-[#25432C] font-light leading-tight animate-shimmer-text">
-              {brideShort} <span className="text-rose-400 font-normal">&amp;</span> {groomShort}
+              <span data-editable-field="bride-short" data-editable-type="text">{brideShort}</span>{" "}
+              <span className="text-rose-400 font-normal">&amp;</span>{" "}
+              <span data-editable-field="groom-short" data-editable-type="text">{groomShort}</span>
             </h1>
             <p className="text-lg font-serif tracking-widest text-[#3B5E43] pt-1">
               29.11.2026
@@ -134,15 +136,15 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
             <div className="grid grid-cols-2 gap-4 text-xs font-sans">
               <div className="space-y-0.5 text-stone-700">
                 <span className="font-bold text-[#1E3823] tracking-wider uppercase block text-[11px]">NHÀ TRAI</span>
-                <p className="font-semibold">{data.groom?.parents?.fatherName || "ÔNG: TRẦN VĂN ĐẠT"}</p>
-                <p className="font-semibold">{data.groom?.parents?.motherName || "BÀ: LÊ NHƯ HÀ"}</p>
+                <p data-editable-field="groom-father" data-editable-type="text" className="font-semibold">{data.groom?.parents?.fatherName || "ÔNG: TRẦN VĂN ĐẠT"}</p>
+                <p data-editable-field="groom-mother" data-editable-type="text" className="font-semibold">{data.groom?.parents?.motherName || "BÀ: LÊ NHƯ HÀ"}</p>
                 <p className="text-[10px] text-stone-500 italic pt-0.5">Tam Trinh, Hà Nội</p>
               </div>
 
               <div className="space-y-0.5 text-stone-700">
                 <span className="font-bold text-[#1E3823] tracking-wider uppercase block text-[11px]">NHÀ GÁI</span>
-                <p className="font-semibold">{data.bride?.parents?.fatherName || "ÔNG: LÊ VĂN ĐỨC"}</p>
-                <p className="font-semibold">{data.bride?.parents?.motherName || "BÀ: LÊ THỊ HẠNH"}</p>
+                <p data-editable-field="bride-father" data-editable-type="text" className="font-semibold">{data.bride?.parents?.fatherName || "ÔNG: LÊ VĂN ĐỨC"}</p>
+                <p data-editable-field="bride-mother" data-editable-type="text" className="font-semibold">{data.bride?.parents?.motherName || "BÀ: LÊ THỊ HẠNH"}</p>
                 <p className="text-[10px] text-stone-500 italic pt-0.5">Phố Huế, Hà Nội</p>
               </div>
             </div>
@@ -152,11 +154,11 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
                 Trân Trọng Báo Tin Lễ Thành Hôn Của
               </p>
               <div className="space-y-1">
-                <h3 className="text-2xl sm:text-3xl font-serif italic text-[#25432C]">
+                <h3 data-editable-field="bride-name" data-editable-type="text" className="text-2xl sm:text-3xl font-serif italic text-[#25432C]">
                   {brideName}
                 </h3>
                 <span className="text-rose-400 font-serif text-lg block">&amp;</span>
-                <h3 className="text-2xl sm:text-3xl font-serif italic text-[#25432C]">
+                <h3 data-editable-field="groom-name" data-editable-type="text" className="text-2xl sm:text-3xl font-serif italic text-[#25432C]">
                   {groomName}
                 </h3>
               </div>
@@ -167,6 +169,8 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
         {/* 3. ẢNH CƯỚI NGANG CHUYỂN TIẾP MỜ ẢO */}
         <section className="pt-4 pb-2">
           <div
+            data-editable-field="cover-photo"
+            data-editable-type="image"
             onClick={() => onSelectPhoto(coverPhoto)}
             className="relative w-full aspect-[16/10] overflow-hidden cursor-pointer group"
           >

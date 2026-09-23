@@ -164,7 +164,9 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
           {/* Tên cặp đôi font chữ thảo xanh ngọc & ngày tháng */}
           <div className="pt-2 space-y-1">
             <h2 className="text-2xl sm:text-3xl font-serif italic text-[#264E36] tracking-wide">
-              {groomShort} <span className="text-[#3B5E43] font-normal">&amp;</span> {brideShort}
+              <span data-editable-field="groom-short" data-editable-type="text">{groomShort}</span>{" "}
+              <span className="text-[#3B5E43] font-normal">&amp;</span>{" "}
+              <span data-editable-field="bride-short" data-editable-type="text">{brideShort}</span>
             </h2>
             <p className="text-sm font-mono tracking-widest text-[#47664B] font-semibold">02·08·2026</p>
           </div>
@@ -182,6 +184,8 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
             {/* Polaroid My Love */}
             <motion.div
               whileHover={{ scale: 1.05, rotate: -2 }}
+              data-editable-field="cover-photo"
+              data-editable-type="image"
               onClick={() => onSelectPhoto(coverPhoto)}
               className="w-36 bg-white p-2 pb-5 rounded-xs shadow-md text-center text-stone-900 shrink-0 cursor-pointer"
             >
@@ -261,6 +265,8 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
             {/* Ảnh cô dâu bên trái */}
             <motion.div
               whileHover={{ scale: 1.03 }}
+              data-editable-field="bride-avatar"
+              data-editable-type="image"
               onClick={() => onSelectPhoto(brideAvatar)}
               className="col-span-3 aspect-[9/16] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100 border border-stone-200/60"
             >
@@ -282,6 +288,8 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
             {/* Ảnh chú rể ôm bó hoa bi trắng bên phải */}
             <motion.div
               whileHover={{ scale: 1.03 }}
+              data-editable-field="groom-avatar"
+              data-editable-type="image"
               onClick={() => onSelectPhoto(groomAvatar)}
               className="col-span-3 aspect-[9/16] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100 border border-stone-200/60"
             >
@@ -294,13 +302,13 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
           <div className="grid grid-cols-2 gap-4 text-xs pt-4 border-t border-[#E3ECE5]">
             <div className="space-y-0.5 text-stone-700 text-center">
               <span className="font-bold text-[#3B5E43] block uppercase text-[11px] tracking-wider">NHÀ GÁI</span>
-              <p className="font-semibold text-stone-900">{data.bride?.parents?.fatherName || "ÔNG NGUYỄN TRÍ THANH"}</p>
-              <p className="font-semibold text-stone-900">{data.bride?.parents?.motherName || "BÀ LÊ THỊ HẢI"}</p>
+              <p data-editable-field="bride-father" data-editable-type="text" className="font-semibold text-stone-900">{data.bride?.parents?.fatherName || "ÔNG NGUYỄN TRÍ THANH"}</p>
+              <p data-editable-field="bride-mother" data-editable-type="text" className="font-semibold text-stone-900">{data.bride?.parents?.motherName || "BÀ LÊ THỊ HẢI"}</p>
             </div>
             <div className="space-y-0.5 text-stone-700 text-center">
               <span className="font-bold text-[#3B5E43] block uppercase text-[11px] tracking-wider">NHÀ TRAI</span>
-              <p className="font-semibold text-stone-900">{data.groom?.parents?.fatherName || "ÔNG NGUYỄN VĂN TƯ"}</p>
-              <p className="font-semibold text-stone-900">{data.groom?.parents?.motherName || "BÀ LÊ THỊ MAI"}</p>
+              <p data-editable-field="groom-father" data-editable-type="text" className="font-semibold text-stone-900">{data.groom?.parents?.fatherName || "ÔNG NGUYỄN VĂN TƯ"}</p>
+              <p data-editable-field="groom-mother" data-editable-type="text" className="font-semibold text-stone-900">{data.groom?.parents?.motherName || "BÀ LÊ THỊ MAI"}</p>
             </div>
           </div>
         </motion.section>

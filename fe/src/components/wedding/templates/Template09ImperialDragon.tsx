@@ -80,7 +80,7 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
             transition={{ duration: 0.8 }}
             className="space-y-0.5"
           >
-            <h2 className="text-3xl sm:text-4xl font-serif italic text-amber-200 tracking-wide font-light drop-shadow">
+            <h2 data-editable-field="groom-short" data-editable-type="text" className="text-3xl sm:text-4xl font-serif italic text-amber-200 tracking-wide font-light drop-shadow">
               {groomShort}
             </h2>
             <div className="flex items-center justify-center gap-3">
@@ -88,13 +88,13 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
               <span className="text-xl font-serif italic text-amber-300/90">&amp;</span>
               <span className="w-8 h-[1px] bg-gradient-to-l from-transparent to-amber-300/80" />
             </div>
-            <h2 className="text-3xl sm:text-4xl font-serif italic text-amber-200 tracking-wide font-light drop-shadow">
+            <h2 data-editable-field="bride-short" data-editable-type="text" className="text-3xl sm:text-4xl font-serif italic text-amber-200 tracking-wide font-light drop-shadow">
               {brideShort}
             </h2>
           </motion.div>
 
-          <p className="text-[11px] text-amber-200/70 font-sans tracking-widest pt-1">
-            THÁNG 12 • 2025 • HÀ NỘI
+          <p data-editable-field="greeting" data-editable-type="text" className="text-[11px] text-amber-200/70 font-sans tracking-widest pt-1">
+            {card.greetingMessage || "THÁNG 12 • 2025 • HÀ NỘI"}
           </p>
         </section>
 
@@ -184,16 +184,16 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
             <div className="space-y-1">
               <span className="font-serif font-bold text-[#F4D080] block text-xs tracking-wider border-b border-amber-500/30 pb-1">NHÀ TRAI</span>
               <span className="text-[10px] text-amber-200/70 block">(Ông Bà)</span>
-              <p className="font-semibold text-white">{data.groom?.parents?.fatherName || "Nguyễn Văn Quản"}</p>
-              <p className="font-semibold text-white">{data.groom?.parents?.motherName || "Nguyễn Thị Oanh"}</p>
+              <p data-editable-field="groom-father" data-editable-type="text" className="font-semibold text-white">{data.groom?.parents?.fatherName || "Nguyễn Văn Quản"}</p>
+              <p data-editable-field="groom-mother" data-editable-type="text" className="font-semibold text-white">{data.groom?.parents?.motherName || "Nguyễn Thị Oanh"}</p>
               <p className="text-[10px] text-amber-200/60 pt-0.5">68 Lê Văn Lương — Hà Nội</p>
             </div>
 
             <div className="space-y-1">
               <span className="font-serif font-bold text-[#F4D080] block text-xs tracking-wider border-b border-amber-500/30 pb-1">NHÀ GÁI</span>
               <span className="text-[10px] text-amber-200/70 block">(Ông Bà)</span>
-              <p className="font-semibold text-white">{data.bride?.parents?.fatherName || "Huỳnh Đăng Khoa"}</p>
-              <p className="font-semibold text-white">{data.bride?.parents?.motherName || "Lê Vân Anh"}</p>
+              <p data-editable-field="bride-father" data-editable-type="text" className="font-semibold text-white">{data.bride?.parents?.fatherName || "Huỳnh Đăng Khoa"}</p>
+              <p data-editable-field="bride-mother" data-editable-type="text" className="font-semibold text-white">{data.bride?.parents?.motherName || "Lê Vân Anh"}</p>
               <p className="text-[10px] text-amber-200/60 pt-0.5">Quốc Oai — Hà Nội</p>
             </div>
           </div>
@@ -203,17 +203,17 @@ export const Template09ImperialDragon: React.FC<WeddingTemplateProps> = ({
               TRÂN TRỌNG THÔNG BÁO LỄ THÀNH HÔN CỦA CON CHÚNG TÔI
             </span>
 
-            <h3 className="text-2xl sm:text-3xl font-serif italic text-amber-200 tracking-wide font-bold">
+            <h3 data-editable-field="groom-name" data-editable-type="text" className="text-2xl sm:text-3xl font-serif italic text-amber-200 tracking-wide font-bold">
               {groomName}
             </h3>
 
             <div className="flex items-center justify-center gap-4 text-xs text-amber-200/90 font-sans">
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-[10px]">Trưởng nam</span>
+              <span data-editable-field="groom-birth-order" data-editable-type="text" className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-[10px]">{data.groom?.birthOrder || "Trưởng nam"}</span>
               <span className="text-[#F4D080] font-serif italic text-lg">&amp;</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-[10px]">Út nữ</span>
+              <span data-editable-field="bride-birth-order" data-editable-type="text" className="px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-[10px]">{data.bride?.birthOrder || "Út nữ"}</span>
             </div>
 
-            <h3 className="text-2xl sm:text-3xl font-serif italic text-amber-200 tracking-wide font-bold">
+            <h3 data-editable-field="bride-name" data-editable-type="text" className="text-2xl sm:text-3xl font-serif italic text-amber-200 tracking-wide font-bold">
               {brideName}
             </h3>
           </div>

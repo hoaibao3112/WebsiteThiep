@@ -65,7 +65,11 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
       <main className="w-full max-w-md sm:max-w-lg mx-auto bg-white shadow-[0_15px_60px_rgba(107,23,36,0.12)] sm:border-x border-[#EFE5D8] relative">
 
         {/* 1. HERO ARCH COVER VỚI 2 ẢNH POLAROID LỒNG NHAU */}
-        <section className="relative w-full aspect-[4/5] overflow-hidden bg-stone-900">
+        <section
+          data-editable-field="cover-photo"
+          data-editable-type="image"
+          className="relative w-full aspect-[4/5] overflow-hidden bg-stone-900"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <motion.img
             src={coverPhoto}
@@ -86,6 +90,8 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
           <div className="absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-3">
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
+              data-editable-field="groom-avatar"
+              data-editable-type="image"
               onClick={() => onSelectPhoto(groomAvatar)}
               className="bg-white p-2 pb-3 shadow-lg rounded-xl text-center cursor-pointer gleam-overlay"
             >
@@ -94,11 +100,13 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
                 <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover" />
               </div>
               <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-stone-500 block">GROOM</span>
-              <p className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{groomName}</p>
+              <p data-editable-field="groom-name" data-editable-type="text" className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{groomName}</p>
             </motion.div>
 
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
+              data-editable-field="bride-avatar"
+              data-editable-type="image"
               onClick={() => onSelectPhoto(brideAvatar)}
               className="bg-white p-2 pb-3 shadow-lg rounded-xl text-center cursor-pointer gleam-overlay"
             >
@@ -107,7 +115,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
                 <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover" />
               </div>
               <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-stone-500 block">BRIDE</span>
-              <p className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{brideName}</p>
+              <p data-editable-field="bride-name" data-editable-type="text" className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{brideName}</p>
             </motion.div>
           </div>
         </section>
@@ -127,8 +135,8 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
             <h3 className="text-2xl font-serif italic text-[#6B1724] font-bold">
               Quý Khách
             </h3>
-            <p className="text-xs text-stone-600">
-              Dự Tiệc mừng Lễ Thành Hôn của chúng mình
+            <p data-editable-field="greeting" data-editable-type="text" className="text-xs text-stone-600">
+              {card.greetingMessage || "Dự Tiệc mừng Lễ Thành Hôn của chúng mình"}
             </p>
           </div>
 

@@ -73,9 +73,9 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
             THIỆP MỜI CƯỚI
           </h2>
           <div className="flex items-center justify-center gap-2 my-2 text-xl sm:text-2xl font-serif italic text-[#8B2E20]">
-            <span>{brideShort}</span>
+            <span data-editable-field="bride-short" data-editable-type="text">{brideShort}</span>
             <span className="text-rose-400">&amp;</span>
-            <span>{groomShort}</span>
+            <span data-editable-field="groom-short" data-editable-type="text">{groomShort}</span>
           </div>
 
           <div className="w-7 h-7 mx-auto rounded-full bg-rose-50 flex items-center justify-center text-rose-600 text-xs shadow-2xs mb-3">
@@ -109,6 +109,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
         {/* 2. HERO PHOTO VỚI HỘP COUNTDOWN MÀU ĐẤT NUNG TRONG SUỐT */}
         <section className="p-4 sm:p-6 bg-[#FDF9F8] border-b border-[#F5E5E0]">
           <div
+            data-editable-field="cover-photo"
+            data-editable-type="image"
             onClick={() => onSelectPhoto(coverPhoto)}
             className="relative rounded-3xl overflow-hidden shadow-lg aspect-[4/5] bg-stone-100 cursor-pointer group"
           >
@@ -128,8 +130,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               <span className="text-[10px] uppercase font-mono tracking-[0.25em] text-[#B84A39] font-bold block pt-1">
                 I N V I T A T I O N
               </span>
-              <p className="text-[11px] text-stone-600 leading-relaxed italic font-serif max-w-xs mx-auto">
-                Gửi đến gia đình và bạn bè thân mến! Cảm ơn bạn đã dành thời gian quý báu để cùng chúng mình chung vui trong ngày đặc biệt này...
+              <p data-editable-field="greeting" data-editable-type="text" className="text-[11px] text-stone-600 leading-relaxed italic font-serif max-w-xs mx-auto">
+                {card.greetingMessage || "Gửi đến gia đình và bạn bè thân mến! Cảm ơn bạn đã dành thời gian quý báu để cùng chúng mình chung vui trong ngày đặc biệt này..."}
               </p>
             </div>
           </div>
@@ -147,11 +149,11 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
             <div className="w-1 bg-[#8B2E20] h-20 rounded-full shrink-0 mt-1" />
             <div className="space-y-1">
               <span className="text-xs font-serif italic text-stone-500 block">Lễ Thành Hôn</span>
-              <h3 className="text-xl sm:text-2xl font-serif italic text-[#8B2E20] font-bold animate-shimmer-text">
+              <h3 data-editable-field="groom-name" data-editable-type="text" className="text-xl sm:text-2xl font-serif italic text-[#8B2E20] font-bold animate-shimmer-text">
                 {groomName}
               </h3>
               <span className="text-sm font-serif italic text-rose-400 block">&amp;</span>
-              <h3 className="text-xl sm:text-2xl font-serif italic text-[#8B2E20] font-bold animate-shimmer-text">
+              <h3 data-editable-field="bride-name" data-editable-type="text" className="text-xl sm:text-2xl font-serif italic text-[#8B2E20] font-bold animate-shimmer-text">
                 {brideName}
               </h3>
             </div>
@@ -160,14 +162,14 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
           <div className="grid grid-cols-2 gap-4 text-xs text-stone-700 pt-2 border-t border-[#F5E5E0]">
             <div className="space-y-0.5">
               <span className="font-bold text-[#B84A39] block uppercase text-[11px]">Nhà Trai</span>
-              <p>{data.groom?.parents?.fatherName || "Ông: Phạm Quang Hải"}</p>
-              <p>{data.groom?.parents?.motherName || "Bà: Định Thị Mai"}</p>
+              <p data-editable-field="groom-father" data-editable-type="text">{data.groom?.parents?.fatherName || "Ông: Phạm Quang Hải"}</p>
+              <p data-editable-field="groom-mother" data-editable-type="text">{data.groom?.parents?.motherName || "Bà: Định Thị Mai"}</p>
               <span className="text-[10px] text-stone-400 italic">TP. Hà Nội</span>
             </div>
             <div className="space-y-0.5">
               <span className="font-bold text-[#B84A39] block uppercase text-[11px]">Nhà Gái</span>
-              <p>{data.bride?.parents?.fatherName || "Ông: Nguyễn Tiến Minh"}</p>
-              <p>{data.bride?.parents?.motherName || "Bà: Lê Thị Hải Yến"}</p>
+              <p data-editable-field="bride-father" data-editable-type="text">{data.bride?.parents?.fatherName || "Ông: Nguyễn Tiến Minh"}</p>
+              <p data-editable-field="bride-mother" data-editable-type="text">{data.bride?.parents?.motherName || "Bà: Lê Thị Hải Yến"}</p>
               <span className="text-[10px] text-stone-400 italic">TP. Điện Biên</span>
             </div>
           </div>
@@ -296,6 +298,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.04 }}
+                data-editable-field="bride-avatar"
+                data-editable-type="image"
                 onClick={() => onSelectPhoto(brideAvatar)}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-sm cursor-pointer bg-stone-100"
               >
@@ -314,6 +318,8 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
             <div className="grid grid-cols-2 gap-3 items-center">
               <motion.div
                 whileHover={{ scale: 1.04 }}
+                data-editable-field="groom-avatar"
+                data-editable-type="image"
                 onClick={() => onSelectPhoto(groomAvatar)}
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-sm cursor-pointer bg-stone-100"
               >

@@ -80,6 +80,18 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     }
   }, [guestName, card.slug]);
 
+  // Apply customized field positions if saved
+  useEffect(() => {
+    const pos = (card.categoryData as any)?.fieldPositions;
+    if (!pos || typeof pos !== "object") return;
+    Object.entries(pos).forEach(([fieldId, offset]: [string, any]) => {
+      const el = document.querySelector<HTMLElement>(`[data-editable-field="${fieldId}"]`);
+      if (el && offset) {
+        el.style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+      }
+    });
+  }, [card]);
+
   const activeGuestName = resolvedGuestName || guestName;
   const shouldShowOpening = !isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(activeGuestName) || hasGuestQuery);
 
@@ -169,7 +181,47 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
       )}
 
       {/* 4. RENDER TEMPLATE GIAO DIỆN TƯƠNG ỨNG */}
-      {renderTemplate()}
+      <div className="relative">
+        {renderTemplate()}
+        {!isPreview && Array.isArray((card.categoryData as any)?.canvasElements) && (
+          (card.categoryData as any).canvasElements.map((el: any) => (
+            <div
+              key={el.id}
+              style={{
+                position: "absolute",
+                left: `${el.x}px`,
+                top: `${el.y}px`,
+                width: `${el.width}px`,
+                height: `${el.height}px`,
+                zIndex: el.zIndex || 10,
+                opacity: el.opacity ?? 1,
+                fontFamily: el.fontFamily,
+                fontSize: `${el.fontSize || 28}px`,
+                color: el.color || "#000000",
+                backgroundColor: el.backgroundColor || "transparent",
+                textAlign: el.textAlign || "center",
+                fontWeight: el.isBold ? "bold" : "normal",
+                fontStyle: el.isItalic ? "italic" : "normal",
+                textDecoration: [
+                  el.isUnderline ? "underline" : "",
+                  el.isStrike ? "line-through" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || "none",
+                textTransform: el.isUppercase ? "uppercase" : "none",
+                borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
+                borderWidth: el.borderWidth ? `${el.borderWidth}px` : undefined,
+                borderColor: el.borderColor || undefined,
+                boxShadow: el.shadow || undefined,
+                pointerEvents: "none",
+              }}
+              className="flex items-center justify-center p-1"
+            >
+              <span className="w-full break-words leading-tight">{el.content}</span>
+            </div>
+          ))
+        )}
+      </div>
 
       {/* 5. MODAL FORM RSVP XÁC NHẬN THAM DỰ */}
       <RsvpFormModal

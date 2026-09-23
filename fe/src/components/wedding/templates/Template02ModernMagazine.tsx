@@ -64,6 +64,8 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
 
         {/* 1. HERO VERTICAL PHOTO WITH SLOW KEN BURNS ANIMATION */}
         <section
+          data-editable-field="cover-photo"
+          data-editable-type="image"
           className="relative w-full aspect-[3/4] overflow-hidden bg-stone-900 group cursor-pointer"
           onClick={() => onSelectPhoto(heroPhoto)}
         >
@@ -87,9 +89,13 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             <span className="text-sm tracking-[0.3em] font-sans uppercase text-amber-100 font-medium">
               28.12.2026
             </span>
-            <p className="text-[11px] sm:text-xs italic leading-relaxed text-stone-200 max-w-xs mx-auto px-2">
-              “Chúng ta đã cùng nhau đi qua nhiều thăng trầm để nhận ra rằng được ở bên nhau là điều quý giá nhất...<br />
-              Hôm nay, trước sự chứng kiến của mọi người, từ khoảnh khắc này chúng ta nhẹ nhàng gọi nhau bằng hai tiếng Vợ - Chồng”
+            <p data-editable-field="greeting" data-editable-type="text" className="text-[11px] sm:text-xs italic leading-relaxed text-stone-200 max-w-xs mx-auto px-2">
+              {card.greetingMessage || (
+                <>
+                  “Chúng ta đã cùng nhau đi qua nhiều thăng trầm để nhận ra rằng được ở bên nhau là điều quý giá nhất...<br />
+                  Hôm nay, trước sự chứng kiến của mọi người, từ khoảnh khắc này chúng ta nhẹ nhàng gọi nhau bằng hai tiếng Vợ - Chồng”
+                </>
+              )}
             </p>
             <div className="pt-1">
               <motion.span
@@ -119,8 +125,8 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
         >
           <div className="flex items-center justify-center gap-6 text-[#B26E63] font-serif italic text-xl sm:text-2xl">
             <div className="text-center">
-              <span className="text-2xl sm:text-3xl block font-light leading-none -mb-1">Yến</span>
-              <h2 className="text-sm font-serif font-bold text-[#B26E63] tracking-wide animate-shimmer-text">{brideName}</h2>
+              <span data-editable-field="bride-short" data-editable-type="text" className="text-2xl sm:text-3xl block font-light leading-none -mb-1">{data.bride?.shortName || "Yến"}</span>
+              <h2 data-editable-field="bride-name" data-editable-type="text" className="text-sm font-serif font-bold text-[#B26E63] tracking-wide animate-shimmer-text">{brideName}</h2>
             </div>
             <motion.span
               animate={{ scale: [1, 1.35, 1] }}
@@ -130,8 +136,8 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
               ♥
             </motion.span>
             <div className="text-center">
-              <span className="text-2xl sm:text-3xl block font-light leading-none -mb-1">Vinh</span>
-              <h2 className="text-sm font-serif font-bold text-[#B26E63] tracking-wide animate-shimmer-text">{groomName}</h2>
+              <span data-editable-field="groom-short" data-editable-type="text" className="text-2xl sm:text-3xl block font-light leading-none -mb-1">{data.groom?.shortName || "Vinh"}</span>
+              <h2 data-editable-field="groom-name" data-editable-type="text" className="text-sm font-serif font-bold text-[#B26E63] tracking-wide animate-shimmer-text">{groomName}</h2>
             </div>
           </div>
           <p className="text-xs text-stone-500 italic pt-1">
@@ -149,19 +155,21 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
         >
           {/* ROW 1: ẢNH CÔ DÂU BÊN TRÁI ➔ THÔNG TIN NHÀ GÁI BÊN PHẢI */}
           <div className="grid grid-cols-2 gap-3 items-center">
-            <LivingPhoto
-              src={bridePhoto}
-              alt="Cô Dâu Hải Yến"
-              badgeText="CÔ DÂU"
-              enableGleam={true}
-              onClick={() => onSelectPhoto(bridePhoto)}
-            />
+            <div data-editable-field="bride-avatar" data-editable-type="image">
+              <LivingPhoto
+                src={bridePhoto}
+                alt="Cô Dâu Hải Yến"
+                badgeText="CÔ DÂU"
+                enableGleam={true}
+                onClick={() => onSelectPhoto(bridePhoto)}
+              />
+            </div>
 
             <div className="text-center space-y-1 pl-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#4A2E20]">Nhà Gái</span>
               <div className="text-[10px] text-stone-400 tracking-widest -mt-1 mb-1">························</div>
-              <p className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.fatherName || "Ông: Nguyễn Tiến Minh"}</p>
-              <p className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.motherName || "Bà: Hoàng Cẩm Vân"}</p>
+              <p data-editable-field="bride-father" data-editable-type="text" className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.fatherName || "Ông: Nguyễn Tiến Minh"}</p>
+              <p data-editable-field="bride-mother" data-editable-type="text" className="text-xs text-[#3E2B22] font-semibold">{data.bride?.parents?.motherName || "Bà: Hoàng Cẩm Vân"}</p>
               <p className="text-[10px] text-stone-500 italic">Hoàng Mai — Hà Nội</p>
               <div className="my-1.5 flex items-center justify-center">
                 {/* Chibi cô dâu cầm hoa từ mẫu 02b */}
@@ -179,8 +187,8 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
                   </svg>
                 </div>
               </div>
-              <p className="text-xs font-bold text-[#B26E63] pt-0.5">
-                Út nữ: {brideName}
+              <p data-editable-field="bride-birth-order" data-editable-type="text" className="text-xs font-bold text-[#B26E63] pt-0.5">
+                {data.bride?.birthOrder || "Út nữ"}: {brideName}
               </p>
             </div>
           </div>
@@ -190,8 +198,8 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             <div className="text-center space-y-1 pr-2">
               <span className="text-xs font-bold uppercase tracking-widest text-[#4A2E20]">Nhà Trai</span>
               <div className="text-[10px] text-stone-400 tracking-widest -mt-1 mb-1">························</div>
-              <p className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.fatherName || "Ông: Phạm Minh Toàn"}</p>
-              <p className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.motherName || "Bà: Lại Thị Tám"}</p>
+              <p data-editable-field="groom-father" data-editable-type="text" className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.fatherName || "Ông: Phạm Minh Toàn"}</p>
+              <p data-editable-field="groom-mother" data-editable-type="text" className="text-xs text-[#3E2B22] font-semibold">{data.groom?.parents?.motherName || "Bà: Lại Thị Tám"}</p>
               <p className="text-[10px] text-stone-500 italic">Từ Liêm — Hà Nội</p>
               <div className="my-1.5 flex items-center justify-center">
                 {/* Chibi chú rể áo vest từ mẫu 02b */}
@@ -208,18 +216,20 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
                   </svg>
                 </div>
               </div>
-              <p className="text-xs font-bold text-[#B26E63] pt-0.5">
-                Trưởng nam: {groomName}
+              <p data-editable-field="groom-birth-order" data-editable-type="text" className="text-xs font-bold text-[#B26E63] pt-0.5">
+                {data.groom?.birthOrder || "Trưởng nam"}: {groomName}
               </p>
             </div>
 
-            <LivingPhoto
-              src={groomPhoto}
-              alt="Chú Rể Công Vinh"
-              badgeText="CHÚ RỂ"
-              enableGleam={true}
-              onClick={() => onSelectPhoto(groomPhoto)}
-            />
+            <div data-editable-field="groom-avatar" data-editable-type="image">
+              <LivingPhoto
+                src={groomPhoto}
+                alt="Chú Rể Công Vinh"
+                badgeText="CHÚ RỂ"
+                enableGleam={true}
+                onClick={() => onSelectPhoto(groomPhoto)}
+              />
+            </div>
           </div>
         </motion.section>
 

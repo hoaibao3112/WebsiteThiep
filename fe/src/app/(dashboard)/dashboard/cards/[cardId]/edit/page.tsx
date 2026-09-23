@@ -8,6 +8,7 @@ import { CardCategory, CardDetail, EventItem, PhotoItem } from "@/types/card.typ
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
+import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { ApiClient } from "@/lib/api";
 import { uploadSingleImage } from "@/lib/image-upload";
 import {
@@ -322,11 +323,17 @@ function EditCardContent() {
   const [groomFather, setGroomFather] = useState("");
   const [groomMother, setGroomMother] = useState("");
   const [groomBirthOrder, setGroomBirthOrder] = useState("");
+  const [groomAvatar, setGroomAvatar] = useState("");
   const [brideName, setBrideName] = useState("");
   const [brideShort, setBrideShort] = useState("");
   const [brideFather, setBrideFather] = useState("");
   const [brideMother, setBrideMother] = useState("");
   const [brideBirthOrder, setBrideBirthOrder] = useState("");
+  const [brideAvatar, setBrideAvatar] = useState("");
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
+
+  // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = 8-Tab Form) ──
+  const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
 
   // ── Love story ──
   const [loveStory, setLoveStory] = useState<
@@ -423,13 +430,16 @@ function EditCardContent() {
       setGroomName(groom.fullName);
       setGroomShort(groom.shortName || "");
       setGroomBirthOrder(groom.birthOrder || "");
+      setGroomAvatar(groom.avatarUrl || "");
       setGroomFather(groom.parents?.fatherName || "");
       setGroomMother(groom.parents?.motherName || "");
       setBrideName(bride.fullName);
       setBrideShort(bride.shortName || "");
       setBrideBirthOrder(bride.birthOrder || "");
+      setBrideAvatar(bride.avatarUrl || "");
       setBrideFather(bride.parents?.fatherName || "");
       setBrideMother(bride.parents?.motherName || "");
+      setCoverPhotoUrl((card.categoryData as any).coverPhotoUrl || "");
       setLoveStory(ls || []);
     } else if (card.cardCategory === "BIRTHDAY" && card.categoryData.cardCategory === "BIRTHDAY") {
       setCelebrantName(card.categoryData.celebrantName);
@@ -627,16 +637,19 @@ function EditCardContent() {
       category === "WEDDING"
         ? {
             cardCategory: "WEDDING",
+            coverPhotoUrl: coverPhotoUrl || photos.find((p) => p.isCover)?.url || photos[0]?.url,
             groom: {
               fullName: groomName,
               shortName: groomShort,
               birthOrder: groomBirthOrder,
+              avatarUrl: groomAvatar,
               parents: { fatherName: groomFather, motherName: groomMother },
             },
             bride: {
               fullName: brideName,
               shortName: brideShort,
               birthOrder: brideBirthOrder,
+              avatarUrl: brideAvatar,
               parents: { fatherName: brideFather, motherName: brideMother },
             },
             loveStory,
@@ -656,6 +669,53 @@ function EditCardContent() {
             events: [],
           },
   };
+
+  // Sync edits from VisualCardEditor back to local state hooks
+  const handleDraftChange = useCallback((nextDraft: CardDetail) => {
+    if (nextDraft.primaryColor) setPrimaryColor(nextDraft.primaryColor);
+    if (nextDraft.fontFamily) setFontFamily(nextDraft.fontFamily);
+    if (nextDraft.musicUrl !== undefined) setSelectedMusicSrc(nextDraft.musicUrl || "");
+    if (nextDraft.greetingMessage !== undefined) setGreetingMessage(nextDraft.greetingMessage || "");
+    if (nextDraft.fallingEffect) setFallingEffect(nextDraft.fallingEffect as any);
+    if (nextDraft.openingEffect) setOpeningEffect(nextDraft.openingEffect as any);
+    if ((nextDraft as any).templateSlug) setTemplateSlug((nextDraft as any).templateSlug);
+
+    const catData = nextDraft.categoryData as any;
+    if (catData) {
+      if (catData.groom) {
+        if (catData.groom.fullName !== undefined) setGroomName(catData.groom.fullName || "");
+        if (catData.groom.shortName !== undefined) setGroomShort(catData.groom.shortName || "");
+        if (catData.groom.birthOrder !== undefined) setGroomBirthOrder(catData.groom.birthOrder || "");
+        if (catData.groom.avatarUrl !== undefined) setGroomAvatar(catData.groom.avatarUrl || "");
+        if (catData.groom.parents) {
+          if (catData.groom.parents.fatherName !== undefined) setGroomFather(catData.groom.parents.fatherName || "");
+          if (catData.groom.parents.motherName !== undefined) setGroomMother(catData.groom.parents.motherName || "");
+        }
+      }
+      if (catData.bride) {
+        if (catData.bride.fullName !== undefined) setBrideName(catData.bride.fullName || "");
+        if (catData.bride.shortName !== undefined) setBrideShort(catData.bride.shortName || "");
+        if (catData.bride.birthOrder !== undefined) setBrideBirthOrder(catData.bride.birthOrder || "");
+        if (catData.bride.avatarUrl !== undefined) setBrideAvatar(catData.bride.avatarUrl || "");
+        if (catData.bride.parents) {
+          if (catData.bride.parents.fatherName !== undefined) setBrideFather(catData.bride.parents.fatherName || "");
+          if (catData.bride.parents.motherName !== undefined) setBrideMother(catData.bride.parents.motherName || "");
+        }
+      }
+      if (catData.coverPhotoUrl) {
+        setCoverPhotoUrl(catData.coverPhotoUrl);
+        setPhotos((prev) => {
+          const idx = prev.findIndex((p) => p.isCover);
+          if (idx >= 0) {
+            const copy = [...prev];
+            copy[idx] = { ...copy[idx], url: catData.coverPhotoUrl };
+            return copy;
+          }
+          return [{ id: "cover", url: catData.coverPhotoUrl, isCover: true }, ...prev];
+        });
+      }
+    }
+  }, []);
 
 
   // ────────────────────────────────────────────────────────────────
@@ -930,53 +990,89 @@ function EditCardContent() {
           </div>
         </div>
 
-        {/* CENTER ON MOBILE: EDIT / PREVIEW SWITCHER */}
-        <div className="flex lg:hidden items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 shrink-0 mx-1">
-          <button
-            type="button"
-            onClick={() => setMobileViewMode("edit")}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
-              mobileViewMode === "edit"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500 hover:text-stone-800"
-            }`}
-          >
-            <Pencil className="w-3 h-3 text-[#BE944E]" />
-            <span>Sửa</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileViewMode("preview")}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
-              mobileViewMode === "preview"
-                ? "bg-[#BE944E] text-white shadow-2xs"
-                : "text-stone-500 hover:text-stone-800"
-            }`}
-          >
-            <Eye className="w-3 h-3" />
-            <span>Xem</span>
-          </button>
-        </div>
-
-        {/* CENTER ON DESKTOP: DEVICE PREVIEW TOGGLE */}
-        <div className="hidden lg:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
-          {[
-            { key: "mobile", icon: <Smartphone className="w-3.5 h-3.5" />, label: "Mobile" },
-            { key: "tablet", icon: <Tablet className="w-3.5 h-3.5" />, label: "Tablet" },
-            { key: "desktop", icon: <Laptop className="w-3.5 h-3.5" />, label: "Desktop" },
-          ].map((d) => (
+        {/* CENTER: MODE SWITCHER & DEVICE TOGGLE */}
+        <div className="flex items-center gap-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 sm:gap-1">
             <button
-              key={d.key}
               type="button"
-              onClick={() => setPreviewDevice(d.key as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-                previewDevice === d.key ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+              onClick={() => setEditorMode("canvas")}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                editorMode === "canvas"
+                  ? "bg-gradient-to-r from-[#BE944E] to-[#966E29] text-white shadow-xs"
+                  : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              {d.icon}
-              <span>{d.label}</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              <span className="hidden xs:inline">Studio</span>
+              <span>Trực Quan</span>
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => setEditorMode("form")}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
+                editorMode === "form"
+                  ? "bg-white text-stone-900 shadow-2xs"
+                  : "text-stone-600 hover:text-stone-900"
+              }`}
+            >
+              <Pencil className="w-3.5 h-3.5 text-[#BE944E]" />
+              <span className="hidden xs:inline">Biểu</span>
+              <span>Mẫu</span>
+            </button>
+          </div>
+
+          {/* Form mode only on mobile: Edit / Preview Switcher */}
+          {editorMode === "form" && (
+            <div className="flex lg:hidden items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMobileViewMode("edit")}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+                  mobileViewMode === "edit"
+                    ? "bg-white text-stone-900 shadow-2xs"
+                    : "text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                <span>Nhập Liệu</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileViewMode("preview")}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+                  mobileViewMode === "preview"
+                    ? "bg-[#BE944E] text-white shadow-2xs"
+                    : "text-stone-500 hover:text-stone-800"
+                }`}
+              >
+                <Eye className="w-3 h-3" />
+                <span>Xem</span>
+              </button>
+            </div>
+          )}
+
+          {/* Form mode only on desktop: Device Preview Toggle */}
+          {editorMode === "form" && (
+            <div className="hidden lg:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
+              {[
+                { key: "mobile", icon: <Smartphone className="w-3.5 h-3.5" />, label: "Mobile" },
+                { key: "tablet", icon: <Tablet className="w-3.5 h-3.5" />, label: "Tablet" },
+                { key: "desktop", icon: <Laptop className="w-3.5 h-3.5" />, label: "Desktop" },
+              ].map((d) => (
+                <button
+                  key={d.key}
+                  type="button"
+                  onClick={() => setPreviewDevice(d.key as any)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                    previewDevice === d.key ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {d.icon}
+                  <span>{d.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* RIGHT: SAVE & PREVIEW */}
@@ -1034,8 +1130,27 @@ function EditCardContent() {
         )}
       </AnimatePresence>
 
-      {/* ── 2-COLUMN WORKSPACE ── */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      {/* ── WORKSPACE (CANVAS STUDIO vs FORM) ── */}
+      {editorMode === "canvas" ? (
+        <VisualCardEditor
+          draft={previewCard}
+          templateSlug={templateSlug || selectedTemplate}
+          onSave={handleSaveCard}
+          isVip={isVipExperience}
+          onDraftChange={handleDraftChange}
+        >
+          {category === "WEDDING" && (
+            <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+          )}
+          {category === "BIRTHDAY" && (
+            <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+          )}
+          {category === "NEWBORN" && (
+            <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+          )}
+        </VisualCardEditor>
+      ) : (
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
 
         {/* ══════════════════════════════════════════════════ */}
         {/* CỘT TRÁI: TABS CHỈNH SỬA                        */}
@@ -2010,6 +2125,7 @@ function EditCardContent() {
           </p>
         </div>
       </div>
+      )}
     </div>
   );
 }

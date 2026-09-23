@@ -101,7 +101,8 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
             {data.heroSubtitle || "TRÂN TRỌNG BÁO HỶ"}
           </p>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#FFF3D1] tracking-wide">
-            {groomShort} &amp; {brideShort}
+            <span data-editable-field="groom-short" data-editable-type="text">{groomShort}</span> &amp;{" "}
+            <span data-editable-field="bride-short" data-editable-type="text">{brideShort}</span>
           </h1>
           <p className="text-xs text-amber-200/80 font-serif italic mt-1">
             {formatDate(targetDate)}
@@ -111,6 +112,8 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
         {/* 2. HERO COVER: CỬA SỔ VÒM CỔ ĐIỂN */}
         <section className="p-5 sm:p-7 text-center bg-[#FAF6F0] border-b border-[#EFE8DD]">
           <div
+            data-editable-field="cover-photo"
+            data-editable-type="image"
             onClick={() => onSelectPhoto(coverPhoto)}
             className="relative mx-auto w-full max-w-[320px] aspect-[4/5] rounded-t-full rounded-b-3xl overflow-hidden p-2 bg-gradient-to-b from-[#D4AF37] via-[#AA8222] to-[#8B1E2D] shadow-2xl cursor-pointer group active:scale-[0.99] transition"
           >
@@ -132,9 +135,10 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
 
           <div className="mt-5 max-w-sm mx-auto space-y-1 text-center">
             <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#8B1E2D]">
-              {groomName} &amp; {brideName}
+              <span data-editable-field="groom-name" data-editable-type="text">{groomName}</span> &amp;{" "}
+              <span data-editable-field="bride-name" data-editable-type="text">{brideName}</span>
             </h3>
-            <p className="text-xs text-stone-600 italic font-serif">
+            <p data-editable-field="greeting" data-editable-type="text" className="text-xs text-stone-600 italic font-serif">
               {card.greetingMessage || data.greeting || "“Trăm năm tình viên mãn — Bạc đầu nghĩa phu thê”"}
             </p>
             {guestName && (
@@ -167,6 +171,8 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
               className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#D4AF37]/40 shadow-xs text-center space-y-2"
             >
               <div
+                data-editable-field="groom-avatar"
+                data-editable-type="image"
                 onClick={() => onSelectPhoto(groomAvatar)}
                 className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm cursor-pointer"
               >
@@ -175,13 +181,13 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
               </div>
               <div>
                 <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">CHÚ RỂ</span>
-                <h4 className="text-sm font-serif font-bold text-[#8B1E2D]">{groomName}</h4>
-                <p className="text-[11px] text-stone-500 italic">{data.groom?.birthOrder || "Trưởng nam"}</p>
+                <h4 data-editable-field="groom-name" data-editable-type="text" className="text-sm font-serif font-bold text-[#8B1E2D]">{groomName}</h4>
+                <p data-editable-field="groom-birth-order" data-editable-type="text" className="text-[11px] text-stone-500 italic">{data.groom?.birthOrder || "Trưởng nam"}</p>
               </div>
               <div className="pt-1 border-t border-[#EAE0D2] text-[11px] text-stone-600 space-y-0.5">
                 <span className="font-bold text-[#8B1E2D] block text-[10px]">NHÀ TRAI</span>
-                <p>{data.groom?.parents?.fatherName || "Ông: Nguyễn Văn Hùng"}</p>
-                <p>{data.groom?.parents?.motherName || "Bà: Trần Thị Mai"}</p>
+                <p data-editable-field="groom-father" data-editable-type="text">{data.groom?.parents?.fatherName || "Ông: Nguyễn Văn Hùng"}</p>
+                <p data-editable-field="groom-mother" data-editable-type="text">{data.groom?.parents?.motherName || "Bà: Trần Thị Mai"}</p>
                 <p className="text-[10px] text-stone-400 italic">TP. Hà Nội</p>
               </div>
             </motion.div>
@@ -192,6 +198,8 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
               className="p-3.5 rounded-2xl bg-[#FAF6F0] border border-[#D4AF37]/40 shadow-xs text-center space-y-2"
             >
               <div
+                data-editable-field="bride-avatar"
+                data-editable-type="image"
                 onClick={() => onSelectPhoto(brideAvatar)}
                 className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm cursor-pointer"
               >
@@ -200,13 +208,13 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
               </div>
               <div>
                 <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">CÔ DÂU</span>
-                <h4 className="text-sm font-serif font-bold text-[#8B1E2D]">{brideName}</h4>
-                <p className="text-[11px] text-stone-500 italic">{data.bride?.birthOrder || "Út nữ"}</p>
+                <h4 data-editable-field="bride-name" data-editable-type="text" className="text-sm font-serif font-bold text-[#8B1E2D]">{brideName}</h4>
+                <p data-editable-field="bride-birth-order" data-editable-type="text" className="text-[11px] text-stone-500 italic">{data.bride?.birthOrder || "Út nữ"}</p>
               </div>
               <div className="pt-1 border-t border-[#EAE0D2] text-[11px] text-stone-600 space-y-0.5">
                 <span className="font-bold text-[#8B1E2D] block text-[10px]">NHÀ GÁI</span>
-                <p>{data.bride?.parents?.fatherName || "Ông: Lê Quốc Bảo"}</p>
-                <p>{data.bride?.parents?.motherName || "Bà: Phạm Thu Cúc"}</p>
+                <p data-editable-field="bride-father" data-editable-type="text">{data.bride?.parents?.fatherName || "Ông: Lê Quốc Bảo"}</p>
+                <p data-editable-field="bride-mother" data-editable-type="text">{data.bride?.parents?.motherName || "Bà: Phạm Thu Cúc"}</p>
                 <p className="text-[10px] text-stone-400 italic">TP. Hồ Chí Minh</p>
               </div>
             </motion.div>

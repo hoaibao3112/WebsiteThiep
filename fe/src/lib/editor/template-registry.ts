@@ -1,20 +1,36 @@
-export type EditorFieldType = "text" | "image" | "color" | "font" | "effect" | "music";
-export interface EditorField { id: string; type: EditorFieldType; label: string; path: string; maxLength?: number; allowedValues?: readonly string[] }
+export type EditorFieldType = "text" | "image" | "color" | "font" | "effect" | "music" | "compound";
+export interface EditorField {
+  id: string;
+  type: EditorFieldType;
+  label: string;
+  path: string;
+  maxLength?: number;
+  allowedValues?: readonly string[];
+  richText?: boolean;
+  defaultFontSize?: number;
+  group?: string;
+}
 
 const WEDDING_FIELDS: readonly EditorField[] = [
-  { id: "groom-name", type: "text", label: "Tên chú rể", path: "categoryData.groom.fullName", maxLength: 120 },
-  { id: "groom-short", type: "text", label: "Tên gọi thân mật chú rể", path: "categoryData.groom.shortName", maxLength: 50 },
-  { id: "groom-avatar", type: "image", label: "Ảnh đại diện chú rể", path: "categoryData.groom.avatarUrl" },
-  { id: "bride-name", type: "text", label: "Tên cô dâu", path: "categoryData.bride.fullName", maxLength: 120 },
-  { id: "bride-short", type: "text", label: "Tên gọi thân mật cô dâu", path: "categoryData.bride.shortName", maxLength: 50 },
-  { id: "bride-avatar", type: "image", label: "Ảnh đại diện cô dâu", path: "categoryData.bride.avatarUrl" },
-  { id: "cover-photo", type: "image", label: "Ảnh bìa chính (Cover)", path: "categoryData.coverPhotoUrl" },
-  { id: "greeting", type: "text", label: "Lời ngỏ / Thông điệp mời", path: "greetingMessage", maxLength: 500 },
-  { id: "primary-color", type: "color", label: "Màu chủ đạo", path: "primaryColor" },
-  { id: "font-family", type: "font", label: "Font chữ", path: "fontFamily", allowedValues: ["Inter", "Playfair Display", "Cinzel", "Quicksand", "Outfit"] },
-  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"] },
-  { id: "falling-effect", type: "effect", label: "Hiệu ứng rơi", path: "fallingEffect", allowedValues: ["NONE", "PETAL", "HEART", "SNOW", "CONFETTI", "BALLOON"] },
-  { id: "music", type: "music", label: "Nhạc nền", path: "musicUrl" },
+  { id: "groom-name", type: "text", label: "Tên chú rể", path: "categoryData.groom.fullName", maxLength: 120, group: "Cô Dâu & Chú Rể" },
+  { id: "groom-short", type: "text", label: "Tên gọi thân mật chú rể", path: "categoryData.groom.shortName", maxLength: 50, group: "Cô Dâu & Chú Rể" },
+  { id: "groom-avatar", type: "image", label: "Ảnh đại diện chú rể", path: "categoryData.groom.avatarUrl", group: "Cô Dâu & Chú Rể" },
+  { id: "groom-birth-order", type: "text", label: "Vai vế chú rể", path: "categoryData.groom.birthOrder", maxLength: 50, group: "Gia Đình Nhà Trai" },
+  { id: "groom-father", type: "text", label: "Họ tên cha chú rể", path: "categoryData.groom.parents.fatherName", maxLength: 120, group: "Gia Đình Nhà Trai" },
+  { id: "groom-mother", type: "text", label: "Họ tên mẹ chú rể", path: "categoryData.groom.parents.motherName", maxLength: 120, group: "Gia Đình Nhà Trai" },
+  { id: "bride-name", type: "text", label: "Tên cô dâu", path: "categoryData.bride.fullName", maxLength: 120, group: "Cô Dâu & Chú Rể" },
+  { id: "bride-short", type: "text", label: "Tên gọi thân mật cô dâu", path: "categoryData.bride.shortName", maxLength: 50, group: "Cô Dâu & Chú Rể" },
+  { id: "bride-avatar", type: "image", label: "Ảnh đại diện cô dâu", path: "categoryData.bride.avatarUrl", group: "Cô Dâu & Chú Rể" },
+  { id: "bride-birth-order", type: "text", label: "Vai vế cô dâu", path: "categoryData.bride.birthOrder", maxLength: 50, group: "Gia Đình Nhà Gái" },
+  { id: "bride-father", type: "text", label: "Họ tên cha cô dâu", path: "categoryData.bride.parents.fatherName", maxLength: 120, group: "Gia Đình Nhà Gái" },
+  { id: "bride-mother", type: "text", label: "Họ tên mẹ cô dâu", path: "categoryData.bride.parents.motherName", maxLength: 120, group: "Gia Đình Nhà Gái" },
+  { id: "cover-photo", type: "image", label: "Ảnh bìa chính (Cover)", path: "categoryData.coverPhotoUrl", group: "Hình Ảnh" },
+  { id: "greeting", type: "text", label: "Lời ngỏ / Thông điệp mời", path: "greetingMessage", maxLength: 500, group: "Nội Dung Thiệp" },
+  { id: "primary-color", type: "color", label: "Màu chủ đạo", path: "primaryColor", group: "Giao Diện" },
+  { id: "font-family", type: "font", label: "Font chữ", path: "fontFamily", allowedValues: ["Inter", "Playfair Display", "Cinzel", "Quicksand", "Outfit"], group: "Giao Diện" },
+  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"], group: "Hiệu Ứng" },
+  { id: "falling-effect", type: "effect", label: "Hiệu ứng rơi", path: "fallingEffect", allowedValues: ["NONE", "PETAL", "HEART", "SNOW", "CONFETTI", "BALLOON"], group: "Hiệu Ứng" },
+  { id: "music", type: "music", label: "Nhạc nền", path: "musicUrl", group: "Âm Thanh" },
 ];
 
 const BIRTHDAY_FIELDS: readonly EditorField[] = [

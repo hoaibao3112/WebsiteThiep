@@ -75,7 +75,12 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
       <main className="w-full max-w-md sm:max-w-lg mx-auto bg-white shadow-[0_20px_70px_rgba(0,0,0,0.15)] sm:border-x border-stone-200 relative">
 
         {/* 1. HERO CINEMATIC VERTICAL PHOTO TRÊN ĐỒI THÔNG */}
-        <section className="relative w-full aspect-[9/16] overflow-hidden bg-stone-900 text-white">
+        <section
+          data-editable-field="cover-photo"
+          data-editable-type="image"
+          onClick={() => onSelectPhoto(coverPhoto)}
+          className="relative w-full aspect-[9/16] overflow-hidden bg-stone-900 text-white cursor-pointer"
+        >
           <motion.img
             src={coverPhoto}
             alt="Cinematic Poster"
@@ -87,9 +92,13 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
 
           {/* Top quote */}
           <div className="absolute top-6 left-4 right-4 text-center">
-            <p className="text-[10px] text-stone-200 italic font-serif leading-relaxed max-w-xs mx-auto">
-              “I love three things in this world... Sun, moon and you.<br />
-              Sun for morning, moon for night, and you forever.”
+            <p data-editable-field="greeting" data-editable-type="text" className="text-[10px] text-stone-200 italic font-serif leading-relaxed max-w-xs mx-auto">
+              {card.greetingMessage || (
+                <>
+                  “I love three things in this world... Sun, moon and you.<br />
+                  Sun for morning, moon for night, and you forever.”
+                </>
+              )}
             </p>
             <span className="text-lg font-serif italic tracking-wider text-white font-bold block pt-3">
               Welcome to our wedding
@@ -105,14 +114,14 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           {/* Bride & Groom names on hero sides */}
           <div className="absolute bottom-12 left-6 right-6 flex items-end justify-between text-white drop-shadow-md">
             <div>
-              <h3 className="text-lg font-serif font-bold">{brideShort}</h3>
+              <h3 data-editable-field="bride-short" data-editable-type="text" className="text-lg font-serif font-bold">{brideShort}</h3>
               <span className="text-[10px] uppercase font-mono tracking-widest text-stone-300">BRIDE</span>
             </div>
             <div className="text-center">
               <span className="text-sm font-mono tracking-widest text-amber-200">19.12.2026</span>
             </div>
             <div className="text-right">
-              <h3 className="text-lg font-serif font-bold">{groomShort}</h3>
+              <h3 data-editable-field="groom-short" data-editable-type="text" className="text-lg font-serif font-bold">{groomShort}</h3>
               <span className="text-[10px] uppercase font-mono tracking-widest text-stone-300">GROOM</span>
             </div>
           </div>
