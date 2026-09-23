@@ -342,7 +342,7 @@ function EditCardContent() {
   const [showQuickFill, setShowQuickFill] = useState(false);
 
   // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = Accordion Form) ──
-  const [editorMode, setEditorMode] = useState<"canvas" | "form">("form");
+  const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
 
   // ── Love story ──
   const [loveStory, setLoveStory] = useState<
@@ -1320,10 +1320,21 @@ function EditCardContent() {
             type="button"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setShowQuickFill(true)}
-            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-900 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+            onClick={() => setShowApplyProfileModal(true)}
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+            title="Lấy dữ liệu từ Hồ Sơ Cưới tài khoản đưa vào thiệp"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+            <span>Áp Dụng Từ Hồ Sơ</span>
+          </motion.button>
+
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowQuickFill(true)}
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition cursor-pointer shadow-2xs shrink-0"
+          >
             <span>Điền Nhanh</span>
           </motion.button>
 
@@ -1400,106 +1411,8 @@ function EditCardContent() {
         <div className={`w-full lg:w-[500px] xl:w-[580px] bg-white lg:border-l border-[#EAE2D6] flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] shadow-xs ${
           mobileViewMode === "preview" ? "hidden lg:flex" : "flex"
         }`}>
-          {category === "WEDDING" ? (
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-3 bg-amber-50/80 border-b border-amber-200/60 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span className="text-xs font-bold text-amber-900 truncate">Thiết lập 23 mục thiệp cưới chi tiết</span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setShowApplyProfileModal(true)}
-                    className="px-2.5 py-1 text-xs bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
-                    title="Tùy chọn các mục từ hồ sơ tài khoản để áp dụng vào thiệp"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Áp Dụng Hồ Sơ</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowQuickFill(true)}
-                    className="px-2.5 py-1 text-xs bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>Điền Nhanh</span>
-                  </button>
-                </div>
-              </div>
-              <WeddingAccordionForm
-                templateSlug={templateSlug || selectedTemplate}
-                onSelectTemplate={(s) => setTemplateSlug(s)}
-                primaryColor={primaryColor}
-                onColorChange={setPrimaryColor}
-                openingEffect={openingEffect as any}
-                onOpeningEffectChange={(e) => setOpeningEffect(e as any)}
-                groomName={groomName}
-                onGroomNameChange={setGroomName}
-                groomShort={groomShort}
-                onGroomShortChange={setGroomShort}
-                groomBirthOrder={groomBirthOrder}
-                onGroomBirthOrderChange={setGroomBirthOrder}
-                groomFather={groomFather}
-                onGroomFatherChange={setGroomFather}
-                groomMother={groomMother}
-                onGroomMotherChange={setGroomMother}
-                groomPhone={groomPhone}
-                onGroomPhoneChange={setGroomPhone}
-                groomAddress={groomAddress}
-                onGroomAddressChange={setGroomAddress}
-                brideName={brideName}
-                onBrideNameChange={setBrideName}
-                brideShort={brideShort}
-                onBrideShortChange={setBrideShort}
-                brideBirthOrder={brideBirthOrder}
-                onBrideBirthOrderChange={setBrideBirthOrder}
-                brideFather={brideFather}
-                onBrideFatherChange={setBrideFather}
-                brideMother={brideMother}
-                onBrideMotherChange={setBrideMother}
-                bridePhone={bridePhone}
-                onBridePhoneChange={setBridePhone}
-                brideAddress={brideAddress}
-                onBrideAddressChange={setBrideAddress}
-                isReverseOrder={isReverseOrder}
-                onReverseOrderChange={setIsReverseOrder}
-                greetingMessage={greetingMessage}
-                onGreetingChange={setGreetingMessage}
-                loveStory={loveStory}
-                onLoveStoryChange={setLoveStory}
-                events={events}
-                onEventsChange={setEvents}
-                photos={photos}
-                onPhotosChange={setPhotos}
-                onUploadPhotos={() => photoInputRef.current?.click()}
-                bankCodeGroom={bankCodeGroom}
-                onBankCodeGroomChange={setBankCodeGroom}
-                accNumGroom={accNumGroom}
-                onAccNumGroomChange={setAccNumGroom}
-                accNameGroom={accNameGroom}
-                onAccNameGroomChange={setAccNameGroom}
-                bankCodeBride={bankCodeBride}
-                onBankCodeBrideChange={setBankCodeBride}
-                accNumBride={accNumBride}
-                onAccNumBrideChange={setAccNumBride}
-                accNameBride={accNameBride}
-                onAccNameBrideChange={setAccNameBride}
-                selectedMusicSrc={selectedMusicSrc}
-                onMusicChange={setSelectedMusicSrc}
-                videoUrl={videoUrl}
-                onVideoUrlChange={setVideoUrl}
-                isRsvpEnabled={isRsvpEnabled}
-                onRsvpToggle={setIsRsvpEnabled}
-                onOpenApplyProfile={() => setShowApplyProfileModal(true)}
-                onSaveToProfile={handleSaveToProfile}
-                isSavingProfile={savingProfile}
-                saveProfileSuccess={saveProfileSuccess}
-              />
-            </div>
-          ) : (
-            <>
-              {/* STICKY TOP TAB BAR */}
-              <div className="border-b border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 sticky top-0 z-30 shadow-2xs">
+          {/* STICKY TOP TAB BAR */}
+          <div className="border-b border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 sticky top-0 z-30 shadow-2xs">
             {EDIT_TABS.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -2404,8 +2317,6 @@ function EditCardContent() {
               </div>
             </div>
           </div>
-            </>
-          )}
         </div>
 
         {/* ══════════════════════════════════════════════════ */}
