@@ -48,6 +48,10 @@ apiRouter.get("/auth/me", authGuard, AuthController.getMe);
 
 apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthController.updateProfile);
 
+// --- USER WEDDING PROFILE (HỒ SƠ CƯỚI TỰ ĐỘNG ĐIỀN) ---
+apiRouter.get("/user/wedding-profile", authGuard, AuthController.getWeddingProfile);
+apiRouter.put("/user/wedding-profile", authGuard, AuthController.updateWeddingProfile);
+
 // --- MEDIA UPLOAD ---
 apiRouter.post(
   "/media/upload",

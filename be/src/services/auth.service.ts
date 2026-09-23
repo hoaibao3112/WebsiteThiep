@@ -416,6 +416,29 @@ export class AuthService {
   }
 
   /**
+   * Lấy hồ sơ cưới mặc định của tài khoản
+   */
+  static async getWeddingProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, weddingProfile: true },
+    });
+    return user?.weddingProfile || null;
+  }
+
+  /**
+   * Lưu hoặc cập nhật hồ sơ cưới mặc định của tài khoản
+   */
+  static async updateWeddingProfile(userId: string, data: any) {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { weddingProfile: data },
+      select: { id: true, weddingProfile: true },
+    });
+    return user.weddingProfile;
+  }
+
+  /**
    * Helper verify JWT token
    */
   static verifyToken(token: string): TokenPayload {

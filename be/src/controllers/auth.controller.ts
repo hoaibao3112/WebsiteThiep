@@ -248,4 +248,46 @@ export class AuthController {
       next(error);
     }
   }
+
+  static async getWeddingProfile(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        const error: any = new Error("Chưa đăng nhập");
+        error.status = 401;
+        throw error;
+      }
+      const profile = await AuthService.getWeddingProfile(userId);
+      res.status(200).json({ success: true, data: profile });
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  static async updateWeddingProfile(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        const error: any = new Error("Chưa đăng nhập");
+        error.status = 401;
+        throw error;
+      }
+      const updated = await AuthService.updateWeddingProfile(userId, req.body);
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật hồ sơ cưới thành công!",
+        data: updated,
+      });
+    } catch (error: any) {
+      next(error);
+    }
+  }
 }

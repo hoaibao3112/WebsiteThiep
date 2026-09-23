@@ -10,6 +10,7 @@ import { NewbornView } from "@/components/newborn/NewbornView";
 import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
+import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import {
@@ -162,6 +163,52 @@ function CardBuilderContent() {
           { id: "p-3", url: "/images/demo/couple-aodai.png", caption: "Lễ Gia Tiên truyền thống" },
         ]
   );
+  const [showQuickFill, setShowQuickFill] = useState(false);
+
+  const handleApplyQuickFill = useCallback((data: QuickFillData) => {
+    setWeddingData((prev) => ({
+      ...prev,
+      groom: {
+        ...prev.groom,
+        fullName: data.groomName || prev.groom.fullName,
+        parents: {
+          fatherName: data.groomFather || prev.groom.parents?.fatherName,
+          motherName: data.groomMother || prev.groom.parents?.motherName,
+        },
+      },
+      bride: {
+        ...prev.bride,
+        fullName: data.brideName || prev.bride.fullName,
+        parents: {
+          fatherName: data.brideFather || prev.bride.parents?.fatherName,
+          motherName: data.brideMother || prev.bride.parents?.motherName,
+        },
+      },
+      coverPhotoUrl: data.photos && data.photos[0] ? data.photos[0].url : prev.coverPhotoUrl,
+      events: data.eventDate
+        ? [
+            {
+              id: "ev-main",
+              eventName: "Lễ Thành Hôn",
+              eventDate: new Date(`${data.eventDate}T${String(data.eventHour || "10").padStart(2, "0")}:${String(data.eventMinute || "0").padStart(2, "0")}`),
+              venueName: "Trung tâm tiệc cưới",
+              address: data.address || "Tư gia",
+            },
+          ]
+        : prev.events,
+    }));
+
+    if (data.photos && data.photos.length > 0) {
+      setCustomPhotos(
+        data.photos.map((p, idx) => ({
+          id: p.id || `photo-${idx}`,
+          url: p.url,
+          caption: p.caption,
+          isCover: idx === 0,
+        }))
+      );
+    }
+  }, []);
 
   // Chuyển Category
   const handleCategoryChange = (newCat: CardCategory) => {
@@ -375,6 +422,17 @@ function CardBuilderContent() {
             </div>
           </div>
 
+          {category === "WEDDING" && (
+            <button
+              type="button"
+              onClick={() => setShowQuickFill(true)}
+              className="min-h-10 px-3.5 sm:px-4 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+              <span>Điền Nhanh</span>
+            </button>
+          )}
+
           {/* PRIMARY ACTION: XUẤT BẢN THIỆP */}
           <button
             type="button"
@@ -496,6 +554,26 @@ function CardBuilderContent() {
           )}
         </VisualCardEditor>
       </main>
+
+      {/* ── QUICK FILL MODAL ── */}
+      <QuickFillModal
+        isOpen={showQuickFill}
+        onClose={() => setShowQuickFill(false)}
+        onApply={handleApplyQuickFill}
+        initialData={{
+          groomName: weddingData.groom.fullName,
+          groomFather: weddingData.groom.parents?.fatherName,
+          groomMother: weddingData.groom.parents?.motherName,
+          brideName: weddingData.bride.fullName,
+          brideFather: weddingData.bride.parents?.fatherName,
+          brideMother: weddingData.bride.parents?.motherName,
+          eventDate: weddingData.events?.[0]?.eventDate
+            ? new Date(weddingData.events[0].eventDate).toISOString().slice(0, 10)
+            : "",
+          address: weddingData.events?.[0]?.address || "",
+          photos: customPhotos.map((p, idx) => ({ id: p.id || `photo-${idx}`, url: p.url, caption: p.caption })),
+        }}
+      />
     </div>
   );
 }

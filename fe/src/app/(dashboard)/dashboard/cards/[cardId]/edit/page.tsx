@@ -11,6 +11,8 @@ import { NewbornView } from "@/components/newborn/NewbornView";
 import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { ApiClient } from "@/lib/api";
 import { uploadSingleImage } from "@/lib/image-upload";
+import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import {
   Heart,
   Cake,
@@ -330,7 +332,13 @@ function EditCardContent() {
   const [brideMother, setBrideMother] = useState("");
   const [brideBirthOrder, setBrideBirthOrder] = useState("");
   const [brideAvatar, setBrideAvatar] = useState("");
+  const [bridePhone, setBridePhone] = useState("");
+  const [brideAddress, setBrideAddress] = useState("");
+  const [groomPhone, setGroomPhone] = useState("");
+  const [groomAddress, setGroomAddress] = useState("");
+  const [isReverseOrder, setIsReverseOrder] = useState(false);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
+  const [showQuickFill, setShowQuickFill] = useState(false);
 
   // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = 8-Tab Form) ──
   const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
@@ -433,14 +441,20 @@ function EditCardContent() {
       setGroomAvatar(groom.avatarUrl || "");
       setGroomFather(groom.parents?.fatherName || "");
       setGroomMother(groom.parents?.motherName || "");
+      if ((groom as any).phone) setGroomPhone((groom as any).phone);
+      if ((groom as any).address) setGroomAddress((groom as any).address);
       setBrideName(bride.fullName);
       setBrideShort(bride.shortName || "");
       setBrideBirthOrder(bride.birthOrder || "");
       setBrideAvatar(bride.avatarUrl || "");
       setBrideFather(bride.parents?.fatherName || "");
       setBrideMother(bride.parents?.motherName || "");
+      if ((bride as any).phone) setBridePhone((bride as any).phone);
+      if ((bride as any).address) setBrideAddress((bride as any).address);
       setCoverPhotoUrl((card.categoryData as any).coverPhotoUrl || "");
       setLoveStory(ls || []);
+      if ((card.categoryData as any).videoUrl) setVideoUrl((card.categoryData as any).videoUrl);
+      if ((card.categoryData as any).isReverseOrder !== undefined) setIsReverseOrder((card.categoryData as any).isReverseOrder);
     } else if (card.cardCategory === "BIRTHDAY" && card.categoryData.cardCategory === "BIRTHDAY") {
       setCelebrantName(card.categoryData.celebrantName);
       setAge(card.categoryData.age || 25);
@@ -450,6 +464,56 @@ function EditCardContent() {
       setWeight(card.categoryData.weight || "");
       setHeight(card.categoryData.height || "");
       setCeremonyType(card.categoryData.ceremonyType);
+    }
+  }, []);
+
+  const handleApplyQuickFill = useCallback((data: QuickFillData) => {
+    if (data.groomName) setGroomName(data.groomName);
+    if (data.groomFather) setGroomFather(data.groomFather);
+    if (data.groomMother) setGroomMother(data.groomMother);
+    if (data.brideName) setBrideName(data.brideName);
+    if (data.brideFather) setBrideFather(data.brideFather);
+    if (data.brideMother) setBrideMother(data.brideMother);
+
+    if (data.eventDate) {
+      const hour = parseInt(data.eventHour || "10", 10);
+      const minute = parseInt(data.eventMinute || "0", 10);
+      const dateStr = `${data.eventDate}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+      setEvents((prev) => {
+        if (prev.length > 0) {
+          return [
+            {
+              ...prev[0],
+              eventDate: dateStr,
+              address: data.address || prev[0].address,
+            },
+            ...prev.slice(1),
+          ];
+        }
+        return [
+          {
+            id: "event-main",
+            eventName: "Lễ Thành Hôn",
+            eventDate: dateStr,
+            address: data.address || "Tư gia",
+            venueName: "Trung tâm tiệc cưới",
+          },
+        ];
+      });
+    }
+
+    if (data.photos && data.photos.length > 0) {
+      setPhotos(
+        data.photos.map((p, idx) => ({
+          id: p.id || `photo-${idx}`,
+          url: p.url,
+          caption: p.caption,
+          isCover: idx === 0,
+        }))
+      );
+      if (data.photos[0]?.url) {
+        setCoverPhotoUrl(data.photos[0].url);
+      }
     }
   }, []);
 
@@ -819,6 +883,8 @@ function EditCardContent() {
               fullName: groomName?.trim() || "Chú Rể",
               shortName: groomShort?.trim() || undefined,
               birthOrder: groomBirthOrder?.trim() || undefined,
+              phone: groomPhone?.trim() || undefined,
+              address: groomAddress?.trim() || undefined,
               parents: (groomFather?.trim() || groomMother?.trim())
                 ? { fatherName: groomFather?.trim() || undefined, motherName: groomMother?.trim() || undefined }
                 : undefined,
@@ -827,6 +893,8 @@ function EditCardContent() {
               fullName: brideName?.trim() || "Cô Dâu",
               shortName: brideShort?.trim() || undefined,
               birthOrder: brideBirthOrder?.trim() || undefined,
+              phone: bridePhone?.trim() || undefined,
+              address: brideAddress?.trim() || undefined,
               parents: (brideFather?.trim() || brideMother?.trim())
                 ? { fatherName: brideFather?.trim() || undefined, motherName: brideMother?.trim() || undefined }
                 : undefined,
@@ -838,6 +906,8 @@ function EditCardContent() {
               imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl || undefined,
             })),
             photos: validPhotos,
+            videoUrl: videoUrl?.trim() || undefined,
+            isReverseOrder,
           }
         : category === "BIRTHDAY"
         ? { celebrantName: celebrantName?.trim() || "Chủ Tiệc", age: Number(age) || 18, events: formattedEvents }
@@ -1085,6 +1155,18 @@ function EditCardContent() {
             <span>Xem Thiệp</span>
           </Link>
 
+          {/* QUICK FILL MODAL TRIGGER */}
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setShowQuickFill(true)}
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-900 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+            <span>Điền Nhanh</span>
+          </motion.button>
+
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -1158,9 +1240,92 @@ function EditCardContent() {
         <div className={`w-full lg:w-[500px] xl:w-[560px] bg-white border-r border-[#EAE2D6] flex flex-col h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] shadow-xs ${
           mobileViewMode === "preview" ? "hidden lg:flex" : "flex"
         }`}>
-
-          {/* STICKY TOP TAB BAR */}
-          <div className="border-b border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 sticky top-0 z-30 shadow-2xs">
+          {category === "WEDDING" ? (
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3 bg-amber-50/80 border-b border-amber-200/60 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="text-xs font-bold text-amber-900">Thiết lập 23 mục thiệp cưới chi tiết</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickFill(true)}
+                  className="px-2.5 py-1 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow-2xs transition flex items-center gap-1 cursor-pointer"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>⚡ Điền Nhanh</span>
+                </button>
+              </div>
+              <WeddingAccordionForm
+                templateSlug={templateSlug || selectedTemplate}
+                onSelectTemplate={(s) => setTemplateSlug(s)}
+                primaryColor={primaryColor}
+                onColorChange={setPrimaryColor}
+                openingEffect={openingEffect as any}
+                onOpeningEffectChange={(e) => setOpeningEffect(e as any)}
+                groomName={groomName}
+                onGroomNameChange={setGroomName}
+                groomShort={groomShort}
+                onGroomShortChange={setGroomShort}
+                groomBirthOrder={groomBirthOrder}
+                onGroomBirthOrderChange={setGroomBirthOrder}
+                groomFather={groomFather}
+                onGroomFatherChange={setGroomFather}
+                groomMother={groomMother}
+                onGroomMotherChange={setGroomMother}
+                groomPhone={groomPhone}
+                onGroomPhoneChange={setGroomPhone}
+                groomAddress={groomAddress}
+                onGroomAddressChange={setGroomAddress}
+                brideName={brideName}
+                onBrideNameChange={setBrideName}
+                brideShort={brideShort}
+                onBrideShortChange={setBrideShort}
+                brideBirthOrder={brideBirthOrder}
+                onBrideBirthOrderChange={setBrideBirthOrder}
+                brideFather={brideFather}
+                onBrideFatherChange={setBrideFather}
+                brideMother={brideMother}
+                onBrideMotherChange={setBrideMother}
+                bridePhone={bridePhone}
+                onBridePhoneChange={setBridePhone}
+                brideAddress={brideAddress}
+                onBrideAddressChange={setBrideAddress}
+                isReverseOrder={isReverseOrder}
+                onReverseOrderChange={setIsReverseOrder}
+                greetingMessage={greetingMessage}
+                onGreetingChange={setGreetingMessage}
+                loveStory={loveStory}
+                onLoveStoryChange={setLoveStory}
+                events={events}
+                onEventsChange={setEvents}
+                photos={photos}
+                onPhotosChange={setPhotos}
+                onUploadPhotos={() => photoInputRef.current?.click()}
+                bankCodeGroom={bankCodeGroom}
+                onBankCodeGroomChange={setBankCodeGroom}
+                accNumGroom={accNumGroom}
+                onAccNumGroomChange={setAccNumGroom}
+                accNameGroom={accNameGroom}
+                onAccNameGroomChange={setAccNameGroom}
+                bankCodeBride={bankCodeBride}
+                onBankCodeBrideChange={setBankCodeBride}
+                accNumBride={accNumBride}
+                onAccNumBrideChange={setAccNumBride}
+                accNameBride={accNameBride}
+                onAccNameBrideChange={setAccNameBride}
+                selectedMusicSrc={selectedMusicSrc}
+                onMusicChange={setSelectedMusicSrc}
+                videoUrl={videoUrl}
+                onVideoUrlChange={setVideoUrl}
+                isRsvpEnabled={isRsvpEnabled}
+                onRsvpToggle={setIsRsvpEnabled}
+              />
+            </div>
+          ) : (
+            <>
+              {/* STICKY TOP TAB BAR */}
+              <div className="border-b border-[#E8E2D6] bg-[#FAF8F5]/95 backdrop-blur-md px-3 py-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 sticky top-0 z-30 shadow-2xs">
             {EDIT_TABS.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -2065,6 +2230,8 @@ function EditCardContent() {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
 
         {/* ══════════════════════════════════════════════════ */}
@@ -2126,6 +2293,24 @@ function EditCardContent() {
         </div>
       </div>
       )}
+
+      {/* ── QUICK FILL MODAL ── */}
+      <QuickFillModal
+        isOpen={showQuickFill}
+        onClose={() => setShowQuickFill(false)}
+        onApply={handleApplyQuickFill}
+        initialData={{
+          groomName,
+          groomFather,
+          groomMother,
+          brideName,
+          brideFather,
+          brideMother,
+          eventDate: events[0]?.eventDate ? new Date(events[0].eventDate).toISOString().slice(0, 10) : "",
+          address: events[0]?.address || "",
+          photos: photos.map((p, idx) => ({ id: p.id || `photo-${idx}`, url: p.url, caption: p.caption })),
+        }}
+      />
     </div>
   );
 }
