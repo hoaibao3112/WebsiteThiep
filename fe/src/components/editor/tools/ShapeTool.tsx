@@ -1,21 +1,67 @@
 "use client";
 
 import React, { useState } from "react";
-import { Shapes, Minus, Square, Circle, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { useEditor } from "../EditorContext";
 
-const SHAPES = [
-  { id: "line", title: "Đường kẻ vàng", shapeType: "line" as const, icon: Minus },
-  { id: "rect", title: "Khung viền vuông", shapeType: "rect" as const, icon: Square },
-  { id: "circle", title: "Khung tròn cổ điển", shapeType: "circle" as const, icon: Circle },
-  { id: "corner", title: "Hoa văn góc", shapeType: "corner" as const, icon: Shapes },
+export const SHAPE_ITEMS = [
+  {
+    id: "line",
+    shapeType: "line" as const,
+    title: "Đường kẻ",
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="none">
+        <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    id: "square",
+    shapeType: "square" as const,
+    title: "Hình vuông",
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="none">
+        <rect x="3" y="3" width="18" height="18" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
+    id: "rect",
+    shapeType: "rect" as const,
+    title: "Hình chữ nhật",
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="none">
+        <rect x="2" y="6" width="20" height="12" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
+    id: "circle",
+    shapeType: "circle" as const,
+    title: "Hình tròn",
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
+    id: "triangle",
+    shapeType: "triangle" as const,
+    title: "Tam giác",
+    icon: (
+      <svg viewBox="0 0 24 24" className="size-5" fill="none">
+        <polygon points="12,3 21,21 3,21" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
 ];
 
 export function ShapeTool() {
   const { addShapeElement } = useEditor();
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
 
-  const handleAdd = (item: (typeof SHAPES)[number]) => {
+  const handleAdd = (item: (typeof SHAPE_ITEMS)[number]) => {
     addShapeElement({ shapeType: item.shapeType, title: item.title });
     setRecentlyAddedId(item.id);
     setTimeout(() => {
@@ -30,13 +76,12 @@ export function ShapeTool() {
           Hình Dạng & Khung Viền
         </h3>
         <p className="text-[11px] text-stone-400">
-          Thêm các đường kẻ phân cách, khung ảnh hoa văn và hình khối trang trí.
+          Chạm hoặc kéo thả các hình khối và đường kẻ vào thiệp.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {SHAPES.map((item) => {
-          const Icon = item.icon;
+      <div className="flex flex-col gap-1.5">
+        {SHAPE_ITEMS.map((item) => {
           const isJustAdded = recentlyAddedId === item.id;
           return (
             <button
@@ -59,25 +104,27 @@ export function ShapeTool() {
                 e.dataTransfer.effectAllowed = "copy";
               }}
               onClick={() => handleAdd(item)}
-              className={`p-3 rounded-xl border text-center transition cursor-grab active:cursor-grabbing flex flex-col items-center justify-center active:scale-95 shadow-2xs ${
+              className={`px-3 py-2.5 rounded-xl border transition cursor-grab active:cursor-grabbing flex items-center justify-between active:scale-98 shadow-2xs ${
                 isJustAdded
                   ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300"
-                  : "border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300"
+                  : "border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-400"
               }`}
             >
-              <Icon className="size-6 mx-auto text-amber-700 mb-1" />
-              <span className="text-xs font-semibold text-stone-700">{item.title}</span>
+              <div className="flex items-center gap-3">
+                <div className="text-stone-800">{item.icon}</div>
+                <span className="text-xs font-medium text-stone-800">{item.title}</span>
+              </div>
               <span
-                className={`text-[9px] mt-1 font-semibold flex items-center gap-0.5 ${
-                  isJustAdded ? "text-emerald-700" : "text-amber-700"
+                className={`text-[10px] font-semibold flex items-center gap-0.5 ${
+                  isJustAdded ? "text-emerald-700 font-bold" : "text-stone-400"
                 }`}
               >
                 {isJustAdded ? (
                   <>
-                    <Check className="size-2.5" /> Đã thêm vào thiệp
+                    <Check className="size-3" /> Đã thêm
                   </>
                 ) : (
-                  "+ Chạm để thêm"
+                  "+ Thêm"
                 )}
               </span>
             </button>

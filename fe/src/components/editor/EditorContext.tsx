@@ -40,8 +40,8 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   setCanvasFallingEffect: (eff: string) => void;
   addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => string;
   addStickerElement: (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
-  addStockElement: (item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
-  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => string;
+  addStockElement: (item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string; svgContent?: string; svgType?: "frame" | "divider" | "custom" }, pos?: { x?: number; y?: number }) => string;
+  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner" | "square" | "triangle"; title: string }, pos?: { x?: number; y?: number }) => string;
   addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
   addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
   addWidgetElement: (widgetType: WidgetType, pos?: { x?: number; y?: number }) => string;
@@ -519,22 +519,26 @@ export function EditorProvider<T extends object>({
 
   const addStockElement = useCallback(
     (
-      item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string },
+      item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string; svgContent?: string; svgType?: "frame" | "divider" | "custom" },
       pos?: { x?: number; y?: number }
     ) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const defaultW = item.width || 160;
+      const defaultH = item.height || 180;
       const newEl: CanvasElement = {
         id: `stock-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "stock",
         stockId: item.id,
-        content: item.imageUrl || item.icon || "🕯️",
+        content: item.imageUrl || item.icon || item.title || "Khung viền",
         imageUrl: item.imageUrl,
+        svgContent: item.svgContent,
+        svgType: item.svgType,
         title: item.title,
         color: item.color,
-        x: pos?.x ?? 115,
+        x: pos?.x ?? Math.max(10, Math.round((390 - defaultW) / 2)),
         y: pos?.y ?? 180,
-        width: item.width || 160,
-        height: item.height || 180,
+        width: defaultW,
+        height: defaultH,
         zIndex: maxZ + 1,
         isLocked: false,
         opacity: 1,
@@ -581,7 +585,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addShapeElement = useCallback(
-    (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => {
+    (item: { shapeType: "line" | "rect" | "circle" | "corner" | "square" | "triangle"; title: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
@@ -603,6 +607,24 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
+      } else if (item.shapeType === "square") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "square",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 120,
+          y: pos?.y ?? 250,
+          width: 150,
+          height: 150,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
       } else if (item.shapeType === "rect") {
         newEl = {
           id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -616,8 +638,8 @@ export function EditorProvider<T extends object>({
           height: 180,
           borderWidth: 2,
           borderColor: "#BE944E",
-          backgroundColor: "rgba(190, 148, 78, 0.05)",
-          borderRadius: 16,
+          backgroundColor: "transparent",
+          borderRadius: 0,
           zIndex: maxZ + 1,
           isLocked: false,
           opacity: 1,
@@ -629,14 +651,32 @@ export function EditorProvider<T extends object>({
           shapeType: "circle",
           content: "",
           title: item.title,
-          x: pos?.x ?? 105,
+          x: pos?.x ?? 115,
           y: pos?.y ?? 240,
-          width: 180,
-          height: 180,
+          width: 160,
+          height: 160,
           borderWidth: 2,
           borderColor: "#BE944E",
-          backgroundColor: "rgba(190, 148, 78, 0.05)",
+          backgroundColor: "transparent",
           borderRadius: 999,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "triangle") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "triangle",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 115,
+          y: pos?.y ?? 240,
+          width: 160,
+          height: 160,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
           zIndex: maxZ + 1,
           isLocked: false,
           opacity: 1,

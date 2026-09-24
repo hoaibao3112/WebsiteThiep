@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useEditor, ToolCategory } from "./EditorContext";
 import {
   Type,
@@ -22,6 +22,7 @@ import { StockTool } from "./tools/StockTool";
 import { BackgroundTool } from "./tools/BackgroundTool";
 import { MusicTool } from "./tools/MusicTool";
 import { ShapeTool } from "./tools/ShapeTool";
+import { ShapePopover } from "./tools/ShapePopover";
 import { WidgetTool } from "./tools/WidgetTool";
 import { PresetTool } from "./tools/PresetTool";
 import { ColorTool } from "./tools/ColorTool";
@@ -49,8 +50,22 @@ const TOOLS: NavItem[] = [
 
 export function LeftSidebar() {
   const { activeTool, setActiveTool } = useEditor();
+  const [isShapePopoverOpen, setIsShapePopoverOpen] = useState(false);
+  const [shapeTopOffset, setShapeTopOffset] = useState(240);
 
-  const handleToolClick = (toolId: ToolCategory) => {
+  const handleToolClick = (toolId: ToolCategory, e: React.MouseEvent<HTMLButtonElement>) => {
+    if (toolId === "shape") {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const parentRect = e.currentTarget.closest("aside")?.getBoundingClientRect();
+      if (parentRect) {
+        setShapeTopOffset(rect.top - parentRect.top);
+      }
+      setIsShapePopoverOpen(!isShapePopoverOpen);
+      if (activeTool) setActiveTool(null);
+      return;
+    }
+
+    setIsShapePopoverOpen(false);
     setActiveTool(activeTool === toolId ? null : toolId);
   };
 
@@ -90,13 +105,13 @@ export function LeftSidebar() {
         <div className="flex flex-col items-center gap-1.5 overflow-y-auto px-1.5">
           {TOOLS.map((tool) => {
             const Icon = tool.icon;
-            const isActive = activeTool === tool.id;
+            const isActive = tool.id === "shape" ? isShapePopoverOpen : activeTool === tool.id;
 
             return (
               <button
                 key={tool.id}
                 type="button"
-                onClick={() => handleToolClick(tool.id)}
+                onClick={(e) => handleToolClick(tool.id, e)}
                 className={`w-full min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
                   isActive
                     ? "bg-stone-100 text-stone-900 font-bold border border-stone-200 shadow-2xs"
@@ -113,6 +128,13 @@ export function LeftSidebar() {
           })}
         </div>
       </aside>
+
+      {/* Floating Shape Popover Menu */}
+      <ShapePopover
+        isOpen={isShapePopoverOpen}
+        onClose={() => setIsShapePopoverOpen(false)}
+        topOffset={shapeTopOffset}
+      />
 
       {/* 2. EXPANDED TOOL SUB-DRAWER */}
       <AnimatePresence>

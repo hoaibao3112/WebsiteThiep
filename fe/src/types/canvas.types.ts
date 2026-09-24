@@ -40,9 +40,11 @@ export interface CanvasElement {
   shadow?: string;
   zIndex: number;
   isLocked?: boolean;
-  shapeType?: "line" | "rect" | "circle" | "corner";
+  shapeType?: "line" | "rect" | "circle" | "corner" | "square" | "triangle";
   presetId?: string;
   stockId?: string;
+  svgContent?: string;
+  svgType?: "frame" | "divider" | "custom";
   imageUrl?: string;
   title?: string;
   rotation?: number;

@@ -180,9 +180,11 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
 
         // Proportionally scale fontSize for stickers and text so dragging larger makes them visibly bigger
         if (element.type === "sticker" || element.type === "text") {
-          const scaleRatio = newHeight / Math.max(20, startHeight);
+          const ratioH = newHeight / Math.max(20, startHeight);
+          const ratioW = newWidth / Math.max(30, startWidth);
+          const scaleRatio = handle === "w" || handle === "e" ? ratioW : ratioH;
           const baseSize = element.fontSize || (element.type === "sticker" ? 60 : 28);
-          patch.fontSize = Math.max(14, Math.min(240, Math.round(baseSize * scaleRatio)));
+          patch.fontSize = Math.max(12, Math.min(240, Math.round(baseSize * scaleRatio)));
         }
 
         updateCanvasElement(element.id, patch);
@@ -301,7 +303,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
           {/* Context Dropdown Menu matching ngaychungdoi.com */}
           {showMenu && (
             <div
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 w-52 bg-white rounded-2xl shadow-2xl border border-stone-200 py-1.5 text-xs text-stone-700 z-50 divide-y divide-stone-100 font-sans animate-in fade-in zoom-in-95"
+              className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 w-56 max-h-[420px] overflow-y-auto rounded-2xl shadow-2xl border border-stone-200/90 bg-white py-1.5 text-xs text-stone-700 z-50 divide-y divide-stone-100 font-sans animate-in fade-in zoom-in-95"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Clipboard Actions */}
@@ -309,31 +311,16 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                 <button
                   type="button"
                   onClick={() => {
-                    copySelectedElement();
-                    setShowMenu(false);
-                  }}
-                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-stone-50 transition text-left"
-                >
-                  <span className="flex items-center gap-2">
-                    <Copy className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Sao chép</span>
-                  </span>
-                  <span className="text-[10px] text-stone-400 font-mono">Ctrl+C</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
                     cutSelectedElement();
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left"
                 >
-                  <span className="flex items-center gap-2">
-                    <Scissors className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Cắt</span>
+                  <span className="flex items-center gap-2.5">
+                    <Scissors className="w-4 h-4 text-stone-600" />
+                    <span className="text-xs text-stone-800 font-medium">Cắt</span>
                   </span>
-                  <span className="text-[10px] text-stone-400 font-mono">Ctrl+X</span>
+                  <span className="text-[11px] text-stone-400 font-mono">Ctrl+X</span>
                 </button>
 
                 <button
@@ -342,13 +329,13 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     pasteElement();
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left"
                 >
-                  <span className="flex items-center gap-2">
-                    <Clipboard className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Dán</span>
+                  <span className="flex items-center gap-2.5">
+                    <Clipboard className="w-4 h-4 text-stone-600" />
+                    <span className="text-xs text-stone-800 font-medium">Dán</span>
                   </span>
-                  <span className="text-[10px] text-stone-400 font-mono">Ctrl+V</span>
+                  <span className="text-[11px] text-stone-400 font-mono">Ctrl+V</span>
                 </button>
 
                 <button
@@ -357,12 +344,10 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     duplicateCanvasElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
-                  <span className="flex items-center gap-2">
-                    <Copy className="w-3.5 h-3.5 text-stone-500" />
-                    <span>Tạo bản sao</span>
-                  </span>
+                  <Copy className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Tạo bản sao</span>
                 </button>
 
                 <button
@@ -371,12 +356,10 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     removeCanvasElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-rose-50 text-rose-600 transition text-left font-medium"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 text-stone-800 transition text-left"
                 >
-                  <span className="flex items-center gap-2">
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Xóa phần tử</span>
-                  </span>
+                  <Trash2 className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Xóa phần tử</span>
                 </button>
               </div>
 
@@ -388,10 +371,10 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     reorderElementLayer(element.id, "top");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
-                  <ChevronsUp className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Đưa lên trên cùng</span>
+                  <Layers className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Đưa lên trên cùng</span>
                 </button>
 
                 <button
@@ -400,10 +383,10 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     reorderElementLayer(element.id, "bottom");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
-                  <ChevronsDown className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Đưa xuống dưới cùng</span>
+                  <Layers className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Đưa xuống dưới cùng</span>
                 </button>
 
                 <button
@@ -412,10 +395,10 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     reorderElementLayer(element.id, "up");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
-                  <ArrowUp className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Đưa lên một lớp</span>
+                  <ArrowUp className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Đưa lên một lớp</span>
                 </button>
 
                 <button
@@ -424,39 +407,37 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
                     reorderElementLayer(element.id, "down");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
-                  <ArrowDown className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Đưa xuống một lớp</span>
+                  <ArrowDown className="w-4 h-4 text-stone-600" />
+                  <span className="text-xs text-stone-800 font-medium">Đưa xuống một lớp</span>
                 </button>
-              </div>
 
-              {/* Lock & Layer Info */}
-              <div className="py-1">
                 <button
                   type="button"
                   onClick={() => {
                     toggleLockElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
                 >
                   {element.isLocked ? (
                     <>
-                      <Unlock className="w-3.5 h-3.5 text-emerald-600" />
-                      <span className="text-emerald-700 font-medium">Mở khóa vị trí</span>
+                      <Unlock className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs text-emerald-700 font-medium">Mở khóa vị trí</span>
                     </>
                   ) : (
                     <>
-                      <Lock className="w-3.5 h-3.5 text-stone-500" />
-                      <span>Khóa vị trí</span>
+                      <Lock className="w-4 h-4 text-stone-600" />
+                      <span className="text-xs text-stone-800 font-medium">Khóa vị trí</span>
                     </>
                   )}
                 </button>
+              </div>
 
-                <div className="px-3 py-1 text-[11px] text-stone-400 font-mono">
-                  Lớp hiện tại: {element.zIndex || 1}
-                </div>
+              {/* Layer Info */}
+              <div className="px-3.5 py-2.5 text-xs text-stone-500 font-medium">
+                Lớp hiện tại: {element.zIndex || 1}
               </div>
             </div>
           )}

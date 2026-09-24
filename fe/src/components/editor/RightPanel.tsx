@@ -849,6 +849,12 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                     <ellipse cx="75" cy="38" rx="3" ry="6" fill="#F59E0B" />
                   </svg>
                 </div>
+              ) : element.svgContent ? (
+                <div
+                  className="w-full h-full flex items-center justify-center p-2"
+                  style={{ color: element.color || "#BE944E" }}
+                  dangerouslySetInnerHTML={{ __html: element.svgContent }}
+                />
               ) : previewThumbnail && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? (
                 <img
                   src={previewThumbnail}
@@ -1065,6 +1071,15 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
             </button>
             {expandColor && (
               <div className="p-3 bg-white space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Màu viền / Chi tiết</span>
+                  <input
+                    type="color"
+                    value={element.color || element.borderColor || "#BE944E"}
+                    onChange={(e) => updateCanvasElement(element.id, { color: e.target.value, borderColor: e.target.value })}
+                    className="size-7 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                  />
+                </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-stone-600">Màu nền</span>
                   <input

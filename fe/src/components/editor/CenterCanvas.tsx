@@ -398,17 +398,21 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       const dropY = Math.round((e.clientY - rect.top) / zoomFactor + scrollTop);
 
       if (data.type === "stock") {
+        const itemW = data.width || (data.isWide ? 200 : 140);
+        const itemH = data.height || (data.isWide ? 50 : 140);
         addStockElement(
           {
-            id: data.id || "stock-item",
+            id: data.stockId || data.id || "stock-item",
             icon: data.icon,
             title: data.title,
             color: data.color,
             imageUrl: data.imageUrl,
-            width: data.width || (data.isWide ? 150 : 120),
-            height: data.height || (data.isWide ? 90 : 140),
+            svgContent: data.svgContent,
+            svgType: data.svgType,
+            width: itemW,
+            height: itemH,
           },
-          { x: Math.max(10, dropX - 60), y: Math.max(10, dropY - 60) }
+          { x: Math.max(10, dropX - Math.round(itemW / 2)), y: Math.max(10, dropY - Math.round(itemH / 2)) }
         );
       } else if (data.type === "sticker") {
         addStickerElement(
