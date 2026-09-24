@@ -343,6 +343,7 @@ function EditCardContent() {
 
   // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = Accordion Form) ──
   const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // ── Love story ──
   const [loveStory, setLoveStory] = useState<
@@ -896,6 +897,7 @@ function EditCardContent() {
 
   // Sync edits from VisualCardEditor back to local state hooks
   const handleDraftChange = useCallback((nextDraft: CardDetail) => {
+    setHasUnsavedChanges(true);
     if (nextDraft.primaryColor) setPrimaryColor(nextDraft.primaryColor);
     if (nextDraft.fontFamily) setFontFamily(nextDraft.fontFamily);
     if (nextDraft.musicUrl !== undefined) setSelectedMusicSrc(nextDraft.musicUrl || "");
@@ -1125,6 +1127,7 @@ function EditCardContent() {
       confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
       setSaveError(null);
       setSuccessToast(true);
+      setHasUnsavedChanges(false);
       setTimeout(() => {
         setSuccessToast(false);
         router.push(`/thiep/${cleanSlug}`);
@@ -1194,165 +1197,243 @@ function EditCardContent() {
       />
 
       {/* ── TOP HEADER ── */}
-      <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-3 sm:px-8 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
-        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-          <Link
-            href="/dashboard/cards"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
-            title="Quay lại danh sách thiệp"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="font-serif font-bold text-sm sm:text-lg text-stone-900 tracking-tight flex items-center gap-1.5 truncate">
-                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#BE944E] shrink-0" />
-                <span className="truncate">Chỉnh Sửa Thiệp</span>
-              </h1>
-              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[11px] font-bold shrink-0">
-                {category === "WEDDING" ? "Thiệp Cưới" : category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
-              </span>
-            </div>
-            <p className="hidden sm:block text-[11px] text-stone-400 font-mono truncate">
-              /thiep/<span className="text-[#BE944E] font-bold">{slug}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* CENTER: MODE SWITCHER & DEVICE TOGGLE */}
-        <div className="flex items-center gap-2">
-          {/* Mode Switcher */}
-          <div className="flex items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 sm:gap-1">
-            <button
-              type="button"
-              onClick={() => setEditorMode("canvas")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
-                editorMode === "canvas"
-                  ? "bg-gradient-to-r from-[#BE944E] to-[#966E29] text-white shadow-xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-              <span className="hidden xs:inline">Studio</span>
-              <span>Trực Quan</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditorMode("form")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition ${
-                editorMode === "form"
-                  ? "bg-white text-stone-900 shadow-2xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Pencil className="w-3.5 h-3.5 text-[#BE944E]" />
-              <span className="hidden xs:inline">Biểu</span>
-              <span>Mẫu</span>
-            </button>
-          </div>
-
-          {/* Form mode only on mobile: Edit / Preview Switcher */}
-          {editorMode === "form" && (
-            <div className="flex lg:hidden items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => setMobileViewMode("edit")}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
-                  mobileViewMode === "edit"
-                    ? "bg-white text-stone-900 shadow-2xs"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
+      <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
+        {editorMode === "canvas" ? (
+          <>
+            {/* LEFT: BACK + BRAND LOGO + MODE TOGGLE */}
+            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+              <Link
+                href="/dashboard/cards"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
+                title="Quay lại danh sách thiệp"
               >
-                <span>Nhập Liệu</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileViewMode("preview")}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
-                  mobileViewMode === "preview"
-                    ? "bg-[#BE944E] text-white shadow-2xs"
-                    : "text-stone-500 hover:text-stone-800"
-                }`}
-              >
-                <Eye className="w-3 h-3" />
-                <span>Xem</span>
-              </button>
-            </div>
-          )}
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
 
-          {/* Form mode only on desktop: Device Preview Toggle */}
-          {editorMode === "form" && (
-            <div className="hidden lg:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
-              {[
-                { key: "mobile", icon: <Smartphone className="w-3.5 h-3.5" />, label: "Mobile" },
-                { key: "tablet", icon: <Tablet className="w-3.5 h-3.5" />, label: "Tablet" },
-                { key: "desktop", icon: <Laptop className="w-3.5 h-3.5" />, label: "Desktop" },
-              ].map((d) => (
+              {/* LOGO "ngày chung đôi" KHỚP VỚI ẢNH CHỤP */}
+              <div className="flex items-center gap-2 select-none">
+                <div className="size-7 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-600 shadow-2xs">
+                  <Heart className="size-4 fill-pink-500 text-pink-500" />
+                </div>
+                <span className="font-serif font-bold text-sm sm:text-base text-stone-900 tracking-tight hidden xs:inline">
+                  ngày chung đôi
+                </span>
+              </div>
+
+              {/* MODE SWITCHER */}
+              <div className="flex items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5">
                 <button
-                  key={d.key}
                   type="button"
-                  onClick={() => setPreviewDevice(d.key as any)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
-                    previewDevice === d.key ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+                  onClick={() => setEditorMode("canvas")}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-stone-900 shadow-2xs flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="hidden sm:inline">Studio</span>
+                  <span>Canvas</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditorMode("form")}
+                  className="px-2.5 py-1 rounded-lg text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center gap-1.5 transition"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-stone-500" />
+                  <span>Biểu Mẫu</span>
+                </button>
+              </div>
+            </div>
+
+            {/* CENTER: UNSAVED CHANGES STATUS */}
+            <div className="flex items-center gap-2">
+              {hasUnsavedChanges ? (
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50/90 border border-amber-200/90 px-3 py-1 rounded-full shadow-2xs animate-in fade-in">
+                  <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                  <span className="hidden xs:inline">Có thay đổi chưa lưu</span>
+                  <span className="xs:hidden">Chưa lưu</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50/90 border border-emerald-200/90 px-3 py-1 rounded-full shadow-2xs">
+                  <span className="size-2 rounded-full bg-emerald-500" />
+                  <span>Đã lưu</span>
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT: VIEW CARD & "LƯU THIỆP" BUTTON NỀN ĐEN KHỚP ẢNH MẪU */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Link
+                href={`/thiep/${slug}`}
+                target="_blank"
+                className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Xem Thiệp</span>
+              </Link>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSaveCard}
+                disabled={saving}
+                className="px-5 sm:px-6 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
+              >
+                {saving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5 text-white/90" />
+                )}
+                <span>{saving ? "Đang lưu..." : "Lưu thiệp"}</span>
+              </motion.button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+              <Link
+                href="/dashboard/cards"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
+                title="Quay lại danh sách thiệp"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Link>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="font-serif font-bold text-sm sm:text-lg text-stone-900 tracking-tight flex items-center gap-1.5 truncate">
+                    <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#BE944E] shrink-0" />
+                    <span className="truncate">Chỉnh Sửa Thiệp</span>
+                  </h1>
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#BE944E]/15 text-[#966E29] text-[11px] font-bold shrink-0">
+                    {category === "WEDDING" ? "Thiệp Cưới" : category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
+                  </span>
+                </div>
+                <p className="hidden sm:block text-[11px] text-stone-400 font-mono truncate">
+                  /thiep/<span className="text-[#BE944E] font-bold">{slug}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* CENTER: MODE SWITCHER & DEVICE TOGGLE */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 sm:gap-1">
+                <button
+                  type="button"
+                  onClick={() => setEditorMode("canvas")}
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center gap-1.5 transition"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="hidden xs:inline">Studio</span>
+                  <span>Trực Quan</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditorMode("form")}
+                  className="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-stone-900 shadow-2xs flex items-center gap-1.5 transition"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-[#BE944E]" />
+                  <span className="hidden xs:inline">Biểu</span>
+                  <span>Mẫu</span>
+                </button>
+              </div>
+
+              {/* Form mode only on mobile: Edit / Preview Switcher */}
+              <div className="flex lg:hidden items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode("edit")}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+                    mobileViewMode === "edit"
+                      ? "bg-white text-stone-900 shadow-2xs"
+                      : "text-stone-500 hover:text-stone-800"
                   }`}
                 >
-                  {d.icon}
-                  <span>{d.label}</span>
+                  <span>Nhập Liệu</span>
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={() => setMobileViewMode("preview")}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition ${
+                    mobileViewMode === "preview"
+                      ? "bg-[#BE944E] text-white shadow-2xs"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  <Eye className="w-3 h-3" />
+                  <span>Xem</span>
+                </button>
+              </div>
+
+              {/* Form mode only on desktop: Device Preview Toggle */}
+              <div className="hidden lg:flex items-center bg-stone-100 p-1 rounded-xl border border-stone-200 gap-1">
+                {[
+                  { key: "mobile", icon: <Smartphone className="w-3.5 h-3.5" />, label: "Mobile" },
+                  { key: "tablet", icon: <Tablet className="w-3.5 h-3.5" />, label: "Tablet" },
+                  { key: "desktop", icon: <Laptop className="w-3.5 h-3.5" />, label: "Desktop" },
+                ].map((d) => (
+                  <button
+                    key={d.key}
+                    type="button"
+                    onClick={() => setPreviewDevice(d.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${
+                      previewDevice === d.key ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+                    }`}
+                  >
+                    {d.icon}
+                    <span>{d.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* RIGHT: SAVE & PREVIEW */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href={`/thiep/${slug}`}
-            target="_blank"
-            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
-          >
-            <span>Xem Thiệp</span>
-          </Link>
+            {/* RIGHT: SAVE & PREVIEW */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Link
+                href={`/thiep/${slug}`}
+                target="_blank"
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+              >
+                <span>Xem Thiệp</span>
+              </Link>
 
-          {/* QUICK FILL MODAL TRIGGER */}
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setShowApplyProfileModal(true)}
-            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
-            title="Lấy dữ liệu từ Hồ Sơ Cưới tài khoản đưa vào thiệp"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-            <span>Áp Dụng Từ Hồ Sơ</span>
-          </motion.button>
+              {/* QUICK FILL MODAL TRIGGER */}
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowApplyProfileModal(true)}
+                className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+                title="Lấy dữ liệu từ Hồ Sơ Cưới tài khoản đưa vào thiệp"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                <span>Áp Dụng Từ Hồ Sơ</span>
+              </motion.button>
 
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setShowQuickFill(true)}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition cursor-pointer shadow-2xs shrink-0"
-          >
-            <span>Điền Nhanh</span>
-          </motion.button>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowQuickFill(true)}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition cursor-pointer shadow-2xs shrink-0"
+              >
+                <span>Điền Nhanh</span>
+              </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={handleSaveCard}
-            disabled={saving}
-            className="px-3.5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider sm:tracking-widest shadow-md flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
-          >
-            {saving ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Save className="w-3.5 h-3.5" />
-            )}
-            <span>{saving ? "Đang lưu..." : "Lưu Thay Đổi"}</span>
-          </motion.button>
-        </div>
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleSaveCard}
+                disabled={saving}
+                className="px-3.5 sm:px-6 py-2 rounded-full bg-gradient-to-r from-[#B68837] via-[#D8B062] to-[#A2772A] hover:opacity-95 text-white text-xs font-bold uppercase tracking-wider sm:tracking-widest shadow-md flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
+              >
+                {saving ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>{saving ? "Đang lưu..." : "Lưu Thay Đổi"}</span>
+              </motion.button>
+            </div>
+          </>
+        )}
       </header>
 
       {/* ── SUCCESS TOAST ── */}

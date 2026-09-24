@@ -9,7 +9,7 @@ interface PresetItem {
   title: string;
   cat: "photo" | "info" | "timeline" | "invite" | "other";
   desc: string;
-  previewType: "envelope-pink" | "envelope-green" | "invitation" | "calendar" | "parents" | "arch" | "duo" | "timeline" | "qr" | "quote";
+  previewType: "envelope-pink" | "envelope-green" | "invitation" | "calendar" | "parents" | "arch" | "duo" | "timeline" | "qr" | "quote" | "carnation" | "wax-seal" | "mini-bouquet" | "gold-divider";
 }
 
 const PRESET_CATALOG: PresetItem[] = [
@@ -82,6 +82,34 @@ const PRESET_CATALOG: PresetItem[] = [
     cat: "other",
     desc: "Câu đối trích dẫn lời yêu thương ý nghĩa",
     previewType: "quote",
+  },
+  {
+    id: "p-carnation-bouquet",
+    title: "Cành cẩm chướng nơ đỏ",
+    cat: "other",
+    desc: "Hoa cẩm chướng gắn nơ đỏ duyên dáng trang trí thiệp",
+    previewType: "carnation" as any,
+  },
+  {
+    id: "p-wax-seal",
+    title: "Con dấu sáp hồng niêm phong",
+    cat: "other",
+    desc: "Dấu sáp ML đính nắp phong bì hoàng gia",
+    previewType: "wax-seal" as any,
+  },
+  {
+    id: "p-mini-bouquet",
+    title: "Bó hoa cưới mini pastel",
+    cat: "other",
+    desc: "Bó hoa mini thắt ruy băng trang nhã",
+    previewType: "mini-bouquet" as any,
+  },
+  {
+    id: "p-gold-divider",
+    title: "Thanh chỉ vàng kim loại",
+    cat: "other",
+    desc: "Đường kẻ vàng sang trọng phân tách bố cục",
+    previewType: "gold-divider" as any,
   },
 ];
 
@@ -256,6 +284,74 @@ export function PresetTool() {
               <span className="text-[7px] text-stone-500 block">Gửi lời chúc & hồng bao</span>
               <span className="text-[7px] font-mono text-amber-700 font-semibold block mt-0.5">MB BANK</span>
             </div>
+          </div>
+        );
+
+      case "carnation":
+        return (
+          <div className="w-full h-28 bg-[#FFF9F9] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-pink-200/80 shadow-2xs">
+            <svg viewBox="0 0 120 180" className="w-16 h-24 drop-shadow-xs">
+              <path d="M 60 160 Q 55 110 40 70 M 60 160 Q 65 120 75 80" stroke="#4D7C0F" strokeWidth="3" fill="none" strokeLinecap="round" />
+              <path d="M 52 130 Q 35 125 38 115 Q 48 120 52 130 Z" fill="#65A30D" />
+              <path d="M 62 110 Q 78 105 76 95 Q 66 100 62 110 Z" fill="#65A30D" />
+              <g transform="translate(38, 55)">
+                <ellipse cx="0" cy="10" rx="6" ry="8" fill="#4D7C0F" />
+                <path d="M -18 -5 C -25 -15 -10 -25 0 -22 C 10 -25 25 -15 18 -5 C 22 8 8 16 0 14 C -8 16 -22 8 -18 -5 Z" fill="#F43F5E" opacity="0.9" />
+                <path d="M -14 -8 C -18 -18 -5 -24 0 -20 C 5 -24 18 -18 14 -8 C 16 4 5 10 0 8 C -5 10 -16 4 -14 -8 Z" fill="#FB7185" />
+                <path d="M -8 -10 C -12 -16 0 -20 0 -17 C 0 -20 12 -16 8 -10 C 8 0 2 5 0 4 C -2 5 -8 0 -8 -10 Z" fill="#FECDD3" />
+              </g>
+              <g transform="translate(76, 75) scale(0.85)">
+                <ellipse cx="0" cy="10" rx="6" ry="8" fill="#4D7C0F" />
+                <path d="M -18 -5 C -25 -15 -10 -25 0 -22 C 10 -25 25 -15 18 -5 C 22 8 8 16 0 14 C -8 16 -22 8 -18 -5 Z" fill="#E11D48" opacity="0.9" />
+                <path d="M -14 -8 C -18 -18 -5 -24 0 -20 C 5 -24 18 -18 14 -8 C 16 4 5 10 0 8 C -5 10 -16 4 -14 -8 Z" fill="#FB7185" />
+                <path d="M -8 -10 C -12 -16 0 -20 0 -17 C 0 -20 12 -16 8 -10 C 8 0 2 5 0 4 C -2 5 -8 0 -8 -10 Z" fill="#FFE4E6" />
+              </g>
+              <g transform="translate(58, 140)">
+                <circle cx="0" cy="0" r="4" fill="#B91C1C" />
+                <path d="M 0 0 C -15 -10 -20 8 0 3 Z" fill="#DC2626" />
+                <path d="M 0 0 C 15 -10 20 8 0 3 Z" fill="#DC2626" />
+                <path d="M -2 2 Q -8 18 -12 25" stroke="#DC2626" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+                <path d="M 2 2 Q 8 18 14 24" stroke="#DC2626" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+              </g>
+            </svg>
+          </div>
+        );
+
+      case "wax-seal":
+        return (
+          <div className="w-full h-28 bg-[#FAF6F6] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-pink-200/80 shadow-2xs">
+            <svg viewBox="0 0 100 100" className="w-16 h-16 drop-shadow-sm">
+              <path d="M 50 4 C 64 2 73 9 84 18 C 95 28 98 42 96 55 C 94 69 88 80 77 88 C 65 96 48 98 35 94 C 20 90 9 79 5 65 C 2 50 6 36 15 24 C 24 12 36 6 50 4 Z" fill="#F47291" />
+              <circle cx="50" cy="51" r="32" fill="none" stroke="#E11D48" strokeWidth="1.5" strokeOpacity="0.3" />
+              <circle cx="50" cy="51" r="28" fill="#FB7185" />
+              <text x="50" y="58" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.95" fontFamily="serif" fontStyle="italic" fontWeight="bold" fontSize="22">ML</text>
+            </svg>
+          </div>
+        );
+
+      case "mini-bouquet":
+        return (
+          <div className="w-full h-28 bg-[#FFF9FB] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-pink-200/80 shadow-2xs">
+            <svg viewBox="0 0 100 120" className="w-16 h-20 drop-shadow-xs">
+              <path d="M 50 115 L 25 65 L 75 65 Z" fill="#FCE7F3" stroke="#F472B6" strokeWidth="1" />
+              <path d="M 30 65 Q 50 78 70 65 L 50 115 Z" fill="#FDF2F8" />
+              <circle cx="40" cy="50" r="14" fill="#F43F5E" />
+              <circle cx="60" cy="48" r="13" fill="#FB7185" />
+              <circle cx="50" cy="35" r="15" fill="#FDA4AF" />
+              <circle cx="35" cy="36" r="10" fill="#C084FC" />
+              <circle cx="65" cy="35" r="11" fill="#A855F7" />
+              <circle cx="50" cy="52" r="8" fill="#FBBF24" />
+              <ellipse cx="50" cy="85" rx="8" ry="4" fill="#EC4899" />
+              <path d="M 45 87 Q 40 102 38 110" stroke="#EC4899" strokeWidth="2" fill="none" />
+              <path d="M 55 87 Q 60 102 62 110" stroke="#EC4899" strokeWidth="2" fill="none" />
+            </svg>
+          </div>
+        );
+
+      case "gold-divider":
+        return (
+          <div className="w-full h-28 bg-[#FAF8F5] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-4 border border-stone-200 shadow-2xs">
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent shadow-2xs" />
           </div>
         );
 

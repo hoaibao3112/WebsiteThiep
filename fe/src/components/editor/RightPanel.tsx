@@ -748,6 +748,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
   const [expandMotion, setExpandMotion] = useState(false);
   const [expandLoopMotion, setExpandLoopMotion] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showCropModal, setShowCropModal] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -843,7 +844,12 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               <button
                 type="button"
                 onClick={() => {
-                  if (fileInputRef.current) fileInputRef.current.click();
+                  const activeImg = element.imageUrl || (typeof previewThumbnail === "string" && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? previewThumbnail : "");
+                  if (activeImg) {
+                    setShowCropModal(true);
+                  } else if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
                 }}
                 className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
               >
@@ -1252,7 +1258,162 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
           {saveState === "saving" ? "Đang lưu..." : "Lưu Bản Nháp"}
         </button>
       </div>
+
+      {/* ── CROP MODAL CHO PHẦN TỬ CANVAS ── */}
+      {showCropModal && (
+        <CanvasCropModal
+          imageUrl={element.imageUrl || (typeof previewThumbnail === "string" ? previewThumbnail : "")}
+          onApply={(croppedUrl) => {
+            updateCanvasElement(element.id, { imageUrl: croppedUrl, content: croppedUrl });
+            setShowCropModal(false);
+          }}
+          onClose={() => setShowCropModal(false)}
+        />
+      )}
     </aside>
   );
 }
+
+// ── CANVAS CROP MODAL COMPONENT ──
+function CanvasCropModal({
+  imageUrl,
+  onApply,
+  onClose,
+}: {
+  imageUrl: string;
+  onApply: (croppedUrl: string) => void;
+  onClose: () => void;
+}) {
+  const [aspectRatio, setAspectRatio] = useState<"1:1" | "4:3" | "16:9" | "free">("1:1");
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+
+  const handleConfirm = () => {
+    if (!imageUrl) {
+      onClose();
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = imageUrl;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const w = img.width;
+      const h = img.height;
+      if (aspectRatio === "1:1") {
+        const size = Math.min(w, h);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, (w - size) / 2, (h - size) / 2, size, size, 0, 0, size, size);
+          onApply(canvas.toDataURL("image/jpeg", 0.9));
+        }
+      } else if (aspectRatio === "4:3") {
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 800, 600);
+          onApply(canvas.toDataURL("image/jpeg", 0.9));
+        }
+      } else if (aspectRatio === "16:9") {
+        canvas.width = 800;
+        canvas.height = 450;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 800, 450);
+          onApply(canvas.toDataURL("image/jpeg", 0.9));
+        }
+      } else {
+        onApply(imageUrl);
+      }
+      onClose();
+    };
+    img.onerror = () => {
+      onClose();
+    };
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-stone-200 animate-in fade-in zoom-in-95 duration-150">
+        <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
+          <h4 className="text-sm font-bold text-stone-800">Cắt & Điều chỉnh ảnh</h4>
+          <button type="button" onClick={onClose} className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100">
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="w-full h-56 bg-stone-900 rounded-2xl overflow-hidden flex items-center justify-center relative p-2">
+            <img
+              src={imageUrl}
+              alt="Crop preview"
+              style={{
+                transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                aspectRatio: aspectRatio === "1:1" ? "1/1" : aspectRatio === "4:3" ? "4/3" : aspectRatio === "16:9" ? "16/9" : "auto",
+              }}
+              className="max-h-full max-w-full object-contain rounded-lg transition-transform duration-100"
+            />
+          </div>
+          <div>
+            <label className="text-[11px] font-bold text-stone-600 block mb-1.5">Tỉ lệ khung hình</label>
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-stone-100 rounded-xl text-xs font-semibold">
+              {(["1:1", "4:3", "16:9", "free"] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => setAspectRatio(r)}
+                  className={`py-1.5 rounded-lg transition cursor-pointer text-center ${
+                    aspectRatio === r ? "bg-white text-stone-900 shadow-2xs font-bold" : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  {r === "free" ? "Tự do" : r}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-4 pt-1">
+            <div className="flex items-center gap-2 flex-1">
+              <span className="text-[11px] text-stone-500 font-medium">Thu/Phóng:</span>
+              <input
+                type="range"
+                min="0.8"
+                max="2.0"
+                step="0.05"
+                value={zoom}
+                onChange={(e) => setZoom(parseFloat(e.target.value))}
+                className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setRotation((r) => (r + 90) % 360)}
+              className="px-2.5 py-1 text-xs border border-stone-200 rounded-lg text-stone-600 hover:bg-stone-50 font-medium shrink-0 cursor-pointer"
+            >
+              Xoay 90°
+            </button>
+          </div>
+        </div>
+        <div className="px-5 py-3.5 bg-stone-50 border-t border-stone-100 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-semibold text-stone-600 hover:bg-stone-200 transition cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition cursor-pointer"
+          >
+            Áp dụng cắt ảnh
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 

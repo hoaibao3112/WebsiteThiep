@@ -598,6 +598,66 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
+      } else if (item.id === "p-carnation-bouquet") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-carnation-bouquet",
+          title: "Cành cẩm chướng nơ đỏ",
+          content: "carnation",
+          x: pos?.x ?? 25,
+          y: pos?.y ?? 210,
+          width: 90,
+          height: 135,
+          zIndex: maxZ + 2,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-wax-seal") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-wax-seal",
+          title: "Con dấu sáp hồng niêm phong",
+          content: "wax-seal",
+          x: pos?.x ?? 160,
+          y: pos?.y ?? 380,
+          width: 60,
+          height: 60,
+          zIndex: maxZ + 2,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-mini-bouquet") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-mini-bouquet",
+          title: "Bó hoa cưới mini pastel",
+          content: "mini-bouquet",
+          x: pos?.x ?? 250,
+          y: pos?.y ?? 420,
+          width: 75,
+          height: 95,
+          zIndex: maxZ + 2,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-gold-divider") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-gold-divider",
+          title: "Thanh chỉ vàng kim loại",
+          content: "gold-divider",
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 260,
+          width: 280,
+          height: 14,
+          zIndex: maxZ + 2,
+          isLocked: false,
+          opacity: 1,
+        };
       } else {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

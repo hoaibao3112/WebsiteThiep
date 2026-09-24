@@ -13,6 +13,7 @@ import {
   X,
   Sparkles,
   Layers,
+  MessageCircle,
 } from "lucide-react";
 import { BottomPhotoStrip } from "./BottomPhotoStrip";
 
@@ -246,6 +247,7 @@ function TemplateFieldBoundingBox({
 
 export function CenterCanvas({ children }: CenterCanvasProps) {
   const {
+    draft,
     saveState,
     zoomLevel,
     setZoomLevel,
@@ -846,6 +848,82 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
         );
       }
 
+      // 11. Cành cẩm chướng nơ đỏ
+      if (el.presetId === "p-carnation-bouquet" || el.content === "carnation") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 120 180" className="w-full h-full drop-shadow-md">
+              <path d="M 60 160 Q 55 110 40 70 M 60 160 Q 65 120 75 80" stroke="#4D7C0F" strokeWidth="3.5" fill="none" strokeLinecap="round" />
+              <path d="M 52 130 Q 35 125 38 115 Q 48 120 52 130 Z" fill="#65A30D" />
+              <path d="M 62 110 Q 78 105 76 95 Q 66 100 62 110 Z" fill="#65A30D" />
+              <g transform="translate(38, 55)">
+                <ellipse cx="0" cy="10" rx="7" ry="9" fill="#4D7C0F" />
+                <path d="M -22 -5 C -30 -18 -12 -30 0 -26 C 12 -30 30 -18 22 -5 C 26 10 10 20 0 18 C -10 20 -26 10 -22 -5 Z" fill="#F43F5E" opacity="0.95" />
+                <path d="M -16 -10 C -22 -22 -6 -28 0 -24 C 6 -28 22 -22 16 -10 C 20 5 6 12 0 10 C -6 12 -20 5 -16 -10 Z" fill="#FB7185" />
+                <path d="M -10 -12 C -15 -18 0 -24 0 -20 C 0 -24 15 -18 10 -12 C 10 0 3 6 0 5 C -3 6 -10 0 -10 -12 Z" fill="#FECDD3" />
+              </g>
+              <g transform="translate(76, 75) scale(0.85)">
+                <ellipse cx="0" cy="10" rx="7" ry="9" fill="#4D7C0F" />
+                <path d="M -22 -5 C -30 -18 -12 -30 0 -26 C 12 -30 30 -18 22 -5 C 26 10 10 20 0 18 C -10 20 -26 10 -22 -5 Z" fill="#E11D48" opacity="0.95" />
+                <path d="M -16 -10 C -22 -22 -6 -28 0 -24 C 6 -28 22 -22 16 -10 C 20 5 6 12 0 10 C -6 12 -20 5 -16 -10 Z" fill="#FB7185" />
+                <path d="M -10 -12 C -15 -18 0 -24 0 -20 C 0 -24 15 -18 10 -12 C 10 0 3 6 0 5 C -3 6 -10 0 -10 -12 Z" fill="#FFE4E6" />
+              </g>
+              <g transform="translate(58, 140)">
+                <circle cx="0" cy="0" r="5" fill="#B91C1C" />
+                <path d="M 0 0 C -18 -12 -24 10 0 4 Z" fill="#DC2626" />
+                <path d="M 0 0 C 18 -12 24 10 0 4 Z" fill="#DC2626" />
+                <path d="M -3 3 Q -10 22 -14 30" stroke="#DC2626" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <path d="M 3 3 Q 10 22 16 30" stroke="#DC2626" strokeWidth="3" fill="none" strokeLinecap="round" />
+              </g>
+            </svg>
+          </div>
+        );
+      }
+
+      // 12. Con dấu sáp hồng niêm phong thiệp
+      if (el.presetId === "p-wax-seal" || el.content === "wax-seal") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+              <path d="M 50 4 C 64 2 73 9 84 18 C 95 28 98 42 96 55 C 94 69 88 80 77 88 C 65 96 48 98 35 94 C 20 90 9 79 5 65 C 2 50 6 36 15 24 C 24 12 36 6 50 4 Z" fill="#F47291" />
+              <circle cx="50" cy="51" r="32" fill="none" stroke="#E11D48" strokeWidth="2" strokeOpacity="0.3" />
+              <circle cx="50" cy="51" r="28" fill="#FB7185" />
+              <text x="50" y="58" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.95" fontFamily="serif" fontStyle="italic" fontWeight="bold" fontSize="22">ML</text>
+            </svg>
+          </div>
+        );
+      }
+
+      // 13. Bó hoa cưới mini pastel
+      if (el.presetId === "p-mini-bouquet" || el.content === "mini-bouquet") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-sm">
+              <path d="M 50 115 L 25 65 L 75 65 Z" fill="#FCE7F3" stroke="#F472B6" strokeWidth="1" />
+              <path d="M 30 65 Q 50 78 70 65 L 50 115 Z" fill="#FDF2F8" />
+              <circle cx="40" cy="50" r="14" fill="#F43F5E" />
+              <circle cx="60" cy="48" r="13" fill="#FB7185" />
+              <circle cx="50" cy="35" r="15" fill="#FDA4AF" />
+              <circle cx="35" cy="36" r="10" fill="#C084FC" />
+              <circle cx="65" cy="35" r="11" fill="#A855F7" />
+              <circle cx="50" cy="52" r="8" fill="#FBBF24" />
+              <ellipse cx="50" cy="85" rx="8" ry="4" fill="#EC4899" />
+              <path d="M 45 87 Q 40 102 38 110" stroke="#EC4899" strokeWidth="2.5" fill="none" />
+              <path d="M 55 87 Q 60 102 62 110" stroke="#EC4899" strokeWidth="2.5" fill="none" />
+            </svg>
+          </div>
+        );
+      }
+
+      // 14. Thanh chỉ vàng kim loại
+      if (el.presetId === "p-gold-divider" || el.content === "gold-divider") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent shadow-xs" />
+          </div>
+        );
+      }
+
       // Default: Quote
       return (
         <div className="w-full h-full p-3.5 bg-gradient-to-br from-amber-50/90 to-stone-50/90 backdrop-blur-xs rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-center pointer-events-none select-none text-center">
@@ -1049,37 +1127,46 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           </div>
         </div>
 
-        {/* ── ZOOM CONTROLS (FLOATING ON RIGHT) ── */}
-        <div className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 flex-col items-center bg-white/95 backdrop-blur-md border border-stone-200 shadow-md rounded-2xl p-1 gap-1 z-20">
+        {/* ── ZOOM & FLOATING CHAT CONTROLS (CHUẨN NGAYCHUNGDOI.COM) ── */}
+        <div className="hidden sm:flex absolute right-5 bottom-8 flex-col items-center gap-3 z-30 pointer-events-auto">
+          {/* Zoom Controls Pill */}
+          <div className="flex flex-col items-center bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg rounded-2xl p-1 gap-1">
+            <button
+              type="button"
+              aria-label="Phóng to"
+              onClick={() => setZoomLevel((z) => Math.min(150, z + 10))}
+              className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
+              title="Phóng to (+10%)"
+            >
+              <ZoomIn className="size-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setZoomLevel(100)}
+              className="text-[11px] font-sans font-bold text-stone-600 hover:text-amber-800 px-1.5 py-0.5 rounded transition cursor-pointer select-none"
+              title="Đặt lại 100%"
+            >
+              {zoomLevel}%
+            </button>
+            <button
+              type="button"
+              aria-label="Thu nhỏ"
+              onClick={() => setZoomLevel((z) => Math.max(70, z - 10))}
+              className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
+              title="Thu nhỏ (-10%)"
+            >
+              <ZoomOut className="size-4" />
+            </button>
+          </div>
+
+          {/* Floating Dark Chat Button */}
           <button
             type="button"
-            aria-label="Phóng to"
-            onClick={() => setZoomLevel((z) => Math.min(150, z + 10))}
-            className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
-            title="Phóng to (+10%)"
+            aria-label="Hỗ trợ trực tuyến"
+            className="size-11 rounded-full bg-stone-900 hover:bg-black text-white shadow-xl flex items-center justify-center transition hover:scale-105 active:scale-95 cursor-pointer border border-stone-700"
+            title="Trò chuyện hỗ trợ"
           >
-            <ZoomIn className="size-4" />
-          </button>
-          <span className="text-[10px] font-mono font-bold text-stone-500 px-1 select-none">
-            {zoomLevel}%
-          </span>
-          <button
-            type="button"
-            aria-label="Thu nhỏ"
-            onClick={() => setZoomLevel((z) => Math.max(70, z - 10))}
-            className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
-            title="Thu nhỏ (-10%)"
-          >
-            <ZoomOut className="size-4" />
-          </button>
-          <button
-            type="button"
-            aria-label="Đặt lại cỡ"
-            onClick={() => setZoomLevel(100)}
-            className="p-2 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
-            title="Đặt lại 100%"
-          >
-            <RotateCcw className="size-3.5" />
+            <MessageCircle className="size-5 fill-white text-stone-900" />
           </button>
         </div>
       </div>
