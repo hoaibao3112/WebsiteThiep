@@ -2,8 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
   user: { findUnique: vi.fn() },
-  plan: { findFirst: vi.fn() },
+  plan: { findFirst: vi.fn(), findUnique: vi.fn() },
   template: { findUnique: vi.fn() },
+  account: {
+    findUnique: vi.fn(),
+    findUniqueOrThrow: vi.fn(),
+    updateMany: vi.fn(),
+  },
   card: {
     findFirst: vi.fn(),
     findUnique: vi.fn(),
@@ -54,6 +59,34 @@ describe("CardService.createDraft", () => {
     );
     db.user.findUnique.mockResolvedValue({ role: "USER" });
     db.plan.findFirst.mockResolvedValue({ id: "free-id", code: "FREE", maxPhotos: 5 });
+    db.plan.findUnique.mockResolvedValue({
+      id: "free-id",
+      code: "FREE",
+      name: "Gói Dùng Thử",
+      maxPhotos: 5,
+      hasWatermark: true,
+      allowCustomDomain: false,
+      allowMusicUpload: false,
+      allowTelegramNoti: false,
+      allowPremiumTemplates: false,
+    });
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "free-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "free-id",
+        code: "FREE",
+        name: "Gói Dùng Thử",
+        maxPhotos: 5,
+        hasWatermark: true,
+        allowCustomDomain: false,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
     db.template.findUnique.mockResolvedValue({
       id: "template-id",
       slug: input.templateSlug,
@@ -145,6 +178,23 @@ describe("CardService.createDraft", () => {
 describe("CardService lifecycle reads and publish", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "free-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "free-id",
+        code: "FREE",
+        name: "Gói Dùng Thử",
+        maxPhotos: 5,
+        hasWatermark: true,
+        allowCustomDomain: false,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
   });
 
   it("loads an owner card using accountId", async () => {
@@ -297,6 +347,23 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
     prismaMock.$transaction.mockImplementation(
       async (callback: (tx: typeof db) => Promise<unknown>) => callback(db),
     );
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "free-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "free-id",
+        code: "FREE",
+        name: "Gói Dùng Thử",
+        maxPhotos: 5,
+        hasWatermark: true,
+        allowCustomDomain: false,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
   });
 
   it("rejects updating to a premium template when the card is on a FREE plan", async () => {
@@ -335,6 +402,24 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
   });
 
   it("successfully updates to a premium template when the card is on a VIP plan with allowPremiumTemplates=true", async () => {
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "vip-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "vip-id",
+        code: "VIP",
+        name: "Gói Cao Cấp (VIP)",
+        maxPhotos: 50,
+        hasWatermark: false,
+        allowCustomDomain: true,
+        allowMusicUpload: true,
+        allowTelegramNoti: true,
+        allowPremiumTemplates: true,
+      },
+    });
+
     db.card.findFirst.mockResolvedValue({
       id: "card-1",
       accountId: "account-1",
@@ -383,6 +468,24 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
   });
 
   it("successfully updates to a premium template when the card is on a BASIC plan with allowPremiumTemplates=true", async () => {
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "basic-id",
+      planStartedAt: new Date(),
+      planExpiresAt: new Date(Date.now() + 86400000),
+      currentPlan: {
+        id: "basic-id",
+        code: "BASIC",
+        name: "Gói Tiêu Chuẩn",
+        maxPhotos: 20,
+        hasWatermark: false,
+        allowCustomDomain: true,
+        allowMusicUpload: true,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: true,
+      },
+    });
+
     db.card.findFirst.mockResolvedValue({
       id: "card-1",
       accountId: "account-1",

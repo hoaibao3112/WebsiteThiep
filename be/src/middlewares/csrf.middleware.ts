@@ -8,8 +8,28 @@ import { NextFunction, Request, Response } from "express";
  */
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+const EXEMPT_PATHS = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/send-otp",
+  "/auth/verify-otp-register",
+  "/auth/google",
+  "/auth/logout",
+  "/rsvp",
+  "/wishes",
+  "/concierge/submit",
+]);
+
+export function isCsrfExempt(req: Request): boolean {
+  const urlPath = req.originalUrl ? req.originalUrl.split("?")[0] : req.path;
+  const normalizedOriginal = (urlPath || "").replace(/^\/api/, "").replace(/\/$/, "");
+  const normalizedPath = (req.path || "").replace(/^\/api/, "").replace(/\/$/, "");
+  return EXEMPT_PATHS.has(normalizedOriginal) || EXEMPT_PATHS.has(normalizedPath);
+}
+
 export function csrfGuard(req: Request, res: Response, next: NextFunction) {
   if (SAFE_METHODS.has(req.method)) return next();
+  if (isCsrfExempt(req)) return next();
 
   const hasAuthCookie = Boolean(req.cookies?.auth_token);
   const hasBearer = req.headers.authorization?.startsWith("Bearer ") ?? false;

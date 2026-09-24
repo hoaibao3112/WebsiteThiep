@@ -1,11 +1,22 @@
 import ExcelJS from "exceljs";
 import { prisma } from "../lib/prisma";
+import { HttpError } from "../lib/http-error";
+import { AccountEntitlementService } from "./account-entitlement.service";
 
 export class ExportService {
   /**
    * Xuất danh sách khách mời và RSVP ra file Excel
    */
   static async exportRsvpToExcel(accountId: string, cardId: string): Promise<Buffer> {
+    const effective = await AccountEntitlementService.getEffectivePlan(accountId);
+    if (effective.planCode === "FREE") {
+      throw new HttpError(
+        403,
+        "Tính năng xuất danh sách RSVP ra Excel chỉ dành cho gói trả phí (BASIC hoặc VIP)",
+        "FEATURE_NOT_AVAILABLE"
+      );
+    }
+
     // Multi-tenant check
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
@@ -19,7 +30,7 @@ export class ExportService {
       },
     });
 
-    if (!card) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền");
+    if (!card) throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền");
 
     const workbook = new ExcelJS.Workbook();
     workbook.creator = "Digital Card Platform";

@@ -63,6 +63,11 @@ function BillingContent() {
         setBillingSummary(summaryRes.data);
         if (summaryRes.data.activeOrder) {
           setActiveOrder(summaryRes.data.activeOrder);
+          if (summaryRes.data.paymentInfo) {
+            setPaymentInfo(summaryRes.data.paymentInfo);
+          } else if (summaryRes.data.activeOrder.paymentInfo) {
+            setPaymentInfo(summaryRes.data.activeOrder.paymentInfo);
+          }
         }
       }
 
@@ -385,117 +390,126 @@ function BillingContent() {
             )}
 
             {/* 5. ORDER: PENDING (TRANSFER & VIETQR INSTRUCTIONS) */}
-            {activeOrder.status === "PENDING" && paymentInfo && (
-              <div className="space-y-5">
-                <div className="text-center space-y-1">
-                  <h3 className="text-xl font-bold font-serif text-stone-900">
-                    Quét Mã VietQR Chuyển Khoản
-                  </h3>
-                  <p className="text-xs text-stone-500">
-                    Mở app ngân hàng bất kỳ để quét mã QR và xác nhận chuyển tiền
-                  </p>
-                </div>
-
-                {/* QR CODE DISPLAY */}
-                {paymentInfo.qrUrl && (
-                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-center shadow-inner">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={paymentInfo.qrUrl}
-                      alt="VietQR Payment"
-                      className="w-56 h-56 object-contain rounded-lg mx-auto"
-                    />
-                    <p className="text-[11px] text-stone-400 mt-2">
-                      Mã đơn: <strong className="font-mono text-stone-700">{paymentInfo.orderCode}</strong> · Hạn thanh toán 48 giờ
+            {activeOrder.status === "PENDING" && (
+              paymentInfo ? (
+                <div className="space-y-5">
+                  <div className="text-center space-y-1">
+                    <h3 className="text-xl font-bold font-serif text-stone-900">
+                      Quét Mã VietQR Chuyển Khoản
+                    </h3>
+                    <p className="text-xs text-stone-500">
+                      Mở app ngân hàng bất kỳ để quét mã QR và xác nhận chuyển tiền
                     </p>
                   </div>
-                )}
 
-                {/* BANK DETAILS WITH COPY BUTTONS */}
-                <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-2.5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-stone-500">Số tiền:</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-amber-600 text-sm">
-                        {paymentInfo.amount.toLocaleString("vi-VN")} đ
+                  {/* QR CODE DISPLAY */}
+                  {paymentInfo.qrUrl && (
+                    <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-center shadow-inner">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={paymentInfo.qrUrl}
+                        alt="VietQR Payment"
+                        className="w-56 h-56 object-contain rounded-lg mx-auto"
+                      />
+                      <p className="text-[11px] text-stone-400 mt-2">
+                        Mã đơn: <strong className="font-mono text-stone-700">{paymentInfo.orderCode}</strong> · Hạn thanh toán 48 giờ
+                      </p>
+                    </div>
+                  )}
+
+                  {/* BANK DETAILS WITH COPY BUTTONS */}
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-xs space-y-2.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-500">Số tiền:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-amber-600 text-sm">
+                          {paymentInfo.amount.toLocaleString("vi-VN")} đ
+                        </span>
+                        <button
+                          onClick={() => handleCopy(paymentInfo.amount.toString(), "amount")}
+                          className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
+                          title="Sao chép"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-500">Ngân hàng:</span>
+                      <span className="font-semibold text-stone-900">
+                        {paymentInfo.bankCode} ({paymentInfo.bankAccountName})
                       </span>
-                      <button
-                        onClick={() => handleCopy(paymentInfo.amount.toString(), "amount")}
-                        className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
-                        title="Sao chép"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-stone-500">Số tài khoản:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-stone-900">
+                          {paymentInfo.bankAccount}
+                        </span>
+                        <button
+                          onClick={() => handleCopy(paymentInfo.bankAccount || "", "account")}
+                          className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
+                          title="Sao chép số tài khoản"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2 border-t border-stone-200">
+                      <span className="text-stone-500">Nội dung CK (bắt buộc):</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                          {paymentInfo.orderCode}
+                        </span>
+                        <button
+                          onClick={() => handleCopy(paymentInfo.orderCode, "code")}
+                          className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
+                          title="Sao chép nội dung chuyển khoản"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-stone-500">Ngân hàng:</span>
-                    <span className="font-semibold text-stone-900">
-                      {paymentInfo.bankCode} ({paymentInfo.bankAccountName})
-                    </span>
-                  </div>
+                  {copiedKey && (
+                    <p className="text-[11px] text-emerald-600 font-semibold text-center">
+                      ✓ Đã sao chép vào bộ nhớ tạm!
+                    </p>
+                  )}
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-stone-500">Số tài khoản:</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-stone-900">
-                        {paymentInfo.bankAccount}
-                      </span>
-                      <button
-                        onClick={() => handleCopy(paymentInfo.bankAccount || "", "account")}
-                        className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
-                        title="Sao chép số tài khoản"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-2 border-t border-stone-200">
-                    <span className="text-stone-500">Nội dung CK (bắt buộc):</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                        {paymentInfo.orderCode}
-                      </span>
-                      <button
-                        onClick={() => handleCopy(paymentInfo.orderCode, "code")}
-                        className="p-1 rounded-md hover:bg-stone-200 text-stone-500 cursor-pointer"
-                        title="Sao chép nội dung chuyển khoản"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                  {/* SUBMIT CONFIRMATION BUTTON */}
+                  <div className="space-y-2 pt-2">
+                    <button
+                      onClick={handleSubmitTransfer}
+                      disabled={orderActionLoading}
+                      className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:opacity-95 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {orderActionLoading ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <span>Tôi Đã Chuyển Khoản Thành Công</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[11px] text-stone-400 text-center">
+                      Sau khi bấm, đơn hàng sẽ chuyển sang trạng thái chờ ban quản trị phê duyệt.
+                    </p>
                   </div>
                 </div>
-
-                {copiedKey && (
-                  <p className="text-[11px] text-emerald-600 font-semibold text-center">
-                    ✓ Đã sao chép vào bộ nhớ tạm!
-                  </p>
-                )}
-
-                {/* SUBMIT CONFIRMATION BUTTON */}
-                <div className="space-y-2 pt-2">
-                  <button
-                    onClick={handleSubmitTransfer}
-                    disabled={orderActionLoading}
-                    className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:opacity-95 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {orderActionLoading ? (
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <span>Tôi Đã Chuyển Khoản Thành Công</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                  <p className="text-[11px] text-stone-400 text-center">
-                    Sau khi bấm, đơn hàng sẽ chuyển sang trạng thái chờ ban quản trị phê duyệt.
+              ) : (
+                <div className="py-8 flex flex-col items-center text-center space-y-3">
+                  <RefreshCw className="w-7 h-7 animate-spin text-amber-600 mb-1" />
+                  <p className="text-xs text-stone-600 font-medium">
+                    Đang chuẩn bị thông tin thanh toán VietQR cho đơn #{activeOrder.orderCode}...
                   </p>
                 </div>
-              </div>
+              )
             )}
           </div>
         )}

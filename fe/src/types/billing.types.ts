@@ -52,6 +52,7 @@ export interface PaymentOrder {
   reviewedAt: string | null;
   reviewNote: string | null;
   createdAt: string;
+  paymentInfo?: PaymentInfo | null;
 }
 
 export interface PaymentInfo {
@@ -74,6 +75,7 @@ export interface CreateOrderResponse {
 export interface BillingSummary {
   effectivePlan: EffectivePlanSummary;
   activeOrder: PaymentOrder | null;
+  paymentInfo?: PaymentInfo | null;
   isOwner: boolean;
   accountRole: AccountMemberRole;
 }

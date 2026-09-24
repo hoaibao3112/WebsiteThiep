@@ -31,9 +31,9 @@ model Account {
   updatedAt           DateTime             @updatedAt
 
   // Account-level entitlement (source of truth)
-  currentPlanId       String?
-  currentPlan         Plan?                @relation("AccountCurrentPlan", fields: [currentPlanId], references: [id], onDelete: Restrict)
-  planStartedAt       DateTime?
+  currentPlanId       String
+  currentPlan         Plan                 @relation("AccountCurrentPlan", fields: [currentPlanId], references: [id], onDelete: Restrict)
+  planStartedAt       DateTime             @default(now())
   planExpiresAt       DateTime?
 
   members             AccountMember[]

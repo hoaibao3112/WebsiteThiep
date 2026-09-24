@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { prisma } from "../lib/prisma";
 import type { CreateGuestInput, GuestDeliveryStatusInput, ListGuestsQuery, UpdateGuestInput } from "../lib/validators/guest";
 import { HttpError } from "../lib/http-error";
+import { AccountEntitlementService } from "./account-entitlement.service";
 
 const normalize = (value: string) => value.normalize("NFKC").trim().replace(/\s+/g, " ");
 const normalizePhone = (value?: string) => value ? value.replace(/[\s.-]/g, "").replace(/^\+84/, "0") : null;
@@ -10,10 +11,14 @@ export class GuestService {
   private static async requireVipCard(accountId: string, cardId: string) {
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
-      select: { id: true, slug: true, accountId: true, plan: { select: { code: true } } },
+      select: { id: true, slug: true, accountId: true },
     });
     if (!card) throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập");
-    if (card.plan.code !== "VIP") throw new HttpError(403, "Tính năng khách mời cá nhân hóa chỉ dành cho gói VIP", "FEATURE_NOT_AVAILABLE");
+
+    const effective = await AccountEntitlementService.getEffectivePlan(accountId);
+    if (effective.planCode !== "VIP") {
+      throw new HttpError(403, "Tính năng khách mời cá nhân hóa chỉ dành cho gói VIP", "FEATURE_NOT_AVAILABLE");
+    }
     return card;
   }
 

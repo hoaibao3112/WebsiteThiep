@@ -17,20 +17,7 @@ function getClientIp(req: Request): string {
   return req.ip || req.socket.remoteAddress || "127.0.0.1";
 }
 
-const isProduction = process.env.NODE_ENV === "production";
-
-const COOKIE_OPTIONS: CookieOptions = {
-  httpOnly: true,
-  secure: isProduction, // HTTPS trên production
-  sameSite: isProduction ? "none" : "lax", // "none" cho phép cross-site request từ frontend sang backend
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
-  path: "/",
-};
-
-const CSRF_COOKIE_OPTIONS: CookieOptions = {
-  ...COOKIE_OPTIONS,
-  httpOnly: false,
-};
+import { COOKIE_OPTIONS, CSRF_COOKIE_OPTIONS } from "../config/security";
 
 function setAuthCookies(res: Response, token: string): string {
   const csrf = crypto.randomBytes(32).toString("base64url");

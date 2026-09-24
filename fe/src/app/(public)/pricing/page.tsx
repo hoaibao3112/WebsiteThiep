@@ -30,6 +30,9 @@ export default function PricingPage() {
   const handleAction = (plan: "free" | "basic" | "vip") => {
     if (plan === "free") {
       if (!user) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("auth_redirect", "/dashboard/cards/new");
+        }
         openAuthModal("login");
         return;
       }
@@ -37,6 +40,9 @@ export default function PricingPage() {
     } else {
       const planCode = plan.toUpperCase();
       if (!user) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("auth_redirect", `/dashboard/billing?plan=${planCode}`);
+        }
         openAuthModal("login");
         return;
       }

@@ -59,7 +59,13 @@ export class ManualPaymentReviewService {
     status?: string;
     page: number;
     pageSize: number;
-  }): Promise<{ items: ReviewQueueItem[]; total: number }> {
+  }): Promise<{
+    items: ReviewQueueItem[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }> {
     const { status, page, pageSize } = params;
 
     const where: Prisma.OrderWhereInput = {};
@@ -121,6 +127,9 @@ export class ManualPaymentReviewService {
         },
       })),
       total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize) || 1,
     };
   }
 
@@ -244,7 +253,7 @@ export class ManualPaymentReviewService {
             }
 
             // 4. Re-read Account entitlement to prevent concurrent downgrade
-            const accountEntitlement = await AccountEntitlementService.getEffectivePlan(order.accountId);
+            const accountEntitlement = await AccountEntitlementService.getEffectivePlan(order.accountId, new Date(), tx);
             if (order.plan.code === "BASIC" && accountEntitlement.planCode === "VIP") {
               throw new HttpError(
                 409,

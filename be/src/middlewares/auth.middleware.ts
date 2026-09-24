@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AuthService, TokenPayload } from "../services/auth.service";
 import { prisma } from "../lib/prisma";
 import { AccountMemberRole } from "@prisma/client";
+import { COOKIE_OPTIONS, CSRF_COOKIE_OPTIONS } from "../config/security";
 
 export interface AuthenticatedRequest extends Request {
   user?: TokenPayload;
@@ -37,6 +38,10 @@ export async function authGuard(
       select: { id: true, role: true },
     });
     if (!membership) {
+      if (req.cookies?.auth_token) {
+        res.clearCookie("auth_token", COOKIE_OPTIONS);
+        res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
+      }
       return res.status(401).json({ success: false, error: "Phiên đăng nhập không còn quyền truy cập tài khoản" });
     }
     req.user = decoded;
@@ -45,6 +50,10 @@ export async function authGuard(
 
     next();
   } catch (error) {
+    if (req.cookies?.auth_token) {
+      res.clearCookie("auth_token", COOKIE_OPTIONS);
+      res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
+    }
     return res.status(401).json({
       success: false,
       error: "Phiên đăng nhập đã hết hạn hoặc không hợp lệ",

@@ -362,6 +362,11 @@ export class AuthService {
       accountId,
       accountMemberRole: membership?.role ?? null,
       effectivePlan,
+      account: {
+        id: accountId,
+        role: (membership?.role ?? "OWNER") as "OWNER" | "MEMBER",
+        entitlement: effectivePlan,
+      },
     };
   }
 
@@ -405,9 +410,18 @@ export class AuthService {
     });
     if (existing) return existing.accountId;
 
+    const freePlan = await prisma.plan.findFirst({
+      where: { code: "FREE", isActive: true },
+      select: { id: true },
+    });
+    if (!freePlan) {
+      throw new Error("Gói dịch vụ mặc định (FREE) chưa được cấu hình trên hệ thống.");
+    }
+
     const account = await prisma.account.create({
       data: {
         name: name?.trim() || "Tài khoản của tôi",
+        currentPlanId: freePlan.id,
         members: { create: { userId, role: "OWNER" } },
       },
       select: { id: true },

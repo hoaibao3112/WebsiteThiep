@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const db = vi.hoisted(() => ({
   card: { findFirst: vi.fn() },
+  account: { findUnique: vi.fn(), findUniqueOrThrow: vi.fn(), updateMany: vi.fn() },
   guest: { create: vi.fn(), findMany: vi.fn(), count: vi.fn(), updateMany: vi.fn() },
   rsvpResponse: { count: vi.fn(), aggregate: vi.fn() },
 }));
@@ -12,6 +13,23 @@ import { GuestService } from "../../src/services/guest.service";
 describe("GuestService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "vip-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "vip-id",
+        code: "VIP",
+        name: "VIP",
+        maxPhotos: 50,
+        hasWatermark: false,
+        allowCustomDomain: true,
+        allowMusicUpload: true,
+        allowTelegramNoti: true,
+        allowPremiumTemplates: true,
+      },
+    });
     db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", slug: "minh-lan", plan: { code: "VIP" } });
     db.guest.create.mockImplementation(async ({ data }) => ({ id: "guest-1", ...data }));
   });
@@ -23,6 +41,23 @@ describe("GuestService", () => {
   });
 
   it("rejects personalized guests for a FREE card", async () => {
+    db.account.findUniqueOrThrow.mockResolvedValue({
+      id: "account-1",
+      currentPlanId: "free-id",
+      planStartedAt: new Date(),
+      planExpiresAt: null,
+      currentPlan: {
+        id: "free-id",
+        code: "FREE",
+        name: "FREE",
+        maxPhotos: 5,
+        hasWatermark: true,
+        allowCustomDomain: false,
+        allowMusicUpload: false,
+        allowTelegramNoti: false,
+        allowPremiumTemplates: false,
+      },
+    });
     db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", plan: { code: "FREE" } });
     await expect(GuestService.create("account-1", "card-1", { fullName: "Anh Nam" })).rejects.toThrow("VIP");
     expect(db.guest.create).not.toHaveBeenCalled();

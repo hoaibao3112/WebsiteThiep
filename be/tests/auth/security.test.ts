@@ -95,4 +95,13 @@ describe("csrfGuard", () => {
 
     expect(next).toHaveBeenCalledOnce();
   });
+
+  it("allows login and public routes even when auth_token cookie is present without CSRF header", () => {
+    const exemptPaths = ["/auth/login", "/auth/register", "/auth/send-otp", "/auth/logout", "/rsvp"];
+    for (const path of exemptPaths) {
+      const { next, status } = invoke({ path, headers: {} });
+      expect(next).toHaveBeenCalledOnce();
+      expect(status).not.toHaveBeenCalled();
+    }
+  });
 });

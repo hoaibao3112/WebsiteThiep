@@ -6,6 +6,7 @@ import {
 } from "../lib/validators/card";
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
+import { AccountEntitlementService } from "./account-entitlement.service";
 
 export class CardService {
   private static cardAggregateInclude(accountId: string) {
@@ -40,46 +41,47 @@ export class CardService {
             });
             if (existing) return existing;
 
-            const user = await tx.user.findUnique({
-              where: { id: userId },
-              select: { role: true },
-            });
-            const isVipUser = user?.role === "ADMIN";
-            const planCode = isVipUser ? "VIP" : "FREE";
-
-            const [plan, template] = await Promise.all([
-              tx.plan.findFirst({ where: { code: planCode, isActive: true } }),
+            const [user, effectivePlan, template] = await Promise.all([
+              tx.user.findUnique({
+                where: { id: userId },
+                select: { role: true },
+              }),
+              AccountEntitlementService.getEffectivePlan(accountId, new Date(), tx),
               tx.template.findUnique({ where: { slug: input.templateSlug } }),
             ]);
 
-            if (!plan) {
-              throw new HttpError(503, `Gói ${planCode} chưa được cấu hình hoặc đã tạm ngưng`, "PLAN_UNAVAILABLE");
-            }
+            const isSystemAdmin = user?.role === "ADMIN";
+            const allowPremium = isSystemAdmin || effectivePlan.capabilities.allowPremiumTemplates;
+
             if (
               !template ||
               !template.isActive ||
-              (!isVipUser && template.isPremium) ||
+              (!allowPremium && template.isPremium) ||
               template.category !== input.data.cardCategory
             ) {
               throw new HttpError(400, "Mẫu thiệp không khả dụng cho gói hiện tại", "TEMPLATE_UNAVAILABLE");
             }
 
-            if (!isVipUser) {
+            if (effectivePlan.planCode === "FREE" && !isSystemAdmin) {
               const cardCount = await tx.card.count({ where: { accountId } });
               if (cardCount >= 2) {
                 throw new HttpError(409, "Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp", "CARD_LIMIT_REACHED");
               }
             }
 
-            if (input.photos.length > plan.maxPhotos) {
-              throw new HttpError(400, `Gói ${plan.name} chỉ cho phép tối đa ${plan.maxPhotos} ảnh`, "PHOTO_LIMIT_EXCEEDED");
+            if (input.photos.length > effectivePlan.capabilities.maxPhotos) {
+              throw new HttpError(
+                400,
+                `Gói ${effectivePlan.planName} chỉ cho phép tối đa ${effectivePlan.capabilities.maxPhotos} ảnh`,
+                "PHOTO_LIMIT_EXCEEDED"
+              );
             }
 
             const card = await tx.card.create({
               data: {
                 accountId,
                 userId,
-                planId: plan.id,
+                planId: effectivePlan.planId,
                 templateId: template.id,
                 createIdempotencyKey: idempotencyKey,
                 slug: input.slug,
@@ -89,7 +91,7 @@ export class CardService {
                 expiredAt: null,
                 openingEffect: input.openingEffect,
                 fallingEffect: input.fallingEffect,
-                musicUrl: plan.allowMusicUpload ? input.musicUrl : null,
+                musicUrl: effectivePlan.capabilities.allowMusicUpload ? input.musicUrl : null,
                 isAutoPlay: input.isAutoPlay,
                 primaryColor: input.primaryColor,
                 fontFamily: input.fontFamily,
@@ -97,7 +99,7 @@ export class CardService {
                 categoryData: input.data as Prisma.InputJsonValue,
                 bankingPrimary: input.bankingPrimary as Prisma.InputJsonValue | undefined,
                 bankingSecondary: input.bankingSecondary as Prisma.InputJsonValue | undefined,
-                telegramChatId: plan.allowTelegramNoti ? input.telegramChatId : null,
+                telegramChatId: effectivePlan.capabilities.allowTelegramNoti ? input.telegramChatId : null,
               },
             });
 
@@ -209,10 +211,12 @@ export class CardService {
       });
     }
 
+    const effectivePlan = await AccountEntitlementService.getEffectivePlan(card.accountId);
+
     return {
       card,
       guestInfo,
-      features: { vipOpeningExperience: card.plan.code === "VIP" },
+      features: { vipOpeningExperience: effectivePlan.planCode === "VIP" },
     };
   }
 
@@ -244,18 +248,26 @@ export class CardService {
   }
 
   static async updateDraft(accountId: string, cardId: string, input: DraftCardInput) {
-    const existing = await prisma.card.findFirst({
-      where: { id: cardId, accountId },
-      include: { plan: true },
-    });
+    const [existing, effectivePlan] = await Promise.all([
+      prisma.card.findFirst({
+        where: { id: cardId, accountId },
+        include: { plan: true },
+      }),
+      AccountEntitlementService.getEffectivePlan(accountId),
+    ]);
+
     if (!existing) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa", "CARD_NOT_FOUND");
     }
-    if (existing.status === "EXPIRED") {
+    if (existing.status === "EXPIRED" && effectivePlan.planCode === "FREE") {
       throw new HttpError(409, "Thiệp đã hết hạn và không thể chỉnh sửa", "CARD_STATE_CONFLICT");
     }
-    if (input.photos.length > existing.plan.maxPhotos) {
-      throw new HttpError(400, `Gói ${existing.plan.name || existing.plan.code} chỉ cho phép tối đa ${existing.plan.maxPhotos} ảnh`, "PHOTO_LIMIT_EXCEEDED");
+    if (input.photos.length > effectivePlan.capabilities.maxPhotos) {
+      throw new HttpError(
+        400,
+        `Gói ${effectivePlan.planName} chỉ cho phép tối đa ${effectivePlan.capabilities.maxPhotos} ảnh`,
+        "PHOTO_LIMIT_EXCEEDED"
+      );
     }
 
     const template = await prisma.template.findUnique({ where: { slug: input.templateSlug } });
@@ -267,12 +279,12 @@ export class CardService {
       throw new HttpError(400, "Mẫu thiệp không tồn tại hoặc không phù hợp với danh mục thiệp", "TEMPLATE_UNAVAILABLE");
     }
 
-    if (template.isPremium && !existing.plan.allowPremiumTemplates) {
+    if (template.isPremium && !effectivePlan.capabilities.allowPremiumTemplates) {
       throw new HttpError(
         403,
-        existing.plan.code === "FREE"
+        effectivePlan.planCode === "FREE"
           ? "Mẫu thiệp không khả dụng cho gói FREE"
-          : `Mẫu thiệp Premium không khả dụng cho gói ${existing.plan.name}`,
+          : `Mẫu thiệp Premium không khả dụng cho gói ${effectivePlan.planName}`,
         "PLAN_ENTITLEMENT_REQUIRED",
       );
     }
@@ -286,7 +298,7 @@ export class CardService {
           cardCategory: input.data.cardCategory,
           openingEffect: input.openingEffect,
           fallingEffect: input.fallingEffect,
-          musicUrl: existing.plan.allowMusicUpload ? input.musicUrl : null,
+          musicUrl: effectivePlan.capabilities.allowMusicUpload ? input.musicUrl : null,
           isAutoPlay: input.isAutoPlay,
           primaryColor: input.primaryColor,
           fontFamily: input.fontFamily,
@@ -294,7 +306,7 @@ export class CardService {
           categoryData: input.data as Prisma.InputJsonValue,
           bankingPrimary: input.bankingPrimary as Prisma.InputJsonValue | undefined,
           bankingSecondary: input.bankingSecondary as Prisma.InputJsonValue | undefined,
-          telegramChatId: existing.plan.allowTelegramNoti ? input.telegramChatId : null,
+          telegramChatId: effectivePlan.capabilities.allowTelegramNoti ? input.telegramChatId : null,
         },
       });
 
@@ -349,16 +361,19 @@ export class CardService {
    * Xuất bản thiệp (Active)
    */
   static async publishCard(accountId: string, cardId: string) {
-    const card = await prisma.card.findFirst({
-      where: { id: cardId, accountId },
-      include: { plan: true },
-    });
+    const [card, effectivePlan] = await Promise.all([
+      prisma.card.findFirst({
+        where: { id: cardId, accountId },
+        include: { plan: true },
+      }),
+      AccountEntitlementService.getEffectivePlan(accountId),
+    ]);
 
     if (!card) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền thao tác", "CARD_NOT_FOUND");
     }
 
-    if (card.status === "EXPIRED") {
+    if (card.status === "EXPIRED" && effectivePlan.planCode === "FREE") {
       throw new HttpError(409, "Thiệp FREE đã hết hạn và chưa thể xuất bản lại", "CARD_STATE_CONFLICT");
     }
     if (card.status === "ARCHIVED") {
@@ -369,9 +384,12 @@ export class CardService {
     PublishCardDataSchema.parse(card.categoryData);
 
     const publishedAt = new Date();
-    const expiredAt = card.plan.durationDays
-      ? new Date(publishedAt.getTime() + card.plan.durationDays * 24 * 60 * 60 * 1_000)
-      : null;
+    let expiredAt: Date | null = null;
+    if (effectivePlan.planCode === "BASIC") {
+      expiredAt = effectivePlan.planExpiresAt;
+    } else if (effectivePlan.planCode === "FREE" && card.plan?.durationDays) {
+      expiredAt = new Date(publishedAt.getTime() + card.plan.durationDays * 24 * 60 * 60 * 1_000);
+    }
 
     return prisma.card.update({
       where: { id: cardId, accountId },

@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { AccountEntitlementService, EffectivePlanDTO } from "./account-entitlement.service";
+import { generateVietQrUrl } from "../lib/vietqr";
 
 // ────────────────────────────────────────────────────────────
 // DTOs
@@ -21,6 +22,16 @@ export interface PlanCatalogItem {
   sortOrder: number;
 }
 
+export interface BillingPaymentInfo {
+  orderCode: string;
+  amount: number;
+  bankCode: string | null;
+  bankAccount: string | null;
+  bankAccountName: string | null;
+  qrUrl: string | null;
+  expiredAt: Date;
+}
+
 export interface BillingSummary {
   accountId: string;
   effectivePlan: EffectivePlanDTO;
@@ -37,7 +48,9 @@ export interface BillingSummary {
     reviewedAt: Date | null;
     reviewNote: string | null;
     createdAt: Date;
+    paymentInfo?: BillingPaymentInfo | null;
   } | null;
+  paymentInfo?: BillingPaymentInfo | null;
   activeOrderId: string | null;
   activeOrderStatus: string | null;
   isOwner: boolean;
@@ -81,6 +94,16 @@ export class BillingService {
    * Account billing summary: effective plan + active order + ownership.
    */
   static async getBillingSummary(accountId: string, userId?: string): Promise<BillingSummary> {
+    // 1. Opportunistically expire stale orders for this account
+    await prisma.order.updateMany({
+      where: {
+        accountId,
+        status: { in: ["PENDING", "AWAITING_REVIEW"] },
+        expiredAt: { lte: new Date() },
+      },
+      data: { status: "EXPIRED" },
+    });
+
     const [effectivePlan, activeOrderRecord, membership] = await Promise.all([
       AccountEntitlementService.getEffectivePlan(accountId),
       prisma.order.findFirst({
@@ -103,6 +126,31 @@ export class BillingService {
     const role = membership?.role ?? "OWNER";
     const isOwner = role === "OWNER";
 
+    let paymentInfo: BillingPaymentInfo | null = null;
+    if (activeOrderRecord && activeOrderRecord.status === "PENDING") {
+      const bankCode = process.env.BANK_CODE;
+      const bankAccount = process.env.BANK_ACCOUNT;
+      const bankAccountName = process.env.BANK_ACCOUNT_NAME;
+      if (bankCode && bankAccount && bankAccountName) {
+        const qrUrl = generateVietQrUrl({
+          bankCode,
+          accountNumber: bankAccount,
+          accountName: bankAccountName,
+          amount: activeOrderRecord.amount,
+          description: activeOrderRecord.orderCode,
+        });
+        paymentInfo = {
+          orderCode: activeOrderRecord.orderCode,
+          amount: activeOrderRecord.amount,
+          bankCode,
+          bankAccount,
+          bankAccountName,
+          qrUrl,
+          expiredAt: activeOrderRecord.expiredAt,
+        };
+      }
+    }
+
     const activeOrder = activeOrderRecord
       ? {
           id: activeOrderRecord.id,
@@ -117,6 +165,7 @@ export class BillingService {
           reviewedAt: activeOrderRecord.reviewedAt,
           reviewNote: activeOrderRecord.reviewNote,
           createdAt: activeOrderRecord.createdAt,
+          paymentInfo,
         }
       : null;
 
@@ -124,6 +173,7 @@ export class BillingService {
       accountId,
       effectivePlan,
       activeOrder,
+      paymentInfo,
       activeOrderId: activeOrder?.id ?? null,
       activeOrderStatus: activeOrder?.status ?? null,
       isOwner,

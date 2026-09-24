@@ -55,11 +55,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthModalOpen(false);
   }, []);
 
+  const normalizeAuthUser = (raw: any): AuthUser => {
+    return {
+      id: raw.id,
+      email: raw.email,
+      name: raw.name,
+      phone: raw.phone,
+      avatar: raw.avatar,
+      role: raw.role,
+      emailVerified: raw.emailVerified,
+      hasPassword: raw.hasPassword,
+      googleId: raw.googleId,
+      telegramId: raw.telegramId,
+      account: raw.account || (raw.accountId ? {
+        id: raw.accountId,
+        role: raw.accountMemberRole || "MEMBER",
+        entitlement: raw.effectivePlan,
+      } : undefined),
+    };
+  };
+
   const refreshUser = async () => {
     try {
-      const res = await ApiClient.request<AuthUser>("/auth/me");
+      const res = await ApiClient.request<any>("/auth/me");
       if (res.success && res.data) {
-        setUser(res.data);
+        setUser(normalizeAuthUser(res.data));
       } else {
         setUser(null);
       }
@@ -87,13 +107,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const registerWithOtp = async (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => {
-    const res = await ApiClient.request<{ user: AuthUser }>("/auth/verify-otp-register", {
+    const res = await ApiClient.request<{ user: any }>("/auth/verify-otp-register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
 
     if (res.success && res.data) {
-      setUser(res.data.user);
+      setUser(normalizeAuthUser(res.data.user));
       closeAuthModal();
       return { success: true };
     }
@@ -101,13 +121,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const res = await ApiClient.request<{ user: AuthUser }>("/auth/login", {
+    const res = await ApiClient.request<{ user: any }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
 
     if (res.success && res.data) {
-      setUser(res.data.user);
+      setUser(normalizeAuthUser(res.data.user));
       closeAuthModal();
       return { success: true };
     }
@@ -115,13 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const googleLogin = async (idToken: string) => {
-    const res = await ApiClient.request<{ user: AuthUser }>("/auth/google", {
+    const res = await ApiClient.request<{ user: any }>("/auth/google", {
       method: "POST",
       body: JSON.stringify({ idToken }),
     });
 
     if (res.success && res.data) {
-      setUser(res.data.user);
+      setUser(normalizeAuthUser(res.data.user));
       closeAuthModal();
       return { success: true };
     }

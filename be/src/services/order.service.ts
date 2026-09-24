@@ -27,6 +27,15 @@ export interface OrderSafeDTO {
   reviewedAt: Date | null;
   reviewNote: string | null;
   createdAt: Date;
+  paymentInfo?: {
+    orderCode: string;
+    amount: number;
+    bankCode: string | null;
+    bankAccount: string | null;
+    bankAccountName: string | null;
+    qrUrl: string | null;
+    expiredAt: Date;
+  } | null;
 }
 
 // ────────────────────────────────────────────────────────────
@@ -79,11 +88,20 @@ export class OrderService {
       // Allow BASIC extension — this is renewal
     }
 
-    // 4. Expire stale orders for this account
+    // 3.5. Validate payment configuration BEFORE creating order
+    const bankCode = process.env.BANK_CODE;
+    const bankAccount = process.env.BANK_ACCOUNT;
+    const bankAccountName = process.env.BANK_ACCOUNT_NAME;
+
+    if (!bankCode || !bankAccount || !bankAccountName) {
+      throw new HttpError(503, "Hệ thống thanh toán chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
+    }
+
+    // 4. Expire stale orders for this account (both PENDING and AWAITING_REVIEW past expiredAt)
     await prisma.order.updateMany({
       where: {
         accountId,
-        status: "PENDING",
+        status: { in: ["PENDING", "AWAITING_REVIEW"] },
         expiredAt: { lte: new Date() },
       },
       data: { status: "EXPIRED" },
@@ -157,6 +175,7 @@ export class OrderService {
 
         const isIdempotencyConflict = targets.some((t) => t.toLowerCase().includes("idempotencykey"));
         const isOrderCodeConflict = targets.some((t) => t.toLowerCase().includes("ordercode"));
+        const isPlanConflict = targets.some((t) => t.toLowerCase().includes("plan") || t.toLowerCase().includes("uniq"));
 
         if (isIdempotencyConflict) {
           const racedOrder = await prisma.order.findUnique({
@@ -167,6 +186,21 @@ export class OrderService {
             return this.formatOrderResult(racedOrder, true);
           }
           throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+        }
+
+        if (isPlanConflict) {
+          const racedActive = await prisma.order.findFirst({
+            where: {
+              accountId,
+              planId: targetPlan.id,
+              status: { in: ["PENDING", "AWAITING_REVIEW"] },
+              expiredAt: { gt: new Date() },
+            },
+            include: { plan: true },
+          });
+          if (racedActive) {
+            return this.formatOrderResult(racedActive, true);
+          }
         }
 
         if (isOrderCodeConflict) {
@@ -185,14 +219,6 @@ export class OrderService {
     }
 
     // 8. Generate VietQR
-    const bankCode = process.env.BANK_CODE;
-    const bankAccount = process.env.BANK_ACCOUNT;
-    const bankAccountName = process.env.BANK_ACCOUNT_NAME;
-
-    if (!bankCode || !bankAccount || !bankAccountName) {
-      throw new HttpError(503, "Hệ thống thanh toán chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
-    }
-
     const qrUrl = generateVietQrUrl({
       bankCode,
       accountNumber: bankAccount,
@@ -258,15 +284,43 @@ export class OrderService {
     if (!order) return null;
 
     // Opportunistically expire
-    if (order.status === "PENDING" && order.expiredAt <= new Date()) {
+    if (
+      (order.status === "PENDING" || order.status === "AWAITING_REVIEW") &&
+      order.expiredAt <= new Date()
+    ) {
       await prisma.order.updateMany({
-        where: { id: order.id, accountId, status: "PENDING" },
+        where: { id: order.id, accountId, status: { in: ["PENDING", "AWAITING_REVIEW"] } },
         data: { status: "EXPIRED" },
       });
       return { ...this.toSafeDTO(order), status: "EXPIRED" };
     }
 
-    return this.toSafeDTO(order);
+    const safeDto = this.toSafeDTO(order);
+    if (order.status === "PENDING") {
+      const bankCode = process.env.BANK_CODE;
+      const bankAccount = process.env.BANK_ACCOUNT;
+      const bankAccountName = process.env.BANK_ACCOUNT_NAME;
+      if (bankCode && bankAccount && bankAccountName) {
+        const qrUrl = generateVietQrUrl({
+          bankCode,
+          accountNumber: bankAccount,
+          accountName: bankAccountName,
+          amount: order.amount,
+          description: order.orderCode,
+        });
+        safeDto.paymentInfo = {
+          orderCode: order.orderCode,
+          amount: order.amount,
+          bankCode,
+          bankAccount,
+          bankAccountName,
+          qrUrl,
+          expiredAt: order.expiredAt,
+        };
+      }
+    }
+
+    return safeDto;
   }
 
   /**

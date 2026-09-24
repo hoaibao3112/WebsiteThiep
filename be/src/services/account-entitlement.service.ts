@@ -23,6 +23,8 @@ export interface EffectivePlanDTO {
   planStartedAt: Date | null;
   planExpiresAt: Date | null;
   isExpired: boolean;
+  isPaid: boolean;
+  daysRemaining: number | null;
 }
 
 const FREE_PLAN_CODE: PlanCode = "FREE";
@@ -37,8 +39,12 @@ export class AccountEntitlementService {
    * Expired BASIC → FREE (opportunistically persisted).
    * VIP has no expiry (lifetime).
    */
-  static async getEffectivePlan(accountId: string, now: Date = new Date()): Promise<EffectivePlanDTO> {
-    const account = await prisma.account.findUniqueOrThrow({
+  static async getEffectivePlan(
+    accountId: string,
+    now: Date = new Date(),
+    db: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<EffectivePlanDTO> {
+    const account = await db.account.findUniqueOrThrow({
       where: { id: accountId },
       select: {
         id: true,
@@ -63,26 +69,26 @@ export class AccountEntitlementService {
 
     // No plan assigned yet → FREE
     if (!account.currentPlan || !account.currentPlanId) {
-      return this.resolveFreePlan(accountId);
+      return this.resolveFreePlan(accountId, db);
     }
 
     const plan = account.currentPlan;
 
     // VIP = lifetime, never expires
     if (plan.code === "VIP") {
-      return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, false);
+      return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, false, now);
     }
 
     // BASIC with expiry check
     if (plan.code === "BASIC" && account.planExpiresAt && account.planExpiresAt <= now) {
       // Expired BASIC → opportunistically persist FREE
-      await this.opportunisticDowngradeToFree(accountId, account.currentPlanId, now);
-      return this.resolveFreePlan(accountId);
+      await this.opportunisticDowngradeToFree(accountId, account.currentPlanId, now, db);
+      return this.resolveFreePlan(accountId, db);
     }
 
     // Active BASIC or FREE
     const isExpired = account.planExpiresAt ? account.planExpiresAt <= now : false;
-    return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, isExpired);
+    return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, isExpired, now);
   }
 
   /**
@@ -124,14 +130,15 @@ export class AccountEntitlementService {
     accountId: string,
     expiredPlanId: string,
     now: Date,
+    db: Prisma.TransactionClient | typeof prisma = prisma,
   ): Promise<void> {
-    const freePlan = await prisma.plan.findUnique({ where: { code: FREE_PLAN_CODE } });
+    const freePlan = await db.plan.findUnique({ where: { code: FREE_PLAN_CODE } });
     if (!freePlan) {
       logger.error({ accountId }, "FREE plan not found — cannot downgrade expired BASIC");
       return;
     }
 
-    const result = await prisma.account.updateMany({
+    const result = await db.account.updateMany({
       where: {
         id: accountId,
         currentPlanId: expiredPlanId, // Only overwrite the expired plan, not a concurrent VIP
@@ -149,8 +156,11 @@ export class AccountEntitlementService {
     }
   }
 
-  private static async resolveFreePlan(accountId: string): Promise<EffectivePlanDTO> {
-    const freePlan = await prisma.plan.findUnique({
+  private static async resolveFreePlan(
+    accountId: string,
+    db: Prisma.TransactionClient | typeof prisma = prisma,
+  ): Promise<EffectivePlanDTO> {
+    const freePlan = await db.plan.findUnique({
       where: { code: FREE_PLAN_CODE },
       select: {
         id: true,
@@ -169,7 +179,7 @@ export class AccountEntitlementService {
       throw new Error("FREE plan not configured — system cannot resolve entitlement");
     }
 
-    return this.toPlanDTO(freePlan, null, null, false);
+    return this.toPlanDTO(freePlan, null, null, false, new Date());
   }
 
   private static toPlanDTO(
@@ -187,7 +197,14 @@ export class AccountEntitlementService {
     planStartedAt: Date | null,
     planExpiresAt: Date | null,
     isExpired: boolean,
+    now: Date = new Date(),
   ): EffectivePlanDTO {
+    const isPaid = plan.code !== "FREE" && !isExpired;
+    let daysRemaining: number | null = null;
+    if (plan.code === "BASIC" && planExpiresAt) {
+      daysRemaining = Math.max(0, Math.ceil((planExpiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    }
+
     return {
       planId: plan.id,
       planCode: plan.code,
@@ -203,6 +220,8 @@ export class AccountEntitlementService {
       planStartedAt,
       planExpiresAt,
       isExpired,
+      isPaid,
+      daysRemaining,
     };
   }
 }

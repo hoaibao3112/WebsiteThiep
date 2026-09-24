@@ -19,6 +19,23 @@ export interface ApiResult<T> extends ApiPayload<T> {
   status?: number;
 }
 
+function getCsrfToken(): string | null {
+  if (memoryCsrfToken) return memoryCsrfToken;
+  if (typeof document !== "undefined" && document.cookie) {
+    const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]+)/);
+    if (match) {
+      try {
+        const decoded = decodeURIComponent(match[1]);
+        memoryCsrfToken = decoded;
+        return decoded;
+      } catch {
+        // ignore malformed cookie
+      }
+    }
+  }
+  return null;
+}
+
 export class ApiClient {
   static async request<T = unknown>(endpoint: string, options: RequestInit = {}): Promise<ApiResult<T>> {
     const isFormData = options.body instanceof FormData;
@@ -27,8 +44,9 @@ export class ApiClient {
       ...(options.headers as Record<string, string>),
     };
     const method = (options.method || "GET").toUpperCase();
-    if (!["GET", "HEAD", "OPTIONS"].includes(method) && memoryCsrfToken && !headers["X-CSRF-Token"]) {
-      headers["X-CSRF-Token"] = memoryCsrfToken;
+    const token = getCsrfToken();
+    if (!["GET", "HEAD", "OPTIONS"].includes(method) && token && !headers["X-CSRF-Token"]) {
+      headers["X-CSRF-Token"] = token;
     }
 
     try {
@@ -37,8 +55,15 @@ export class ApiClient {
         headers,
         credentials: "include",
       });
-      const responseCsrf = response.headers?.get?.("X-CSRF-Token") ?? null;
+      const responseCsrf =
+        response.headers?.get?.("X-CSRF-Token") ??
+        response.headers?.get?.("x-csrf-token") ??
+        null;
       if (responseCsrf) setApiClientTokens({ csrfToken: responseCsrf });
+
+      if (response.status === 401) {
+        setApiClientTokens({ csrfToken: null });
+      }
 
       let payload: ApiPayload<T>;
       try {

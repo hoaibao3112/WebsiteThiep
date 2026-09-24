@@ -79,8 +79,9 @@ export function AuthModal() {
 
   const handleAuthSuccess = () => {
     closeAuthModal();
-    const redirectParam = searchParams.get("redirect");
+    const redirectParam = searchParams.get("redirect") || (typeof window !== "undefined" ? sessionStorage.getItem("auth_redirect") : null);
     if (redirectParam && redirectParam !== "/" && redirectParam !== "/?") {
+      if (typeof window !== "undefined") sessionStorage.removeItem("auth_redirect");
       router.push(redirectParam);
     }
   };
