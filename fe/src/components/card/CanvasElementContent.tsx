@@ -123,19 +123,21 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       const contentLength = typeof el.content === "string" ? el.content.length : 1;
       const isMultiChar = contentLength > 2;
-      const autoFontSize = isMultiChar
-        ? Math.max(10, Math.min(Math.round(el.height * 0.7), Math.round((el.width * 0.85) / Math.max(contentLength * 0.65, 1))))
-        : Math.max(12, Math.round(Math.min(el.width, el.height) * 0.8));
+      const dynamicFontSize = isMultiChar
+        ? Math.max(10, Math.min(Math.round(el.height * 0.65), Math.round((el.width * 0.9) / Math.max(contentLength * 0.6, 1))))
+        : Math.max(12, Math.round(Math.min(el.width, el.height) * 0.78));
+
+      const effectiveFontSize = el.fontSize || dynamicFontSize;
 
       return (
         <div className="w-full h-full flex items-center justify-center select-none pointer-events-none overflow-hidden">
           <span
             style={{
-              fontSize: `${el.fontSize || autoFontSize}px`,
+              fontSize: `${effectiveFontSize}px`,
               color: el.color || undefined,
               lineHeight: 1,
             }}
-            className="filter drop-shadow-md select-none transform transition-transform text-center flex items-center justify-center"
+            className="filter drop-shadow-md select-none transform transition-transform text-center flex items-center justify-center leading-none"
           >
             {el.content}
           </span>

@@ -26,6 +26,11 @@ import {
   Sparkles,
   FlipHorizontal,
   FlipVertical,
+  Maximize2,
+  Lock,
+  Unlock,
+  Plus,
+  Minus,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -763,6 +768,39 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
   const [expandLoopMotion, setExpandLoopMotion] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
+  const [keepAspectRatio, setKeepAspectRatio] = useState(true);
+
+  const handleWidthChange = (newWidth: number) => {
+    const clampedW = Math.max(20, Math.min(390, Math.round(newWidth)));
+    const ratio = clampedW / Math.max(1, element.width);
+    const newHeight = keepAspectRatio ? Math.max(10, Math.round(element.height * ratio)) : element.height;
+    const patch: Partial<CanvasElement> = { width: clampedW, height: newHeight };
+    if (element.type === "sticker" || element.type === "stock" || element.type === "text") {
+      patch.fontSize = Math.max(10, Math.min(260, Math.round((element.fontSize || 40) * ratio)));
+    }
+    updateCanvasElement(element.id, patch);
+  };
+
+  const handleHeightChange = (newHeight: number) => {
+    const clampedH = Math.max(10, Math.min(1200, Math.round(newHeight)));
+    const ratio = clampedH / Math.max(1, element.height);
+    const newWidth = keepAspectRatio ? Math.max(20, Math.min(390, Math.round(element.width * ratio))) : element.width;
+    const patch: Partial<CanvasElement> = { width: newWidth, height: clampedH };
+    if (element.type === "sticker" || element.type === "stock" || element.type === "text") {
+      patch.fontSize = Math.max(10, Math.min(260, Math.round((element.fontSize || 40) * ratio)));
+    }
+    updateCanvasElement(element.id, patch);
+  };
+
+  const handleScaleMultiplier = (multiplier: number) => {
+    const newW = Math.max(20, Math.min(390, Math.round(element.width * multiplier)));
+    const newH = Math.max(10, Math.min(1200, Math.round(element.height * multiplier)));
+    const patch: Partial<CanvasElement> = { width: newW, height: newH };
+    if (element.type === "sticker" || element.type === "stock" || element.type === "text") {
+      patch.fontSize = Math.max(10, Math.min(260, Math.round((element.fontSize || 40) * multiplier)));
+    }
+    updateCanvasElement(element.id, patch);
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -905,6 +943,114 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
             ) : null}
           </div>
         )}
+
+        {/* ── BỘ ĐIỀU KHIỂN KÍCH THƯỚC & THU PHÓNG (SIZE & SCALE CONTROLS) ── */}
+        <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
+              <Maximize2 className="size-3.5 text-blue-600" />
+              Kích thước & Thu phóng
+            </span>
+            <button
+              type="button"
+              onClick={() => setKeepAspectRatio((v) => !v)}
+              className={`text-[10px] px-2 py-0.5 rounded-md font-medium border flex items-center gap-1 transition ${
+                keepAspectRatio
+                  ? "bg-blue-50 border-blue-200 text-blue-700 font-semibold"
+                  : "bg-white border-stone-200 text-stone-500 hover:bg-stone-100"
+              }`}
+              title="Khóa giữ nguyên tỷ lệ rộng / cao khi co giãn"
+            >
+              {keepAspectRatio ? <Lock className="size-2.5" /> : <Unlock className="size-2.5" />}
+              {keepAspectRatio ? "Khóa tỷ lệ" : "Tự do"}
+            </button>
+          </div>
+
+          {/* Ô nhập Rộng (W) và Cao (H) */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <span className="text-[10px] text-stone-500 font-medium block mb-1">Rộng (px)</span>
+              <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => handleWidthChange(element.width - 15)}
+                  className="px-2 py-1 text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition"
+                  title="Giảm 15px"
+                >
+                  <Minus className="size-3" />
+                </button>
+                <input
+                  type="number"
+                  value={element.width}
+                  onChange={(e) => handleWidthChange(Number(e.target.value) || 30)}
+                  className="w-full text-center text-xs font-bold font-mono py-1.5 outline-none bg-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleWidthChange(element.width + 15)}
+                  className="px-2 py-1 text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition"
+                  title="Tăng 15px"
+                >
+                  <Plus className="size-3" />
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-stone-500 font-medium block mb-1">Cao (px)</span>
+              <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => handleHeightChange(element.height - 15)}
+                  className="px-2 py-1 text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition"
+                  title="Giảm 15px"
+                >
+                  <Minus className="size-3" />
+                </button>
+                <input
+                  type="number"
+                  value={element.height}
+                  onChange={(e) => handleHeightChange(Number(e.target.value) || 20)}
+                  className="w-full text-center text-xs font-bold font-mono py-1.5 outline-none bg-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleHeightChange(element.height + 15)}
+                  className="px-2 py-1 text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition"
+                  title="Tăng 15px"
+                >
+                  <Plus className="size-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Nút thu phóng nhanh theo % */}
+          <div>
+            <div className="flex items-center justify-between text-[10px] text-stone-500 font-medium mb-1.5">
+              <span>Thu phóng nhanh:</span>
+              <span className="text-blue-600 font-semibold">{element.width} × {element.height} px</span>
+            </div>
+            <div className="grid grid-cols-5 gap-1 text-[11px]">
+              {[
+                { label: "−25%", ratio: 0.75 },
+                { label: "−10%", ratio: 0.9 },
+                { label: "100%", ratio: 1.0 },
+                { label: "+10%", ratio: 1.1 },
+                { label: "+25%", ratio: 1.25 },
+              ].map((scaleOpt) => (
+                <button
+                  key={scaleOpt.label}
+                  type="button"
+                  onClick={() => handleScaleMultiplier(scaleOpt.ratio)}
+                  className="py-1 rounded-lg border border-stone-200 bg-white hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 text-stone-700 font-semibold text-center transition cursor-pointer text-[10px]"
+                >
+                  {scaleOpt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* ── TEXT EDITING CONTROLS (NẾU LÀ VĂN BẢN) ── */}
         {isTextElement && (

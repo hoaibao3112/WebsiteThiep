@@ -32,7 +32,7 @@ export function CanvasCardView({ card, guestName, guestPhone, guestCode }: Canva
   const background = typeof data.canvasBackgroundColor === "string"
     ? data.canvasBackgroundColor
     : typeof legacyCanvas.backgroundColor === "string" ? legacyCanvas.backgroundColor : "#ffffff";
-  const backgroundImage = /^(https?:\/\/|\/)/.test(background) ? background : undefined;
+  const backgroundImage = /^(https?:\/\/|\/|data:image\/)/.test(background) ? background : undefined;
   const pattern = data.canvasBackgroundPattern === "flower-small" || data.canvasBackgroundPattern === "flower-large"
     ? data.canvasBackgroundPattern
     : legacyCanvas.backgroundPattern === "flower-small" || legacyCanvas.backgroundPattern === "flower-large" ? legacyCanvas.backgroundPattern : "none";

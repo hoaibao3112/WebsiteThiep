@@ -1,8 +1,18 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useEditor } from "../EditorContext";
-import { Pipette, Check } from "lucide-react";
+import {
+  Pipette,
+  Check,
+  UploadCloud,
+  ImagePlus,
+  Trash2,
+  Loader2,
+  Sparkles,
+  Info,
+} from "lucide-react";
+import { uploadSingleImage } from "@/lib/image-upload";
 
 // Dải màu Pastel chuẩn theo ảnh chụp thực tế ngaychungdoi
 const PASTEL_PALETTE = [
@@ -31,6 +41,48 @@ const FALLING_EFFECTS = [
   { id: "hydrangea", label: "Hoa tú cầu" },
 ] as const;
 
+// Thư viện ảnh nền có sẵn tuyển chọn tối ưu dung lượng và trang nhã
+const PRESET_BACKGROUND_IMAGES = [
+  {
+    id: "bg-paper-1",
+    label: "Giấy mỹ thuật ngà",
+    url: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-2",
+    label: "Vân lụa ánh kim",
+    url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-3",
+    label: "Vân đá cẩm thạch trắng",
+    url: "https://images.unsplash.com/photo-1590402494587-44b71d7772f6?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1590402494587-44b71d7772f6?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-4",
+    label: "Hoa văn vintage chìm",
+    url: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-5",
+    label: "Giấy Kraft mộc",
+    url: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-6",
+    label: "Vân nước lụa hồng",
+    url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=300&auto=format&fit=crop&q=80",
+  },
+];
+
+const STORAGE_CUSTOM_BG_KEY = "wedding_custom_bg_list";
+
 export function BackgroundTool() {
   const {
     canvasBackgroundColor,
@@ -43,6 +95,112 @@ export function BackgroundTool() {
 
   const [activeTab, setActiveTab] = useState<"color" | "image">("color");
   const colorInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadFeedback, setUploadFeedback] = useState<string | null>(null);
+  const [customBgs, setCustomBgs] = useState<string[]>([]);
+
+  // Load ảnh nền đã tải từ localStorage khi khởi tạo
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_CUSTOM_BG_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setCustomBgs(parsed);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not load custom backgrounds from localStorage", e);
+    }
+  }, []);
+
+  // Kiểm tra nền hiện tại có phải là ảnh hay không
+  const isCurrentImageBg = Boolean(
+    canvasBackgroundColor &&
+      (canvasBackgroundColor.startsWith("http://") ||
+        canvasBackgroundColor.startsWith("https://") ||
+        canvasBackgroundColor.startsWith("/") ||
+        canvasBackgroundColor.startsWith("data:image/"))
+  );
+
+  // Xử lý nén & tải ảnh nền
+  const handleUploadBackground = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setUploadFeedback("Vui lòng chọn file hình ảnh (JPG, PNG, WebP)!");
+      setTimeout(() => setUploadFeedback(null), 3000);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadFeedback("Đang tối ưu & nén ảnh thông minh...");
+
+    try {
+      // Tối ưu hoá & upload ảnh (HTML5 Canvas WebP nén tự động)
+      const optimizedUrl = await uploadSingleImage(file);
+
+      // Cập nhật nền canvas
+      setCanvasBackgroundColor(optimizedUrl);
+
+      // Cập nhật danh sách ảnh đã tải
+      setCustomBgs((prev) => {
+        const updated = [optimizedUrl, ...prev.filter((item) => item !== optimizedUrl)].slice(0, 12);
+        try {
+          localStorage.setItem(STORAGE_CUSTOM_BG_KEY, JSON.stringify(updated));
+        } catch {
+          // ignore storage quota error
+        }
+        return updated;
+      });
+
+      setUploadFeedback("Đã áp dụng ảnh nền thành công! ⚡");
+      setTimeout(() => setUploadFeedback(null), 3000);
+    } catch (error) {
+      console.error("Lỗi khi tải ảnh nền:", error);
+      setUploadFeedback("Không thể xử lý ảnh, vui lòng thử lại!");
+      setTimeout(() => setUploadFeedback(null), 3000);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleUploadBackground(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleUploadBackground(file);
+    }
+  };
+
+  const handleRemoveCustomBg = (e: React.MouseEvent, urlToRemove: string) => {
+    e.stopPropagation();
+    setCustomBgs((prev) => {
+      const updated = prev.filter((u) => u !== urlToRemove);
+      try {
+        localStorage.setItem(STORAGE_CUSTOM_BG_KEY, JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+
+    if (canvasBackgroundColor === urlToRemove) {
+      setCanvasBackgroundColor("#FFFFFF");
+    }
+  };
 
   return (
     <div className="space-y-5 select-none text-stone-800">
@@ -116,7 +274,7 @@ export function BackgroundTool() {
                 <input
                   ref={colorInputRef}
                   type="color"
-                  value={canvasBackgroundColor}
+                  value={canvasBackgroundColor.startsWith("#") ? canvasBackgroundColor : "#FFFFFF"}
                   onChange={(e) => setCanvasBackgroundColor(e.target.value)}
                   className="sr-only"
                 />
@@ -182,42 +340,165 @@ export function BackgroundTool() {
         </div>
       ) : (
         /* TAB ẢNH NỀN */
-        <div className="space-y-3">
-          <p className="text-xs text-stone-500">
-            Tải lên hoặc chọn ảnh nền cho thiệp của bạn.
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              {
-                id: "bg-paper-1",
-                label: "Giấy mỹ thuật ngà",
-                url: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=300&auto=format&fit=crop&q=80",
-              },
-              {
-                id: "bg-paper-2",
-                label: "Vân lụa ánh kim",
-                url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&auto=format&fit=crop&q=80",
-              },
-            ].map((bg) => (
+        <div className="space-y-4">
+          {/* Nút gỡ ảnh nền khi đang dùng ảnh */}
+          {isCurrentImageBg && (
+            <div className="flex items-center justify-between p-2.5 bg-rose-50 border border-rose-200/80 rounded-xl">
+              <span className="text-xs text-rose-800 font-medium">Đang dùng ảnh nền</span>
               <button
-                key={bg.id}
                 type="button"
-                onClick={() => setCanvasBackgroundColor(bg.url)}
-                className="group rounded-xl border border-stone-200 overflow-hidden relative aspect-3/4 hover:border-stone-900 transition cursor-pointer"
+                onClick={() => setCanvasBackgroundColor("#FFFFFF")}
+                className="text-xs text-rose-600 hover:text-rose-800 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
               >
-                <img
-                  src={bg.url}
-                  alt={bg.label}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-                <span className="absolute inset-x-0 bottom-0 bg-stone-900/70 text-white text-[10px] p-1 text-center font-medium truncate">
-                  {bg.label}
-                </span>
+                <Trash2 className="size-3.5" />
+                Gỡ ảnh nền
               </button>
-            ))}
+            </div>
+          )}
+
+          {/* KHUNG TẢI ẢNH LÊN (CÓ NÉN & TỐI ƯU DUNG LƯỢNG) */}
+          <div className="space-y-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+              disabled={isUploading}
+            />
+
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              onClick={() => !isUploading && fileInputRef.current?.click()}
+              className={`p-4 rounded-xl border-2 border-dashed transition flex flex-col items-center justify-center text-center cursor-pointer ${
+                isDragging
+                  ? "border-stone-900 bg-stone-50"
+                  : "border-stone-200 bg-white hover:border-stone-400 hover:bg-stone-50/60"
+              } ${isUploading ? "opacity-70 pointer-events-none" : ""}`}
+            >
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2 py-1">
+                  <Loader2 className="size-6 text-stone-800 animate-spin" />
+                  <span className="text-xs font-medium text-stone-700">Đang tối ưu & nén ảnh...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="size-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-700 mb-0.5">
+                    <UploadCloud className="size-5" />
+                  </div>
+                  <span className="text-xs font-semibold text-stone-800">
+                    Tải ảnh nền từ thiết bị
+                  </span>
+                  <span className="text-[11px] text-stone-500">
+                    Kéo thả hoặc bấm để chọn ảnh (JPG, PNG, WebP)
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 font-medium border border-emerald-100">
+                    <Sparkles className="size-3" /> Tự động nén tối ưu hiển thị nhanh
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {uploadFeedback && (
+              <p className="text-[11px] text-stone-600 bg-stone-100 px-2.5 py-1.5 rounded-lg text-center font-medium animate-fade-in">
+                {uploadFeedback}
+              </p>
+            )}
+          </div>
+
+          {/* ẢNH ĐÃ TẢI LÊN CỦA BẠN (NẾU CÓ) */}
+          {customBgs.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-stone-700 block">
+                Ảnh bạn đã tải lên ({customBgs.length})
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {customBgs.map((url, idx) => {
+                  const isSelected = canvasBackgroundColor === url;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => setCanvasBackgroundColor(url)}
+                      className={`group rounded-xl border overflow-hidden relative aspect-3/4 hover:border-stone-900 transition cursor-pointer ${
+                        isSelected
+                          ? "border-stone-900 ring-2 ring-stone-900 shadow-sm"
+                          : "border-stone-200"
+                      }`}
+                    >
+                      <img
+                        src={url}
+                        alt="Ảnh nền tự tải"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      {isSelected && (
+                        <div className="absolute top-1.5 right-1.5 size-5 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-xs">
+                          <Check className="size-3 stroke-[3]" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => handleRemoveCustomBg(e, url)}
+                        className="absolute top-1.5 left-1.5 size-5 rounded-full bg-white/90 text-stone-700 hover:text-rose-600 hover:bg-white flex items-center justify-center shadow-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        title="Xóa khỏi danh sách"
+                      >
+                        <Trash2 className="size-3" />
+                      </button>
+                      <span className="absolute inset-x-0 bottom-0 bg-stone-900/70 text-white text-[10px] p-1 text-center font-medium truncate">
+                        Ảnh của bạn #{idx + 1}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ẢNH NỀN MẪU SẴN CÓ */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-700 block">
+              Mẫu nền có sẵn
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {PRESET_BACKGROUND_IMAGES.map((bg) => {
+                const isSelected = canvasBackgroundColor === bg.url;
+                return (
+                  <button
+                    key={bg.id}
+                    type="button"
+                    onClick={() => setCanvasBackgroundColor(bg.url)}
+                    className={`group rounded-xl border overflow-hidden relative aspect-3/4 hover:border-stone-900 transition cursor-pointer text-left ${
+                      isSelected
+                        ? "border-stone-900 ring-2 ring-stone-900 shadow-sm"
+                        : "border-stone-200"
+                    }`}
+                  >
+                    <img
+                      src={bg.thumb}
+                      alt={bg.label}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      loading="lazy"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 size-5 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-xs">
+                        <Check className="size-3 stroke-[3]" />
+                      </div>
+                    )}
+                    <span className="absolute inset-x-0 bottom-0 bg-stone-900/70 text-white text-[10px] p-1 text-center font-medium truncate">
+                      {bg.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+

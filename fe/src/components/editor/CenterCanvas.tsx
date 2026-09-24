@@ -585,12 +585,17 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             onDrop={handleDrop}
             style={{
               backgroundColor:
-                canvasBackgroundColor && !canvasBackgroundColor.startsWith("http")
+                canvasBackgroundColor &&
+                !canvasBackgroundColor.startsWith("http") &&
+                !canvasBackgroundColor.startsWith("/") &&
+                !canvasBackgroundColor.startsWith("data:")
                   ? canvasBackgroundColor
                   : "#FFFFFF",
               backgroundImage:
                 canvasBackgroundColor &&
-                (canvasBackgroundColor.startsWith("http") || canvasBackgroundColor.startsWith("/"))
+                (canvasBackgroundColor.startsWith("http") ||
+                  canvasBackgroundColor.startsWith("/") ||
+                  canvasBackgroundColor.startsWith("data:"))
                   ? `url(${canvasBackgroundColor})`
                   : undefined,
               backgroundSize: "cover",

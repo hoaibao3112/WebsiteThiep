@@ -34,6 +34,8 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
     copySelectedElement,
     cutSelectedElement,
     pasteElement,
+    beginInteraction,
+    endInteraction,
   } = useEditor();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -92,6 +94,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
       e.preventDefault();
       e.stopPropagation();
 
+      beginInteraction();
       setIsDragging(true);
       dragStartRef.current = {
         startX: e.clientX,
@@ -114,23 +117,32 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
 
       const handlePointerUp = () => {
         setIsDragging(false);
+        endInteraction();
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", handlePointerUp);
       };
 
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
     },
-    [element.id, element.isLocked, element.x, element.y, zoomLevel, updateCanvasElement]
+    [element.id, element.isLocked, element.x, element.y, zoomLevel, updateCanvasElement, beginInteraction, endInteraction]
   );
 
-  // Handle Resize Handles
+  // Handle Resize Handles with Pointer Capture & Natural Ratio Scaling
   const handlePointerDownResize = useCallback(
     (handle: string, e: React.PointerEvent) => {
       if (element.isLocked) return;
       e.preventDefault();
       e.stopPropagation();
 
+      const targetEl = e.currentTarget as HTMLElement;
+      try {
+        targetEl.setPointerCapture(e.pointerId);
+      } catch {}
+
+      beginInteraction();
       setIsResizing(handle);
       resizeStartRef.current = {
         startX: e.clientX,
@@ -154,21 +166,34 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         let newX = startElX;
         let newY = startElY;
 
-        if (handle.includes("e")) {
-          newWidth = Math.max(30, startWidth + deltaX);
-        }
-        if (handle.includes("w")) {
-          const w = Math.max(30, startWidth - deltaX);
-          newWidth = w;
-          newX = startElX + (startWidth - w);
-        }
-        if (handle.includes("s")) {
-          newHeight = Math.max(20, startHeight + deltaY);
-        }
-        if (handle.includes("n")) {
-          const h = Math.max(20, startHeight - deltaY);
-          newHeight = h;
-          newY = startElY + (startHeight - h);
+        const isCorner = handle === "se" || handle === "nw" || handle === "ne" || handle === "sw";
+        if (isCorner) {
+          const aspectRatio = startWidth / Math.max(1, startHeight);
+          let scaleDelta = deltaX;
+          if (handle === "se") scaleDelta = Math.max(deltaX, deltaY);
+          else if (handle === "sw") scaleDelta = Math.max(-deltaX, deltaY);
+          else if (handle === "ne") scaleDelta = Math.max(deltaX, -deltaY);
+          else if (handle === "nw") scaleDelta = Math.max(-deltaX, -deltaY);
+
+          const scaleRatio = Math.max(0.1, (startWidth + scaleDelta) / startWidth);
+          newWidth = Math.max(25, Math.round(startWidth * scaleRatio));
+          newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
+
+          if (handle.includes("w")) newX = startElX + (startWidth - newWidth);
+          if (handle.includes("n")) newY = startElY + (startHeight - newHeight);
+        } else {
+          if (handle === "e") newWidth = Math.max(25, startWidth + deltaX);
+          if (handle === "w") {
+            const w = Math.max(25, startWidth - deltaX);
+            newWidth = w;
+            newX = startElX + (startWidth - w);
+          }
+          if (handle === "s") newHeight = Math.max(20, startHeight + deltaY);
+          if (handle === "n") {
+            const h = Math.max(20, startHeight - deltaY);
+            newHeight = h;
+            newY = startElY + (startHeight - h);
+          }
         }
 
         const patch: Partial<CanvasElement> = {
@@ -178,11 +203,11 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
           height: Math.round(newHeight),
         };
 
-        // Proportionally scale fontSize for stickers, stock items and text so dragging larger makes them visibly bigger
+        // Proportionally scale fontSize for stickers, stock items and text
         if (element.type === "sticker" || element.type === "text" || element.type === "stock") {
           const ratioH = newHeight / Math.max(20, startHeight);
-          const ratioW = newWidth / Math.max(30, startWidth);
-          const scaleRatio = handle === "w" || handle === "e" ? ratioW : ratioH;
+          const ratioW = newWidth / Math.max(25, startWidth);
+          const scaleRatio = isCorner ? newWidth / startWidth : (handle === "w" || handle === "e" ? ratioW : ratioH);
           const defaultBase =
             element.type === "text"
               ? 28
@@ -198,14 +223,20 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
 
       const handlePointerUp = () => {
         setIsResizing(null);
+        endInteraction();
+        try {
+          targetEl.releasePointerCapture(e.pointerId);
+        } catch {}
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
+        window.removeEventListener("pointercancel", handlePointerUp);
       };
 
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerUp);
     },
-    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, element.content, zoomLevel, updateCanvasElement]
+    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, element.content, zoomLevel, updateCanvasElement, beginInteraction, endInteraction]
   );
 
   const handlePointerDownRotate = useCallback(
@@ -457,50 +488,74 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("nw", e)}
-            className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-nwse-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -top-1 -left-1 size-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi kích thước"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Top-Center */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("n", e)}
-            className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-ns-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi chiều cao"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Top-Right */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("ne", e)}
-            className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-nesw-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -top-1 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi kích thước"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Middle-Left */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("w", e)}
-            className="absolute top-1/2 -translate-y-1/2 -left-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-ew-resize hover:scale-125 transition-transform"
-          />
+            className="absolute top-1/2 -left-1 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi chiều rộng"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Middle-Right */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("e", e)}
-            className="absolute top-1/2 -translate-y-1/2 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-ew-resize hover:scale-125 transition-transform"
-          />
+            className="absolute top-1/2 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi chiều rộng"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Bottom-Left */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("sw", e)}
-            className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-nesw-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -bottom-1 -left-1 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi kích thước"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Bottom-Center */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("s", e)}
-            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-ns-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi chiều cao"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
           {/* Bottom-Right */}
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("se", e)}
-            className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-nwse-resize hover:scale-125 transition-transform"
-          />
+            className="absolute -bottom-1 -right-1 translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group"
+            title="Kéo để thay đổi kích thước"
+          >
+            <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
+          </div>
 
           {/* Rotation Handle (Khớp chuẩn giao diện ngaychungdoi) */}
           <div
