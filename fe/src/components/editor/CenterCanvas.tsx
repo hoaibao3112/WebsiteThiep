@@ -572,11 +572,141 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     }
 
     if (el.type === "preset") {
-      if (el.presetId === "p1") {
+      // 1. Phong bì hồng mở có thiệp & ảnh cưới (như trong ảnh mẫu ngaychungdoi)
+      if (el.presetId === "p-envelope-pink" || el.presetId === "p1") {
+        const photoUrl = el.imageUrl || (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80";
+        return (
+          <div className="w-full h-full relative overflow-visible flex items-center justify-center pointer-events-none select-none">
+            {/* Open Flap Behind (chóp nắp phong bì mở ngược lên) */}
+            <div className="absolute -top-7 w-[84%] h-24 bg-[#EFA0AF] shadow-xs [clip-path:polygon(50%_0%,0%_100%,100%_100%)] rounded-t-sm" />
+            
+            {/* Sliding Photo Card inside */}
+            <div className="w-[78%] h-[82%] -top-4 absolute bg-white rounded-lg shadow-lg border border-pink-100 overflow-hidden flex flex-col items-center p-1.5 z-10">
+              <div className="w-full flex-1 bg-stone-100 rounded overflow-hidden relative">
+                <img
+                  src={photoUrl}
+                  alt="Wedding Photo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="pt-1 text-center">
+                <span className="text-[10px] font-serif tracking-[0.2em] font-bold text-pink-700 uppercase block">Save The Date</span>
+                <span className="text-[8px] font-mono text-stone-500 block truncate max-w-[200px]">
+                  {(draft as any)?.groom?.fullName ? `${(draft as any)?.groom?.fullName} & ${(draft as any)?.bride?.fullName}` : "Văn Anh & Minh Thơ"}
+                </span>
+              </div>
+            </div>
+
+            {/* Pink Envelope Front Pocket */}
+            <div className="absolute inset-x-0 bottom-0 h-[68%] bg-[#F294A6] rounded-b-2xl z-20 shadow-md [clip-path:polygon(0%_25%,50%_65%,100%_25%,100%_100%,0%_100%)] border-t border-pink-200/50" />
+            <div className="absolute inset-x-0 bottom-0 h-[68%] rounded-b-2xl z-20 pointer-events-none border-b-2 border-pink-400/40" />
+
+            {/* Pink Monogram Wax Seal */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 size-9 rounded-full bg-gradient-to-br from-[#F48197] to-[#DF5C75] border-2 border-pink-200 shadow-lg flex items-center justify-center text-[10px] font-serif font-bold text-white tracking-widest drop-shadow-sm">
+              ML
+            </div>
+          </div>
+        );
+      }
+
+      // 2. We got married - Phong bì sáp xanh
+      if (el.presetId === "p-envelope-green") {
+        const photoUrl = el.imageUrl || (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80";
+        return (
+          <div className="w-full h-full relative overflow-visible flex items-center justify-center pointer-events-none select-none">
+            <div className="absolute -top-6 w-[84%] h-22 bg-[#2D3E31] shadow-xs [clip-path:polygon(50%_0%,0%_100%,100%_100%)] rounded-t-sm" />
+            <div className="w-[78%] h-[80%] -top-3 absolute bg-[#FDFBF7] rounded-lg shadow-lg border border-stone-200 overflow-hidden flex flex-col items-center p-2 z-10 text-center">
+              <span className="text-[10px] font-serif italic text-stone-700">We got married</span>
+              <div className="w-full flex-1 bg-stone-100 rounded overflow-hidden my-1">
+                <img src={photoUrl} alt="Photo" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="absolute inset-x-0 bottom-0 h-[68%] bg-[#3E5343] rounded-b-2xl z-20 shadow-md [clip-path:polygon(0%_25%,50%_65%,100%_25%,100%_100%,0%_100%)]" />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 size-9 rounded-full bg-[#BE944E] border-2 border-amber-200 shadow-lg flex items-center justify-center text-xs font-bold text-amber-950">
+              💍
+            </div>
+          </div>
+        );
+      }
+
+      // 3. Thư mời WEDDING typography
+      if (el.presetId === "p-wedding-typography") {
+        const groom = (draft as any)?.groom?.fullName || "Văn Anh";
+        const bride = (draft as any)?.bride?.fullName || "Minh Thơ";
+        return (
+          <div className="w-full h-full p-5 bg-[#FCFBF8] rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
+            <div className="w-full flex items-center justify-center gap-2">
+              <div className="h-[1px] flex-1 bg-amber-300/70" />
+              <span className="text-[11px] font-serif tracking-[0.25em] text-amber-800 uppercase font-bold">WEDDING</span>
+              <div className="h-[1px] flex-1 bg-amber-300/70" />
+            </div>
+            <div className="my-auto py-2">
+              <h3 className="font-serif text-lg font-bold text-stone-800 leading-tight">
+                {groom} <span className="text-amber-600 font-normal font-sans">&</span> {bride}
+              </h3>
+              <p className="text-[10px] font-serif uppercase tracking-widest text-amber-900/80 mt-1">THƯ MỜI TIỆC CƯỚI</p>
+            </div>
+            <div className="w-full pt-2 border-t border-amber-100 flex items-center justify-between text-[9px] text-stone-500 font-mono">
+              <span>HÔN LỄ TRANG TRỌNG</span>
+              <span>2026</span>
+            </div>
+          </div>
+        );
+      }
+
+      // 4. Lịch ngày cưới khoanh tròn
+      if (el.presetId === "p-calendar-countdown") {
+        return (
+          <div className="w-full h-full p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col items-center justify-between pointer-events-none select-none">
+            <div className="text-center w-full pb-1 border-b border-stone-100">
+              <span className="text-[10px] font-serif tracking-widest uppercase text-stone-500 block font-semibold">WELCOME TO OUR WEDDING</span>
+              <span className="text-[11px] font-serif font-bold text-stone-800">Tháng 12 / 2026</span>
+            </div>
+            <div className="w-full my-auto">
+              <div className="grid grid-cols-7 gap-1 text-[9px] font-mono text-stone-400 text-center font-bold pb-1">
+                <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span className="text-rose-400">CN</span>
+              </div>
+              <div className="grid grid-cols-7 gap-1 text-[9px] font-mono text-stone-700 text-center">
+                <span className="text-stone-300">30</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span className="text-rose-500">6</span>
+                <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span className="relative font-bold text-rose-600"><span className="absolute -inset-1 rounded-full border-2 border-rose-500 bg-rose-50 -z-10 animate-pulse" />12</span><span className="text-rose-500">13</span>
+                <span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span className="text-rose-500">20</span>
+                <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span className="text-rose-500">27</span>
+              </div>
+            </div>
+            <span className="text-[9px] font-serif italic text-amber-700 font-medium">Hẹn gặp bạn vào ngày hạnh phúc nhất!</span>
+          </div>
+        );
+      }
+
+      // 5. Hôn phối hai họ
+      if (el.presetId === "p-parents-info" || el.presetId === "p4") {
+        return (
+          <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col justify-between pointer-events-none select-none text-center">
+            <div className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase border-b border-stone-100 pb-1">
+              Hôn Phối Hai Họ
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
+              <div className="border-r border-stone-100 pr-2">
+                <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ TRAI</p>
+                <p className="text-stone-500 text-[9px] mt-0.5">Ông: Nguyễn Văn A</p>
+                <p className="text-stone-500 text-[9px]">Bà: Trần Thị B</p>
+              </div>
+              <div className="pl-1">
+                <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ GÁI</p>
+                <p className="text-stone-500 text-[9px] mt-0.5">Ông: Lê Văn C</p>
+                <p className="text-stone-500 text-[9px]">Bà: Phạm Thị D</p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 6. Khung ảnh vòm
+      if (el.presetId === "p-arch-portrait" || el.presetId === "p1-arch") {
         return (
           <div className="w-full h-full rounded-t-[140px] rounded-b-2xl border-4 border-[#BE944E] overflow-hidden shadow-md bg-stone-100 relative pointer-events-none select-none">
             <img
-              src={el.content || "/images/demo/couple-cover.png"}
+              src={el.content || el.imageUrl || "/images/demo/couple-cover.png"}
               alt="Cổng vòm"
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -585,11 +715,100 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-center pb-3">
-              <span className="text-white text-xs font-serif tracking-widest drop-shadow">HOÀNG GIA Á ĐÔNG</span>
+              <span className="text-white text-xs font-serif tracking-widest drop-shadow uppercase">HOÀNG GIA Á ĐÔNG</span>
             </div>
           </div>
         );
       }
+
+      // 7. Groom & Bride Duo
+      if (el.presetId === "p-groom-bride-duo") {
+        const groom = (draft as any)?.groom?.fullName || "Chú Rể";
+        const bride = (draft as any)?.bride?.fullName || "Cô Dâu";
+        return (
+          <div className="w-full h-full p-3 bg-white/95 rounded-2xl border border-stone-200 shadow-md flex items-center justify-around gap-2 pointer-events-none select-none">
+            <div className="flex-1 flex flex-col items-center">
+              <div className="w-full h-32 rounded-t-full rounded-b-md overflow-hidden bg-stone-100 border border-stone-200 shadow-xs">
+                <img
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80"
+                  alt="Groom"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-[9px] font-serif font-bold text-stone-800 uppercase tracking-wider mt-1.5">GROOM</span>
+              <span className="text-[8px] text-stone-500 truncate max-w-[100px]">{groom}</span>
+            </div>
+            <div className="flex-1 flex flex-col items-center">
+              <div className="w-full h-32 rounded-t-full rounded-b-md overflow-hidden bg-stone-100 border border-stone-200 shadow-xs">
+                <img
+                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+                  alt="Bride"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-[9px] font-serif font-bold text-pink-700 uppercase tracking-wider mt-1.5">BRIDE</span>
+              <span className="text-[8px] text-stone-500 truncate max-w-[100px]">{bride}</span>
+            </div>
+          </div>
+        );
+      }
+
+      // 8. Lịch trình tiệc cưới
+      if (el.presetId === "p-timeline-flow" || el.presetId === "p3") {
+        return (
+          <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-[#D4AF37]/50 shadow-md flex flex-col justify-between pointer-events-none select-none text-left">
+            <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
+              <span className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase">
+                Lịch Trình Hôn Lễ
+              </span>
+              <span className="text-[9px] text-stone-400 font-sans">WEDDING TIMELINE</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px] text-stone-700 mt-1">
+              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
+                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">17:30</span>
+                <span className="font-medium text-stone-700">Đón Khách</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
+                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:00</span>
+                <span className="font-medium text-stone-700">Làm Lễ</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
+                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:30</span>
+                <span className="font-medium text-stone-700">Khai Tiệc</span>
+              </div>
+              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
+                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">19:30</span>
+                <span className="font-medium text-stone-700">Chụp Hình</span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 9. Hộp mừng cưới & QR
+      if (el.presetId === "p-banking-qr") {
+        return (
+          <div className="w-full h-full p-4 bg-[#FFFDF9] rounded-2xl border border-amber-300/80 shadow-md flex items-center justify-around gap-3 pointer-events-none select-none">
+            <div className="size-24 bg-white border border-stone-300 rounded-xl p-1.5 shadow-xs flex flex-col items-center justify-center shrink-0">
+              <img
+                src="https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=MungCuoi"
+                alt="QR"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "/images/demo/qr-demo.png";
+                }}
+              />
+            </div>
+            <div className="flex-1 text-left space-y-1">
+              <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">MỪNG CƯỚI ONLINE</span>
+              <h4 className="text-xs font-serif font-bold text-stone-900 leading-tight">Gửi Lời Chúc & Hồng Bao</h4>
+              <p className="text-[9px] text-stone-500 leading-tight">Quý khách có thể mừng cưới từ xa qua mã QR tiện ích.</p>
+            </div>
+          </div>
+        );
+      }
+
+      // 10. Polaroids 3 tấm
       if (el.presetId === "p2") {
         return (
           <div className="w-full h-full flex items-center justify-center gap-1.5 p-2 pointer-events-none select-none">
@@ -626,71 +845,21 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           </div>
         );
       }
-      if (el.presetId === "p3") {
-        return (
-          <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-[#D4AF37]/50 shadow-md flex flex-col justify-between pointer-events-none select-none text-left">
-            <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
-              <span className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase">
-                Lịch Trình Hôn Lễ
-              </span>
-              <span className="text-[9px] text-stone-400 font-sans">WEDDING TIMELINE</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px] text-stone-700 mt-1">
-              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">17:30</span>
-                <span className="font-medium text-stone-700">Đón Khách</span>
-              </div>
-              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:00</span>
-                <span className="font-medium text-stone-700">Làm Lễ</span>
-              </div>
-              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:30</span>
-                <span className="font-medium text-stone-700">Khai Tiệc</span>
-              </div>
-              <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">19:30</span>
-                <span className="font-medium text-stone-700">Chụp Hình</span>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      if (el.presetId === "p4") {
-        return (
-          <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col justify-between pointer-events-none select-none text-center">
-            <div className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase border-b border-stone-100 pb-1">
-              Hôn Phối Hai Họ
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
-              <div className="border-r border-stone-100 pr-2">
-                <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ TRAI</p>
-                <p className="text-stone-500 text-[9px] mt-0.5">Ông: Nguyễn Văn A</p>
-                <p className="text-stone-500 text-[9px]">Bà: Trần Thị B</p>
-              </div>
-              <div className="pl-1">
-                <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ GÁI</p>
-                <p className="text-stone-500 text-[9px] mt-0.5">Ông: Lê Văn C</p>
-                <p className="text-stone-500 text-[9px]">Bà: Phạm Thị D</p>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      if (el.presetId === "p5") {
-        return (
-          <div className="w-full h-full p-3.5 bg-gradient-to-br from-amber-50/90 to-stone-50/90 backdrop-blur-xs rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-center pointer-events-none select-none text-center">
-            <span className="text-amber-600 text-lg leading-none font-serif">“</span>
-            <p className="text-[11px] font-serif italic text-stone-800 font-medium px-2 leading-relaxed">
-              Trăm năm tình viên mãn, bạc đầu nghĩa phu thê.
-            </p>
-            <p className="text-[9px] text-amber-800/80 mt-1 font-sans">
-              Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi.
-            </p>
-          </div>
-        );
-      }
+
+      // Default: Quote
+      return (
+        <div className="w-full h-full p-3.5 bg-gradient-to-br from-amber-50/90 to-stone-50/90 backdrop-blur-xs rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-center pointer-events-none select-none text-center">
+          <span className="text-amber-600 text-lg leading-none font-serif">“</span>
+          <p className="text-[11px] font-serif italic text-stone-800 font-medium px-2 leading-relaxed">
+            Trăm năm tình viên mãn, bạc đầu nghĩa phu thê.
+          </p>
+          <p className="text-[9px] text-amber-800/80 mt-1 font-sans">
+            Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi.
+          </p>
+        </div>
+      );
     }
+
 
     if (el.type === "image") {
       return (
@@ -855,6 +1024,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                     borderColor: el.borderColor || undefined,
                     borderStyle: el.borderWidth ? "solid" : undefined,
                     boxShadow: el.shadow || undefined,
+                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
                   }}
                   className={`flex items-center justify-center p-1 select-none transition-shadow ${
                     isCurrentlyDragging

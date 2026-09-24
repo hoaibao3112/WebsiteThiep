@@ -48,7 +48,12 @@ export interface CanvasElement {
   presetId?: string;
   imageUrl?: string;
   title?: string;
+  rotation?: number;
+  animation?: string;
+  loopAnimation?: string;
+  linkUrl?: string;
 }
+
 
 export interface EditorContextValue<T extends object = Record<string, unknown>> {
   // Data state
@@ -412,20 +417,168 @@ export function EditorProvider<T extends object>({
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
-      if (item.id === "p1") {
+      if (item.id === "p-envelope-pink" || item.id === "p1") {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           type: "preset",
-          presetId: "p1",
-          title: "Khung Ảnh Cổng Vòm",
-          content: "/images/demo/couple-cover.png",
-          x: pos?.x ?? 55,
+          presetId: "p-envelope-pink",
+          title: "Phong bì hồng mở có thiệp",
+          content: "envelope-pink",
+          imageUrl: (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 180,
+          width: 300,
+          height: 250,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-envelope-green") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-envelope-green",
+          title: "Phong bì xanh lục bảo mở sáp",
+          content: "envelope-green",
+          imageUrl: (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 180,
+          width: 300,
+          height: 250,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-wedding-typography") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-wedding-typography",
+          title: "Thư mời tiệc cưới WEDDING",
+          content: "wedding-typography",
+          x: pos?.x ?? 40,
           y: pos?.y ?? 200,
+          width: 310,
+          height: 290,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-calendar-countdown") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-calendar-countdown",
+          title: "Bảng lịch ngày cưới khoanh tròn",
+          content: "calendar-countdown",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 210,
+          width: 300,
+          height: 270,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 12px 30px -8px rgba(0, 0, 0, 0.1)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-parents-info" || item.id === "p4") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-parents-info",
+          title: "Hôn phối hai họ cân đối",
+          content: "parents",
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 250,
+          width: 320,
+          height: 180,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-arch-portrait" || item.id === "p1-arch") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-arch-portrait",
+          title: "Khung ảnh đôi vòm cong hoàng gia",
+          content: (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80",
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 190,
           width: 280,
-          height: 330,
+          height: 340,
           borderRadius: 140,
           borderWidth: 3,
           borderColor: "#BE944E",
+          shadow: "0 14px 35px -10px rgba(0, 0, 0, 0.15)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-groom-bride-duo") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-groom-bride-duo",
+          title: "Khối chân dung Chú rể & Cô dâu",
+          content: "duo-portrait",
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 220,
+          width: 320,
+          height: 230,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-timeline-flow" || item.id === "p3") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-timeline-flow",
+          title: "Lịch trình tiệc cưới chi tiết",
+          content: "timeline",
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 240,
+          width: 320,
+          height: 230,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-banking-qr") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-banking-qr",
+          title: "Hộp mừng cưới & Mã QR",
+          content: "banking-qr",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 230,
+          width: 300,
+          height: 260,
+          backgroundColor: "#FFFFFF",
+          borderRadius: 18,
+          borderWidth: 1,
+          borderColor: "#E5E1D8",
+          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
           zIndex: maxZ + 1,
           isLocked: false,
           opacity: 1,
@@ -445,53 +598,13 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
-      } else if (item.id === "p3") {
-        newEl = {
-          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          type: "preset",
-          presetId: "p3",
-          title: "Khối Lịch Trình Tiệc Đầy Đủ",
-          content: "schedule",
-          x: pos?.x ?? 35,
-          y: pos?.y ?? 240,
-          width: 320,
-          height: 230,
-          backgroundColor: "#FFFFFF",
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: "#E5E1D8",
-          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
-          zIndex: maxZ + 1,
-          isLocked: false,
-          opacity: 1,
-        };
-      } else if (item.id === "p4") {
-        newEl = {
-          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          type: "preset",
-          presetId: "p4",
-          title: "Thẻ Song Thân 2 Cột Cân Đối",
-          content: "parents",
-          x: pos?.x ?? 35,
-          y: pos?.y ?? 250,
-          width: 320,
-          height: 180,
-          backgroundColor: "#FFFFFF",
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: "#E5E1D8",
-          shadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
-          zIndex: maxZ + 1,
-          isLocked: false,
-          opacity: 1,
-        };
       } else {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           type: "preset",
-          presetId: "p5",
-          title: "Khối Lời Ngỏ Cổ Điển",
-          content: "“Tình yêu không phải là nhìn nhau, mà là cùng nhau nhìn về một hướng. Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!”",
+          presetId: item.id || "p5",
+          title: item.title || "Khối Lời Ngỏ Cổ Điển",
+          content: "quote",
           x: pos?.x ?? 35,
           y: pos?.y ?? 260,
           width: 320,
@@ -508,6 +621,7 @@ export function EditorProvider<T extends object>({
           opacity: 1,
         };
       }
+
 
       const updated = [...canvasElements, newEl];
       persistElements(updated);

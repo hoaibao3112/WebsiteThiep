@@ -45,6 +45,10 @@ export const WeddingDataSchema = z.object({
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
-});
+  canvasElements: z.array(z.record(z.any())).optional(),
+  fieldPositions: z.record(z.any()).optional(),
+  fieldScales: z.record(z.any()).optional(),
+}).passthrough();
+
 
 export type WeddingData = z.infer<typeof WeddingDataSchema>;

@@ -15,6 +15,7 @@ import {
   ChevronsDown,
   Lock,
   Unlock,
+  RotateCw,
 } from "lucide-react";
 
 interface CanvasBoundingBoxProps {
@@ -199,6 +200,40 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
     [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, zoomLevel, updateCanvasElement]
   );
 
+  const handlePointerDownRotate = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!containerRef.current || element.isLocked) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const zoomFactor = Math.max(0.5, zoomLevel / 100);
+      const centerX = rect.left + (element.x + element.width / 2) * zoomFactor;
+      const centerY = rect.top + (element.y + element.height / 2) * zoomFactor;
+
+      const handlePointerMove = (moveEvt: PointerEvent) => {
+        const radians = Math.atan2(moveEvt.clientY - centerY, moveEvt.clientX - centerX);
+        let degrees = Math.round(radians * (180 / Math.PI) - 90);
+        if (degrees < 0) degrees += 360;
+        if (Math.abs(degrees - 0) < 5 || Math.abs(degrees - 360) < 5) degrees = 0;
+        if (Math.abs(degrees - 90) < 5) degrees = 90;
+        if (Math.abs(degrees - 180) < 5) degrees = 180;
+        if (Math.abs(degrees - 270) < 5) degrees = 270;
+
+        updateCanvasElement(element.id, { rotation: degrees });
+      };
+
+      const handlePointerUp = () => {
+        window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("pointerup", handlePointerUp);
+      };
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
+    },
+    [element.id, element.isLocked, element.x, element.y, element.width, element.height, zoomLevel, containerRef, updateCanvasElement]
+  );
+
   return (
     <div
       style={{
@@ -207,6 +242,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         top: `${element.y}px`,
         width: `${element.width}px`,
         height: `${element.height}px`,
+        transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
         zIndex: (element.zIndex || 10) + 100,
         pointerEvents: "auto",
       }}
@@ -478,6 +514,21 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
             onPointerDown={(e) => handlePointerDownResize("se", e)}
             className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-xs cursor-nwse-resize hover:scale-125 transition-transform"
           />
+
+          {/* Rotation Handle (Khớp chuẩn giao diện ngaychungdoi) */}
+          <div
+            data-canvas-control
+            className="absolute -bottom-9 left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto"
+          >
+            <div className="w-[1.5px] h-3.5 bg-[#0091FF]" />
+            <div
+              onPointerDown={handlePointerDownRotate}
+              className="size-6 rounded-full bg-white border border-stone-300 shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-stone-50 hover:border-[#0091FF] transition-colors"
+              title="Kéo để xoay phần tử"
+            >
+              <RotateCw className="size-3.5 text-stone-600" />
+            </div>
+          </div>
         </>
       )}
     </div>

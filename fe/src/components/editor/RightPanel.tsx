@@ -739,10 +739,33 @@ function SelectInspector({
 // ────────────────────────────────────────────────────────────────
 
 function CanvasElementInspector({ element }: { element: CanvasElement }) {
-  const { updateCanvasElement, selectElement, triggerSave, saveState } = useEditor();
+  const { updateCanvasElement, selectElement, triggerSave, saveState, draft } = useEditor();
+  const [expandColor, setExpandColor] = useState(false);
   const [expandPadding, setExpandPadding] = useState(false);
   const [expandBorder, setExpandBorder] = useState(false);
   const [expandShadow, setExpandShadow] = useState(false);
+  const [expandLink, setExpandLink] = useState(false);
+  const [expandMotion, setExpandMotion] = useState(false);
+  const [expandLoopMotion, setExpandLoopMotion] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const url = await uploadSingleImage(file);
+      if (url) {
+        updateCanvasElement(element.id, { imageUrl: url, content: url });
+      }
+    } catch (err) {
+      console.error("Lỗi đổi ảnh:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const FONT_OPTIONS = [
     { label: "Playfair Display", value: "Playfair Display" },
@@ -755,16 +778,25 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
     { label: "Be Vietnam Pro", value: "Be Vietnam Pro" },
   ];
 
+  const previewThumbnail =
+    element.presetId === "p-envelope-pink" || element.presetId === "p1"
+      ? "/images/demo/envelope-pink-thumb.png"
+      : element.imageUrl || element.content;
+
+  const isTextElement = element.type === "text";
+
   return (
     <aside className="w-72 sm:w-80 bg-white border-l border-stone-200 flex flex-col justify-between h-full select-none shrink-0 shadow-xs z-20">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+        <div className="flex items-center justify-between pb-2 border-b border-stone-100">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
-              Thuộc Tính
-            </span>
-            <p className="text-[11px] text-stone-400">Kích đúp vào văn bản để chỉnh sửa</p>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700">
+              THUỘC TÍNH
+            </h3>
+            <p className="text-[10px] text-stone-400 truncate max-w-[200px]">
+              {element.title || (isTextElement ? "Văn bản" : "Thành phần thiết kế")}
+            </p>
           </div>
           <button
             type="button"
@@ -776,254 +808,321 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
           </button>
         </div>
 
-        {/* Text Content */}
-        <div>
-          <label className="text-[11px] font-bold text-stone-600 block mb-1">Nội dung văn bản</label>
-          <textarea
-            rows={2}
-            value={element.content}
-            onChange={(e) => updateCanvasElement(element.id, { content: e.target.value })}
-            className="w-full text-xs p-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50 resize-none font-sans"
-            placeholder="Nhập nội dung chữ..."
-          />
-        </div>
-
-        {/* Kiểu chữ */}
-        <div>
-          <span className="text-[11px] font-bold text-stone-600 block mb-1.5">Kiểu chữ</span>
-          <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { isBold: !element.isBold })}
-              className={`p-1.5 rounded-lg text-xs font-bold transition ${
-                element.isBold ? "bg-white text-stone-900 shadow-2xs font-extrabold" : "text-stone-500 hover:text-stone-900"
-              }`}
-              title="In đậm (B)"
-            >
-              B
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { isItalic: !element.isItalic })}
-              className={`p-1.5 rounded-lg text-xs font-serif italic transition ${
-                element.isItalic ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-              title="In nghiêng (I)"
-            >
-              I
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { isStrike: !element.isStrike })}
-              className={`p-1.5 rounded-lg text-xs line-through transition ${
-                element.isStrike ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-              title="Gạch ngang (S)"
-            >
-              S
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { isUnderline: !element.isUnderline })}
-              className={`p-1.5 rounded-lg text-xs underline transition ${
-                element.isUnderline ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-              title="Gạch chân (U)"
-            >
-              U
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { isUppercase: !element.isUppercase })}
-              className={`p-1.5 rounded-lg text-[10px] font-bold transition ${
-                element.isUppercase ? "bg-white text-stone-900 shadow-2xs text-amber-700" : "text-stone-500 hover:text-stone-900"
-              }`}
-              title="Viết hoa (Aa)"
-            >
-              Aa
-            </button>
-
-            <div className="w-[1px] h-4 bg-stone-300 mx-0.5" />
-
-            {/* Alignments */}
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { textAlign: "left" })}
-              className={`p-1.5 rounded-lg transition ${
-                element.textAlign === "left" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-            >
-              <AlignLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { textAlign: "center" })}
-              className={`p-1.5 rounded-lg transition ${
-                element.textAlign === "center" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-            >
-              <AlignCenter className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { textAlign: "right" })}
-              className={`p-1.5 rounded-lg transition ${
-                element.textAlign === "right" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
-              }`}
-            >
-              <AlignRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Cỡ chữ */}
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-stone-600">Cỡ chữ</span>
-          <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden bg-stone-50">
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { fontSize: Math.max(10, (element.fontSize || 28) - 2) })}
-              className="px-2.5 py-1.5 text-stone-600 hover:bg-stone-200 transition font-bold"
-            >
-              -
-            </button>
-            <input
-              type="number"
-              value={element.fontSize || 28}
-              onChange={(e) => updateCanvasElement(element.id, { fontSize: Number(e.target.value) || 28 })}
-              className="w-12 text-center text-xs font-bold bg-transparent outline-none py-1"
-            />
-            <button
-              type="button"
-              onClick={() => updateCanvasElement(element.id, { fontSize: Math.min(120, (element.fontSize || 28) + 2) })}
-              className="px-2.5 py-1.5 text-stone-600 hover:bg-stone-200 transition font-bold"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        {/* Font chữ */}
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-stone-600">Font</span>
-          <select
-            value={element.fontFamily || "Playfair Display"}
-            onChange={(e) => updateCanvasElement(element.id, { fontFamily: e.target.value })}
-            className="text-xs font-medium py-1.5 px-2.5 rounded-xl border border-stone-200 bg-stone-50 focus:outline-none focus:border-amber-400 max-w-[160px]"
-          >
-            {FONT_OPTIONS.map((f) => (
-              <option key={f.value} value={f.value}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Màu chữ & Màu nền */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <div className="p-2 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between">
-            <span className="text-[11px] font-bold text-stone-600">Màu chữ</span>
-            <input
-              type="color"
-              value={element.color || "#333333"}
-              onChange={(e) => updateCanvasElement(element.id, { color: e.target.value })}
-              className="w-6 h-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
-            />
-          </div>
-
-          <div className="p-2 rounded-xl border border-stone-200 bg-stone-50/50 flex items-center justify-between">
-            <span className="text-[11px] font-bold text-stone-600">Màu nền</span>
-            <input
-              type="color"
-              value={element.backgroundColor && element.backgroundColor !== "transparent" ? element.backgroundColor : "#ffffff"}
-              onChange={(e) => updateCanvasElement(element.id, { backgroundColor: e.target.value })}
-              className="w-6 h-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
-            />
-          </div>
-        </div>
-
-        {/* Trong suốt (Opacity) */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-bold text-stone-600">Trong suốt</span>
-            <span className="text-xs font-mono font-bold text-stone-700">
-              {element.opacity !== undefined ? element.opacity : 1}
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={element.opacity !== undefined ? element.opacity : 1}
-            onChange={(e) => updateCanvasElement(element.id, { opacity: parseFloat(e.target.value) })}
-            className="w-full accent-blue-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
-          />
-        </div>
-
-        {/* Accordions */}
-        <div className="space-y-1.5 pt-2 border-t border-stone-200">
-          {/* Khoảng đệm */}
-          <div className="rounded-xl border border-stone-200 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setExpandPadding((v) => !v)}
-              className="w-full px-3 py-2 bg-stone-50 flex items-center justify-between text-xs font-semibold text-stone-700"
-            >
-              <span>Khoảng đệm (Padding)</span>
-              <span>{expandPadding ? "−" : "+"}</span>
-            </button>
-            {expandPadding && (
-              <div className="p-3 bg-white space-y-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  value={element.padding || 0}
-                  onChange={(e) => updateCanvasElement(element.id, { padding: Number(e.target.value) })}
-                  className="w-full accent-amber-600"
+        {/* ── THUMBNAIL PREVIEW & ACTION BUTTONS (CHO PRESET & ẢNH KHỚP VỚI ẢNH MẪU) ── */}
+        {!isTextElement && (
+          <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            {/* Visual Thumbnail */}
+            <div className="w-full h-24 rounded-xl bg-white border border-stone-200 overflow-hidden flex items-center justify-center relative shadow-inner">
+              {element.presetId === "p-envelope-pink" || element.presetId === "p1" ? (
+                <div className="w-20 h-14 bg-[#F294A6] rounded-md relative shadow-sm flex items-center justify-center border border-pink-300">
+                  <div className="absolute -top-3 w-16 h-8 bg-[#EFA0AF] [clip-path:polygon(50%_0%,0%_100%,100%_100%)]" />
+                  <div className="size-3.5 rounded-full bg-pink-600 border border-white text-[5px] text-white flex items-center justify-center font-bold">ML</div>
+                </div>
+              ) : previewThumbnail && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? (
+                <img
+                  src={previewThumbnail}
+                  alt={element.title || "Phần tử"}
+                  className="w-full h-full object-contain p-1"
                 />
-                <span className="text-[10px] text-stone-400 font-mono block text-right">{element.padding || 0}px</span>
-              </div>
-            )}
-          </div>
+              ) : (
+                <Sparkles className="size-8 text-amber-500" />
+              )}
+            </div>
 
-          {/* Đường viền */}
-          <div className="rounded-xl border border-stone-200 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setExpandBorder((v) => !v)}
-              className="w-full px-3 py-2 bg-stone-50 flex items-center justify-between text-xs font-semibold text-stone-700"
-            >
-              <span>Đường viền</span>
-              <span>{expandBorder ? "−" : "+"}</span>
-            </button>
-            {expandBorder && (
-              <div className="p-3 bg-white space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span>Độ dày</span>
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+
+            {/* 2 Nút: Cắt ảnh & Đổi ảnh (Khớp y hệt thanh công cụ ngaychungdoi) */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (fileInputRef.current) fileInputRef.current.click();
+                }}
+                className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
+              >
+                Cắt ảnh
+              </button>
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={() => {
+                  if (fileInputRef.current) fileInputRef.current.click();
+                }}
+                className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-amber-800 text-xs font-semibold shadow-2xs transition cursor-pointer text-center disabled:opacity-50"
+              >
+                {isUploading ? "Đang tải..." : "Đổi ảnh"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── TEXT EDITING CONTROLS (NẾU LÀ VĂN BẢN) ── */}
+        {isTextElement && (
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-bold text-stone-600 block mb-1">Nội dung văn bản</label>
+              <textarea
+                rows={2}
+                value={element.content}
+                onChange={(e) => updateCanvasElement(element.id, { content: e.target.value })}
+                className="w-full text-xs p-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50 resize-none font-sans"
+                placeholder="Nhập nội dung chữ..."
+              />
+            </div>
+
+            {/* Kiểu chữ */}
+            <div>
+              <span className="text-[11px] font-bold text-stone-600 block mb-1">Kiểu chữ & Căn lề</span>
+              <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { isBold: !element.isBold })}
+                  className={`p-1.5 rounded-lg text-xs font-bold transition ${
+                    element.isBold ? "bg-white text-stone-900 shadow-2xs font-extrabold" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                  title="In đậm (B)"
+                >
+                  B
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { isItalic: !element.isItalic })}
+                  className={`p-1.5 rounded-lg text-xs font-serif italic transition ${
+                    element.isItalic ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                  title="In nghiêng (I)"
+                >
+                  I
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { isUnderline: !element.isUnderline })}
+                  className={`p-1.5 rounded-lg text-xs underline transition ${
+                    element.isUnderline ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                  title="Gạch chân (U)"
+                >
+                  U
+                </button>
+                <div className="w-[1px] h-4 bg-stone-300 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { textAlign: "left" })}
+                  className={`p-1.5 rounded-lg transition ${
+                    element.textAlign === "left" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                >
+                  <AlignLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { textAlign: "center" })}
+                  className={`p-1.5 rounded-lg transition ${
+                    element.textAlign === "center" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                >
+                  <AlignCenter className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { textAlign: "right" })}
+                  className={`p-1.5 rounded-lg transition ${
+                    element.textAlign === "right" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-900"
+                  }`}
+                >
+                  <AlignRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Cỡ chữ & Font */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-[11px] font-bold text-stone-600 block mb-1">Cỡ chữ</span>
+                <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden bg-stone-50">
+                  <button
+                    type="button"
+                    onClick={() => updateCanvasElement(element.id, { fontSize: Math.max(10, (element.fontSize || 28) - 2) })}
+                    className="px-2 py-1 text-stone-600 hover:bg-stone-200 transition font-bold"
+                  >
+                    -
+                  </button>
                   <input
                     type="number"
+                    value={element.fontSize || 28}
+                    onChange={(e) => updateCanvasElement(element.id, { fontSize: Number(e.target.value) || 28 })}
+                    className="w-10 text-center text-xs font-bold bg-transparent outline-none py-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => updateCanvasElement(element.id, { fontSize: Math.min(120, (element.fontSize || 28) + 2) })}
+                    className="px-2 py-1 text-stone-600 hover:bg-stone-200 transition font-bold"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold text-stone-600 block mb-1">Font</span>
+                <select
+                  value={element.fontFamily || "Playfair Display"}
+                  onChange={(e) => updateCanvasElement(element.id, { fontFamily: e.target.value })}
+                  className="w-full text-xs font-medium py-1.5 px-2 rounded-xl border border-stone-200 bg-stone-50 focus:outline-none focus:border-amber-400"
+                >
+                  {FONT_OPTIONS.map((f) => (
+                    <option key={f.value} value={f.value}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ 7 ACCORDION CHUẨN (KHỚP HOÀN TOÀN VỚI NGAYCHUNGDOI) ── */}
+        <div className="space-y-1.5 pt-1 border-t border-stone-200">
+          {/* 1. Màu sắc */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandColor((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Màu sắc</span>
+              <span className="text-stone-400 font-bold">{expandColor ? "−" : "+"}</span>
+            </button>
+            {expandColor && (
+              <div className="p-3 bg-white space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Màu chủ đạo / chữ</span>
+                  <input
+                    type="color"
+                    value={element.color || "#000000"}
+                    onChange={(e) => updateCanvasElement(element.id, { color: e.target.value })}
+                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Màu nền</span>
+                  <input
+                    type="color"
+                    value={element.backgroundColor && element.backgroundColor !== "transparent" ? element.backgroundColor : "#ffffff"}
+                    onChange={(e) => updateCanvasElement(element.id, { backgroundColor: e.target.value })}
+                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-stone-600">Độ mờ (Opacity)</span>
+                    <span className="font-mono text-stone-500">{element.opacity ?? 1}</span>
+                  </div>
+                  <input
+                    type="range"
                     min="0"
-                    max="10"
-                    value={element.borderWidth || 0}
-                    onChange={(e) => updateCanvasElement(element.id, { borderWidth: Number(e.target.value) })}
-                    className="w-14 text-center border rounded p-1"
+                    max="1"
+                    step="0.05"
+                    value={element.opacity ?? 1}
+                    onChange={(e) => updateCanvasElement(element.id, { opacity: parseFloat(e.target.value) })}
+                    className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
                   />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Đổ bóng */}
+          {/* 2. Khoảng đệm */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandPadding((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Khoảng đệm</span>
+              <span className="text-stone-400 font-bold">{expandPadding ? "−" : "+"}</span>
+            </button>
+            {expandPadding && (
+              <div className="p-3 bg-white space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Lề bên trong</span>
+                  <span className="font-mono text-stone-500">{element.padding || 0}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="40"
+                  value={element.padding || 0}
+                  onChange={(e) => updateCanvasElement(element.id, { padding: Number(e.target.value) })}
+                  className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 3. Đường viền */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandBorder((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Đường viền</span>
+              <span className="text-stone-400 font-bold">{expandBorder ? "−" : "+"}</span>
+            </button>
+            {expandBorder && (
+              <div className="p-3 bg-white space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Độ dày viền</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    value={element.borderWidth || 0}
+                    onChange={(e) => updateCanvasElement(element.id, { borderWidth: Number(e.target.value) })}
+                    className="w-14 text-center border rounded-lg p-1 text-xs"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Bo góc (Radius)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="150"
+                    value={element.borderRadius || 0}
+                    onChange={(e) => updateCanvasElement(element.id, { borderRadius: Number(e.target.value) })}
+                    className="w-14 text-center border rounded-lg p-1 text-xs"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-stone-600">Màu viền</span>
+                  <input
+                    type="color"
+                    value={element.borderColor || "#D4AF37"}
+                    onChange={(e) => updateCanvasElement(element.id, { borderColor: e.target.value })}
+                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. Đổ bóng */}
           <div className="rounded-xl border border-stone-200 overflow-hidden">
             <button
               type="button"
               onClick={() => setExpandShadow((v) => !v)}
-              className="w-full px-3 py-2 bg-stone-50 flex items-center justify-between text-xs font-semibold text-stone-700"
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
             >
               <span>Đổ bóng</span>
-              <span>{expandShadow ? "−" : "+"}</span>
+              <span className="text-stone-400 font-bold">{expandShadow ? "−" : "+"}</span>
             </button>
             {expandShadow && (
               <div className="p-2.5 bg-white grid grid-cols-2 gap-1.5 text-[11px]">
@@ -1031,17 +1130,109 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   { label: "Không", val: "none" },
                   { label: "Nhẹ", val: "0 2px 8px rgba(0,0,0,0.1)" },
                   { label: "Vừa", val: "0 6px 16px rgba(0,0,0,0.18)" },
+                  { label: "Nổi khối", val: "0 12px 28px rgba(0,0,0,0.22)" },
                   { label: "Ánh Kim", val: "0 4px 14px rgba(190,148,78,0.4)" },
                 ].map((s) => (
                   <button
                     key={s.label}
                     type="button"
                     onClick={() => updateCanvasElement(element.id, { shadow: s.val })}
-                    className={`p-1.5 rounded-lg border text-center transition ${
-                      element.shadow === s.val ? "border-amber-500 bg-amber-50 font-bold" : "border-stone-200"
+                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer ${
+                      element.shadow === s.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
                     }`}
                   >
                     {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 5. Liên kết */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandLink((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Liên kết</span>
+              <span className="text-stone-400 font-bold">{expandLink ? "−" : "+"}</span>
+            </button>
+            {expandLink && (
+              <div className="p-3 bg-white space-y-2">
+                <input
+                  type="url"
+                  placeholder="https://maps.google.com/..."
+                  value={element.linkUrl || ""}
+                  onChange={(e) => updateCanvasElement(element.id, { linkUrl: e.target.value })}
+                  className="w-full text-xs p-2 rounded-lg border border-stone-200 bg-stone-50/50 outline-none focus:border-amber-400"
+                />
+                <p className="text-[10px] text-stone-400">Khách bấm vào phần tử sẽ mở liên kết này.</p>
+              </div>
+            )}
+          </div>
+
+          {/* 6. Hiệu ứng chuyển động */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandMotion((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Hiệu ứng chuyển động</span>
+              <span className="text-stone-400 font-bold">{expandMotion ? "−" : "+"}</span>
+            </button>
+            {expandMotion && (
+              <div className="p-2.5 bg-white grid grid-cols-2 gap-1.5 text-[11px]">
+                {[
+                  { label: "Không", val: "none" },
+                  { label: "Mờ dần (Fade)", val: "fade-in" },
+                  { label: "Bay lên (Slide Up)", val: "slide-up" },
+                  { label: "Phóng to (Zoom)", val: "zoom-in" },
+                  { label: "Nhảy nhẹ (Bounce)", val: "bounce-in" },
+                ].map((m) => (
+                  <button
+                    key={m.label}
+                    type="button"
+                    onClick={() => updateCanvasElement(element.id, { animation: m.val })}
+                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer ${
+                      element.animation === m.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 7. Chuyển động liên tục */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandLoopMotion((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Chuyển động liên tục</span>
+              <span className="text-stone-400 font-bold">{expandLoopMotion ? "−" : "+"}</span>
+            </button>
+            {expandLoopMotion && (
+              <div className="p-2.5 bg-white grid grid-cols-2 gap-1.5 text-[11px]">
+                {[
+                  { label: "Không", val: "none" },
+                  { label: "Nhấp nhô (Float)", val: "float" },
+                  { label: "Nhịp đập (Pulse)", val: "pulse" },
+                  { label: "Lắc lư (Swing)", val: "swing" },
+                ].map((l) => (
+                  <button
+                    key={l.label}
+                    type="button"
+                    onClick={() => updateCanvasElement(element.id, { loopAnimation: l.val })}
+                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer ${
+                      element.loopAnimation === l.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                    }`}
+                  >
+                    {l.label}
                   </button>
                 ))}
               </div>
@@ -1064,3 +1255,4 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
     </aside>
   );
 }
+

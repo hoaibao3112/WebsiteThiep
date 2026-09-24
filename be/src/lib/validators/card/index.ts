@@ -85,7 +85,10 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     })).max(20).default([]),
     events: z.array(DraftEventSchema).max(10).default([]),
     photos: z.array(PhotoSchema).max(50).optional(),
-  }),
+    canvasElements: z.array(z.record(z.any())).optional(),
+    fieldPositions: z.record(z.any()).optional(),
+    fieldScales: z.record(z.any()).optional(),
+  }).passthrough(),
   z.object({
     cardCategory: z.literal("BIRTHDAY"),
     celebrantName: z.string().trim().max(120).default(""),
@@ -96,7 +99,10 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     themeMood: z.string().trim().max(100).nullable().optional(),
     hobbies: z.array(z.string().trim().max(80)).max(20).default([]),
     events: z.array(DraftEventSchema).max(10).default([]),
-  }),
+    canvasElements: z.array(z.record(z.any())).optional(),
+    fieldPositions: z.record(z.any()).optional(),
+    fieldScales: z.record(z.any()).optional(),
+  }).passthrough(),
   z.object({
     cardCategory: z.literal("NEWBORN"),
     babyName: z.string().trim().max(120).default(""),
@@ -114,7 +120,10 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     ceremonyType: z.enum(["ANNOUNCEMENT_ONLY", "FULL_MONTH", "ONE_YEAR"]).default("FULL_MONTH"),
     greeting: z.string().trim().max(2_000).nullable().optional(),
     events: z.array(DraftEventSchema).max(10).default([]),
-  }),
+    canvasElements: z.array(z.record(z.any())).optional(),
+    fieldPositions: z.record(z.any()).optional(),
+    fieldScales: z.record(z.any()).optional(),
+  }).passthrough(),
 ]);
 
 const CommonDraftFields = {
