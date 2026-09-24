@@ -178,13 +178,19 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
           height: Math.round(newHeight),
         };
 
-        // Proportionally scale fontSize for stickers and text so dragging larger makes them visibly bigger
-        if (element.type === "sticker" || element.type === "text") {
+        // Proportionally scale fontSize for stickers, stock items and text so dragging larger makes them visibly bigger
+        if (element.type === "sticker" || element.type === "text" || element.type === "stock") {
           const ratioH = newHeight / Math.max(20, startHeight);
           const ratioW = newWidth / Math.max(30, startWidth);
           const scaleRatio = handle === "w" || handle === "e" ? ratioW : ratioH;
-          const baseSize = element.fontSize || (element.type === "sticker" ? 60 : 28);
-          patch.fontSize = Math.max(12, Math.min(240, Math.round(baseSize * scaleRatio)));
+          const defaultBase =
+            element.type === "text"
+              ? 28
+              : element.content && element.content.length > 2
+              ? 26
+              : 60;
+          const baseSize = element.fontSize || defaultBase;
+          patch.fontSize = Math.max(10, Math.min(260, Math.round(baseSize * scaleRatio)));
         }
 
         updateCanvasElement(element.id, patch);
@@ -199,7 +205,7 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp);
     },
-    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, zoomLevel, updateCanvasElement]
+    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, element.content, zoomLevel, updateCanvasElement]
   );
 
   const handlePointerDownRotate = useCallback(

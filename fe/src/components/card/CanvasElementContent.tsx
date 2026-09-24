@@ -85,11 +85,19 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       const rawSvg = el.svgContent || catalogItem?.svgContent;
       if (rawSvg) {
         const itemColor = el.color || catalogItem?.color || "#E11D48";
+        const processedSvg = rawSvg.replace(
+          /<svg\b([^>]*)>/i,
+          (_match, attrs) => {
+            const hasPreserve = /preserveAspectRatio/i.test(attrs);
+            const extraAttrs = hasPreserve ? "" : ' preserveAspectRatio="none"';
+            return `<svg${attrs}${extraAttrs} style="width:100%;height:100%;display:block;">`;
+          }
+        );
         return (
           <div
-            className="w-full h-full flex items-center justify-center select-none pointer-events-none drop-shadow-xs"
+            className="w-full h-full flex items-center justify-center select-none pointer-events-none drop-shadow-xs [&>svg]:w-full [&>svg]:h-full [&>svg]:block [&>svg]:max-w-full [&>svg]:max-h-full"
             style={{ color: itemColor }}
-            dangerouslySetInnerHTML={{ __html: rawSvg }}
+            dangerouslySetInnerHTML={{ __html: processedSvg }}
           />
         );
       }
@@ -101,26 +109,36 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               el.content.startsWith("/images") ||
               el.content.startsWith("data:image")))
       );
-      return (
-        <div className="w-full h-full flex items-center justify-center select-none pointer-events-none">
-          {isImg ? (
+      if (isImg) {
+        return (
+          <div className="w-full h-full flex items-center justify-center select-none pointer-events-none">
             <img
               src={el.imageUrl || el.content}
               alt={el.title || "Sticker"}
               className="w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none"
             />
-          ) : (
-            <span
-              style={{
-                fontSize: `${el.fontSize || Math.round(el.height * 0.75)}px`,
-                color: el.color || undefined,
-                lineHeight: 1,
-              }}
-              className="filter drop-shadow-md select-none transform transition-transform"
-            >
-              {el.content}
-            </span>
-          )}
+          </div>
+        );
+      }
+
+      const contentLength = typeof el.content === "string" ? el.content.length : 1;
+      const isMultiChar = contentLength > 2;
+      const autoFontSize = isMultiChar
+        ? Math.max(10, Math.min(Math.round(el.height * 0.7), Math.round((el.width * 0.85) / Math.max(contentLength * 0.65, 1))))
+        : Math.max(12, Math.round(Math.min(el.width, el.height) * 0.8));
+
+      return (
+        <div className="w-full h-full flex items-center justify-center select-none pointer-events-none overflow-hidden">
+          <span
+            style={{
+              fontSize: `${el.fontSize || autoFontSize}px`,
+              color: el.color || undefined,
+              lineHeight: 1,
+            }}
+            className="filter drop-shadow-md select-none transform transition-transform text-center flex items-center justify-center"
+          >
+            {el.content}
+          </span>
         </div>
       );
     }
