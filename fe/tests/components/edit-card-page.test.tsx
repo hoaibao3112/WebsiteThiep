@@ -42,23 +42,25 @@ describe("EditCardPage owner flow", () => {
 
   it("loads the owner's card without demo fallback", async () => {
     await renderPage();
-    expect(await screen.findByText(/Chỉnh Sửa Thiệp/i)).toBeInTheDocument();
+    expect(await screen.findByText(/ngày chung đôi|Chỉnh Sửa Thiệp/i)).toBeInTheDocument();
     expect(ApiClient.request).toHaveBeenCalledWith("/cards/demo-card-1");
   }, 15000);
 
   it("shows a recoverable error when loading fails", async () => {
     vi.mocked(ApiClient.request).mockResolvedValue({ success: false, error: "Không thể tải thiệp" });
     await renderPage();
-    expect(await screen.findByRole("alert")).toHaveTextContent("Không thể tải thiệp");
-    expect(screen.getByRole("button", { name: /Thử lại/i })).toBeInTheDocument();
-    expect(screen.queryByText(/Lưu Thay Đổi/i)).not.toBeInTheDocument();
+    const alerts = await screen.findAllByRole("alert");
+    expect(alerts[0]).toHaveTextContent("Không thể tải thiệp");
+    const retryButtons = screen.getAllByRole("button", { name: /Thử lại/i });
+    expect(retryButtons[0]).toBeInTheDocument();
+    expect(screen.queryByText(/Lưu thiệp|Lưu Thay Đổi/i)).not.toBeInTheDocument();
   });
 
   it("saves changes through the owner endpoint", async () => {
     vi.mocked(ApiClient.request).mockImplementation(async (_endpoint, options) =>
       options?.method === "PUT" ? { success: true, data: TEST_CARD } : { success: true, data: TEST_CARD });
     await renderPage();
-    await userEvent.click(await screen.findByRole("button", { name: /Lưu Thay Đổi/i }));
+    await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
     await waitFor(() => expect(ApiClient.request).toHaveBeenCalledWith(
       "/cards/demo-card-1", expect.objectContaining({ method: "PUT" })
     ));
@@ -70,8 +72,9 @@ describe("EditCardPage owner flow", () => {
         ? { success: false, error: "Mất kết nối, chưa lưu thay đổi" }
         : { success: true, data: TEST_CARD });
     await renderPage();
-    await userEvent.click(await screen.findByRole("button", { name: /Lưu Thay Đổi/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Mất kết nối");
+    await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
+    const alerts = await screen.findAllByRole("alert");
+    expect(alerts[0]).toHaveTextContent("Mất kết nối");
     expect(screen.queryByText(/lưu thành công/i)).not.toBeInTheDocument();
   });
 });

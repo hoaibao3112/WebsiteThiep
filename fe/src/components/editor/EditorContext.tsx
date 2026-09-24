@@ -91,6 +91,13 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   updateFieldById: (fieldId: string, value: unknown) => void;
   getFieldValue: (field: EditorField) => unknown;
 
+  // Photos gallery management
+  updatePhotos: (photos: Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) => void;
+  addPhotoToGallery: (photo: { id?: string; url: string; caption?: string; isCover?: boolean }) => void;
+  removePhotoFromGallery: (photoIdOrUrl: string) => void;
+  setCoverPhoto: (url: string) => void;
+  replaceSelectedImage: (url: string) => boolean;
+
   // Bottom toolbar / widget toggles
   showWishButton: boolean;
   setShowWishButton: (val: boolean | ((prev: boolean) => boolean)) => void;
@@ -1167,6 +1174,100 @@ export function EditorProvider<T extends object>({
     [draft]
   );
 
+  const updatePhotos = useCallback(
+    (newPhotos: Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) => {
+      try {
+        let next = applyDraftPatch(draft, "photos", newPhotos);
+        if ((draft as any)?.categoryData) {
+          next = applyDraftPatch(next, "categoryData.photos", newPhotos);
+        }
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi cập nhật photos:", err);
+      }
+    },
+    [draft, onDraftChange]
+  );
+
+  const addPhotoToGallery = useCallback(
+    (photo: { id?: string; url: string; caption?: string; isCover?: boolean }) => {
+      const currentPhotos = ((draft as any).photos as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) || [];
+      const newPhoto = {
+        id: photo.id || `photo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        url: photo.url,
+        caption: photo.caption || "",
+        isCover: photo.isCover ?? currentPhotos.length === 0,
+      };
+      updatePhotos([...currentPhotos, newPhoto]);
+    },
+    [draft, updatePhotos]
+  );
+
+  const removePhotoFromGallery = useCallback(
+    (photoIdOrUrl: string) => {
+      const currentPhotos = ((draft as any).photos as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) || [];
+      const filtered = currentPhotos.filter((p) => p.id !== photoIdOrUrl && p.url !== photoIdOrUrl);
+      updatePhotos(filtered);
+    },
+    [draft, updatePhotos]
+  );
+
+  const setCoverPhoto = useCallback(
+    (url: string) => {
+      try {
+        let next = applyDraftPatch(draft, "categoryData.coverPhotoUrl", url);
+        next = applyDraftPatch(next, "coverPhotoUrl", url);
+        const currentPhotos = ((draft as any).photos as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) || [];
+        if (currentPhotos.length > 0) {
+          const updated = currentPhotos.map((p) => ({
+            ...p,
+            isCover: p.url === url,
+          }));
+          next = applyDraftPatch(next, "photos", updated);
+          if ((draft as any)?.categoryData) {
+            next = applyDraftPatch(next, "categoryData.photos", updated);
+          }
+        }
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi đặt ảnh bìa:", err);
+      }
+    },
+    [draft, onDraftChange]
+  );
+
+  const replaceSelectedImage = useCallback(
+    (imageUrl: string): boolean => {
+      if (selectedCanvasElement) {
+        updateCanvasElement(selectedCanvasElement.id, {
+          imageUrl,
+          content: selectedCanvasElement.type === "image" ? imageUrl : selectedCanvasElement.content,
+        });
+        return true;
+      }
+      if (selectedField && selectedField.type === "image") {
+        updateFieldValue(selectedField, imageUrl);
+        return true;
+      }
+      const coverPhotoField = fields.find((f) => f.id === "cover-photo");
+      if (coverPhotoField) {
+        updateFieldValue(coverPhotoField, imageUrl);
+        return true;
+      }
+      setCoverPhoto(imageUrl);
+      return true;
+    },
+    [selectedCanvasElement, updateCanvasElement, selectedField, updateFieldValue, fields, setCoverPhoto]
+  );
+
   const undo = useCallback(() => {
     const previous = past[past.length - 1];
     if (!previous) return;
@@ -1283,6 +1384,11 @@ export function EditorProvider<T extends object>({
     updateFieldValue,
     updateFieldById,
     getFieldValue,
+    updatePhotos,
+    addPhotoToGallery,
+    removePhotoFromGallery,
+    setCoverPhoto,
+    replaceSelectedImage,
     showBottomToolbar,
     setShowBottomToolbar,
     showWishButton,

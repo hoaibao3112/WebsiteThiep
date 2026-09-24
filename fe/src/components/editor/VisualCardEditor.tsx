@@ -116,6 +116,8 @@ function CanvasTopBar({
     setInternalSaving(true);
     try {
       await triggerSave();
+    } catch {
+      // Errors are surfaced through onSave / saveError alerts
     } finally {
       setInternalSaving(false);
     }

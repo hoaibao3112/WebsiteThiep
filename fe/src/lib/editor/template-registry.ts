@@ -84,6 +84,7 @@ export function getTemplateFields(slug: string): readonly EditorField[] {
 
 export function isAllowedEditorPath(path: string): boolean {
   const canvasPaths = new Set([
+    "photos", "categoryData.photos", "coverPhotoUrl",
     "categoryData.canvasElements", "categoryData.fieldPositions", "categoryData.fieldScales",
     "categoryData.canvasDocument", "categoryData.canvasDocument.elements", "categoryData.canvasDocument.height", "categoryData.canvasDocument.background",
     "categoryData.canvasDocument.background.color", "categoryData.canvasDocument.background.pattern",
