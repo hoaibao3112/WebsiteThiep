@@ -128,6 +128,106 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
 
 const EditorContext = createContext<EditorContextValue<any> | null>(null);
 
+export function getDefaultCanvasElements(draft?: any): CanvasElement[] {
+  const groom = draft?.categoryData?.groom?.fullName || draft?.groom?.fullName || "Văn Anh";
+  const bride = draft?.categoryData?.bride?.fullName || draft?.bride?.fullName || "Minh Thơ";
+  const cover = draft?.categoryData?.coverPhotoUrl || draft?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80";
+
+  return [
+    {
+      id: "el-header-quote",
+      type: "text",
+      content: "SAVE THE DATE",
+      x: 45,
+      y: 35,
+      width: 300,
+      height: 30,
+      fontSize: 13,
+      fontFamily: "Playfair Display",
+      color: "#BE944E",
+      textAlign: "center",
+      letterSpacing: 4,
+      isBold: true,
+      zIndex: 2,
+    },
+    {
+      id: "el-couple-names",
+      type: "text",
+      content: `${groom} & ${bride}`,
+      x: 35,
+      y: 65,
+      width: 320,
+      height: 48,
+      fontSize: 28,
+      fontFamily: "Great Vibes",
+      color: "#2C2C2C",
+      textAlign: "center",
+      zIndex: 2,
+    },
+    {
+      id: "el-envelope",
+      type: "preset",
+      presetId: "p-envelope-pink",
+      title: "Phong bì hồng mở có thiệp",
+      content: "envelope-pink",
+      imageUrl: cover,
+      x: 45,
+      y: 130,
+      width: 300,
+      height: 250,
+      zIndex: 3,
+    },
+    {
+      id: "el-carnation",
+      type: "preset",
+      presetId: "p-carnation-bouquet",
+      title: "Cành cẩm chướng nơ đỏ",
+      content: "carnation",
+      x: 18,
+      y: 190,
+      width: 85,
+      height: 130,
+      zIndex: 10,
+    },
+    {
+      id: "el-wax-seal",
+      type: "preset",
+      presetId: "p-wax-seal",
+      title: "Con dấu sáp hồng niêm phong",
+      content: "wax-seal",
+      x: 165,
+      y: 350,
+      width: 58,
+      height: 58,
+      zIndex: 11,
+    },
+    {
+      id: "el-mini-bouquet",
+      type: "preset",
+      presetId: "p-mini-bouquet",
+      title: "Bó hoa cưới mini pastel",
+      content: "mini-bouquet",
+      x: 265,
+      y: 400,
+      width: 75,
+      height: 95,
+      zIndex: 10,
+    },
+    {
+      id: "el-gold-divider",
+      type: "preset",
+      presetId: "p-gold-divider",
+      title: "Thanh chỉ vàng kim loại",
+      content: "gold-divider",
+      x: 55,
+      y: 255,
+      width: 280,
+      height: 12,
+      zIndex: 9,
+    },
+  ];
+}
+
 interface EditorProviderProps<T extends object> {
   templateSlug: string;
   draft: T;
@@ -179,10 +279,12 @@ export function EditorProvider<T extends object>({
 
   // Free canvas elements & position offsets
   const categoryData = (draft as any)?.categoryData || {};
-  const canvasElements: CanvasElement[] = useMemo(
-    () => (Array.isArray(categoryData.canvasElements) ? categoryData.canvasElements : []),
-    [categoryData.canvasElements]
-  );
+  const canvasElements: CanvasElement[] = useMemo(() => {
+    if (Array.isArray(categoryData.canvasElements) && categoryData.canvasElements.length > 0) {
+      return categoryData.canvasElements;
+    }
+    return getDefaultCanvasElements(draft);
+  }, [categoryData.canvasElements, draft]);
   const fieldOffsets: Record<string, { x: number; y: number }> = useMemo(
     () => categoryData.fieldPositions || {},
     [categoryData.fieldPositions]

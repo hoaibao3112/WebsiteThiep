@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
+import { CanvasCardView } from "@/components/card/CanvasCardView";
 import { CardDetail } from "@/types/card.types";
 import { DEMO_TEMPLATES_MAP } from "./demo-templates-data";
 
@@ -134,6 +135,21 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
 
   // Truyền templateSlug ưu tiên từ card.template?.slug hoặc chính slug URL
   const effectiveTemplateSlug = card.template?.slug || slug;
+
+  const hasCanvasElements =
+    Array.isArray((card.categoryData as any)?.canvasElements) &&
+    (card.categoryData as any).canvasElements.length > 0;
+
+  if (hasCanvasElements) {
+    return (
+      <CanvasCardView
+        card={card}
+        guestName={guestName}
+        guestPhone={guestPhone}
+        guestCode={guestCode}
+      />
+    );
+  }
 
   // RENDER VIEW THEO CARD CATEGORY
   if (card.cardCategory === "WEDDING") {

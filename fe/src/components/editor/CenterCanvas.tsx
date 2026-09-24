@@ -1001,15 +1001,15 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             transformOrigin: "center center",
             transition: "transform 0.15s ease-out",
           }}
-          className={`relative h-[680px] w-full max-w-[390px] overflow-hidden rounded-[40px] bg-white shadow-2xl border-4 transition-all duration-150 [transform:translateZ(0)] isolate shrink-0 ${
+          className={`relative h-[680px] w-full max-w-[390px] bg-white shadow-xl rounded-sm transition-all duration-150 [transform:translateZ(0)] isolate shrink-0 border ${
             isDragOver
               ? "border-amber-500 ring-4 ring-amber-300 ring-offset-2 scale-[1.01]"
-              : "border-stone-800"
+              : "border-stone-200/80"
           }`}
         >
           {/* Drop Overlay Hint */}
           {isDragOver && (
-            <div className="absolute inset-0 bg-amber-500/15 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center pointer-events-none border-4 border-dashed border-amber-500 rounded-[36px] animate-in fade-in duration-100">
+            <div className="absolute inset-0 bg-amber-500/15 backdrop-blur-[2px] z-50 flex flex-col items-center justify-center pointer-events-none border-2 border-dashed border-amber-500 animate-in fade-in duration-100">
               <div className="bg-white/95 px-4 py-2 rounded-2xl shadow-xl flex items-center gap-2 border border-amber-300">
                 <Sparkles className="size-5 text-amber-600 animate-bounce" />
                 <span className="text-sm font-bold text-amber-900 font-serif">
@@ -1019,40 +1019,15 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             </div>
           )}
 
-          {/* Dynamic Island Header Mockup */}
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-40 items-center justify-end px-2 pointer-events-none hidden sm:flex">
-            <div className="w-2 h-2 rounded-full bg-[#1c1c1e] border border-stone-700/50" />
-          </div>
-
-          {/* Scrolling Content */}
+          {/* Canvas Sheet Artboard - 100% Free Movable Elements */}
           <div
             ref={scrollContainerRef}
+            onClick={() => selectElement(null)}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className="h-full overflow-y-auto overflow-x-hidden relative editor-canvas-scroll"
+            className="w-full h-full relative overflow-hidden select-none bg-white"
           >
-            {/* Template Card Content */}
-            {children}
-
-            {/* ── BOUNDING BOX OVERLAY FOR SELECTED TEMPLATE FIELD ── */}
-            {selectedField && selectedElementType !== "canvas-element" && (
-              <TemplateFieldBoundingBox
-                fieldId={selectedField.id}
-                label={selectedField.label}
-                containerRef={containerRef}
-                scrollContainerRef={scrollContainerRef}
-                zoomLevel={zoomLevel}
-                fieldOffsets={fieldOffsets}
-                fieldScales={fieldScales}
-                updateFieldPositionOffset={updateFieldPositionOffset}
-                resetFieldPositionOffset={resetFieldPositionOffset}
-                updateFieldScale={updateFieldScale}
-                resetFieldScale={resetFieldScale}
-                onDeselect={() => selectElement(null)}
-              />
-            )}
-
             {/* ── FREE CANVAS ELEMENTS LAYER ── */}
             {canvasElements.map((el) => {
               const isSelected = selectedElementId === el.id;
