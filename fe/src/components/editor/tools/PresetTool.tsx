@@ -379,33 +379,52 @@ export function PresetTool() {
         </p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-1 p-1 bg-stone-100 rounded-xl overflow-x-auto scrollbar-none">
-        {[
-          { id: "all", label: "Tất cả" },
-          { id: "photo", label: "Ảnh" },
-          { id: "info", label: "Thông tin" },
-          { id: "timeline", label: "Lịch trình" },
-          { id: "invite", label: "Lời mời" },
-          { id: "other", label: "Khác" },
-        ].map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => setTab(c.id as any)}
-            className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition cursor-pointer ${
-              tab === c.id
-                ? "bg-white text-stone-900 shadow-2xs font-bold"
-                : "text-stone-500 hover:text-stone-800 font-medium"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+      {/* Filter Tabs matching Screenshot 1 */}
+      <div className="space-y-1.5">
+        <div className="flex gap-1.5">
+          {[
+            { id: "all", label: "Tất cả" },
+            { id: "photo", label: "Ảnh" },
+            { id: "info", label: "Thông tin" },
+          ].map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setTab(c.id as any)}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center border transition cursor-pointer ${
+                tab === c.id
+                  ? "border-stone-900 bg-white text-stone-900 shadow-2xs font-bold"
+                  : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1.5">
+          {[
+            { id: "timeline", label: "Lịch trình" },
+            { id: "invite", label: "Lời mời" },
+            { id: "other", label: "Khác" },
+          ].map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setTab(c.id as any)}
+              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-center border transition cursor-pointer ${
+                tab === c.id
+                  ? "border-stone-900 bg-white text-stone-900 shadow-2xs font-bold"
+                  : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
+              }`}
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Grid of Presets with Rich Previews */}
-      <div className="grid grid-cols-1 gap-3">
+      {/* Grid of Presets with 2 Columns matching Screenshot 1 */}
+      <div className="grid grid-cols-2 gap-2">
         {filtered.map((item) => {
           const isJustAdded = recentlyAddedId === item.id;
           return (

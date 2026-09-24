@@ -6,7 +6,7 @@ import { UploadCloud, Image as ImageIcon, CheckCircle, Trash2, Plus } from "luci
 import { uploadSingleImage } from "@/lib/image-upload";
 
 export function ImageTool() {
-  const { fields, selectedField, selectField, updateFieldValue, getFieldValue, draft } = useEditor();
+  const { fields, selectedField, selectField, updateFieldValue, getFieldValue, draft, addImageElement } = useEditor();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -37,11 +37,9 @@ export function ImageTool() {
       // If a specific image field is currently selected, assign to it directly
       if (selectedField && selectedField.type === "image") {
         updateFieldValue(selectedField, url);
-      } else if (imageFields.length > 0) {
-        // default to first image field or cover
-        const target = imageFields.find((f) => f.id === "cover-photo") || imageFields[0];
-        updateFieldValue(target, url);
-        selectField(target);
+      } else {
+        // Drop as a brand new draggable image on canvas
+        addImageElement(url, "Ảnh mới tải lên");
       }
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Tải ảnh thất bại");
@@ -137,6 +135,34 @@ export function ImageTool() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* ── THƯ VIỆN ẢNH CƯỚI MẪU ── */}
+      <div className="space-y-2 border-t border-stone-200 pt-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+          Kho ảnh cưới mẫu
+        </span>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { title: "Ảnh cưới lãng mạn", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80" },
+            { title: "Nụ cười hạnh phúc", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=500&auto=format&fit=crop&q=80" },
+            { title: "Khoảnh khắc tay trong tay", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=500&auto=format&fit=crop&q=80" },
+            { title: "Hôn lễ thiêng liêng", url: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=500&auto=format&fit=crop&q=80" },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => addImageElement(item.url, item.title)}
+              className="group p-1.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-xs transition flex flex-col items-center text-center cursor-pointer"
+            >
+              <div className="w-full h-20 rounded-lg overflow-hidden bg-stone-100 mb-1">
+                <img src={item.url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              </div>
+              <span className="text-[10px] font-semibold text-stone-700 truncate max-w-full">{item.title}</span>
+              <span className="text-[8px] text-amber-700 font-bold mt-0.5">+ Thêm vào thiệp</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>

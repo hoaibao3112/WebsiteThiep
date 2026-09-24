@@ -66,6 +66,44 @@ export function TextTool() {
         </div>
       </div>
 
+      {/* ── NGHỆ THUẬT CHỮ CƯỚI (TYPOGRAPHY PRESETS) ── */}
+      <div className="space-y-2 border-t border-stone-200 pt-3">
+        <h4 className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+          Chữ nghệ thuật phối sẵn
+        </h4>
+        <div className="grid grid-cols-2 gap-1.5">
+          {[
+            { text: "Save The Date", font: "Playfair Display", size: 26, isBold: true, color: "#BE944E" },
+            { text: "Thư Mời Tiệc Cưới", font: "Great Vibes", size: 32, isBold: false, color: "#8B1E2D" },
+            { text: "Lễ Thành Hôn", font: "Cinzel", size: 24, isBold: true, color: "#6B1724" },
+            { text: "Trân Trọng Kính Mời", font: "Playfair Display", size: 20, isBold: false, color: "#333333" },
+            { text: "Forever & Always", font: "Alex Brush", size: 30, isBold: false, color: "#B84A39" },
+            { text: "Trăm Năm Hạnh Phúc", font: "Great Vibes", size: 28, isBold: false, color: "#8B1E2D" },
+          ].map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() =>
+                addTextElement({
+                  text: item.text,
+                  fontSize: item.size,
+                  isBold: item.isBold,
+                })
+              }
+              className="p-2.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-center transition flex flex-col items-center justify-center cursor-pointer shadow-2xs group"
+            >
+              <span
+                style={{ fontFamily: item.font, color: item.color }}
+                className="text-sm truncate max-w-full group-hover:scale-105 transition-transform"
+              >
+                {item.text}
+              </span>
+              <span className="text-[8px] text-stone-400 mt-0.5 font-mono">{item.font}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="border-t border-stone-200 pt-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
           Văn Bản Có Sẵn Theo Mẫu

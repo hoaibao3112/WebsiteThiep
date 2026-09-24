@@ -88,15 +88,16 @@ const STOCK_ITEMS: StockItem[] = [
 export function StockTool() {
   const [activeTab, setActiveTab] = useState<CategoryId>("all");
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
-  const { addStickerElement } = useEditor();
+  const { addStockElement } = useEditor();
 
   const handleAdd = (item: StockItem) => {
-    addStickerElement({
-      icon: item.icon,
+    addStockElement({
+      id: item.id,
       title: item.title,
+      icon: item.icon,
       color: item.color,
-      width: item.isWide ? 150 : 100,
-      height: item.isWide ? 80 : 100,
+      width: item.id === "w1" ? 140 : item.isWide ? 150 : 100,
+      height: item.id === "w1" ? 160 : item.isWide ? 80 : 100,
     });
     setRecentlyAddedId(item.id);
     setTimeout(() => {
@@ -113,13 +114,14 @@ export function StockTool() {
         draggable={true}
         onDragStart={(e) => {
           const payload = {
-            type: "sticker",
+            type: "stock",
+            stockId: item.id,
             icon: item.icon,
             title: item.title,
             color: item.color,
             isWide: item.isWide,
-            width: item.isWide ? 150 : 100,
-            height: item.isWide ? 80 : 100,
+            width: item.id === "w1" ? 140 : item.isWide ? 150 : 100,
+            height: item.id === "w1" ? 160 : item.isWide ? 80 : 100,
           };
           if (typeof window !== "undefined") {
             (window as any).__DRAGGED_STOCK_ITEM__ = payload;
@@ -138,14 +140,30 @@ export function StockTool() {
         }`}
       >
         <div className="w-full flex-1 flex items-center justify-center py-1">
-          <span
-            style={{ color: item.color }}
-            className={`transition transform group-hover:scale-110 drop-shadow-sm select-none leading-none ${
-              item.isWide ? "text-base font-serif font-bold tracking-wider" : "text-3xl"
-            }`}
-          >
-            {item.icon}
-          </span>
+          {item.id === "w1" ? (
+            <div className="size-10 flex items-center justify-center transition transform group-hover:scale-110">
+              <svg viewBox="0 0 100 120" className="w-full h-full object-contain drop-shadow-sm">
+                <ellipse cx="50" cy="112" rx="20" ry="5" fill="#8BB8D4" />
+                <rect x="47" y="55" width="6" height="57" rx="3" fill="#8BB8D4" />
+                <path d="M 25 70 Q 25 90 50 90 Q 75 90 75 70" stroke="#8BB8D4" strokeWidth="6" fill="none" strokeLinecap="round" />
+                <rect x="22" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+                <rect x="47" y="28" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+                <rect x="72" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+                <ellipse cx="25" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+                <ellipse cx="50" cy="20" rx="4" ry="7.5" fill="#F59E0B" />
+                <ellipse cx="75" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+              </svg>
+            </div>
+          ) : (
+            <span
+              style={{ color: item.color }}
+              className={`transition transform group-hover:scale-110 drop-shadow-sm select-none leading-none ${
+                item.isWide ? "text-base font-serif font-bold tracking-wider" : "text-3xl"
+              }`}
+            >
+              {item.icon}
+            </span>
+          )}
         </div>
         <div className="w-full pt-1 border-t border-stone-100 flex flex-col items-center">
           <p className="text-[10px] font-bold text-stone-700 leading-tight truncate max-w-full">

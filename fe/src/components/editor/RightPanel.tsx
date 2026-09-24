@@ -741,8 +741,19 @@ function SelectInspector({
 // ────────────────────────────────────────────────────────────────
 
 function CanvasElementInspector({ element }: { element: CanvasElement }) {
-  const { updateCanvasElement, selectElement, setActiveTool, triggerSave, saveState, draft } = useEditor();
+  const {
+    updateCanvasElement,
+    selectElement,
+    setActiveTool,
+    triggerSave,
+    saveState,
+    draft,
+    reorderElementLayer,
+    duplicateCanvasElement,
+    removeCanvasElement,
+  } = useEditor();
   const [expandColor, setExpandColor] = useState(true);
+  const [expandPadding, setExpandPadding] = useState(false);
   const [expandFlip, setExpandFlip] = useState(false);
   const [expandBorder, setExpandBorder] = useState(false);
   const [expandShadow, setExpandShadow] = useState(false);
@@ -1009,6 +1020,32 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                 </select>
               </div>
             </div>
+
+            {/* Màu chữ */}
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[11px] font-bold text-stone-600 block">Màu chữ</span>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={element.color || "#000000"}
+                  onChange={(e) => updateCanvasElement(element.id, { color: e.target.value })}
+                  className="size-8 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden shrink-0"
+                />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {["#000000", "#BE944E", "#8B1E2D", "#3E5343", "#C084FC", "#FFFFFF"].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => updateCanvasElement(element.id, { color: c })}
+                      className={`size-6 rounded-full border transition hover:scale-110 cursor-pointer shadow-2xs ${
+                        element.color === c ? "ring-2 ring-blue-500 ring-offset-1 border-white" : "border-stone-300"
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1088,6 +1125,115 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   <FlipVertical className="size-4" />
                   <span>Lật dọc</span>
                 </button>
+              </div>
+            )}
+          </div>
+
+          {/* Khoảng đệm (Padding) - Khớp 100% Screenshot 1 */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandPadding((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Khoảng đệm</span>
+              <span className="text-stone-400 font-bold">{expandPadding ? "−" : "+"}</span>
+            </button>
+            {expandPadding && (
+              <div className="p-3 bg-white space-y-3 text-xs">
+                <div>
+                  <div className="flex items-center justify-between text-stone-600 mb-1">
+                    <span>Đệm bên trong</span>
+                    <span className="font-mono text-stone-700 font-semibold">{element.padding || 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="48"
+                    value={element.padding || 0}
+                    onChange={(e) => updateCanvasElement(element.id, { padding: Number(e.target.value) })}
+                    className="w-full accent-[#0091FF] h-1.5 bg-stone-200 rounded-lg cursor-pointer"
+                  />
+                </div>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[0, 8, 16, 24].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => updateCanvasElement(element.id, { padding: p })}
+                      className={`py-1 rounded-lg border text-center font-bold text-xs transition cursor-pointer ${
+                        (element.padding || 0) === p
+                          ? "border-[#0091FF] bg-blue-50 text-[#0091FF]"
+                          : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                      }`}
+                    >
+                      {p === 0 ? "0px" : `${p}px`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3. Đường viền & Bo góc */}
+          <div className="rounded-xl border border-stone-200 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setExpandBorder((v) => !v)}
+              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
+            >
+              <span>Đường viền & Bo góc</span>
+              <span className="text-stone-400 font-bold">{expandBorder ? "−" : "+"}</span>
+            </button>
+            {expandBorder && (
+              <div className="p-3 bg-white space-y-3 text-xs">
+                <div>
+                  <div className="flex items-center justify-between text-stone-600 mb-1">
+                    <span>Bo góc</span>
+                    <span className="font-mono text-stone-700 font-semibold">{element.borderRadius || 0}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="60"
+                    value={element.borderRadius || 0}
+                    onChange={(e) => updateCanvasElement(element.id, { borderRadius: Number(e.target.value) })}
+                    className="w-full accent-[#0091FF] h-1.5 bg-stone-200 rounded-lg cursor-pointer"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-stone-600 mb-1">
+                    <span>Độ dày viền</span>
+                    <span className="font-mono text-stone-700 font-semibold">{element.borderWidth || 0}px</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[0, 1, 2, 4].map((bw) => (
+                      <button
+                        key={bw}
+                        type="button"
+                        onClick={() => updateCanvasElement(element.id, { borderWidth: bw })}
+                        className={`py-1 rounded-lg border text-center font-bold text-xs transition cursor-pointer ${
+                          (element.borderWidth || 0) === bw
+                            ? "border-[#0091FF] bg-blue-50 text-[#0091FF]"
+                            : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                        }`}
+                      >
+                        {bw === 0 ? "Không" : `${bw}px`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {(element.borderWidth || 0) > 0 && (
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-stone-600">Màu viền</span>
+                    <input
+                      type="color"
+                      value={element.borderColor || "#BE944E"}
+                      onChange={(e) => updateCanvasElement(element.id, { borderColor: e.target.value })}
+                      className="size-7 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1215,6 +1361,43 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ── THỨ TỰ LỚP & THAO TÁC NHANH ── */}
+        <div className="pt-3 border-t border-stone-200 space-y-2">
+          <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
+            Thao tác phần tử
+          </span>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => reorderElementLayer(element.id, "up")}
+              className="py-1.5 px-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 flex items-center justify-center gap-1 transition font-medium cursor-pointer"
+            >
+              <span>Lên 1 lớp</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => reorderElementLayer(element.id, "down")}
+              className="py-1.5 px-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 flex items-center justify-center gap-1 transition font-medium cursor-pointer"
+            >
+              <span>Xuống 1 lớp</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => duplicateCanvasElement(element.id)}
+              className="py-1.5 px-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 flex items-center justify-center gap-1 transition font-medium cursor-pointer"
+            >
+              <span>Nhân bản</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => removeCanvasElement(element.id)}
+              className="py-1.5 px-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 flex items-center justify-center gap-1 transition font-medium cursor-pointer"
+            >
+              <span>Xóa</span>
+            </button>
           </div>
         </div>
       </div>

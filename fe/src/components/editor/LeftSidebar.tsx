@@ -119,10 +119,10 @@ export function LeftSidebar() {
         {activeTool && (
           <motion.div
             initial={{ opacity: 0, x: -10, width: 0 }}
-            animate={{ opacity: 1, x: 0, width: 280 }}
+            animate={{ opacity: 1, x: 0, width: 320 }}
             exit={{ opacity: 0, x: -10, width: 0 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="h-full bg-white border-r border-stone-200 shadow-lg z-20 overflow-hidden flex flex-col shrink-0 relative"
+            className="h-full bg-white border-r border-stone-200 shadow-lg z-20 flex flex-col shrink-0 relative"
           >
             {/* Header sub-drawer với nút thu gọn '<' */}
             <div className="h-12 border-b border-stone-100 px-4 flex items-center justify-between shrink-0">
@@ -139,6 +139,16 @@ export function LeftSidebar() {
                 <ChevronLeft className="size-4" />
               </button>
             </div>
+
+            {/* Vertical Edge Collapse Toggle (Khớp nút thu gọn ở cạnh drawer trong ảnh mẫu) */}
+            <button
+              type="button"
+              onClick={() => setActiveTool(null)}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 z-30 w-3.5 h-10 bg-white border border-stone-200 border-l-0 rounded-r-md shadow-xs flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-50 transition cursor-pointer"
+              title="Đóng thanh công cụ"
+            >
+              <ChevronLeft className="size-3" />
+            </button>
 
             {/* Content of the tool */}
             <div className="flex-1 overflow-y-auto p-4">{renderToolContent()}</div>
