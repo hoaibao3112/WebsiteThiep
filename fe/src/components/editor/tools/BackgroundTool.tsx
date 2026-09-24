@@ -1,164 +1,223 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useEditor } from "../EditorContext";
-import { Palette, Sparkles, Check } from "lucide-react";
+import { Pipette, Check } from "lucide-react";
 
-const PRESET_COLORS = [
-  "#BE944E", // Hoàng gia vàng
-  "#8B1E2D", // Đỏ son truyền thống
-  "#B76E79", // Hồng gold lãng mạn
-  "#751624", // Rượu vang Crimson
-  "#2D5A27", // Xanh rừng Botanical
-  "#1A4850", // Xanh ngọc lục bảo
-  "#4169A1", // Xanh sapphire cổ điển
-  "#800020", // Burgundy
-  "#D4AF37", // Vàng kim metallic
-  "#E8CCA2", // Kem champagne
-  "#F5EBE6", // Hồng phấn pastel
-  "#2C3E50", // Midnight navy
-  "#1F2937", // Than chì hiện đại
-  "#9333EA", // Tím hoàng gia
-  "#EA580C", // Cam đất terracotta
-  "#0D9488", // Teal đại dương
+// Dải màu Pastel chuẩn theo ảnh chụp thực tế ngaychungdoi
+const PASTEL_PALETTE = [
+  { id: "white", color: "#FFFFFF", label: "Trắng tinh khôi" },
+  { id: "blush", color: "#F9ECEC", label: "Hồng pastel" },
+  { id: "ivory", color: "#FBF7EE", label: "Kem champagne" },
+  { id: "mint", color: "#EDF5F0", label: "Xanh bạc hà" },
+  { id: "lavender", color: "#F3EEF9", label: "Tím oải hương" },
+  { id: "ice-blue", color: "#ECF2F8", label: "Xanh băng" },
+  { id: "warm-sand", color: "#F5EFE6", label: "Cát ấm" },
+  { id: "rose-tint", color: "#FCE7EC", label: "Hồng đào" },
 ];
+
+const PATTERNS = [
+  { id: "none", label: "Không" },
+  { id: "flower-small", label: "Hoa nhỏ" },
+  { id: "flower-large", label: "Hoa lớn" },
+] as const;
 
 const FALLING_EFFECTS = [
-  { id: "NONE", label: "Không" },
-  { id: "PETAL", label: "Hoa anh đào" },
-  { id: "HEART", label: "Trái tim tình yêu" },
-  { id: "SNOW", label: "Tuyết rơi" },
-  { id: "CONFETTI", label: "Kim tuyến / Pháo giấy" },
-  { id: "BALLOON", label: "Bóng bay" },
-];
+  { id: "none", label: "Không" },
+  { id: "cherry-blossom", label: "Hoa anh đào" },
+  { id: "snow", label: "Tuyết" },
+  { id: "falling-leaves", label: "Lá rụng" },
+  { id: "apricot", label: "Hoa mai" },
+  { id: "hydrangea", label: "Hoa tú cầu" },
+] as const;
 
 export function BackgroundTool() {
-  const { fields, updateFieldById, getFieldValue, isVip } = useEditor();
-  const [subTab, setSubTab] = useState<"color" | "image">("color");
+  const {
+    canvasBackgroundColor,
+    setCanvasBackgroundColor,
+    canvasBackgroundPattern,
+    setCanvasBackgroundPattern,
+    canvasFallingEffect,
+    setCanvasFallingEffect,
+  } = useEditor();
 
-  const primaryColorField = fields.find((f) => f.id === "primary-color");
-  const fallingEffectField = fields.find((f) => f.id === "falling-effect");
-
-  const currentColor = primaryColorField ? (getFieldValue(primaryColorField) as string) || "#BE944E" : "#BE944E";
-  const currentEffect = fallingEffectField ? (getFieldValue(fallingEffectField) as string) || "NONE" : "NONE";
+  const [activeTab, setActiveTab] = useState<"color" | "image">("color");
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
-          Nền & Màu Sắc
-        </h3>
-        <p className="text-[11px] text-stone-400">
-          Tùy chỉnh màu sắc chủ đạo và hiệu ứng rơi trên thiệp.
-        </p>
-      </div>
-
-      {/* SUB TABS: Màu sắc / Ảnh */}
-      <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl">
+    <div className="space-y-5 select-none text-stone-800">
+      {/* 1. TABS: Màu sắc / Ảnh (Khớp thanh tab pill trong ảnh mẫu) */}
+      <div className="grid grid-cols-2 p-1 bg-stone-100/90 rounded-xl text-xs font-semibold">
         <button
           type="button"
-          onClick={() => setSubTab("color")}
-          className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-            subTab === "color" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+          onClick={() => setActiveTab("color")}
+          className={`py-2 rounded-lg transition cursor-pointer text-center ${
+            activeTab === "color"
+              ? "bg-white text-stone-900 shadow-2xs font-bold"
+              : "text-stone-500 hover:text-stone-800"
           }`}
         >
-          Màu Sắc
+          Màu sắc
         </button>
         <button
           type="button"
-          onClick={() => setSubTab("image")}
-          className={`py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
-            subTab === "image" ? "bg-white text-stone-900 shadow-2xs" : "text-stone-500 hover:text-stone-800"
+          onClick={() => setActiveTab("image")}
+          className={`py-2 rounded-lg transition cursor-pointer text-center ${
+            activeTab === "image"
+              ? "bg-white text-stone-900 shadow-2xs font-bold"
+              : "text-stone-500 hover:text-stone-800"
           }`}
         >
-          Ảnh Nền
+          Ảnh
         </button>
       </div>
 
-      {subTab === "color" ? (
-        <div className="space-y-4">
-          <div>
-            <label className="text-[11px] font-bold text-stone-700 block mb-2">
-              Bảng Màu Đề Xuất
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {PRESET_COLORS.map((c) => {
-                const isActive = currentColor.toLowerCase() === c.toLowerCase();
+      {activeTab === "color" ? (
+        <div className="space-y-5">
+          {/* 2. CHỌN MÀU NỀN ĐỒNG NHẤT CHO TOÀN THIỆP */}
+          <div className="space-y-2.5">
+            <span className="text-xs text-stone-600 block">
+              Chọn màu nền đồng nhất cho toàn thiệp
+            </span>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              {PASTEL_PALETTE.map((item) => {
+                const isSelected =
+                  canvasBackgroundColor.toLowerCase() === item.color.toLowerCase();
+
                 return (
                   <button
-                    key={c}
+                    key={item.id}
                     type="button"
-                    onClick={() => updateFieldById("primary-color", c)}
-                    className="h-9 rounded-xl border border-black/10 shadow-2xs transition hover:scale-105 flex items-center justify-center cursor-pointer relative"
-                    style={{ backgroundColor: c }}
-                    title={c}
+                    onClick={() => setCanvasBackgroundColor(item.color)}
+                    style={{ backgroundColor: item.color }}
+                    className={`size-8 rounded-full border transition cursor-pointer relative shadow-2xs flex items-center justify-center hover:scale-105 ${
+                      isSelected
+                        ? "border-stone-900 ring-2 ring-stone-900 ring-offset-2"
+                        : "border-stone-300"
+                    }`}
+                    title={item.label}
                   >
-                    {isActive && <Check className="size-4 text-white drop-shadow" />}
+                    {isSelected && (
+                      <span className="size-1.5 rounded-full bg-stone-900" />
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Pipette Eye Dropper for custom color */}
+              <button
+                type="button"
+                onClick={() => colorInputRef.current?.click()}
+                className="size-8 rounded-full border border-stone-300 bg-white hover:bg-stone-50 transition cursor-pointer flex items-center justify-center shadow-2xs text-stone-600 hover:text-stone-900 hover:scale-105"
+                title="Chọn màu khác (Pipette)"
+              >
+                <Pipette className="size-3.5" />
+                <input
+                  ref={colorInputRef}
+                  type="color"
+                  value={canvasBackgroundColor}
+                  onChange={(e) => setCanvasBackgroundColor(e.target.value)}
+                  className="sr-only"
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* 3. HỌA TIẾT NỀN */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-700 block">
+              Họa tiết nền
+            </span>
+            <div className="flex gap-2">
+              {PATTERNS.map((p) => {
+                const isActive = canvasBackgroundPattern === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setCanvasBackgroundPattern(p.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                      isActive
+                        ? "border-stone-900 bg-white text-stone-900 font-bold shadow-2xs"
+                        : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50 hover:text-stone-800"
+                    }`}
+                  >
+                    {p.label}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div>
-            <label className="text-[11px] font-bold text-stone-700 block mb-1.5">
-              Màu Tự Chọn (Hex Code)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={currentColor}
-                onChange={(e) => updateFieldById("primary-color", e.target.value)}
-                className="w-10 h-10 rounded-xl border border-stone-300 p-0.5 cursor-pointer bg-white"
-              />
-              <input
-                type="text"
-                value={currentColor}
-                onChange={(e) => updateFieldById("primary-color", e.target.value)}
-                className="flex-1 h-10 rounded-xl border border-stone-300 px-3 text-xs font-mono font-bold uppercase text-stone-800"
-              />
+          {/* 4. HIỆU ỨNG NỀN */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-700 block">
+              Hiệu ứng nền
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {FALLING_EFFECTS.map((eff) => {
+                const isActive =
+                  canvasFallingEffect === eff.id ||
+                  (eff.id === "none" && (!canvasFallingEffect || canvasFallingEffect === "NONE"));
+
+                return (
+                  <button
+                    key={eff.id}
+                    type="button"
+                    onClick={() => setCanvasFallingEffect(eff.id)}
+                    className={`py-2 px-1 rounded-lg text-[11px] text-center border transition cursor-pointer truncate ${
+                      isActive
+                        ? "border-stone-900 bg-white text-stone-900 font-bold shadow-2xs"
+                        : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50 hover:text-stone-800"
+                    }`}
+                    title={eff.label}
+                  >
+                    {eff.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       ) : (
-        <div className="p-4 rounded-xl border border-dashed border-stone-300 text-center space-y-2 bg-stone-50">
-          <Palette className="size-6 text-stone-400 mx-auto" />
-          <p className="text-xs font-semibold text-stone-600">Hoa văn & Ảnh nền mẫu</p>
-          <p className="text-[11px] text-stone-400">
-            Họa tiết giấy hoa dập nổi và thủy ấn được tự động tối ưu theo từng mẫu thiệp độc bản.
+        /* TAB ẢNH NỀN */
+        <div className="space-y-3">
+          <p className="text-xs text-stone-500">
+            Tải lên hoặc chọn ảnh nền cho thiệp của bạn.
           </p>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              {
+                id: "bg-paper-1",
+                label: "Giấy mỹ thuật ngà",
+                url: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=300&auto=format&fit=crop&q=80",
+              },
+              {
+                id: "bg-paper-2",
+                label: "Vân lụa ánh kim",
+                url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&auto=format&fit=crop&q=80",
+              },
+            ].map((bg) => (
+              <button
+                key={bg.id}
+                type="button"
+                onClick={() => setCanvasBackgroundColor(bg.url)}
+                className="group rounded-xl border border-stone-200 overflow-hidden relative aspect-3/4 hover:border-stone-900 transition cursor-pointer"
+              >
+                <img
+                  src={bg.url}
+                  alt={bg.label}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                />
+                <span className="absolute inset-x-0 bottom-0 bg-stone-900/70 text-white text-[10px] p-1 text-center font-medium truncate">
+                  {bg.label}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
-
-      {/* HIỆU ỨNG RƠI NỀN */}
-      <div className="pt-3 border-t border-stone-200/80 space-y-2">
-        <div className="flex items-center gap-1.5">
-          <Sparkles className="size-3.5 text-amber-600" />
-          <label className="text-[11px] font-bold uppercase tracking-wider text-stone-700">
-            Hiệu Ứng Rơi Tương Tác
-          </label>
-        </div>
-        <div className="grid grid-cols-2 gap-1.5">
-          {FALLING_EFFECTS.map((item) => {
-            const isSelected = currentEffect === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => updateFieldById("falling-effect", item.id)}
-                className={`p-2 rounded-xl text-xs font-medium border text-left transition cursor-pointer flex items-center justify-between ${
-                  isSelected
-                    ? "bg-amber-50 border-amber-400 font-bold text-amber-950 shadow-2xs"
-                    : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
-                }`}
-              >
-                <span className="truncate">{item.label}</span>
-                {isSelected && <Check className="size-3.5 text-amber-600 shrink-0 ml-1" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 }

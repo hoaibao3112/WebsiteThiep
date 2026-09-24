@@ -16,6 +16,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { BottomPhotoStrip } from "./BottomPhotoStrip";
+import { CanvasPatternOverlay, CanvasFallingEffect } from "@/components/card/CanvasEffects";
 
 interface CenterCanvasProps {
   children: React.ReactNode;
@@ -268,8 +269,12 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     updateFieldScale,
     resetFieldScale,
     addStickerElement,
+    addStockElement,
     addShapeElement,
     addPresetElement,
+    canvasBackgroundColor,
+    canvasBackgroundPattern,
+    canvasFallingEffect,
   } = useEditor();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -387,7 +392,20 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       const dropX = Math.round((e.clientX - rect.left) / zoomFactor + scrollLeft);
       const dropY = Math.round((e.clientY - rect.top) / zoomFactor + scrollTop);
 
-      if (data.type === "sticker") {
+      if (data.type === "stock") {
+        addStockElement(
+          {
+            id: data.id || "stock-item",
+            icon: data.icon,
+            title: data.title,
+            color: data.color,
+            imageUrl: data.imageUrl,
+            width: data.width || (data.isWide ? 150 : 120),
+            height: data.height || (data.isWide ? 90 : 140),
+          },
+          { x: Math.max(10, dropX - 60), y: Math.max(10, dropY - 60) }
+        );
+      } else if (data.type === "sticker") {
         addStickerElement(
           {
             icon: data.icon,
@@ -499,7 +517,43 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
   // Render content according to element type
   const renderElementContent = (el: CanvasElement, isInlineEditing: boolean) => {
-    if (el.type === "sticker") {
+    if (el.type === "stock" || el.type === "sticker") {
+      // 1. Chân nến cổ điển (Candelabra chandelier 3 nhánh theo đúng ảnh mẫu ngaychungdoi)
+      if (el.stockId === "w1" || el.content === "candelabra-vintage" || el.title?.includes("nến")) {
+        return (
+          <div className="w-full h-full flex items-center justify-center select-none pointer-events-none p-1">
+            <svg viewBox="0 0 100 120" className="w-full h-full object-contain drop-shadow-md">
+              {/* Pedestal Base */}
+              <ellipse cx="50" cy="112" rx="20" ry="5" fill="#8BB8D4" />
+              {/* Central Column */}
+              <rect x="47" y="55" width="6" height="57" rx="3" fill="#8BB8D4" />
+              <circle cx="50" cy="85" r="5" fill="#75A6C5" />
+              {/* 3 Curved Arms */}
+              <path d="M 25 70 Q 25 90 50 90 Q 75 90 75 70" stroke="#8BB8D4" strokeWidth="5" fill="none" strokeLinecap="round" />
+              {/* Candle cups */}
+              <rect x="20" y="68" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              <rect x="45" y="52" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              <rect x="70" y="68" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              {/* 3 White Candles */}
+              <rect x="22" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              <rect x="47" y="28" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              <rect x="72" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              {/* Candle wicks */}
+              <line x1="25" y1="44" x2="25" y2="40" stroke="#4A5568" strokeWidth="1.5" />
+              <line x1="50" y1="28" x2="50" y2="24" stroke="#4A5568" strokeWidth="1.5" />
+              <line x1="75" y1="44" x2="75" y2="40" stroke="#4A5568" strokeWidth="1.5" />
+              {/* Glowing Flames */}
+              <ellipse cx="25" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+              <ellipse cx="25" cy="37" rx="1.5" ry="3.5" fill="#FEF08A" />
+              <ellipse cx="50" cy="20" rx="4" ry="7.5" fill="#F59E0B" />
+              <ellipse cx="50" cy="21" rx="2" ry="4" fill="#FEF08A" />
+              <ellipse cx="75" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+              <ellipse cx="75" cy="37" rx="1.5" ry="3.5" fill="#FEF08A" />
+            </svg>
+          </div>
+        );
+      }
+
       const isImg = Boolean(
         el.imageUrl ||
           (typeof el.content === "string" &&
@@ -1026,8 +1080,27 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className="w-full h-full relative overflow-hidden select-none bg-white"
+            style={{
+              backgroundColor:
+                canvasBackgroundColor && !canvasBackgroundColor.startsWith("http")
+                  ? canvasBackgroundColor
+                  : "#FFFFFF",
+              backgroundImage:
+                canvasBackgroundColor &&
+                (canvasBackgroundColor.startsWith("http") || canvasBackgroundColor.startsWith("/"))
+                  ? `url(${canvasBackgroundColor})`
+                  : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            className="w-full h-full relative overflow-hidden select-none"
           >
+            {/* Background Pattern Overlay (Họa tiết nền) */}
+            <CanvasPatternOverlay pattern={canvasBackgroundPattern} />
+
+            {/* Falling Particles Effect (Hiệu ứng hoa lá tuyết rơi) */}
+            <CanvasFallingEffect effect={canvasFallingEffect} />
+
             {/* ── FREE CANVAS ELEMENTS LAYER ── */}
             {canvasElements.map((el) => {
               const isSelected = selectedElementId === el.id;
@@ -1040,6 +1113,11 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                   data-canvas-element
                   onPointerDown={(e) => handleElementPointerDown(el, e)}
                   onClick={(e) => {
+                    e.stopPropagation();
+                    selectElement(el.id, "canvas-element");
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     selectElement(el.id, "canvas-element");
                   }}
@@ -1077,7 +1155,13 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                     borderColor: el.borderColor || undefined,
                     borderStyle: el.borderWidth ? "solid" : undefined,
                     boxShadow: el.shadow || undefined,
-                    transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                    transform: [
+                      el.rotation ? `rotate(${el.rotation}deg)` : "",
+                      el.flipX ? "scaleX(-1)" : "",
+                      el.flipY ? "scaleY(-1)" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ") || undefined,
                   }}
                   className={`flex items-center justify-center p-1 select-none transition-shadow ${
                     isCurrentlyDragging
@@ -1102,48 +1186,45 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           </div>
         </div>
 
-        {/* ── ZOOM & FLOATING CHAT CONTROLS (CHUẨN NGAYCHUNGDOI.COM) ── */}
-        <div className="hidden sm:flex absolute right-5 bottom-8 flex-col items-center gap-3 z-30 pointer-events-auto">
-          {/* Zoom Controls Pill */}
-          <div className="flex flex-col items-center bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-lg rounded-2xl p-1 gap-1">
-            <button
-              type="button"
-              aria-label="Phóng to"
-              onClick={() => setZoomLevel((z) => Math.min(150, z + 10))}
-              className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
-              title="Phóng to (+10%)"
-            >
-              <ZoomIn className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setZoomLevel(100)}
-              className="text-[11px] font-sans font-bold text-stone-600 hover:text-amber-800 px-1.5 py-0.5 rounded transition cursor-pointer select-none"
-              title="Đặt lại 100%"
-            >
-              {zoomLevel}%
-            </button>
-            <button
-              type="button"
-              aria-label="Thu nhỏ"
-              onClick={() => setZoomLevel((z) => Math.max(70, z - 10))}
-              className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
-              title="Thu nhỏ (-10%)"
-            >
-              <ZoomOut className="size-4" />
-            </button>
-          </div>
-
-          {/* Floating Dark Chat Button */}
+        {/* ── ZOOM CONTROLS PILL BÊN PHẢI (CHUẨN ẢNH MẪU NGAYCHUNGDOI) ── */}
+        <div className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 flex-col items-center bg-white/95 backdrop-blur-md border border-stone-200 shadow-md rounded-2xl p-1 gap-1.5 z-30 pointer-events-auto">
           <button
             type="button"
-            aria-label="Hỗ trợ trực tuyến"
-            className="size-11 rounded-full bg-stone-900 hover:bg-black text-white shadow-xl flex items-center justify-center transition hover:scale-105 active:scale-95 cursor-pointer border border-stone-700"
-            title="Trò chuyện hỗ trợ"
+            aria-label="Phóng to"
+            onClick={() => setZoomLevel((z) => Math.min(150, z + 10))}
+            className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
+            title="Phóng to (+10%)"
           >
-            <MessageCircle className="size-5 fill-white text-stone-900" />
+            <ZoomIn className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoomLevel(100)}
+            className="text-[11px] font-sans font-bold text-stone-700 hover:text-amber-800 px-1 py-0.5 rounded transition cursor-pointer select-none"
+            title="Đặt lại 100%"
+          >
+            {zoomLevel}%
+          </button>
+          <button
+            type="button"
+            aria-label="Thu nhỏ"
+            onClick={() => setZoomLevel((z) => Math.max(70, z - 10))}
+            className="p-1.5 text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition cursor-pointer"
+            title="Thu nhỏ (-10%)"
+          >
+            <ZoomOut className="size-4" />
           </button>
         </div>
+
+        {/* ── FLOATING DARK CHAT BUTTON GÓC DƯỚI PHẢI (CHUẨN ẢNH MẪU) ── */}
+        <button
+          type="button"
+          aria-label="Hỗ trợ trực tuyến"
+          className="hidden sm:flex absolute right-5 bottom-5 size-12 rounded-full bg-stone-900 hover:bg-black text-white shadow-xl items-center justify-center transition hover:scale-105 active:scale-95 cursor-pointer z-30"
+          title="Trò chuyện hỗ trợ"
+        >
+          <MessageCircle className="size-5.5 fill-white text-stone-900" />
+        </button>
       </div>
 
       {/* ── BOTTOM PHOTO STRIP ── */}

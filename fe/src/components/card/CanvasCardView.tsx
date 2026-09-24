@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CardDetail } from "@/types/card.types";
 import { CanvasElement } from "@/components/editor/EditorContext";
-import { Music, Volume2, VolumeX, Sparkles, Heart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, VolumeX } from "lucide-react";
+import { motion } from "framer-motion";
+import { CanvasPatternOverlay, CanvasFallingEffect } from "./CanvasEffects";
 
 interface CanvasCardViewProps {
   card: CardDetail;
@@ -14,10 +15,27 @@ interface CanvasCardViewProps {
 }
 
 export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
-  const categoryData = (card.categoryData as any) || {};
+  const categoryData = (card.categoryData as unknown as Record<string, unknown>) || {};
   const canvasElements: CanvasElement[] = Array.isArray(categoryData.canvasElements)
-    ? categoryData.canvasElements
+    ? (categoryData.canvasElements as CanvasElement[])
+    : Array.isArray((categoryData.canvas as { elements?: CanvasElement[] })?.elements)
+    ? ((categoryData.canvas as { elements: CanvasElement[] }).elements)
     : [];
+
+  const canvasBackgroundColor =
+    (categoryData.canvasBackgroundColor as string) ||
+    ((categoryData.canvas as { backgroundColor?: string })?.backgroundColor) ||
+    "#FFFFFF";
+
+  const canvasBackgroundPattern =
+    (categoryData.canvasBackgroundPattern as "none" | "flower-small" | "flower-large") ||
+    ((categoryData.canvas as { backgroundPattern?: "none" | "flower-small" | "flower-large" })?.backgroundPattern) ||
+    "none";
+
+  const canvasFallingEffect =
+    (categoryData.canvasFallingEffect as "none" | "cherry" | "snow" | "leaves" | "apricot" | "hydrangea") ||
+    ((categoryData.canvas as { fallingEffect?: "none" | "cherry" | "snow" | "leaves" | "apricot" | "hydrangea" })?.fallingEffect) ||
+    "none";
 
   const [isPlayingMusic, setIsPlayingMusic] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -56,11 +74,119 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
   };
 
   const renderElement = (el: CanvasElement) => {
-    // 1. Phong bì hồng
-    if (el.presetId === "p-envelope-pink" || el.content === "envelope-pink") {
+    // 1. Stock / Vector Illustrations
+    if (el.type === "stock" || el.type === "sticker") {
+      // Candelabra chandelier 3 nhánh theo mẫu chuẩn ngaychungdoi
+      if (el.stockId === "w1" || el.content === "candelabra-vintage" || el.title?.includes("nến")) {
+        return (
+          <div className="w-full h-full flex items-center justify-center select-none pointer-events-none p-1">
+            <svg viewBox="0 0 100 120" className="w-full h-full object-contain drop-shadow-md">
+              <ellipse cx="50" cy="112" rx="20" ry="5" fill="#8BB8D4" />
+              <rect x="47" y="55" width="6" height="57" rx="3" fill="#8BB8D4" />
+              <circle cx="50" cy="85" r="5" fill="#75A6C5" />
+              <path d="M 25 70 Q 25 90 50 90 Q 75 90 75 70" stroke="#8BB8D4" strokeWidth="5" fill="none" strokeLinecap="round" />
+              <rect x="20" y="68" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              <rect x="45" y="52" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              <rect x="70" y="68" width="10" height="4" rx="1.5" fill="#75A6C5" />
+              <rect x="22" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              <rect x="47" y="28" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              <rect x="72" y="44" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1" />
+              <line x1="25" y1="44" x2="25" y2="40" stroke="#4A5568" strokeWidth="1.5" />
+              <line x1="50" y1="28" x2="50" y2="24" stroke="#4A5568" strokeWidth="1.5" />
+              <line x1="75" y1="44" x2="75" y2="40" stroke="#4A5568" strokeWidth="1.5" />
+              <ellipse cx="25" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+              <ellipse cx="25" cy="37" rx="1.5" ry="3.5" fill="#FEF08A" />
+              <ellipse cx="50" cy="20" rx="4" ry="7.5" fill="#F59E0B" />
+              <ellipse cx="50" cy="21" rx="2" ry="4" fill="#FEF08A" />
+              <ellipse cx="75" cy="36" rx="3.5" ry="6.5" fill="#F59E0B" />
+              <ellipse cx="75" cy="37" rx="1.5" ry="3.5" fill="#FEF08A" />
+            </svg>
+          </div>
+        );
+      }
+
+      const isImg = Boolean(
+        el.imageUrl ||
+          (typeof el.content === "string" &&
+            (el.content.startsWith("http") ||
+              el.content.startsWith("/images") ||
+              el.content.startsWith("data:image")))
+      );
+
+      return (
+        <div className="w-full h-full flex items-center justify-center select-none pointer-events-none">
+          {isImg ? (
+            <img
+              src={el.imageUrl || el.content}
+              alt={el.title || "Stock"}
+              className="w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none"
+            />
+          ) : (
+            <span
+              style={{
+                fontSize: `${el.fontSize || Math.round(el.height * 0.75)}px`,
+                color: el.color || undefined,
+                lineHeight: 1,
+              }}
+              className="filter drop-shadow-md select-none"
+            >
+              {el.content}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // 2. Shapes
+    if (el.type === "shape") {
+      if (el.shapeType === "line") {
+        return (
+          <div className="w-full h-full flex items-center justify-center px-2 pointer-events-none select-none">
+            <div className="w-full flex items-center gap-2">
+              <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent via-[#BE944E] to-[#BE944E]" />
+              <span className="text-[#BE944E] text-xs font-serif">✦</span>
+              <div className="flex-1 h-[2px] bg-gradient-to-r from-[#BE944E] via-[#BE944E] to-transparent" />
+            </div>
+          </div>
+        );
+      }
+      if (el.shapeType === "rect") {
+        return (
+          <div className="w-full h-full rounded-[inherit] border-2 border-[#BE944E] p-1.5 pointer-events-none select-none relative shadow-sm">
+            <div className="w-full h-full border border-dashed border-[#BE944E]/60 rounded-[calc(inherit-4px)] flex items-center justify-center">
+              <span className="text-[10px] text-amber-800/60 font-serif italic tracking-wider">Khung Hoàng Gia</span>
+            </div>
+          </div>
+        );
+      }
+      if (el.shapeType === "circle") {
+        return (
+          <div className="w-full h-full rounded-full border-2 border-[#BE944E] p-1.5 pointer-events-none select-none relative shadow-sm">
+            <div className="w-full h-full rounded-full border border-dashed border-[#BE944E]/60 flex items-center justify-center">
+              <span className="text-[#BE944E] text-sm font-serif">❦</span>
+            </div>
+          </div>
+        );
+      }
+      if (el.shapeType === "corner") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none text-amber-700/80">
+            <svg viewBox="0 0 100 100" className="w-full h-full fill-current">
+              <path d="M10,10 L90,10 L90,25 L25,25 L25,90 L10,90 Z" opacity="0.85" />
+              <circle cx="55" cy="55" r="8" opacity="0.6" />
+            </svg>
+          </div>
+        );
+      }
+    }
+
+    // 3. Presets
+    if (el.presetId === "p-envelope-pink" || el.presetId === "p1" || el.content === "envelope-pink") {
+      const groomData = (categoryData.groom as { fullName?: string } | undefined);
+      const brideData = (categoryData.bride as { fullName?: string } | undefined);
       const photoUrl =
         el.imageUrl ||
-        categoryData.coverPhotoUrl ||
+        (categoryData.coverPhotoUrl as string) ||
         "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80";
       return (
         <div className="w-full h-full relative overflow-visible flex items-center justify-center select-none pointer-events-none">
@@ -72,18 +198,40 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
             <div className="pt-1 text-center">
               <span className="text-[10px] font-serif tracking-[0.2em] font-bold text-pink-700 uppercase block">Save The Date</span>
               <span className="text-[8px] font-mono text-stone-500 block truncate max-w-[200px]">
-                {categoryData.groom?.fullName ? `${categoryData.groom?.fullName} & ${categoryData.bride?.fullName}` : "Văn Anh & Minh Thơ"}
+                {groomData?.fullName ? `${groomData.fullName} & ${brideData?.fullName}` : "Văn Anh & Minh Thơ"}
               </span>
             </div>
           </div>
-          <div className="absolute bottom-0 w-[84%] h-[74%] bg-[#F294A6] rounded-b-xl shadow-md z-20 overflow-hidden">
-            <div className="absolute inset-0 [clip-path:polygon(0%_0%,50%_45%,100%_0%,100%_100%,0%_100%)] bg-[#EE889C]" />
+          <div className="absolute inset-x-0 bottom-0 h-[68%] bg-[#F294A6] rounded-b-2xl z-20 shadow-md [clip-path:polygon(0%_25%,50%_65%,100%_25%,100%_100%,0%_100%)] border-t border-pink-200/50" />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 size-9 rounded-full bg-gradient-to-br from-[#F48197] to-[#DF5C75] border-2 border-pink-200 shadow-lg flex items-center justify-center text-[10px] font-serif font-bold text-white tracking-widest drop-shadow-sm">
+            ML
           </div>
         </div>
       );
     }
 
-    // 2. Cành cẩm chướng nơ đỏ
+    if (el.presetId === "p-envelope-green") {
+      const photoUrl =
+        el.imageUrl ||
+        (categoryData.coverPhotoUrl as string) ||
+        "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80";
+      return (
+        <div className="w-full h-full relative overflow-visible flex items-center justify-center pointer-events-none select-none">
+          <div className="absolute -top-6 w-[84%] h-22 bg-[#2D3E31] shadow-xs [clip-path:polygon(50%_0%,0%_100%,100%_100%)] rounded-t-sm" />
+          <div className="w-[78%] h-[80%] -top-3 absolute bg-[#FDFBF7] rounded-lg shadow-lg border border-stone-200 overflow-hidden flex flex-col items-center p-2 z-10 text-center">
+            <span className="text-[10px] font-serif italic text-stone-700">We got married</span>
+            <div className="w-full flex-1 bg-stone-100 rounded overflow-hidden my-1">
+              <img src={photoUrl} alt="Photo" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-[68%] bg-[#3E5343] rounded-b-2xl z-20 shadow-md [clip-path:polygon(0%_25%,50%_65%,100%_25%,100%_100%,0%_100%)]" />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 size-9 rounded-full bg-[#BE944E] border-2 border-amber-200 shadow-lg flex items-center justify-center text-xs font-bold text-amber-950">
+            💍
+          </div>
+        </div>
+      );
+    }
+
     if (el.presetId === "p-carnation-bouquet" || el.content === "carnation") {
       return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
@@ -115,7 +263,6 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       );
     }
 
-    // 3. Con dấu sáp
     if (el.presetId === "p-wax-seal" || el.content === "wax-seal") {
       return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
@@ -129,7 +276,6 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       );
     }
 
-    // 4. Bó hoa mini
     if (el.presetId === "p-mini-bouquet" || el.content === "mini-bouquet") {
       return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
@@ -150,7 +296,6 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       );
     }
 
-    // 5. Thanh chỉ vàng
     if (el.presetId === "p-gold-divider" || el.content === "gold-divider") {
       return (
         <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
@@ -159,7 +304,7 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       );
     }
 
-    // Image Element
+    // 4. Image Element
     if (el.type === "image") {
       return (
         <div className="w-full h-full rounded-[inherit] overflow-hidden pointer-events-none select-none">
@@ -168,7 +313,7 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       );
     }
 
-    // Text Element
+    // 5. Text Element
     return (
       <span className="w-full break-words select-none pointer-events-none leading-tight">
         {el.content}
@@ -177,7 +322,7 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#F0EDE6] flex flex-col items-center justify-center p-3 sm:p-6 relative select-none">
+    <main className="min-h-screen bg-[#ECECEC] flex flex-col items-center justify-center p-3 sm:p-6 relative select-none">
       {/* Personalized Guest Welcome Banner */}
       {guestName && (
         <motion.div
@@ -192,7 +337,29 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
       )}
 
       {/* ── CARD PAPER SHEET (KHUNG THIỆP CHÍNH) ── */}
-      <div className="relative w-full max-w-[390px] h-[680px] bg-white shadow-2xl rounded-sm overflow-hidden border border-stone-200/80">
+      <div
+        style={{
+          backgroundColor:
+            canvasBackgroundColor && !canvasBackgroundColor.startsWith("http")
+              ? canvasBackgroundColor
+              : "#FFFFFF",
+          backgroundImage:
+            canvasBackgroundColor &&
+            (canvasBackgroundColor.startsWith("http") || canvasBackgroundColor.startsWith("/"))
+              ? `url(${canvasBackgroundColor})`
+              : undefined,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        className="relative w-full max-w-[390px] h-[680px] shadow-2xl rounded-sm overflow-hidden border border-stone-200/80"
+      >
+        {/* Background Pattern Overlay */}
+        <CanvasPatternOverlay pattern={canvasBackgroundPattern} />
+
+        {/* Falling Particles Effect */}
+        <CanvasFallingEffect effect={canvasFallingEffect} />
+
+        {/* Elements Scene Graph */}
         {canvasElements.map((el) => {
           return (
             <div
@@ -215,14 +382,22 @@ export function CanvasCardView({ card, guestName }: CanvasCardViewProps) {
                 textDecoration: [
                   el.isUnderline ? "underline" : "",
                   el.isStrike ? "line-through" : "",
-                ].filter(Boolean).join(" ") || "none",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || "none",
                 textTransform: el.isUppercase ? "uppercase" : "none",
                 borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
                 borderWidth: el.borderWidth ? `${el.borderWidth}px` : undefined,
                 borderColor: el.borderColor || undefined,
                 borderStyle: el.borderWidth ? "solid" : undefined,
                 boxShadow: el.shadow || undefined,
-                transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                transform: [
+                  el.rotation ? `rotate(${el.rotation}deg)` : "",
+                  el.flipX ? "scaleX(-1)" : "",
+                  el.flipY ? "scaleY(-1)" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ") || undefined,
               }}
               className="flex items-center justify-center p-1 select-none pointer-events-none"
             >

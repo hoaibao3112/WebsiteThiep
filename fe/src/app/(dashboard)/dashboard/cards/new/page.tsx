@@ -755,6 +755,7 @@ function CardBuilderContent() {
           onDraftChange={handleVisualDraftChange}
           onSave={handlePublish}
           isVip={false}
+          showTopBar={false}
         >
           {category === "WEDDING" && (
             <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />

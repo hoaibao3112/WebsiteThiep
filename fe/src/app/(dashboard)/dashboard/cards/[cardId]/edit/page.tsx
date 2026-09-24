@@ -1197,97 +1197,10 @@ function EditCardContent() {
       />
 
       {/* ── TOP HEADER ── */}
-      <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
-        {editorMode === "canvas" ? (
-          <>
-            {/* LEFT: BACK + BRAND LOGO + MODE TOGGLE */}
-            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
-              <Link
-                href="/dashboard/cards"
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
-                title="Quay lại danh sách thiệp"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Link>
-
-              {/* LOGO "ngày chung đôi" KHỚP VỚI ẢNH CHỤP */}
-              <div className="flex items-center gap-2 select-none">
-                <div className="size-7 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-600 shadow-2xs">
-                  <Heart className="size-4 fill-pink-500 text-pink-500" />
-                </div>
-                <span className="font-serif font-bold text-sm sm:text-base text-stone-900 tracking-tight hidden xs:inline">
-                  ngày chung đôi
-                </span>
-              </div>
-
-              {/* MODE SWITCHER */}
-              <div className="flex items-center bg-stone-100 p-0.5 sm:p-1 rounded-xl border border-stone-200 gap-0.5">
-                <button
-                  type="button"
-                  onClick={() => setEditorMode("canvas")}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-stone-900 shadow-2xs flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="hidden sm:inline">Studio</span>
-                  <span>Canvas</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEditorMode("form")}
-                  className="px-2.5 py-1 rounded-lg text-xs font-bold text-stone-600 hover:text-stone-900 flex items-center gap-1.5 transition"
-                >
-                  <Pencil className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Biểu Mẫu</span>
-                </button>
-              </div>
-            </div>
-
-            {/* CENTER: UNSAVED CHANGES STATUS */}
-            <div className="flex items-center gap-2">
-              {hasUnsavedChanges ? (
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50/90 border border-amber-200/90 px-3 py-1 rounded-full shadow-2xs animate-in fade-in">
-                  <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-                  <span className="hidden xs:inline">Có thay đổi chưa lưu</span>
-                  <span className="xs:hidden">Chưa lưu</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50/90 border border-emerald-200/90 px-3 py-1 rounded-full shadow-2xs">
-                  <span className="size-2 rounded-full bg-emerald-500" />
-                  <span>Đã lưu</span>
-                </div>
-              )}
-            </div>
-
-            {/* RIGHT: VIEW CARD & "LƯU THIỆP" BUTTON NỀN ĐEN KHỚP ẢNH MẪU */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <Link
-                href={`/thiep/${slug}`}
-                target="_blank"
-                className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Xem Thiệp</span>
-              </Link>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSaveCard}
-                disabled={saving}
-                className="px-5 sm:px-6 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
-              >
-                {saving ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Save className="w-3.5 h-3.5 text-white/90" />
-                )}
-                <span>{saving ? "Đang lưu..." : "Lưu thiệp"}</span>
-              </motion.button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+      {/* ── TOP HEADER (CHỈ HIỂN THỊ KHI Ở CHẾ ĐỘ BIỂU MẪU) ── */}
+      {editorMode !== "canvas" && (
+        <header className="h-14 sm:h-16 bg-white/95 backdrop-blur-md border-b border-[#E8E2D6] px-3 sm:px-6 flex items-center justify-between sticky top-0 z-40 shadow-2xs">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
               <Link
                 href="/dashboard/cards"
                 className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 transition shrink-0"
@@ -1432,9 +1345,8 @@ function EditCardContent() {
                 <span>{saving ? "Đang lưu..." : "Lưu Thay Đổi"}</span>
               </motion.button>
             </div>
-          </>
+          </header>
         )}
-      </header>
 
       {/* ── SUCCESS TOAST ── */}
       <AnimatePresence>
@@ -1472,6 +1384,11 @@ function EditCardContent() {
           onSave={handleSaveCard}
           isVip={isVipExperience}
           onDraftChange={handleDraftChange}
+          backUrl="/dashboard/cards"
+          previewUrl={`/thiep/${slug}`}
+          isSaving={saving}
+          showTopBar={true}
+          onSwitchToForm={() => setEditorMode("form")}
         >
           {category === "WEDDING" && (
             <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />

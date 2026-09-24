@@ -18,7 +18,7 @@ export type ToolCategory =
 
 export interface CanvasElement {
   id: string;
-  type: "text" | "image" | "shape" | "sticker" | "preset";
+  type: "text" | "image" | "shape" | "sticker" | "preset" | "stock";
   content: string;
   x: number; // in px
   y: number; // in px
@@ -46,12 +46,15 @@ export interface CanvasElement {
   isLocked?: boolean;
   shapeType?: "line" | "rect" | "circle" | "corner";
   presetId?: string;
+  stockId?: string;
   imageUrl?: string;
   title?: string;
   rotation?: number;
   animation?: string;
   loopAnimation?: string;
   linkUrl?: string;
+  flipX?: boolean;
+  flipY?: boolean;
 }
 
 
@@ -67,8 +70,15 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   selectedCanvasElement: CanvasElement | null;
   fieldOffsets: Record<string, { x: number; y: number }>;
   fieldScales: Record<string, number>;
+  canvasBackgroundColor: string;
+  setCanvasBackgroundColor: (color: string) => void;
+  canvasBackgroundPattern: "none" | "flower-small" | "flower-large";
+  setCanvasBackgroundPattern: (pat: "none" | "flower-small" | "flower-large") => void;
+  canvasFallingEffect: string;
+  setCanvasFallingEffect: (eff: string) => void;
   addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => string;
   addStickerElement: (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
+  addStockElement: (item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
   addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => string;
   addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
   addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
@@ -100,6 +110,7 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   zoomLevel: number;
   setZoomLevel: (action: number | ((prev: number) => number)) => void;
   saveState: "saved" | "dirty" | "saving";
+  hasUnsavedChanges: boolean;
   triggerSave: () => Promise<void>;
 
   // History
@@ -394,6 +405,130 @@ export function EditorProvider<T extends object>({
       return newEl.id;
     },
     [canvasElements, draft, persistElements]
+  );
+
+  const canvasBackgroundColor = useMemo(
+    () => categoryData?.canvas?.backgroundColor || categoryData?.canvasBackgroundColor || "#FFFFFF",
+    [categoryData]
+  );
+
+  const canvasBackgroundPattern = useMemo(
+    () => categoryData?.canvas?.backgroundPattern || categoryData?.canvasBackgroundPattern || "none",
+    [categoryData]
+  );
+
+  const canvasFallingEffect = useMemo(
+    () => categoryData?.canvas?.fallingEffect || (draft as any)?.fallingEffect || "none",
+    [categoryData, draft]
+  );
+
+  const setCanvasBackgroundColor = useCallback(
+    (color: string) => {
+      try {
+        let next = applyDraftPatch(draft, "categoryData.canvasBackgroundColor", color);
+        const currentCanvas = (next as any)?.categoryData?.canvas || {
+          width: 420,
+          height: 720,
+          backgroundPattern: canvasBackgroundPattern,
+          fallingEffect: canvasFallingEffect,
+          elements: canvasElements,
+        };
+        next = applyDraftPatch(next, "categoryData.canvas", {
+          ...currentCanvas,
+          backgroundColor: color,
+        });
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi cập nhật canvasBackgroundColor:", err);
+      }
+    },
+    [draft, onDraftChange, canvasBackgroundPattern, canvasFallingEffect, canvasElements]
+  );
+
+  const setCanvasBackgroundPattern = useCallback(
+    (pattern: "none" | "flower-small" | "flower-large") => {
+      try {
+        let next = applyDraftPatch(draft, "categoryData.canvasBackgroundPattern", pattern);
+        const currentCanvas = (next as any)?.categoryData?.canvas || {
+          width: 420,
+          height: 720,
+          backgroundColor: canvasBackgroundColor,
+          fallingEffect: canvasFallingEffect,
+          elements: canvasElements,
+        };
+        next = applyDraftPatch(next, "categoryData.canvas", {
+          ...currentCanvas,
+          backgroundPattern: pattern,
+        });
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi cập nhật canvasBackgroundPattern:", err);
+      }
+    },
+    [draft, onDraftChange, canvasBackgroundColor, canvasFallingEffect, canvasElements]
+  );
+
+  const setCanvasFallingEffect = useCallback(
+    (effect: string) => {
+      try {
+        let next = applyDraftPatch(draft, "fallingEffect", effect);
+        const currentCanvas = (next as any)?.categoryData?.canvas || {
+          width: 420,
+          height: 720,
+          backgroundColor: canvasBackgroundColor,
+          backgroundPattern: canvasBackgroundPattern,
+          elements: canvasElements,
+        };
+        next = applyDraftPatch(next, "categoryData.canvas", {
+          ...currentCanvas,
+          fallingEffect: effect,
+        });
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi cập nhật canvasFallingEffect:", err);
+      }
+    },
+    [draft, onDraftChange, canvasBackgroundColor, canvasBackgroundPattern, canvasElements]
+  );
+
+  const addStockElement = useCallback(
+    (
+      item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string },
+      pos?: { x?: number; y?: number }
+    ) => {
+      const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const newEl: CanvasElement = {
+        id: `stock-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: "stock",
+        stockId: item.id,
+        content: item.imageUrl || item.icon || "🕯️",
+        imageUrl: item.imageUrl,
+        title: item.title,
+        color: item.color,
+        x: pos?.x ?? 115,
+        y: pos?.y ?? 180,
+        width: item.width || 160,
+        height: item.height || 180,
+        zIndex: maxZ + 1,
+        isLocked: false,
+        opacity: 1,
+        flipX: false,
+        flipY: false,
+      };
+      const updated = [...canvasElements, newEl];
+      persistElements(updated);
+      setSelectedElementId(newEl.id);
+      setSelectedElementType("canvas-element");
+      setSelectedField(null);
+      return newEl.id;
+    },
+    [canvasElements, persistElements]
   );
 
   const addStickerElement = useCallback(
@@ -1058,6 +1193,7 @@ export function EditorProvider<T extends object>({
     zoomLevel,
     setZoomLevel,
     saveState,
+    hasUnsavedChanges: saveState === "dirty",
     triggerSave,
     past,
     future,
@@ -1069,8 +1205,15 @@ export function EditorProvider<T extends object>({
     selectedCanvasElement,
     fieldOffsets,
     fieldScales,
+    canvasBackgroundColor,
+    setCanvasBackgroundColor,
+    canvasBackgroundPattern,
+    setCanvasBackgroundPattern,
+    canvasFallingEffect,
+    setCanvasFallingEffect,
     addTextElement,
     addStickerElement,
+    addStockElement,
     addShapeElement,
     addPresetElement,
     addImageElement,

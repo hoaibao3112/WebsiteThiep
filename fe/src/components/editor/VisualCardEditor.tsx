@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ReactNode, useState } from "react";
+import Link from "next/link";
 import { EditorProvider, useEditor, ToolCategory } from "./EditorContext";
 import { LeftSidebar } from "./LeftSidebar";
 import { CenterCanvas } from "./CenterCanvas";
@@ -15,6 +16,10 @@ import {
   X,
   Undo2,
   Redo2,
+  Heart,
+  ChevronLeft,
+  Eye,
+  Loader2,
   SlidersHorizontal,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +37,11 @@ interface VisualCardEditorProps<T extends object> {
   onDraftChange: (draft: T) => void;
   onSave?: () => void | Promise<void>;
   isVip?: boolean;
+  backUrl?: string;
+  previewUrl?: string;
+  isSaving?: boolean;
+  showTopBar?: boolean;
+  onSwitchToForm?: () => void;
 }
 
 export function VisualCardEditor<T extends object>({
@@ -41,6 +51,11 @@ export function VisualCardEditor<T extends object>({
   onDraftChange,
   onSave,
   isVip = false,
+  backUrl = "/dashboard/cards",
+  previewUrl,
+  isSaving = false,
+  showTopBar = true,
+  onSwitchToForm,
 }: VisualCardEditorProps<T>) {
   return (
     <EditorProvider
@@ -50,16 +65,27 @@ export function VisualCardEditor<T extends object>({
       onDraftChange={onDraftChange}
       onSave={onSave}
     >
-      <div className="flex h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] w-full overflow-hidden bg-white">
-        {/* 1. DESKTOP STUDIO (3-Column Layout) */}
-        <div className="hidden lg:flex w-full h-full">
+      <div className="flex flex-col h-screen w-full overflow-hidden bg-white select-none">
+        {/* 0. TOP BAR - MATCHING NGAYCHUNGDOI.COM/CARD/CREATE/CANVAS */}
+        {showTopBar && (
+          <CanvasTopBar
+            backUrl={backUrl}
+            previewUrl={previewUrl}
+            onSave={onSave}
+            isSaving={isSaving}
+            onSwitchToForm={onSwitchToForm}
+          />
+        )}
+
+        {/* 1. DESKTOP STUDIO (3-Column Layout: Left Dock + Artboard Center + Properties Right) */}
+        <div className="hidden lg:flex flex-1 w-full overflow-hidden">
           <LeftSidebar />
           <CenterCanvas>{children}</CenterCanvas>
           <RightPanel />
         </div>
 
         {/* 2. MOBILE CANVAS WITH BOTTOM DOCK */}
-        <div className="flex lg:hidden w-full h-full flex-col relative overflow-hidden">
+        <div className="flex lg:hidden flex-1 w-full flex-col relative overflow-hidden">
           <MobileEditorLayout>{children}</MobileEditorLayout>
         </div>
       </div>
@@ -67,12 +93,152 @@ export function VisualCardEditor<T extends object>({
   );
 }
 
+// ────────────────────────────────────────────────────────────────
+// TOP BAR (KHỚP 100% ẢNH MẪU NGAYCHUNGDOI)
+// ────────────────────────────────────────────────────────────────
+
+interface CanvasTopBarProps {
+  backUrl: string;
+  previewUrl?: string;
+  onSave?: () => void | Promise<void>;
+  isSaving?: boolean;
+  onSwitchToForm?: () => void;
+}
+
+function CanvasTopBar({
+  backUrl,
+  previewUrl,
+  onSave,
+  isSaving = false,
+  onSwitchToForm,
+}: CanvasTopBarProps) {
+  const { undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState } = useEditor();
+  const [internalSaving, setInternalSaving] = useState(false);
+
+  const handleSaveClick = async () => {
+    setInternalSaving(true);
+    try {
+      if (onSave) {
+        await onSave();
+      }
+    } finally {
+      setInternalSaving(false);
+    }
+  };
+
+  const isSavingActive = isSaving || internalSaving || saveState === "saving";
+
+  return (
+    <header className="h-14 bg-white border-b border-stone-200 px-3 sm:px-5 flex items-center justify-between shrink-0 z-30 select-none shadow-2xs">
+      {/* LEFT: BACK + BRAND HEART BADGE + "ngày chung đôi" + UNDO / REDO */}
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <Link
+          href={backUrl}
+          className="size-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-600 hover:text-stone-900 transition shrink-0"
+          title="Quay lại danh sách thiệp"
+        >
+          <ChevronLeft className="size-5" />
+        </Link>
+
+        {/* BRAND BADGE: Pink rounded square with Heart + ngày chung đôi */}
+        <div className="flex items-center gap-2 select-none shrink-0">
+          <div className="size-7 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-600 shadow-2xs">
+            <Heart className="size-4 fill-pink-500 text-pink-500" />
+          </div>
+          <span className="font-serif font-bold text-sm sm:text-base text-stone-900 tracking-tight hidden xs:inline">
+            ngày chung đôi
+          </span>
+        </div>
+
+        {/* UNDO / REDO CONTROLS (TRỰC TIẾP TRÊN TOPBAR KHỚP ẢNH MẪU) */}
+        <div className="flex items-center gap-0.5 sm:gap-1 pl-2 sm:pl-3 border-l border-stone-200">
+          <button
+            type="button"
+            onClick={undo}
+            disabled={!canUndo}
+            className="size-8 rounded-lg flex items-center justify-center text-stone-600 hover:bg-stone-100 disabled:opacity-25 disabled:hover:bg-transparent transition cursor-pointer"
+            title="Hoàn tác (Ctrl+Z)"
+          >
+            <Undo2 className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={redo}
+            disabled={!canRedo}
+            className="size-8 rounded-lg flex items-center justify-center text-stone-600 hover:bg-stone-100 disabled:opacity-25 disabled:hover:bg-transparent transition cursor-pointer"
+            title="Làm lại (Ctrl+Y)"
+          >
+            <Redo2 className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* CENTER: SAVED / UNSAVED STATE BADGE */}
+      <div className="flex items-center gap-2">
+        {hasUnsavedChanges ? (
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-3 py-1 rounded-full shadow-2xs animate-in fade-in">
+            <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="hidden xs:inline">Có thay đổi chưa lưu</span>
+            <span className="xs:hidden">Chưa lưu</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full shadow-2xs">
+            <span className="size-2 rounded-full bg-emerald-500" />
+            <span>Đã lưu</span>
+          </div>
+        )}
+      </div>
+
+      {/* RIGHT: VIEW CARD + SOLID BLACK PILL BUTTON "Lưu thiệp" */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {previewUrl && (
+          <Link
+            href={previewUrl}
+            target="_blank"
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+          >
+            <Eye className="size-3.5" />
+            <span>Xem Thiệp</span>
+          </Link>
+        )}
+
+        {onSwitchToForm && (
+          <button
+            type="button"
+            onClick={onSwitchToForm}
+            className="hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:text-stone-800 text-xs font-medium hover:bg-stone-50 transition cursor-pointer"
+            title="Chuyển sang chế độ nhập liệu biểu mẫu truyền thống"
+          >
+            <SlidersHorizontal className="size-3" />
+            <span>Biểu Mẫu</span>
+          </button>
+        )}
+
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSaveClick}
+          disabled={isSavingActive}
+          className="px-5 sm:px-6 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
+        >
+          {isSavingActive ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : null}
+          <span>{isSavingActive ? "Đang lưu..." : "Lưu thiệp"}</span>
+        </motion.button>
+      </div>
+    </header>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// MOBILE EDITOR LAYOUT (BOTTOM DOCK + DRAWER)
+// ────────────────────────────────────────────────────────────────
+
 function MobileEditorLayout({ children }: { children: ReactNode }) {
   const {
     activeTool,
     setActiveTool,
-    selectedField,
-    selectField,
     undo,
     redo,
     canUndo,
@@ -84,10 +250,10 @@ function MobileEditorLayout({ children }: { children: ReactNode }) {
   const MOBILE_TOOLS: Array<{ id: ToolCategory; label: string; icon: React.ComponentType<{ className?: string }> }> = [
     { id: "text", label: "Văn bản", icon: Type },
     { id: "image", label: "Hình ảnh", icon: ImageIcon },
-    { id: "background", label: "Màu & Nền", icon: Palette },
-    { id: "music", label: "Nhạc nền", icon: Music },
+    { id: "background", label: "Nền", icon: Palette },
+    { id: "music", label: "Nhạc", icon: Music },
     { id: "effect", label: "Hiệu ứng", icon: Sparkles },
-    { id: "color", label: "Đổi mẫu", icon: Layers },
+    { id: "color", label: "Mẫu", icon: Layers },
   ];
 
   const handleOpenTool = (tool: ToolCategory) => {

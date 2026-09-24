@@ -24,6 +24,8 @@ import {
   Trash2,
   Palette,
   Sparkles,
+  FlipHorizontal,
+  FlipVertical,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -739,9 +741,9 @@ function SelectInspector({
 // ────────────────────────────────────────────────────────────────
 
 function CanvasElementInspector({ element }: { element: CanvasElement }) {
-  const { updateCanvasElement, selectElement, triggerSave, saveState, draft } = useEditor();
-  const [expandColor, setExpandColor] = useState(false);
-  const [expandPadding, setExpandPadding] = useState(false);
+  const { updateCanvasElement, selectElement, setActiveTool, triggerSave, saveState, draft } = useEditor();
+  const [expandColor, setExpandColor] = useState(true);
+  const [expandFlip, setExpandFlip] = useState(false);
   const [expandBorder, setExpandBorder] = useState(false);
   const [expandShadow, setExpandShadow] = useState(false);
   const [expandLink, setExpandLink] = useState(false);
@@ -785,11 +787,12 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
       : element.imageUrl || element.content;
 
   const isTextElement = element.type === "text";
+  const isStockElement = element.type === "stock" || element.type === "sticker";
 
   return (
     <aside className="w-72 sm:w-80 bg-white border-l border-stone-200 flex flex-col justify-between h-full select-none shrink-0 shadow-xs z-20">
       <div className="flex-1 overflow-y-auto p-4 space-y-3.5">
-        {/* Header */}
+        {/* Header chuẩn ảnh mẫu: THUỘC TÍNH */}
         <div className="flex items-center justify-between pb-2 border-b border-stone-100">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700">
@@ -809,15 +812,29 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
           </button>
         </div>
 
-        {/* ── THUMBNAIL PREVIEW & ACTION BUTTONS (CHO PRESET & ẢNH KHỚP VỚI ẢNH MẪU) ── */}
+        {/* ── THUMBNAIL PREVIEW & NÚT ĐỔI STOCK / ĐỔI ẢNH (KHỚP 100% ẢNH MẪU) ── */}
         {!isTextElement && (
           <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
             {/* Visual Thumbnail */}
-            <div className="w-full h-24 rounded-xl bg-white border border-stone-200 overflow-hidden flex items-center justify-center relative shadow-inner">
+            <div className="w-full h-28 rounded-xl bg-white border border-stone-200 overflow-hidden flex items-center justify-center relative shadow-xs p-2">
               {element.presetId === "p-envelope-pink" || element.presetId === "p1" ? (
                 <div className="w-20 h-14 bg-[#F294A6] rounded-md relative shadow-sm flex items-center justify-center border border-pink-300">
                   <div className="absolute -top-3 w-16 h-8 bg-[#EFA0AF] [clip-path:polygon(50%_0%,0%_100%,100%_100%)]" />
                   <div className="size-3.5 rounded-full bg-pink-600 border border-white text-[5px] text-white flex items-center justify-center font-bold">ML</div>
+                </div>
+              ) : element.stockId === "w1" || element.title?.includes("nến") ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <svg viewBox="0 0 100 120" className="h-full object-contain drop-shadow">
+                    <ellipse cx="50" cy="112" rx="20" ry="5" fill="#8BB8D4" />
+                    <rect x="47" y="55" width="6" height="57" rx="3" fill="#8BB8D4" />
+                    <path d="M 25 70 Q 25 90 50 90 Q 75 90 75 70" stroke="#8BB8D4" strokeWidth="5" fill="none" strokeLinecap="round" />
+                    <rect x="22" y="45" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1.5" />
+                    <rect x="47" y="32" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1.5" />
+                    <rect x="72" y="45" width="6" height="25" rx="2" fill="#FEF9E7" stroke="#8BB8D4" strokeWidth="1.5" />
+                    <ellipse cx="25" cy="38" rx="3" ry="6" fill="#F59E0B" />
+                    <ellipse cx="50" cy="25" rx="3.5" ry="7" fill="#F59E0B" />
+                    <ellipse cx="75" cy="38" rx="3" ry="6" fill="#F59E0B" />
+                  </svg>
                 </div>
               ) : previewThumbnail && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? (
                 <img
@@ -826,7 +843,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   className="w-full h-full object-contain p-1"
                 />
               ) : (
-                <Sparkles className="size-8 text-amber-500" />
+                <span className="text-3xl">{element.content || "✨"}</span>
               )}
             </div>
 
@@ -839,33 +856,34 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               onChange={handleImageChange}
             />
 
-            {/* 2 Nút: Cắt ảnh & Đổi ảnh (Khớp y hệt thanh công cụ ngaychungdoi) */}
-            <div className="grid grid-cols-2 gap-2">
+            {/* Action Buttons */}
+            {isStockElement ? (
               <button
                 type="button"
-                onClick={() => {
-                  const activeImg = element.imageUrl || (typeof previewThumbnail === "string" && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? previewThumbnail : "");
-                  if (activeImg) {
-                    setShowCropModal(true);
-                  } else if (fileInputRef.current) {
-                    fileInputRef.current.click();
-                  }
-                }}
-                className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
+                onClick={() => setActiveTool("stock")}
+                className="w-full py-2 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
               >
-                Cắt ảnh
+                Đổi stock
               </button>
-              <button
-                type="button"
-                disabled={isUploading}
-                onClick={() => {
-                  if (fileInputRef.current) fileInputRef.current.click();
-                }}
-                className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-amber-800 text-xs font-semibold shadow-2xs transition cursor-pointer text-center disabled:opacity-50"
-              >
-                {isUploading ? "Đang tải..." : "Đổi ảnh"}
-              </button>
-            </div>
+            ) : element.type === "image" ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCropModal(true)}
+                  className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
+                >
+                  Cắt ảnh
+                </button>
+                <button
+                  type="button"
+                  disabled={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-amber-800 text-xs font-semibold shadow-2xs transition cursor-pointer text-center disabled:opacity-50"
+                >
+                  {isUploading ? "Đang tải..." : "Đổi ảnh"}
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -994,7 +1012,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
           </div>
         )}
 
-        {/* ── BỘ 7 ACCORDION CHUẨN (KHỚP HOÀN TOÀN VỚI NGAYCHUNGDOI) ── */}
+        {/* ── BỘ ACCORDION CHUẨN (KHỚP HOÀN TOÀN VỚI NGAYCHUNGDOI) ── */}
         <div className="space-y-1.5 pt-1 border-t border-stone-200">
           {/* 1. Màu sắc */}
           <div className="rounded-xl border border-stone-200 overflow-hidden">
@@ -1007,29 +1025,22 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               <span className="text-stone-400 font-bold">{expandColor ? "−" : "+"}</span>
             </button>
             {expandColor && (
-              <div className="p-3 bg-white space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Màu chủ đạo / chữ</span>
-                  <input
-                    type="color"
-                    value={element.color || "#000000"}
-                    onChange={(e) => updateCanvasElement(element.id, { color: e.target.value })}
-                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
-                  />
-                </div>
+              <div className="p-3 bg-white space-y-3">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-stone-600">Màu nền</span>
                   <input
                     type="color"
                     value={element.backgroundColor && element.backgroundColor !== "transparent" ? element.backgroundColor : "#ffffff"}
                     onChange={(e) => updateCanvasElement(element.id, { backgroundColor: e.target.value })}
-                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
+                    className="size-7 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
                   />
                 </div>
-                <div>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-stone-600">Độ mờ (Opacity)</span>
-                    <span className="font-mono text-stone-500">{element.opacity ?? 1}</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-stone-600">Trong suốt</span>
+                    <span className="w-12 text-center text-xs border border-stone-200 rounded-lg py-0.5 font-mono text-stone-700 bg-stone-50">
+                      {element.opacity ?? 1}
+                    </span>
                   </div>
                   <input
                     type="range"
@@ -1038,84 +1049,45 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                     step="0.05"
                     value={element.opacity ?? 1}
                     onChange={(e) => updateCanvasElement(element.id, { opacity: parseFloat(e.target.value) })}
-                    className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
+                    className="w-full accent-[#0091FF] h-1.5 bg-stone-200 rounded-lg cursor-pointer"
                   />
                 </div>
               </div>
             )}
           </div>
 
-          {/* 2. Khoảng đệm */}
+          {/* 2. Đối xứng (Flip) */}
           <div className="rounded-xl border border-stone-200 overflow-hidden">
             <button
               type="button"
-              onClick={() => setExpandPadding((v) => !v)}
+              onClick={() => setExpandFlip((v) => !v)}
               className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
             >
-              <span>Khoảng đệm</span>
-              <span className="text-stone-400 font-bold">{expandPadding ? "−" : "+"}</span>
+              <span>Đối xứng</span>
+              <span className="text-stone-400 font-bold">{expandFlip ? "−" : "+"}</span>
             </button>
-            {expandPadding && (
-              <div className="p-3 bg-white space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Lề bên trong</span>
-                  <span className="font-mono text-stone-500">{element.padding || 0}px</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  value={element.padding || 0}
-                  onChange={(e) => updateCanvasElement(element.id, { padding: Number(e.target.value) })}
-                  className="w-full accent-amber-600 h-1.5 bg-stone-200 rounded-lg cursor-pointer"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* 3. Đường viền */}
-          <div className="rounded-xl border border-stone-200 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setExpandBorder((v) => !v)}
-              className="w-full px-3 py-2 bg-stone-50 hover:bg-stone-100 flex items-center justify-between text-xs font-semibold text-stone-700 transition"
-            >
-              <span>Đường viền</span>
-              <span className="text-stone-400 font-bold">{expandBorder ? "−" : "+"}</span>
-            </button>
-            {expandBorder && (
-              <div className="p-3 bg-white space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Độ dày viền</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={element.borderWidth || 0}
-                    onChange={(e) => updateCanvasElement(element.id, { borderWidth: Number(e.target.value) })}
-                    className="w-14 text-center border rounded-lg p-1 text-xs"
-                  />
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Bo góc (Radius)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="150"
-                    value={element.borderRadius || 0}
-                    onChange={(e) => updateCanvasElement(element.id, { borderRadius: Number(e.target.value) })}
-                    className="w-14 text-center border rounded-lg p-1 text-xs"
-                  />
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-stone-600">Màu viền</span>
-                  <input
-                    type="color"
-                    value={element.borderColor || "#D4AF37"}
-                    onChange={(e) => updateCanvasElement(element.id, { borderColor: e.target.value })}
-                    className="size-6 rounded-lg cursor-pointer border border-stone-300 p-0 overflow-hidden"
-                  />
-                </div>
+            {expandFlip && (
+              <div className="p-3 bg-white grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { flipX: !element.flipX })}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    element.flipX ? "border-[#0091FF] bg-blue-50 text-[#0091FF] font-bold" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  <FlipHorizontal className="size-4" />
+                  <span>Lật ngang</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateCanvasElement(element.id, { flipY: !element.flipY })}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1.5 transition cursor-pointer ${
+                    element.flipY ? "border-[#0091FF] bg-blue-50 text-[#0091FF] font-bold" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  <FlipVertical className="size-4" />
+                  <span>Lật dọc</span>
+                </button>
               </div>
             )}
           </div>

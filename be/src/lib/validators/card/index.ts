@@ -8,7 +8,7 @@ export * from "./wedding.schema";
 export * from "./birthday.schema";
 export * from "./newborn.schema";
 export * from "./canvas-element.schema";
-import { CanvasElementSchema } from "./canvas-element.schema";
+import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
 
 export const CategoryDataSchema = z.discriminatedUnion("cardCategory", [
   WeddingDataSchema,
@@ -87,6 +87,7 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     })).max(20).default([]),
     events: z.array(DraftEventSchema).max(10).default([]),
     photos: z.array(PhotoSchema).max(50).optional(),
+    canvas: CanvasDocumentSchema.optional(),
     canvasElements: z.array(CanvasElementSchema).optional(),
     fieldPositions: z.record(z.any()).optional(),
     fieldScales: z.record(z.any()).optional(),

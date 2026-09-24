@@ -34,7 +34,7 @@ const WeddingPhotoSchema = z.object({
   isCover: z.boolean().nullable().optional(),
 });
 
-import { CanvasElementSchema } from "./canvas-element.schema";
+import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
 
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
@@ -47,6 +47,7 @@ export const WeddingDataSchema = z.object({
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
+  canvas: CanvasDocumentSchema.optional(),
   canvasElements: z.array(CanvasElementSchema).optional(),
   fieldPositions: z.record(z.any()).optional(),
   fieldScales: z.record(z.any()).optional(),

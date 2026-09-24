@@ -3,7 +3,7 @@ import { z } from "zod";
 export const CanvasElementSchema = z
   .object({
     id: z.string(),
-    type: z.enum(["text", "image", "shape", "sticker", "preset", "widget"]),
+    type: z.enum(["text", "image", "shape", "sticker", "preset", "widget", "stock"]),
     content: z.string().default(""),
     x: z.number(), // Tọa độ X (px) - do người dùng tự do kéo thả
     y: z.number(), // Tọa độ Y (px) - do người dùng tự do kéo thả
@@ -33,12 +33,30 @@ export const CanvasElementSchema = z
     isLocked: z.boolean().optional(),
     shapeType: z.enum(["line", "rect", "circle", "corner"]).optional(),
     presetId: z.string().optional(),
+    stockId: z.string().optional(),
     imageUrl: z.string().optional(),
     title: z.string().optional(),
     animation: z.string().optional(),
     loopAnimation: z.string().optional(),
     linkUrl: z.string().optional(),
+    // Đối xứng (Flip)
+    flipX: z.boolean().optional(),
+    flipY: z.boolean().optional(),
   })
   .passthrough();
 
 export type CanvasElement = z.infer<typeof CanvasElementSchema>;
+
+export const CanvasDocumentSchema = z
+  .object({
+    width: z.number().default(420),
+    height: z.number().default(720),
+    backgroundColor: z.string().default("#FFFFFF"),
+    backgroundPattern: z.string().default("none"),
+    fallingEffect: z.string().default("none"),
+    elements: z.array(CanvasElementSchema).default([]),
+  })
+  .passthrough();
+
+export type CanvasDocument = z.infer<typeof CanvasDocumentSchema>;
+
