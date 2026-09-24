@@ -7,6 +7,7 @@ import {
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
+import { ensureWeddingScene, ensureWeddingSceneData } from "./wedding-scene.service";
 
 export class CardService {
   private static cardAggregateInclude(accountId: string) {
@@ -31,6 +32,7 @@ export class CardService {
     idempotencyKey: string
   ) {
     const maxAttempts = 3;
+    input = { ...input, data: ensureWeddingScene(input) };
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
@@ -213,18 +215,24 @@ export class CardService {
 
     const effectivePlan = await AccountEntitlementService.getEffectivePlan(card.accountId);
 
+    const responseCard = card.template?.category === "WEDDING"
+      ? { ...card, categoryData: ensureWeddingSceneData(card.template.slug, card.categoryData) as Prisma.JsonValue }
+      : card;
+
     return {
-      card,
+      card: responseCard,
       guestInfo,
       features: { vipOpeningExperience: effectivePlan.planCode === "VIP" },
     };
   }
 
   static async getOwnerCard(accountId: string, cardId: string) {
-    return prisma.card.findFirst({
+    const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
       include: this.cardAggregateInclude(accountId),
     });
+    if (!card || card.template?.category !== "WEDDING") return card;
+    return { ...card, categoryData: ensureWeddingSceneData(card.template.slug, card.categoryData) as Prisma.JsonValue };
   }
 
   static async deleteCard(accountId: string, cardId: string) {
@@ -248,6 +256,7 @@ export class CardService {
   }
 
   static async updateDraft(accountId: string, cardId: string, input: DraftCardInput) {
+    input = { ...input, data: ensureWeddingScene(input) };
     const [existing, effectivePlan] = await Promise.all([
       prisma.card.findFirst({
         where: { id: cardId, accountId },

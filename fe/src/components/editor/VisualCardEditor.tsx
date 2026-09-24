@@ -35,7 +35,7 @@ interface VisualCardEditorProps<T extends object> {
   draft: T;
   children: ReactNode;
   onDraftChange: (draft: T) => void;
-  onSave?: () => void | Promise<void>;
+  onSave?: (draft: T) => void | Promise<void>;
   isVip?: boolean;
   backUrl?: string;
   previewUrl?: string;
@@ -71,7 +71,6 @@ export function VisualCardEditor<T extends object>({
           <CanvasTopBar
             backUrl={backUrl}
             previewUrl={previewUrl}
-            onSave={onSave}
             isSaving={isSaving}
             onSwitchToForm={onSwitchToForm}
           />
@@ -100,7 +99,6 @@ export function VisualCardEditor<T extends object>({
 interface CanvasTopBarProps {
   backUrl: string;
   previewUrl?: string;
-  onSave?: () => void | Promise<void>;
   isSaving?: boolean;
   onSwitchToForm?: () => void;
 }
@@ -108,19 +106,16 @@ interface CanvasTopBarProps {
 function CanvasTopBar({
   backUrl,
   previewUrl,
-  onSave,
   isSaving = false,
   onSwitchToForm,
 }: CanvasTopBarProps) {
-  const { undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState } = useEditor();
+  const { undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
 
   const handleSaveClick = async () => {
     setInternalSaving(true);
     try {
-      if (onSave) {
-        await onSave();
-      }
+      await triggerSave();
     } finally {
       setInternalSaving(false);
     }

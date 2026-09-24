@@ -83,6 +83,16 @@ export function getTemplateFields(slug: string): readonly EditorField[] {
 }
 
 export function isAllowedEditorPath(path: string): boolean {
-  return Object.values(REGISTRY).some((fields) => fields.some((field) => field.path === path));
+  const canvasPaths = new Set([
+    "categoryData.canvasElements", "categoryData.fieldPositions", "categoryData.fieldScales",
+    "categoryData.canvasDocument", "categoryData.canvasDocument.elements", "categoryData.canvasDocument.height", "categoryData.canvasDocument.background",
+    "categoryData.canvasDocument.background.color", "categoryData.canvasDocument.background.pattern",
+    "categoryData.canvasDocument.background.imageUrl", "categoryData.canvasDocument.tokens.primary",
+    "categoryData.canvasDocument.tokens.accent", "categoryData.canvasDocument.tokens.surface",
+    "categoryData.canvas", "categoryData.canvasBackgroundColor", "categoryData.canvasBackgroundPattern",
+    "categoryData.canvasHeight", "categoryData.canvasWidth", "categoryData.showBottomToolbar",
+    "categoryData.showWishButton", "categoryData.showGiftQR", "categoryData.showRSVP",
+  ]);
+  return canvasPaths.has(path) || Object.values(REGISTRY).some((fields) => fields.some((field) => field.path === path));
 }
 

@@ -42,6 +42,16 @@ export const CanvasElementSchema = z
     // Đối xứng (Flip)
     flipX: z.boolean().optional(),
     flipY: z.boolean().optional(),
+    widgetType: z.enum(["calendar", "countdown", "map", "contact", "rsvp", "album", "guest-name", "gift", "envelope"]).optional(),
+    widgetConfig: z.object({
+      title: z.string().max(160).optional(),
+      description: z.string().max(1_000).optional(),
+      buttonLabel: z.string().max(80).optional(),
+      eventDate: z.string().max(80).optional(),
+      url: z.string().max(2_000).optional(),
+      phone: z.string().max(30).optional(),
+      showTitle: z.boolean().optional(),
+    }).optional(),
   })
   .passthrough();
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from "react
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { CardCategory, CardDetail, EventItem, PhotoItem } from "@/types/card.types";
+import { CardCategory, CardDetail, EventItem, PhotoItem, WeddingDataPayload } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
@@ -396,6 +396,8 @@ function EditCardContent() {
   const [saving, setSaving] = useState(false);
   const [successToast, setSuccessToast] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const categoryDataRef = React.useRef<CardDetail["categoryData"]>(DEMO_CARD.categoryData);
+  const draftRevisionRef = React.useRef(0);
   const [videoUrl, setVideoUrl] = useState("");
 
   // ────────────────────────────────────────────────────────────────
@@ -403,6 +405,7 @@ function EditCardContent() {
   // ────────────────────────────────────────────────────────────────
 
   const populateFromCard = useCallback((card: CardDetail) => {
+    categoryDataRef.current = card.categoryData;
     setCategory(card.cardCategory);
     setSlug(card.slug);
     if (card.template?.slug) setTemplateSlug(card.template.slug);
@@ -861,28 +864,36 @@ function EditCardContent() {
     categoryData:
       category === "WEDDING"
         ? {
+            ...categoryDataRef.current,
+            canvasWidth: 390,
+            canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
             cardCategory: "WEDDING",
             coverPhotoUrl: coverPhotoUrl || photos.find((p) => p.isCover)?.url || photos[0]?.url,
             groom: {
+              ...((categoryDataRef.current as WeddingDataPayload).groom ?? {}),
               fullName: groomName,
               shortName: groomShort,
               birthOrder: groomBirthOrder,
               avatarUrl: groomAvatar,
-              parents: { fatherName: groomFather, motherName: groomMother },
+              parents: { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather, motherName: groomMother },
             },
             bride: {
+              ...((categoryDataRef.current as WeddingDataPayload).bride ?? {}),
               fullName: brideName,
               shortName: brideShort,
               birthOrder: brideBirthOrder,
               avatarUrl: brideAvatar,
-              parents: { fatherName: brideFather, motherName: brideMother },
+              parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother },
             },
             loveStory,
             events: [],
           }
         : category === "BIRTHDAY"
-        ? { cardCategory: "BIRTHDAY", celebrantName, age, events: [] }
+        ? { ...categoryDataRef.current, canvasWidth: 390, canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200, cardCategory: "BIRTHDAY", celebrantName, age, events: [] }
         : {
+            ...categoryDataRef.current,
+            canvasWidth: 390,
+            canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
             cardCategory: "NEWBORN",
             babyName,
             nickname,
@@ -897,6 +908,8 @@ function EditCardContent() {
 
   // Sync edits from VisualCardEditor back to local state hooks
   const handleDraftChange = useCallback((nextDraft: CardDetail) => {
+    draftRevisionRef.current += 1;
+    categoryDataRef.current = nextDraft.categoryData;
     setHasUnsavedChanges(true);
     if (nextDraft.primaryColor) setPrimaryColor(nextDraft.primaryColor);
     if (nextDraft.fontFamily) setFontFamily(nextDraft.fontFamily);
@@ -948,7 +961,8 @@ function EditCardContent() {
   // SAVE (PUT)
   // ────────────────────────────────────────────────────────────────
 
-  const handleSaveCard = async () => {
+  const persistCard = async (draftSnapshot?: CardDetail, navigate = false) => {
+    const saveRevision = draftRevisionRef.current;
     setSaving(true);
     setSaveError(null);
 
@@ -1037,28 +1051,34 @@ function EditCardContent() {
 
     // 5. Chuẩn hóa Category Data
     const categoryDataPayload = {
+      ...categoryDataRef.current,
+      ...draftSnapshot?.categoryData,
+      canvasWidth: 390,
+      canvasHeight: draftSnapshot?.categoryData.canvasHeight ?? categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
       cardCategory: category,
       events: formattedEvents,
       ...(category === "WEDDING"
         ? {
             groom: {
+              ...((categoryDataRef.current as WeddingDataPayload).groom ?? {}),
               fullName: groomName?.trim() || "Chú Rể",
               shortName: groomShort?.trim() || undefined,
               birthOrder: groomBirthOrder?.trim() || undefined,
               phone: groomPhone?.trim() || undefined,
               address: groomAddress?.trim() || undefined,
               parents: (groomFather?.trim() || groomMother?.trim())
-                ? { fatherName: groomFather?.trim() || undefined, motherName: groomMother?.trim() || undefined }
+                ? { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather?.trim() || undefined, motherName: groomMother?.trim() || undefined }
                 : undefined,
             },
             bride: {
+              ...((categoryDataRef.current as WeddingDataPayload).bride ?? {}),
               fullName: brideName?.trim() || "Cô Dâu",
               shortName: brideShort?.trim() || undefined,
               birthOrder: brideBirthOrder?.trim() || undefined,
               phone: bridePhone?.trim() || undefined,
               address: brideAddress?.trim() || undefined,
               parents: (brideFather?.trim() || brideMother?.trim())
-                ? { fatherName: brideFather?.trim() || undefined, motherName: brideMother?.trim() || undefined }
+                ? { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather?.trim() || undefined, motherName: brideMother?.trim() || undefined }
                 : undefined,
             },
             loveStory: loveStory.map((item) => ({
@@ -1116,27 +1136,26 @@ function EditCardContent() {
               .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(", ")}`)
               .join("; ")
           : "";
-        setSaveError(
-          res.error
-            ? `${res.error}${errorDetails ? ` (${errorDetails})` : ""}`
-            : "Không thể lưu thay đổi. Vui lòng kiểm tra lại thông tin."
-        );
-        return;
+        throw new Error(res.error
+          ? `${res.error}${errorDetails ? ` (${errorDetails})` : ""}`
+          : "Không thể lưu thay đổi. Vui lòng kiểm tra lại thông tin.");
       }
 
-      confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
+      if (navigate) confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
       setSaveError(null);
-      setSuccessToast(true);
-      setHasUnsavedChanges(false);
-      setTimeout(() => {
+      setSuccessToast(navigate);
+      if (draftRevisionRef.current === saveRevision) setHasUnsavedChanges(false);
+      if (navigate) setTimeout(() => {
         setSuccessToast(false);
         router.push(`/thiep/${cleanSlug}`);
       }, 1800);
-    } catch {
+    } catch (error) {
       setSaving(false);
-      setSaveError("Không thể kết nối máy chủ. Dữ liệu của bạn vẫn được giữ nguyên.");
+      setSaveError(error instanceof Error ? error.message : "Không thể kết nối máy chủ. Dữ liệu của bạn vẫn được giữ nguyên.");
+      if (!navigate) throw error;
     }
   };
+  const handleSaveCard = () => { void persistCard(undefined, true); };
 
   // ────────────────────────────────────────────────────────────────
   // LOADING SCREEN
@@ -1381,7 +1400,7 @@ function EditCardContent() {
         <VisualCardEditor
           draft={previewCard}
           templateSlug={templateSlug || selectedTemplate}
-          onSave={handleSaveCard}
+          onSave={(snapshot) => persistCard(snapshot, false)}
           isVip={isVipExperience}
           onDraftChange={handleDraftChange}
           backUrl="/dashboard/cards"

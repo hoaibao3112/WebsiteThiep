@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
+import { WidgetInspector } from "./WidgetInspector";
 
 export function RightPanel() {
   const {
@@ -824,7 +825,8 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
         </div>
 
         {/* ── THUMBNAIL PREVIEW & NÚT ĐỔI STOCK / ĐỔI ẢNH (KHỚP 100% ẢNH MẪU) ── */}
-        {!isTextElement && (
+        {element.type === "widget" && <WidgetInspector element={element} />}
+        {!isTextElement && element.type !== "widget" && (
           <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
             {/* Visual Thumbnail */}
             <div className="w-full h-28 rounded-xl bg-white border border-stone-200 overflow-hidden flex items-center justify-center relative shadow-xs p-2">

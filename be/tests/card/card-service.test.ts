@@ -29,6 +29,7 @@ const prismaMock = vi.hoisted(() => ({
 vi.mock("../../src/lib/prisma", () => ({ prisma: prismaMock }));
 
 import { CardService } from "../../src/services/card.service";
+import { ensureWeddingScene } from "../../src/services/wedding-scene.service";
 import type { DraftCardInput } from "../../src/lib/validators/card";
 import { Prisma } from "@prisma/client";
 
@@ -50,6 +51,51 @@ const input: DraftCardInput = {
     loveStory: [],
   },
 };
+
+describe("ensureWeddingScene", () => {
+  const weddingSlugs = [
+    "wedding-heritage-crimson-gold",
+    "wedding-modern-editorial-magazine",
+    "wedding-sweet-editorial-romance",
+    "wedding-crimson-wine-marsala",
+    "wedding-forest-green-botanical",
+    "wedding-pure-lotus-heritage",
+    "wedding-cinematic-editorial",
+    "wedding-alpine-lake-romance",
+    "wedding-imperial-dragon-crimson",
+  ];
+
+  it.each(weddingSlugs)("creates a complete backend scene for %s", (templateSlug) => {
+    const result = ensureWeddingScene({ ...input, templateSlug });
+    expect(result.cardCategory).toBe("WEDDING");
+    if (result.cardCategory !== "WEDDING") throw new Error("Expected wedding data");
+    expect(result.canvasDocument).toMatchObject({ schemaVersion: 1, templateSlug });
+    expect(result.canvasDocument?.elements.length).toBeGreaterThanOrEqual(12);
+    expect(result.canvasDocument?.elements.some((element) => element.type === "widget")).toBe(true);
+  });
+
+  it("preserves an explicitly empty saved scene", () => {
+    const emptySceneData = {
+      ...input,
+      data: {
+        ...input.data,
+        canvasDocument: {
+          schemaVersion: 1,
+          templateSlug: input.templateSlug,
+          width: 390,
+          height: 1200,
+          background: { color: "#ffffff" },
+          tokens: {},
+          sections: [],
+          elements: [],
+          bindings: {},
+        },
+      },
+    } as DraftCardInput;
+    const result = ensureWeddingScene(emptySceneData);
+    expect(result.cardCategory === "WEDDING" && result.canvasDocument?.elements).toEqual([]);
+  });
+});
 
 describe("CardService.createDraft", () => {
   beforeEach(() => {

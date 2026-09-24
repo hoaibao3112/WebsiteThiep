@@ -136,11 +136,17 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   // Truyền templateSlug ưu tiên từ card.template?.slug hoặc chính slug URL
   const effectiveTemplateSlug = card.template?.slug || slug;
 
-  const hasCanvasElements =
-    Array.isArray((card.categoryData as any)?.canvasElements) &&
-    (card.categoryData as any).canvasElements.length > 0;
+  const categoryData = card.categoryData as unknown as Record<string, unknown>;
+  const legacyCanvas = categoryData.canvas && typeof categoryData.canvas === "object" && !Array.isArray(categoryData.canvas)
+    ? categoryData.canvas as Record<string, unknown>
+    : null;
+  const hasCanvasElements = (Array.isArray(categoryData.canvasElements) && categoryData.canvasElements.length > 0) ||
+    (Array.isArray(legacyCanvas?.elements) && legacyCanvas.elements.length > 0);
 
-  if (hasCanvasElements) {
+  // Wedding cards are rendered through the shared 9-template scene renderer;
+  // it also overlays legacy editor elements inside WeddingView. Keep the
+  // generic canvas route for non-wedding categories only.
+  if (hasCanvasElements && card.cardCategory !== "WEDDING") {
     return (
       <CanvasCardView
         card={card}

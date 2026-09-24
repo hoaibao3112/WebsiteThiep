@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { EditorField, getTemplateFields } from "@/lib/editor/template-registry";
 import { applyDraftPatch, readDraftPath } from "@/lib/editor/patch-draft";
+import type { CanvasElement, WidgetType } from "@/types/canvas.types";
+export type { CanvasElement, WidgetType, WidgetConfig } from "@/types/canvas.types";
 
 export type ToolCategory =
   | "text"
@@ -16,48 +18,6 @@ export type ToolCategory =
   | "color"
   | "effect";
 
-export interface CanvasElement {
-  id: string;
-  type: "text" | "image" | "shape" | "sticker" | "preset" | "stock";
-  content: string;
-  x: number; // in px
-  y: number; // in px
-  width: number;
-  height: number;
-  fontSize?: number;
-  fontFamily?: string;
-  color?: string;
-  backgroundColor?: string;
-  opacity?: number;
-  textAlign?: "left" | "center" | "right" | "justify";
-  isBold?: boolean;
-  isItalic?: boolean;
-  isUnderline?: boolean;
-  isStrike?: boolean;
-  isUppercase?: boolean;
-  letterSpacing?: number;
-  lineHeight?: number;
-  padding?: number;
-  borderRadius?: number;
-  borderWidth?: number;
-  borderColor?: string;
-  shadow?: string;
-  zIndex: number;
-  isLocked?: boolean;
-  shapeType?: "line" | "rect" | "circle" | "corner";
-  presetId?: string;
-  stockId?: string;
-  imageUrl?: string;
-  title?: string;
-  rotation?: number;
-  animation?: string;
-  loopAnimation?: string;
-  linkUrl?: string;
-  flipX?: boolean;
-  flipY?: boolean;
-}
-
-
 export interface EditorContextValue<T extends object = Record<string, unknown>> {
   // Data state
   draft: T;
@@ -67,6 +27,8 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
 
   // Free Canvas Elements
   canvasElements: CanvasElement[];
+  canvasHeight: number;
+  setCanvasHeight: (height: number) => void;
   selectedCanvasElement: CanvasElement | null;
   fieldOffsets: Record<string, { x: number; y: number }>;
   fieldScales: Record<string, number>;
@@ -82,6 +44,7 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner"; title: string }, pos?: { x?: number; y?: number }) => string;
   addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
   addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
+  addWidgetElement: (widgetType: WidgetType, pos?: { x?: number; y?: number }) => string;
   updateCanvasElement: (id: string, patch: Partial<CanvasElement>) => void;
   removeCanvasElement: (id: string) => void;
   duplicateCanvasElement: (id: string) => string | null;
@@ -120,6 +83,8 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   redo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  beginInteraction: () => void;
+  endInteraction: () => void;
 
   // Mutation
   updateFieldValue: (field: EditorField, value: unknown) => void;
@@ -245,7 +210,7 @@ interface EditorProviderProps<T extends object> {
   isVip?: boolean;
   children: React.ReactNode;
   onDraftChange: (nextDraft: T) => void;
-  onSave?: () => void | Promise<void>;
+  onSave?: (draft: T) => void | Promise<void>;
 }
 
 export function EditorProvider<T extends object>({
@@ -271,12 +236,14 @@ export function EditorProvider<T extends object>({
   const [saveState, setSaveState] = useState<"saved" | "dirty" | "saving">("saved");
 
   // Widget bottom toggles
-  const [showBottomToolbar, setShowBottomToolbar] = useState(true);
-  const [showWishButton, setShowWishButton] = useState(true);
-  const [showGiftQR, setShowGiftQR] = useState(true);
-  const [showRSVP, setShowRSVP] = useState(true);
+  const interactionDraftRef = useRef<T | null>(null);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   const saveRef = useRef(onSave);
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const dirtyTickRef = useRef(dirtyTick);
+  dirtyTickRef.current = dirtyTick;
   useEffect(() => {
     saveRef.current = onSave;
   }, [onSave]);
@@ -290,12 +257,52 @@ export function EditorProvider<T extends object>({
 
   // Free canvas elements & position offsets
   const categoryData = (draft as any)?.categoryData || {};
+  const canvasHeight = Number(categoryData.canvasDocument?.height ?? categoryData.canvasHeight ?? categoryData.canvas?.height ?? 1200);
+  const setCanvasHeight = useCallback((height: number) => {
+    if (!Number.isFinite(height)) return;
+    const bounded = Math.max(390, Math.round(height));
+    const currentCategory = (draftRef.current as { categoryData?: { cardCategory?: string; canvasDocument?: object; canvas?: object } }).categoryData;
+    const hasWeddingScene = currentCategory?.cardCategory === "WEDDING" && Boolean(currentCategory.canvasDocument);
+    let next = applyDraftPatch(draftRef.current, hasWeddingScene ? "categoryData.canvasDocument.height" : "categoryData.canvasHeight", bounded);
+    if (!hasWeddingScene) {
+      next = applyDraftPatch(next, "categoryData.canvas", {
+        ...((next as { categoryData?: { canvas?: object } }).categoryData?.canvas ?? {}),
+        width: 390,
+        height: bounded,
+      });
+    }
+    if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draftRef.current]);
+    setFuture([]);
+    onDraftChange(next);
+    setDirtyTick((tick) => tick + 1);
+    setSaveState("dirty");
+  }, [onDraftChange]);
+  const showBottomToolbar = categoryData.showBottomToolbar ?? true;
+  const showWishButton = categoryData.showWishButton ?? true;
+  const showGiftQR = categoryData.showGiftQR ?? true;
+  const showRSVP = categoryData.showRSVP ?? true;
+  const setToggle = useCallback((key: "showBottomToolbar" | "showWishButton" | "showGiftQR" | "showRSVP", value: boolean | ((prev: boolean) => boolean)) => {
+    const current = ((draftRef.current as { categoryData?: Record<string, unknown> }).categoryData?.[key] as boolean | undefined) ?? true;
+    const nextValue = typeof value === "function" ? value(current) : value;
+    const next = applyDraftPatch(draftRef.current, `categoryData.${key}`, nextValue);
+    if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draftRef.current]);
+    setFuture([]);
+    onDraftChange(next);
+    setDirtyTick((tick) => tick + 1);
+    setSaveState("dirty");
+  }, [onDraftChange]);
+  const setShowBottomToolbar = useCallback((value: boolean | ((prev: boolean) => boolean)) => setToggle("showBottomToolbar", value), [setToggle]);
+  const setShowWishButton = useCallback((value: boolean | ((prev: boolean) => boolean)) => setToggle("showWishButton", value), [setToggle]);
+  const setShowGiftQR = useCallback((value: boolean | ((prev: boolean) => boolean)) => setToggle("showGiftQR", value), [setToggle]);
+  const setShowRSVP = useCallback((value: boolean | ((prev: boolean) => boolean)) => setToggle("showRSVP", value), [setToggle]);
   const canvasElements: CanvasElement[] = useMemo(() => {
-    if (Array.isArray(categoryData.canvasElements) && categoryData.canvasElements.length > 0) {
+    const documentElements = categoryData.canvasDocument?.elements;
+    if (Array.isArray(documentElements)) return documentElements;
+    if (Array.isArray(categoryData.canvasElements)) {
       return categoryData.canvasElements;
     }
-    return getDefaultCanvasElements(draft);
-  }, [categoryData.canvasElements, draft]);
+    return categoryData.cardCategory === "WEDDING" ? [] : getDefaultCanvasElements(draft);
+  }, [categoryData.canvasDocument?.elements, categoryData.canvasElements, categoryData.cardCategory, draft]);
   const fieldOffsets: Record<string, { x: number; y: number }> = useMemo(
     () => categoryData.fieldPositions || {},
     [categoryData.fieldPositions]
@@ -316,14 +323,16 @@ export function EditorProvider<T extends object>({
   const persistElements = useCallback(
     (nextElements: CanvasElement[]) => {
       try {
-        const next = applyDraftPatch(draft, "categoryData.canvasElements", nextElements);
-        setPast((items) => [...items.slice(-19), draft]);
+        const category = (draft as { categoryData?: { cardCategory?: string; canvasDocument?: object } }).categoryData;
+        const isWedding = category?.cardCategory === "WEDDING";
+        const next = applyDraftPatch(draft, isWedding ? "categoryData.canvasDocument.elements" : "categoryData.canvasElements", nextElements);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
         setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
       } catch (err) {
-        console.error("Lỗi lưu canvasElements:", err);
+        console.error("Lỗi lưu scene elements:", err);
       }
     },
     [draft, onDraftChange]
@@ -333,6 +342,8 @@ export function EditorProvider<T extends object>({
     (nextOffsets: Record<string, { x: number; y: number }>) => {
       try {
         const next = applyDraftPatch(draft, "categoryData.fieldPositions", nextOffsets);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -347,6 +358,8 @@ export function EditorProvider<T extends object>({
     (nextScales: Record<string, number>) => {
       try {
         const next = applyDraftPatch(draft, "categoryData.fieldScales", nextScales);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -408,12 +421,12 @@ export function EditorProvider<T extends object>({
   );
 
   const canvasBackgroundColor = useMemo(
-    () => categoryData?.canvas?.backgroundColor || categoryData?.canvasBackgroundColor || "#FFFFFF",
+    () => categoryData.canvasDocument?.background?.color || categoryData?.canvas?.backgroundColor || categoryData?.canvasBackgroundColor || "#FFFFFF",
     [categoryData]
   );
 
   const canvasBackgroundPattern = useMemo(
-    () => categoryData?.canvas?.backgroundPattern || categoryData?.canvasBackgroundPattern || "none",
+    () => categoryData.canvasDocument?.background?.pattern || categoryData?.canvas?.backgroundPattern || categoryData?.canvasBackgroundPattern || "none",
     [categoryData]
   );
 
@@ -425,18 +438,17 @@ export function EditorProvider<T extends object>({
   const setCanvasBackgroundColor = useCallback(
     (color: string) => {
       try {
-        let next = applyDraftPatch(draft, "categoryData.canvasBackgroundColor", color);
-        const currentCanvas = (next as any)?.categoryData?.canvas || {
-          width: 420,
-          height: 720,
-          backgroundPattern: canvasBackgroundPattern,
-          fallingEffect: canvasFallingEffect,
-          elements: canvasElements,
-        };
-        next = applyDraftPatch(next, "categoryData.canvas", {
-          ...currentCanvas,
-          backgroundColor: color,
-        });
+        const currentCategory = (draft as { categoryData?: { cardCategory?: string; canvasDocument?: { background?: Record<string, unknown> }; canvas?: Record<string, unknown> } }).categoryData;
+        const hasWeddingScene = currentCategory?.cardCategory === "WEDDING" && Boolean(currentCategory.canvasDocument);
+        let next = hasWeddingScene
+          ? applyDraftPatch(draft, "categoryData.canvasDocument.background", { ...currentCategory!.canvasDocument!.background, color })
+          : applyDraftPatch(draft, "categoryData.canvasBackgroundColor", color);
+        if (!hasWeddingScene) {
+          const currentCanvas = currentCategory?.canvas || { width: 390, height: canvasHeight, backgroundPattern: canvasBackgroundPattern, fallingEffect: canvasFallingEffect, elements: canvasElements };
+          next = applyDraftPatch(next, "categoryData.canvas", { ...currentCanvas, backgroundColor: color });
+        }
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -450,18 +462,17 @@ export function EditorProvider<T extends object>({
   const setCanvasBackgroundPattern = useCallback(
     (pattern: "none" | "flower-small" | "flower-large") => {
       try {
-        let next = applyDraftPatch(draft, "categoryData.canvasBackgroundPattern", pattern);
-        const currentCanvas = (next as any)?.categoryData?.canvas || {
-          width: 420,
-          height: 720,
-          backgroundColor: canvasBackgroundColor,
-          fallingEffect: canvasFallingEffect,
-          elements: canvasElements,
-        };
-        next = applyDraftPatch(next, "categoryData.canvas", {
-          ...currentCanvas,
-          backgroundPattern: pattern,
-        });
+        const currentCategory = (draft as { categoryData?: { cardCategory?: string; canvasDocument?: { background?: Record<string, unknown> }; canvas?: Record<string, unknown> } }).categoryData;
+        const hasWeddingScene = currentCategory?.cardCategory === "WEDDING" && Boolean(currentCategory.canvasDocument);
+        let next = hasWeddingScene
+          ? applyDraftPatch(draft, "categoryData.canvasDocument.background", { ...currentCategory!.canvasDocument!.background, pattern })
+          : applyDraftPatch(draft, "categoryData.canvasBackgroundPattern", pattern);
+        if (!hasWeddingScene) {
+          const currentCanvas = currentCategory?.canvas || { width: 390, height: canvasHeight, backgroundColor: canvasBackgroundColor, fallingEffect: canvasFallingEffect, elements: canvasElements };
+          next = applyDraftPatch(next, "categoryData.canvas", { ...currentCanvas, backgroundPattern: pattern });
+        }
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -477,8 +488,8 @@ export function EditorProvider<T extends object>({
       try {
         let next = applyDraftPatch(draft, "fallingEffect", effect);
         const currentCanvas = (next as any)?.categoryData?.canvas || {
-          width: 420,
-          height: 720,
+          width: 390,
+          height: canvasHeight,
           backgroundColor: canvasBackgroundColor,
           backgroundPattern: canvasBackgroundPattern,
           elements: canvasElements,
@@ -487,6 +498,8 @@ export function EditorProvider<T extends object>({
           ...currentCanvas,
           fallingEffect: effect,
         });
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -961,6 +974,21 @@ export function EditorProvider<T extends object>({
     [canvasElements, persistElements]
   );
 
+  const addWidgetElement = useCallback((widgetType: WidgetType, pos?: { x?: number; y?: number }) => {
+    const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+    const newEl: CanvasElement = {
+      id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      type: "widget", widgetType, widgetConfig: { showTitle: true }, content: widgetType,
+      x: pos?.x ?? 45, y: pos?.y ?? 280, width: 300, height: 160,
+      zIndex: maxZ + 1, isLocked: false, opacity: 1,
+    };
+    persistElements([...canvasElements, newEl]);
+    setSelectedElementId(newEl.id);
+    setSelectedElementType("canvas-element");
+    setSelectedField(null);
+    return newEl.id;
+  }, [canvasElements, persistElements]);
+
   const updateCanvasElement = useCallback(
     (id: string, patch: Partial<CanvasElement>) => {
       const updated = canvasElements.map((el) => (el.id === id ? { ...el, ...patch } : el));
@@ -1110,7 +1138,7 @@ export function EditorProvider<T extends object>({
     (field: EditorField, value: unknown) => {
       try {
         const next = applyDraftPatch(draft, field.path, value);
-        setPast((items) => [...items.slice(-19), draft]);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
         setFuture([]);
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
@@ -1145,6 +1173,8 @@ export function EditorProvider<T extends object>({
     setPast((items) => items.slice(0, -1));
     setFuture((items) => [draft, ...items]);
     onDraftChange(previous);
+    setDirtyTick((tick) => tick + 1);
+    setSaveState("dirty");
   }, [past, draft, onDraftChange]);
 
   const redo = useCallback(() => {
@@ -1153,30 +1183,46 @@ export function EditorProvider<T extends object>({
     setFuture((items) => items.slice(1));
     setPast((items) => [...items, draft]);
     onDraftChange(next);
+    setDirtyTick((tick) => tick + 1);
+    setSaveState("dirty");
   }, [future, draft, onDraftChange]);
 
-  const triggerSave = useCallback(async () => {
-    if (!saveRef.current) return;
-    setSaveState("saving");
-    try {
-      await Promise.resolve(saveRef.current());
-      setSaveState("saved");
-    } catch {
-      setSaveState("dirty");
+  const beginInteraction = useCallback(() => {
+    if (!interactionDraftRef.current) interactionDraftRef.current = draftRef.current;
+  }, []);
+  const endInteraction = useCallback(() => {
+    const initial = interactionDraftRef.current;
+    interactionDraftRef.current = null;
+    if (initial && initial !== draftRef.current) {
+      setPast((items) => [...items.slice(-19), initial]);
+      setFuture([]);
     }
+  }, []);
+
+  const triggerSave = useCallback(() => {
+    if (!saveRef.current) return Promise.resolve();
+    const revision = dirtyTickRef.current;
+    const snapshot = draftRef.current;
+    const save = saveQueueRef.current.catch(() => undefined).then(async () => {
+      setSaveState("saving");
+      await saveRef.current?.(snapshot);
+      setSaveState(dirtyTickRef.current === revision ? "saved" : "dirty");
+    }).catch((error: unknown) => {
+      setSaveState("dirty");
+      throw error;
+    });
+    saveQueueRef.current = save;
+    return save;
   }, []);
 
   // Debounced auto-save
   useEffect(() => {
     if (!dirtyTick || !onSave) return;
-    setSaveState("saving");
     const timer = window.setTimeout(() => {
-      void Promise.resolve(saveRef.current?.())
-        .then(() => setSaveState("saved"))
-        .catch(() => setSaveState("dirty"));
+      void triggerSave().catch(() => undefined);
     }, 800);
     return () => window.clearTimeout(timer);
-  }, [dirtyTick, onSave]);
+  }, [dirtyTick, Boolean(onSave), triggerSave]);
 
   const value: EditorContextValue<T> = {
     draft,
@@ -1193,7 +1239,7 @@ export function EditorProvider<T extends object>({
     zoomLevel,
     setZoomLevel,
     saveState,
-    hasUnsavedChanges: saveState === "dirty",
+    hasUnsavedChanges: saveState !== "saved",
     triggerSave,
     past,
     future,
@@ -1201,7 +1247,11 @@ export function EditorProvider<T extends object>({
     redo,
     canUndo: past.length > 0,
     canRedo: future.length > 0,
+    beginInteraction,
+    endInteraction,
     canvasElements,
+    canvasHeight,
+    setCanvasHeight,
     selectedCanvasElement,
     fieldOffsets,
     fieldScales,
@@ -1217,6 +1267,7 @@ export function EditorProvider<T extends object>({
     addShapeElement,
     addPresetElement,
     addImageElement,
+    addWidgetElement,
     updateCanvasElement,
     removeCanvasElement,
     duplicateCanvasElement,

@@ -3,8 +3,31 @@ import { CardService } from "../services/card.service";
 import { DraftCardSchema } from "../lib/validators/card";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import { ensureWeddingSceneData } from "../services/wedding-scene.service";
 
 export class CardController {
+  static async getWeddingScenePreview(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      CardController.getAuth(req);
+      const templateSlug = z.enum([
+        "wedding-heritage-crimson-gold",
+        "wedding-modern-editorial-magazine",
+        "wedding-sweet-editorial-romance",
+        "wedding-crimson-wine-marsala",
+        "wedding-forest-green-botanical",
+        "wedding-pure-lotus-heritage",
+        "wedding-cinematic-editorial",
+        "wedding-alpine-lake-romance",
+        "wedding-imperial-dragon-crimson",
+      ]).safeParse(req.params.slug);
+      if (!templateSlug.success) return res.status(404).json({ success: false, error: "Khong tim thay mau thiep cuoi" });
+      const data = ensureWeddingSceneData(templateSlug.data, { cardCategory: "WEDDING" });
+      return res.status(200).json({ success: true, data: data.canvasDocument });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
   private static getAuth(req: AuthenticatedRequest) {
     const userId = req.user?.userId;
     const accountId = req.user?.accountId;

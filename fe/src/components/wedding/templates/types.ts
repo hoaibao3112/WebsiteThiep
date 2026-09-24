@@ -1,4 +1,5 @@
 import { CardDetail, WeddingDataPayload } from "@/types/card.types";
+import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
 
 export interface WeddingTemplateProps {
   card: CardDetail;
@@ -11,4 +12,5 @@ export interface WeddingTemplateProps {
   onOpenGift: () => void;
   onSelectPhoto: (url: string) => void;
   isPreview?: boolean;
+  scene?: WeddingSceneDocument;
 }

@@ -13,20 +13,8 @@ import { LanguageSwitcher } from "../shared/LanguageSwitcher";
 import { getMonogram } from "@/lib/guest/monogram";
 import { getTemplateConfig } from "@/lib/editor/template-config";
 import { X } from "lucide-react";
-
-// IMPORT 9 TEMPLATES ĐỘC BẢN
-import {
-  WeddingTemplateProps,
-  Template01Heritage,
-  Template02ModernMagazine,
-  Template03SweetRomance,
-  Template04CrimsonMarsala,
-  Template05ForestBotanical,
-  Template06PureLotus,
-  Template07Cinematic,
-  Template08AlpineLake,
-  Template09ImperialDragon,
-} from "./templates";
+import { getWeddingScene } from "@/lib/editor/wedding-scene";
+import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
 
 interface WeddingViewProps {
   card: CardDetail;
@@ -100,55 +88,25 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   const effectiveSlug = templateSlug || card.template?.slug;
   const config = getTemplateConfig(effectiveSlug, "WEDDING");
   const variant = config?.variant || "wedding-heritage-crimson-gold";
+  const scene = getWeddingScene(card);
 
   const groomShortName = data.groom?.shortName || data.groom?.fullName || "Chú rể";
   const brideShortName = data.bride?.shortName || data.bride?.fullName || "Cô dâu";
 
-  const templateProps: WeddingTemplateProps = {
-    card,
-    data,
-    primaryColor,
-    guestName: activeGuestName,
-    guestPhone,
-    isVipExperience,
-    onOpenRsvp: () => setShowRsvp(true),
-    onOpenGift: () => setShowGift(true),
-    onSelectPhoto: (url: string) => setSelectedPhoto(url),
-    isPreview,
-  };
-
-  const renderTemplate = () => {
-    switch (variant) {
-      case "wedding-heritage-crimson-gold":
-      case "minimalist-gold":
-        return <Template01Heritage {...templateProps} />;
-      case "wedding-modern-editorial-magazine":
-        return <Template02ModernMagazine {...templateProps} />;
-      case "wedding-sweet-editorial-romance":
-      case "hong-xanh-luxury":
-        return <Template03SweetRomance {...templateProps} />;
-      case "wedding-crimson-wine-marsala":
-        return <Template04CrimsonMarsala {...templateProps} />;
-      case "wedding-forest-green-botanical":
-        return <Template05ForestBotanical {...templateProps} />;
-      case "wedding-pure-lotus-heritage":
-        return <Template06PureLotus {...templateProps} />;
-      case "wedding-cinematic-editorial":
-        return <Template07Cinematic {...templateProps} />;
-      case "wedding-alpine-lake-romance":
-        return <Template08AlpineLake {...templateProps} />;
-      case "wedding-imperial-dragon-crimson":
-        return <Template09ImperialDragon {...templateProps} />;
-      default:
-        return <Template01Heritage {...templateProps} />;
-    }
-  };
-
   return (
     <div
       data-template-variant={variant}
+        data-scene-template={scene?.templateSlug}
       className={`relative min-h-screen font-sans ${isPreview ? "overflow-hidden" : "overflow-x-hidden"} selection:bg-amber-200`}
-      style={{ fontFamily: card.fontFamily || config?.defaultFontFamily || "inherit" }}
+      style={{
+        fontFamily: card.fontFamily || scene?.tokens.bodyFont || config?.defaultFontFamily || "inherit",
+        backgroundColor: scene?.background.color || "#fffdf8",
+        "--wedding-scene-primary": scene?.tokens.primary || primaryColor,
+        "--wedding-scene-secondary": scene?.tokens.secondary || "#f4e8d0",
+        "--wedding-scene-accent": scene?.tokens.accent || "#c9a45c",
+        "--wedding-scene-surface": scene?.tokens.surface || "#fffdf8",
+        "--wedding-scene-text": scene?.tokens.text || "#2e1b1b",
+      } as React.CSSProperties}
     >
       {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN / MÀN KÉO SANG 2 BÊN */}
       {shouldShowOpening && (
@@ -182,45 +140,16 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
       {/* 4. RENDER TEMPLATE GIAO DIỆN TƯƠNG ỨNG */}
       <div className="relative">
-        {renderTemplate()}
-        {!isPreview && Array.isArray((card.categoryData as any)?.canvasElements) && (
-          (card.categoryData as any).canvasElements.map((el: any) => (
-            <div
-              key={el.id}
-              style={{
-                position: "absolute",
-                left: `${el.x}px`,
-                top: `${el.y}px`,
-                width: `${el.width}px`,
-                height: `${el.height}px`,
-                zIndex: el.zIndex || 10,
-                opacity: el.opacity ?? 1,
-                fontFamily: el.fontFamily,
-                fontSize: `${el.fontSize || 28}px`,
-                color: el.color || "#000000",
-                backgroundColor: el.backgroundColor || "transparent",
-                textAlign: el.textAlign || "center",
-                fontWeight: el.isBold ? "bold" : "normal",
-                fontStyle: el.isItalic ? "italic" : "normal",
-                textDecoration: [
-                  el.isUnderline ? "underline" : "",
-                  el.isStrike ? "line-through" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ") || "none",
-                textTransform: el.isUppercase ? "uppercase" : "none",
-                borderRadius: el.borderRadius ? `${el.borderRadius}px` : undefined,
-                borderWidth: el.borderWidth ? `${el.borderWidth}px` : undefined,
-                borderColor: el.borderColor || undefined,
-                boxShadow: el.shadow || undefined,
-                pointerEvents: "none",
-              }}
-              className="flex items-center justify-center p-1"
-            >
-              <span className="w-full break-words leading-tight">{el.content}</span>
-            </div>
-          ))
-        )}
+        {scene ? <WeddingSceneRenderer
+          card={card}
+          data={data}
+          scene={scene}
+          guestName={activeGuestName}
+          onOpenRsvp={() => setShowRsvp(true)}
+          onOpenGift={() => setShowGift(true)}
+          onSelectPhoto={(url) => setSelectedPhoto(url)}
+          isPreview={isPreview}
+        /> : <div className="mx-auto min-h-[60vh] max-w-md p-8 text-center" role="status">Thiệp này chưa có cấu hình thiết kế từ máy chủ.</div>}
       </div>
 
       {/* 5. MODAL FORM RSVP XÁC NHẬN THAM DỰ */}

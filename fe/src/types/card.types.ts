@@ -23,7 +23,7 @@ export interface PhotoItem {
   isCover?: boolean;
 }
 
-export interface WeddingDataPayload {
+export interface WeddingDataPayload extends CanvasCategoryData {
   cardCategory: "WEDDING";
   heroSubtitle?: string;
   invitationTitle?: string;
@@ -69,7 +69,7 @@ export interface WeddingDataPayload {
   events?: EventItem[];
 }
 
-export interface BirthdayDataPayload {
+export interface BirthdayDataPayload extends CanvasCategoryData {
   cardCategory: "BIRTHDAY";
   celebrantName: string;
   avatarUrl?: string;
@@ -81,7 +81,7 @@ export interface BirthdayDataPayload {
   events?: EventItem[];
 }
 
-export interface NewbornDataPayload {
+export interface NewbornDataPayload extends CanvasCategoryData {
   cardCategory: "NEWBORN";
   babyName: string;
   nickname?: string;
@@ -104,6 +104,22 @@ export type CategoryDataPayload =
   | WeddingDataPayload
   | BirthdayDataPayload
   | NewbornDataPayload;
+
+export interface CanvasCategoryData {
+  canvasDocument?: import("./wedding-scene.types").WeddingSceneDocument;
+  canvasElements?: import("./canvas.types").CanvasElement[];
+  fieldPositions?: Record<string, { x: number; y: number }>;
+  fieldScales?: Record<string, number>;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  canvasBackgroundColor?: string;
+  canvasBackgroundPattern?: "none" | "flower-small" | "flower-large";
+  canvas?: { width?: number; height?: number; backgroundColor?: string; backgroundPattern?: string; fallingEffect?: string; elements?: import("./canvas.types").CanvasElement[]; [key: string]: unknown };
+  showBottomToolbar?: boolean;
+  showWishButton?: boolean;
+  showGiftQR?: boolean;
+  showRSVP?: boolean;
+}
 
 export interface CardDetail {
   id: string;

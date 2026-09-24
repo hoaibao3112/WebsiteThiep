@@ -1,86 +1,26 @@
 "use client";
-
-import React from "react";
-import { Clock, MapPin, QrCode, Video, ToggleLeft, ToggleRight } from "lucide-react";
+import { CalendarDays, Timer, MapPin, Phone, UserCheck, Images, UserRound, Gift, Mail } from "lucide-react";
 import { useEditor } from "../EditorContext";
+import type { WidgetType } from "@/types/canvas.types";
+
+const widgets = [
+  { type: "calendar", label: "Lịch", icon: CalendarDays },
+  { type: "countdown", label: "Đếm ngược", icon: Timer },
+  { type: "map", label: "Bản đồ", icon: MapPin },
+  { type: "contact", label: "Liên hệ", icon: Phone },
+  { type: "rsvp", label: "Xác nhận tham dự", icon: UserCheck },
+  { type: "album", label: "Album ảnh", icon: Images },
+  { type: "guest-name", label: "Tên khách mời", icon: UserRound },
+  { type: "gift", label: "QR Box", icon: Gift },
+  { type: "envelope", label: "Hiệu ứng phong bì thư", icon: Mail },
+] satisfies Array<{ type: WidgetType; label: string; icon: typeof CalendarDays }>;
 
 export function WidgetTool() {
-  const { showWishButton, setShowWishButton, showGiftQR, setShowGiftQR, showRSVP, setShowRSVP } = useEditor();
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
-          Tiện Ích Tương Tác
-        </h3>
-        <p className="text-[11px] text-stone-400">
-          Các tiện ích tích hợp trên thiệp để tăng trải nghiệm cho khách mời.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <div className="p-3 rounded-xl border border-stone-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Clock className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-stone-800">Đồng hồ đếm ngược</p>
-              <span className="text-[10px] text-stone-400">Đếm ngược đến ngày cưới</span>
-            </div>
-          </div>
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Tự động</span>
-        </div>
-
-        <div className="p-3 rounded-xl border border-stone-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <MapPin className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-stone-800">Bản đồ chỉ đường</p>
-              <span className="text-[10px] text-stone-400">Google Maps tới nhà hàng</span>
-            </div>
-          </div>
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Bật</span>
-        </div>
-
-        <div className="p-3 rounded-xl border border-stone-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-              <QrCode className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-stone-800">Mã QR Mừng Cưới</p>
-              <span className="text-[10px] text-stone-400">Mở popup VietQR chuyển khoản</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowGiftQR((v) => !v)}
-            className="text-stone-700 cursor-pointer"
-          >
-            {showGiftQR ? (
-              <ToggleRight className="size-6 text-amber-600" />
-            ) : (
-              <ToggleLeft className="size-6 text-stone-300" />
-            )}
-          </button>
-        </div>
-
-        <div className="p-3 rounded-xl border border-stone-200 bg-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Video className="size-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-stone-800">Video Pre-wedding</p>
-              <span className="text-[10px] text-stone-400">Chèn link YouTube / TikTok</span>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold text-stone-400">Sắp ra mắt</span>
-        </div>
-      </div>
+  const { addWidgetElement } = useEditor();
+  return <div className="flex flex-col gap-4">
+    <p className="text-xs text-stone-500">Chọn tiện ích để thêm vào thiệp, sau đó chỉnh nội dung ở bảng thuộc tính.</p>
+    <div className="grid grid-cols-2 gap-2">
+      {widgets.map(({ type, label, icon: Icon }) => <button key={type} type="button" onClick={() => addWidgetElement(type)} className="flex min-h-24 flex-col items-center justify-center gap-3 rounded-lg border border-stone-200 bg-white p-3 text-xs text-stone-700 hover:border-stone-400 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2"><Icon className="size-5" /><span>{label}</span></button>)}
     </div>
-  );
+  </div>;
 }

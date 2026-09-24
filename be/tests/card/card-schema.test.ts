@@ -32,6 +32,27 @@ describe("DraftCardSchema", () => {
     const invalid = { ...draftInput, photos: [{ url: "blob:http://localhost/photo" }] };
     expect(DraftCardSchema.safeParse(invalid).success).toBe(false);
   });
+
+  it("rejects scene elements with unsupported widget types", () => {
+    const invalid = {
+      ...draftInput,
+      data: {
+        ...draftInput.data,
+        canvasDocument: {
+          schemaVersion: 1,
+          templateSlug: "wedding-heritage-crimson-gold",
+          width: 390,
+          height: 1200,
+          background: { color: "#ffffff" },
+          tokens: { primary: "#111111", secondary: "#eeeeee", accent: "#aaaaaa", surface: "#ffffff", text: "#111111", headingFont: "Inter", bodyFont: "Inter", radius: "md", density: "comfortable" },
+          sections: [],
+          elements: [{ id: "bad-widget", type: "widget", widgetType: "run-any-code", content: "", x: 0, y: 0, width: 100, height: 100, zIndex: 1 }],
+          bindings: {},
+        },
+      },
+    };
+    expect(DraftCardSchema.safeParse(invalid).success).toBe(false);
+  });
 });
 
 describe("PublishCardDataSchema", () => {

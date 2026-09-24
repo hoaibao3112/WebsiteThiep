@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useCallback } from "react";
+import React, { useState, Suspense, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload, PhotoItem } from "@/types/card.types";
@@ -13,6 +13,7 @@ import { VisualCardEditor } from "@/components/editor/VisualCardEditor";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyProfileModal";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
+import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import {
@@ -114,6 +115,7 @@ function CardBuilderContent() {
 
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [templateSlug, setTemplateSlug] = useState<string>(initialTemplate);
+  const [weddingScene, setWeddingScene] = useState<WeddingSceneDocument | null>(null);
   const [slug, setSlug] = useState(`thiep-${Math.floor(100000 + Math.random() * 900000)}`);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -165,6 +167,23 @@ function CardBuilderContent() {
           { id: "p-3", url: "/images/demo/couple-aodai.png", caption: "Lễ Gia Tiên truyền thống" },
         ]
   );
+
+  useEffect(() => {
+    if (category !== "WEDDING") {
+      setWeddingScene(null);
+      return;
+    }
+    let cancelled = false;
+    setWeddingScene(null);
+    ApiClient.request<WeddingSceneDocument>(`/templates/${encodeURIComponent(templateSlug)}/wedding-scene`)
+      .then((result) => {
+        if (!cancelled) setWeddingScene(result.success ? result.data ?? null : null);
+      })
+      .catch(() => {
+        if (!cancelled) setWeddingScene(null);
+      });
+    return () => { cancelled = true; };
+  }, [category, templateSlug]);
   const [showQuickFill, setShowQuickFill] = useState(true);
 
   const handleApplyQuickFill = useCallback((data: QuickFillData) => {
@@ -474,12 +493,12 @@ function CardBuilderContent() {
         ? (birthdayData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) }))
         : (newbornData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
     photos: customPhotos,
-    categoryData:
-      category === "WEDDING"
-        ? weddingData
-        : category === "BIRTHDAY"
-        ? birthdayData
-        : newbornData,
+    categoryData: {
+      ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
+      ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
+      canvasWidth: 390,
+      canvasHeight: (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
+    } as CardDetail["categoryData"],
   };
 
   // Xử lý khi người dùng chỉnh sửa trên Visual Card Editor
@@ -544,6 +563,10 @@ function CardBuilderContent() {
           isCover: p.isCover ?? idx === 0,
         }));
 
+      const payloadData = category === "WEDDING"
+        ? { ...weddingData, canvasWidth: 390, canvasHeight: weddingData.canvasHeight ?? 1200 }
+        : { ...(category === "BIRTHDAY" ? birthdayData : newbornData), canvasWidth: 390, canvasHeight: (category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200 };
+
       const payload = {
         slug,
         templateSlug,
@@ -556,12 +579,7 @@ function CardBuilderContent() {
         greetingMessage,
         photos: activePhotos,
         events: activeEvents,
-        data:
-          category === "WEDDING"
-            ? weddingData
-            : category === "BIRTHDAY"
-            ? birthdayData
-            : newbornData,
+        data: payloadData,
       };
 
       const res = await ApiClient.request<{ id: string; slug: string }>("/cards", {
@@ -753,7 +771,6 @@ function CardBuilderContent() {
           templateSlug={templateSlug}
           draft={previewCard}
           onDraftChange={handleVisualDraftChange}
-          onSave={handlePublish}
           isVip={false}
           showTopBar={false}
         >
