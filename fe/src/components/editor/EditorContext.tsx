@@ -955,6 +955,150 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
+      } else if (item.id === "p-song-hy-red") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-song-hy-red",
+          title: "Thiệp Song Hỷ Đỏ Á Đông",
+          content: "song-hy-red",
+          x: pos?.x ?? 40,
+          y: pos?.y ?? 200,
+          width: 310,
+          height: 290,
+          borderRadius: 20,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-dress-code") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-dress-code",
+          title: "Quy định trang phục (Dress Code)",
+          content: "dress-code",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 240,
+          width: 300,
+          height: 160,
+          borderRadius: 16,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-venue-map") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-venue-map",
+          title: "Địa điểm tiệc cưới & Chỉ đường",
+          content: "venue-map",
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 220,
+          width: 320,
+          height: 170,
+          borderRadius: 18,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-wedding-menu") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-wedding-menu",
+          title: "Thực đơn bàn tiệc cưới cao cấp",
+          content: "wedding-menu",
+          x: pos?.x ?? 40,
+          y: pos?.y ?? 210,
+          width: 310,
+          height: 260,
+          borderRadius: 18,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-wedding-countdown") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-wedding-countdown",
+          title: "Đếm ngược khoảnh khắc cưới",
+          content: "countdown",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 230,
+          width: 300,
+          height: 160,
+          borderRadius: 16,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-rings-vow") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-rings-vow",
+          title: "Cặp nhẫn cưới & Lời hẹn ước",
+          content: "rings-vow",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 240,
+          width: 300,
+          height: 170,
+          borderRadius: 18,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-thank-you-note") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-thank-you-note",
+          title: "Thư cảm ơn quan khách trân quý",
+          content: "thank-you",
+          x: pos?.x ?? 45,
+          y: pos?.y ?? 250,
+          width: 300,
+          height: 160,
+          borderRadius: 16,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-polaroid-washi") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-polaroid-washi",
+          title: "Polaroid dán băng Washi Vintage",
+          content: "polaroid-washi",
+          imageUrl: (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80",
+          x: pos?.x ?? 60,
+          y: pos?.y ?? 210,
+          width: 270,
+          height: 290,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-le-thanh-hon") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-le-thanh-hon",
+          title: "Lễ Thành Hôn & Lễ Vu Quy",
+          content: "le-thanh-hon",
+          x: pos?.x ?? 40,
+          y: pos?.y ?? 220,
+          width: 310,
+          height: 180,
+          borderRadius: 16,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
       } else {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

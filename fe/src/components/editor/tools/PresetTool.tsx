@@ -9,7 +9,30 @@ interface PresetItem {
   title: string;
   cat: "photo" | "info" | "timeline" | "invite" | "other";
   desc: string;
-  previewType: "envelope-pink" | "envelope-green" | "invitation" | "calendar" | "parents" | "arch" | "duo" | "timeline" | "qr" | "quote" | "carnation" | "wax-seal" | "mini-bouquet" | "gold-divider";
+  previewType:
+    | "envelope-pink"
+    | "envelope-green"
+    | "invitation"
+    | "calendar"
+    | "parents"
+    | "arch"
+    | "duo"
+    | "timeline"
+    | "qr"
+    | "quote"
+    | "carnation"
+    | "wax-seal"
+    | "mini-bouquet"
+    | "gold-divider"
+    | "song-hy-red"
+    | "dress-code"
+    | "venue-map"
+    | "rings-vow"
+    | "countdown"
+    | "wedding-menu"
+    | "thank-you"
+    | "polaroid-washi"
+    | "le-thanh-hon";
 }
 
 const PRESET_CATALOG: PresetItem[] = [
@@ -28,11 +51,53 @@ const PRESET_CATALOG: PresetItem[] = [
     previewType: "envelope-green",
   },
   {
+    id: "p-song-hy-red",
+    title: "Thiệp Song Hỷ Đỏ Á Đông",
+    cat: "invite",
+    desc: "Họa tiết Song Hỷ mạ vàng, truyền thống trang trọng",
+    previewType: "song-hy-red",
+  },
+  {
     id: "p-wedding-typography",
     title: "Thư mời WEDDING typography",
     cat: "invite",
     desc: "Bố cục chữ thư pháp cổ điển sang trọng",
     previewType: "invitation",
+  },
+  {
+    id: "p-le-thanh-hon",
+    title: "Lễ Thành Hôn & Lễ Vu Quy",
+    cat: "invite",
+    desc: "Khung thông báo giờ lành rước dâu và khai tiệc hai họ",
+    previewType: "le-thanh-hon",
+  },
+  {
+    id: "p-dress-code",
+    title: "Quy định trang phục (Dress Code)",
+    cat: "info",
+    desc: "Bảng gợi ý tông màu trang phục cho khách mời dự tiệc",
+    previewType: "dress-code",
+  },
+  {
+    id: "p-venue-map",
+    title: "Địa điểm tiệc cưới & Chỉ đường",
+    cat: "info",
+    desc: "Sảnh tiệc, địa chỉ chi tiết kèm QR quét Google Maps",
+    previewType: "venue-map",
+  },
+  {
+    id: "p-wedding-menu",
+    title: "Thực đơn bàn tiệc cưới cao cấp",
+    cat: "info",
+    desc: "Bảng thực đơn 5 món tao nhã thiết đãi quan khách",
+    previewType: "wedding-menu",
+  },
+  {
+    id: "p-parents-info",
+    title: "Hôn phối hai họ Nhà Trai - Nhà Gái",
+    cat: "info",
+    desc: "Thông tin song thân hai họ trang trọng",
+    previewType: "parents",
   },
   {
     id: "p-calendar-countdown",
@@ -42,11 +107,18 @@ const PRESET_CATALOG: PresetItem[] = [
     previewType: "calendar",
   },
   {
-    id: "p-parents-info",
-    title: "Hôn phối hai họ Nhà Trai - Nhà Gái",
-    cat: "info",
-    desc: "Thông tin song thân hai họ trang trọng",
-    previewType: "parents",
+    id: "p-wedding-countdown",
+    title: "Đếm ngược khoảnh khắc cưới",
+    cat: "timeline",
+    desc: "Đồng hồ đếm ngược Ngày - Giờ - Phút - Giây hạnh phúc",
+    previewType: "countdown",
+  },
+  {
+    id: "p-timeline-flow",
+    title: "Lịch trình tiệc cưới chi tiết",
+    cat: "timeline",
+    desc: "Mốc thời gian đón khách, làm lễ, khai tiệc",
+    previewType: "timeline",
   },
   {
     id: "p-arch-portrait",
@@ -63,11 +135,25 @@ const PRESET_CATALOG: PresetItem[] = [
     previewType: "duo",
   },
   {
-    id: "p-timeline-flow",
-    title: "Lịch trình tiệc cưới chi tiết",
-    cat: "timeline",
-    desc: "Mốc thời gian đón khách, làm lễ, khai tiệc",
-    previewType: "timeline",
+    id: "p-polaroid-washi",
+    title: "Polaroid dán băng Washi Vintage",
+    cat: "photo",
+    desc: "Khung ảnh cưới dán băng keo thủ công kẹp hoa baby",
+    previewType: "polaroid-washi",
+  },
+  {
+    id: "p-rings-vow",
+    title: "Cặp nhẫn cưới & Lời hẹn ước",
+    cat: "other",
+    desc: "Nhẫn cưới vàng kim lấp lánh kèm lời thề trăm năm",
+    previewType: "rings-vow",
+  },
+  {
+    id: "p-thank-you-note",
+    title: "Thư cảm ơn quan khách trân quý",
+    cat: "other",
+    desc: "Lời tri ân chân thành từ Cô dâu & Chú rể",
+    previewType: "thank-you",
   },
   {
     id: "p-banking-qr",
@@ -88,28 +174,28 @@ const PRESET_CATALOG: PresetItem[] = [
     title: "Cành cẩm chướng nơ đỏ",
     cat: "other",
     desc: "Hoa cẩm chướng gắn nơ đỏ duyên dáng trang trí thiệp",
-    previewType: "carnation" as any,
+    previewType: "carnation",
   },
   {
     id: "p-wax-seal",
     title: "Con dấu sáp hồng niêm phong",
     cat: "other",
     desc: "Dấu sáp ML đính nắp phong bì hoàng gia",
-    previewType: "wax-seal" as any,
+    previewType: "wax-seal",
   },
   {
     id: "p-mini-bouquet",
     title: "Bó hoa cưới mini pastel",
     cat: "other",
     desc: "Bó hoa mini thắt ruy băng trang nhã",
-    previewType: "mini-bouquet" as any,
+    previewType: "mini-bouquet",
   },
   {
     id: "p-gold-divider",
     title: "Thanh chỉ vàng kim loại",
     cat: "other",
     desc: "Đường kẻ vàng sang trọng phân tách bố cục",
-    previewType: "gold-divider" as any,
+    previewType: "gold-divider",
   },
 ];
 
@@ -352,6 +438,138 @@ export function PresetTool() {
         return (
           <div className="w-full h-28 bg-[#FAF8F5] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-4 border border-stone-200 shadow-2xs">
             <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent shadow-2xs" />
+          </div>
+        );
+
+      case "song-hy-red":
+        return (
+          <div className="w-full h-28 bg-gradient-to-br from-[#9E1B28] to-[#78101C] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2.5 border border-amber-400/50 shadow-2xs text-center text-amber-200">
+            <div className="text-xl font-bold font-serif text-amber-300 drop-shadow-sm">囍</div>
+            <span className="text-[8px] font-serif uppercase tracking-widest text-amber-200/90 font-bold mt-0.5">TRĂM NĂM HẠNH PHÚC</span>
+            <div className="w-10 h-[1px] bg-amber-400/60 my-1" />
+            <span className="text-[7px] text-amber-100/80 font-serif">LỄ THÀNH HÔN</span>
+          </div>
+        );
+
+      case "dress-code":
+        return (
+          <div className="w-full h-28 bg-[#FAF9F5] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2 border border-stone-200 shadow-2xs text-center">
+            <span className="text-[8px] font-serif font-bold text-stone-800 uppercase tracking-wider">DRESS CODE</span>
+            <span className="text-[6.5px] text-stone-500 mb-1.5">Tông màu trang phục dự tiệc</span>
+            <div className="flex items-center gap-1.5">
+              <span className="size-4 rounded-full bg-[#FFFFFF] border border-stone-300 shadow-2xs" title="Trắng" />
+              <span className="size-4 rounded-full bg-[#F5E6D3] border border-stone-300 shadow-2xs" title="Beige" />
+              <span className="size-4 rounded-full bg-[#FBCFE8] border border-pink-200 shadow-2xs" title="Hồng Pastel" />
+              <span className="size-4 rounded-full bg-[#D1FAE5] border border-emerald-200 shadow-2xs" title="Mint" />
+              <span className="size-4 rounded-full bg-[#78350F] border border-amber-900 shadow-2xs" title="Nâu đất" />
+            </div>
+          </div>
+        );
+
+      case "venue-map":
+        return (
+          <div className="w-full h-28 bg-[#FDFBF7] rounded-xl relative overflow-hidden flex items-center justify-center gap-2 p-2 border border-amber-200/80 shadow-2xs">
+            <div className="flex-1 text-left">
+              <span className="text-[6px] font-mono text-amber-800 bg-amber-100 px-1 py-0.5 rounded font-bold">TRUNG TÂM TIỆC CƯỚI</span>
+              <span className="text-[8.5px] font-serif font-bold text-stone-800 block mt-1 truncate">White Palace Hall A</span>
+              <span className="text-[6.5px] text-stone-500 block truncate">194 Hoàng Văn Thụ, TP.HCM</span>
+            </div>
+            <div className="size-14 bg-white border border-stone-200 rounded-lg p-1 flex flex-col items-center justify-center shrink-0 shadow-2xs">
+              <div className="size-9 bg-stone-900 rounded-xs flex items-center justify-center text-white text-[7px] font-bold">MAP</div>
+              <span className="text-[5.5px] text-stone-500 mt-0.5">CHỈ ĐƯỜNG</span>
+            </div>
+          </div>
+        );
+
+      case "wedding-menu":
+        return (
+          <div className="w-full h-28 bg-[#FCFAF6] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2 border border-amber-200/80 shadow-2xs text-center">
+            <span className="text-[8px] font-serif font-bold text-amber-900 uppercase tracking-widest">WEDDING MENU</span>
+            <div className="w-6 h-[1px] bg-amber-300 my-0.5" />
+            <div className="text-[6.5px] text-stone-600 font-serif space-y-0.5 leading-tight">
+              <p>• Súp bào ngư vi cá</p>
+              <p>• Bò Úc sốt tiêu đen</p>
+              <p>• Cá chẽm hấp Hồng Kông</p>
+              <p>• Chè hạt sen nhãn nhục</p>
+            </div>
+          </div>
+        );
+
+      case "countdown":
+        return (
+          <div className="w-full h-28 bg-gradient-to-b from-[#FFFDF9] to-[#FDF8EE] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2 border border-amber-200 shadow-2xs text-center">
+            <span className="text-[7.5px] font-serif uppercase tracking-widest text-amber-800 font-bold mb-1">CÙNG ĐẾM NGƯỢC</span>
+            <div className="grid grid-cols-4 gap-1 text-center">
+              <div className="bg-white border border-amber-100 rounded px-1 py-0.5 shadow-2xs">
+                <span className="text-[10px] font-bold text-stone-800 font-mono block">28</span>
+                <span className="text-[5.5px] text-stone-400">NGÀY</span>
+              </div>
+              <div className="bg-white border border-amber-100 rounded px-1 py-0.5 shadow-2xs">
+                <span className="text-[10px] font-bold text-stone-800 font-mono block">14</span>
+                <span className="text-[5.5px] text-stone-400">GIỜ</span>
+              </div>
+              <div className="bg-white border border-amber-100 rounded px-1 py-0.5 shadow-2xs">
+                <span className="text-[10px] font-bold text-stone-800 font-mono block">35</span>
+                <span className="text-[5.5px] text-stone-400">PHÚT</span>
+              </div>
+              <div className="bg-white border border-amber-100 rounded px-1 py-0.5 shadow-2xs">
+                <span className="text-[10px] font-bold text-rose-600 font-mono block animate-pulse">59</span>
+                <span className="text-[5.5px] text-stone-400">GIÂY</span>
+              </div>
+            </div>
+          </div>
+        );
+
+      case "rings-vow":
+        return (
+          <div className="w-full h-28 bg-[#FAF7F2] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2 border border-amber-200/80 shadow-2xs text-center">
+            <div className="flex items-center justify-center gap-1 text-base text-amber-500 mb-0.5">
+              💍✨
+            </div>
+            <span className="text-[8px] font-serif italic font-bold text-stone-800">Lời Thề Nguyện Trăm Năm</span>
+            <p className="text-[6.5px] font-serif text-stone-500 italic mt-0.5 px-2 leading-tight">
+              “Từ hôm nay, ta cùng nhau đi đến trọn cuộc đời...”
+            </p>
+          </div>
+        );
+
+      case "thank-you":
+        return (
+          <div className="w-full h-28 bg-[#FFFBF8] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2.5 border border-pink-200/80 shadow-2xs text-center">
+            <Heart className="size-3.5 text-rose-500 fill-rose-500/20 mb-1" />
+            <span className="text-[8.5px] font-serif font-bold text-stone-800 uppercase tracking-wider">THANK YOU</span>
+            <p className="text-[6.5px] text-stone-500 mt-0.5 px-1 leading-snug">
+              Cảm ơn bạn đã đến chung vui và chúc phúc cùng chúng mình!
+            </p>
+          </div>
+        );
+
+      case "polaroid-washi":
+        return (
+          <div className="w-full h-28 bg-[#F7F5F0] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-stone-200 shadow-2xs">
+            <div className="w-18 bg-white p-1 pb-3 shadow-md rounded relative border border-stone-200 rotate-[-3deg]">
+              {/* Băng washi tape pastel */}
+              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-2.5 bg-amber-200/80 shadow-2xs rotate-[-2deg] rounded-xs" />
+              <div className="w-full h-12 bg-stone-100 rounded overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1519741497674-611481863552?w=150&auto=format&fit=crop&q=80"
+                  alt="Polaroid"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-[5.5px] font-serif text-center block text-stone-600 mt-1 font-semibold">Our Moment</span>
+            </div>
+          </div>
+        );
+
+      case "le-thanh-hon":
+        return (
+          <div className="w-full h-28 bg-[#FAF6F4] rounded-xl relative overflow-hidden flex flex-col items-center justify-center p-2 border border-rose-200 shadow-2xs text-center">
+            <div className="text-[7px] font-serif font-bold text-rose-800 bg-rose-100/80 px-2 py-0.5 rounded-full uppercase tracking-wider">
+              LỄ THÀNH HÔN
+            </div>
+            <div className="text-[8.5px] font-serif font-bold text-stone-800 mt-1">11:00 • 18.12.2026</div>
+            <div className="text-[6.5px] text-stone-500 mt-0.5">Tư gia Nhà Trai / Khách sạn</div>
           </div>
         );
 

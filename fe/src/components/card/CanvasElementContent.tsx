@@ -5,6 +5,7 @@ import type { CanvasElement } from "@/types/canvas.types";
 import { readCanvasData } from "@/lib/editor/canvas-presentation";
 import { CanvasWidget } from "./CanvasWidget";
 
+import { Heart } from "lucide-react";
 import { STOCK_CATALOG } from "@/config/stock-catalog";
 
 export function ScaledPresetWrapper({
@@ -599,6 +600,276 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
             <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent shadow-xs" />
           </div>
+        );
+      }
+
+      // 15. Thiệp Song Hỷ Đỏ Á Đông (p-song-hy-red)
+      if (el.presetId === "p-song-hy-red" || el.content === "song-hy-red") {
+        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
+        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
+        return (
+          <ScaledPresetWrapper baseW={310} baseH={290} w={el.width} h={el.height}>
+            <div className="w-full h-full p-5 bg-gradient-to-br from-[#9B1C26] via-[#851620] to-[#690F17] rounded-3xl border-2 border-[#D4AF37]/80 shadow-xl flex flex-col items-center justify-between text-center pointer-events-none select-none text-[#FDF0D5] relative overflow-hidden">
+              {/* Pattern hoa văn góc hoàng gia */}
+              <div className="absolute top-2 left-2 size-8 border-t-2 border-l-2 border-[#D4AF37]/50 rounded-tl-lg" />
+              <div className="absolute top-2 right-2 size-8 border-t-2 border-r-2 border-[#D4AF37]/50 rounded-tr-lg" />
+              <div className="absolute bottom-2 left-2 size-8 border-b-2 border-l-2 border-[#D4AF37]/50 rounded-bl-lg" />
+              <div className="absolute bottom-2 right-2 size-8 border-b-2 border-r-2 border-[#D4AF37]/50 rounded-br-lg" />
+
+              <div className="flex items-center gap-2 w-full justify-center pt-1">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#D4AF37]/80" />
+                <span className="text-[10px] font-serif uppercase tracking-[0.3em] text-[#F3E5AB] font-bold">LỄ THÀNH HÔN</span>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#D4AF37]/80" />
+              </div>
+
+              <div className="my-auto flex flex-col items-center">
+                <div className="text-4xl font-bold font-serif text-[#FFD700] drop-shadow-[0_2px_10px_rgba(212,175,55,0.5)] leading-none mb-2">
+                  囍
+                </div>
+                <h3 className="font-serif text-lg font-bold text-white tracking-wide">
+                  {groom} <span className="text-[#FFD700] font-sans font-light">&</span> {bride}
+                </h3>
+                <p className="text-[10px] font-serif uppercase tracking-widest text-[#F3E5AB]/90 mt-1">
+                  TRĂM NĂM TÌNH VIÊN MÃN
+                </p>
+              </div>
+
+              <div className="w-full pt-2 border-t border-[#D4AF37]/30 flex items-center justify-between text-[9px] text-[#FDF0D5]/80 font-serif">
+                <span>DUYÊN NỢ BA SINH</span>
+                <span>HẠNH PHÚC TRỌN ĐỜI</span>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 16. Quy định trang phục Dress Code (p-dress-code)
+      if (el.presetId === "p-dress-code" || el.content === "dress-code") {
+        return (
+          <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col items-center justify-between pointer-events-none select-none text-center">
+              <div>
+                <span className="text-[11px] font-serif font-bold text-stone-900 tracking-wider uppercase block">
+                  DRESS CODE TIỆC CƯỚI
+                </span>
+                <span className="text-[9px] text-stone-500 block mt-0.5">
+                  Khuyến khích trang phục theo bảng màu để khung hình trọn vẹn nhất
+                </span>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 my-auto pt-1">
+                <div className="flex flex-col items-center gap-1">
+                  <span className="size-7 rounded-full bg-[#FFFFFF] border-2 border-stone-300 shadow-sm" />
+                  <span className="text-[8px] text-stone-600 font-medium">Trắng</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="size-7 rounded-full bg-[#F5E6D3] border-2 border-stone-300 shadow-sm" />
+                  <span className="text-[8px] text-stone-600 font-medium">Kem Be</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="size-7 rounded-full bg-[#FCE7F3] border-2 border-pink-200 shadow-sm" />
+                  <span className="text-[8px] text-stone-600 font-medium">Pastel</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="size-7 rounded-full bg-[#D1FAE5] border-2 border-emerald-200 shadow-sm" />
+                  <span className="text-[8px] text-stone-600 font-medium">Xanh Mint</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <span className="size-7 rounded-full bg-[#5C3D2E] border-2 border-amber-950 shadow-sm" />
+                  <span className="text-[8px] text-stone-600 font-medium">Nâu ấm</span>
+                </div>
+              </div>
+
+              <span className="text-[8.5px] font-serif italic text-amber-800">Cảm ơn quý khách đã đồng điệu cùng chúng mình!</span>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 17. Địa điểm sảnh tiệc & Bản đồ chỉ đường (p-venue-map)
+      if (el.presetId === "p-venue-map" || el.content === "venue-map") {
+        return (
+          <ScaledPresetWrapper baseW={320} baseH={170} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-[#FFFDF9] rounded-2xl border border-amber-200/90 shadow-md flex items-center justify-between gap-3 pointer-events-none select-none text-left">
+              <div className="flex-1 space-y-1">
+                <span className="text-[8px] font-mono font-bold text-amber-900 bg-amber-100/90 px-1.5 py-0.5 rounded">
+                  ĐỊA ĐIỂM TỔ CHỨC
+                </span>
+                <h4 className="text-xs font-serif font-bold text-stone-900 leading-tight">
+                  White Palace Convention Center
+                </h4>
+                <p className="text-[9.5px] font-medium text-amber-800">Sảnh Grand Hall • Tầng 2</p>
+                <p className="text-[8.5px] text-stone-500 leading-tight">
+                  194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh
+                </p>
+              </div>
+
+              <div className="size-22 bg-white border border-stone-200 rounded-xl p-1.5 shadow-xs flex flex-col items-center justify-center shrink-0 text-center">
+                <img
+                  src="https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=ChiDuong"
+                  alt="QR Map"
+                  className="w-14 h-14 object-contain"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/images/demo/qr-demo.png";
+                  }}
+                />
+                <span className="text-[7.5px] text-stone-600 font-semibold mt-1">QUÉT MỞ MAPS</span>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 18. Thực đơn tiệc cưới (p-wedding-menu)
+      if (el.presetId === "p-wedding-menu" || el.content === "wedding-menu") {
+        return (
+          <ScaledPresetWrapper baseW={310} baseH={260} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-[#FCFBF8] rounded-2xl border border-amber-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
+              <div className="border-b border-amber-200/80 w-full pb-1">
+                <span className="text-[10px] font-serif font-bold text-amber-900 tracking-[0.2em] uppercase block">
+                  THỰC ĐƠN TIỆC CƯỚI
+                </span>
+                <span className="text-[8px] font-mono text-stone-400">WEDDING BANQUET MENU</span>
+              </div>
+
+              <div className="my-auto space-y-1.5 text-stone-700 font-serif text-[10px] py-1">
+                <p className="font-semibold text-amber-950">1. Súp Bào Ngư Hải Sâm Vi Cá</p>
+                <p>2. Gỏi Củ Hủ Dừa Tôm Thịt Bánh Phồng</p>
+                <p>3. Thăn Bò Úc Sốt Tiêu Đen Kèm Bánh Mì</p>
+                <p>4. Cá Chẽm Hấp Tàu Xì Hồng Kông</p>
+                <p>5. Lẩu Hải Sản Nấm Thảo Mộc</p>
+                <p className="font-medium text-pink-700">6. Chè Hạt Sen Nhãn Nhục Tuyết Nhĩ</p>
+              </div>
+
+              <div className="w-full pt-1 border-t border-amber-100 text-[8px] font-serif italic text-stone-500">
+                Chúc quý khách một bữa tiệc ngon miệng và ấm cúng!
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 19. Đếm ngược khoảnh khắc hạnh phúc (p-wedding-countdown)
+      if (el.presetId === "p-wedding-countdown" || el.content === "countdown") {
+        return (
+          <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-gradient-to-b from-[#FFFDF9] to-[#FDF8EE] rounded-2xl border border-amber-200/90 shadow-md flex flex-col items-center justify-between pointer-events-none select-none text-center">
+              <div>
+                <span className="text-[10.5px] font-serif font-bold text-amber-900 uppercase tracking-widest block">
+                  CÙNG ĐẾM NGƯỢC THỜI GIAN
+                </span>
+                <span className="text-[8.5px] text-stone-500">Đến khoảnh khắc hai ta chung một nhà</span>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 w-full px-2 my-auto">
+                <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">28</span>
+                  <span className="text-[7px] text-stone-400 mt-1 font-semibold">NGÀY</span>
+                </div>
+                <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">14</span>
+                  <span className="text-[7px] text-stone-400 mt-1 font-semibold">GIỜ</span>
+                </div>
+                <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">35</span>
+                  <span className="text-[7px] text-stone-400 mt-1 font-semibold">PHÚT</span>
+                </div>
+                <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
+                  <span className="text-base font-bold text-rose-600 font-mono leading-none animate-pulse">59</span>
+                  <span className="text-[7px] text-stone-400 mt-1 font-semibold">GIÂY</span>
+                </div>
+              </div>
+
+              <span className="text-[8px] font-serif italic text-amber-800">Hẹn gặp bạn trong khoảnh khắc thiêng liêng nhất!</span>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 20. Cặp nhẫn cưới & Lời hẹn ước (p-rings-vow)
+      if (el.presetId === "p-rings-vow" || el.content === "rings-vow") {
+        return (
+          <ScaledPresetWrapper baseW={300} baseH={170} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-[#FAF7F2] rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
+              <div className="text-2xl drop-shadow-sm">💍✨💍</div>
+              <div className="my-auto">
+                <span className="text-xs font-serif font-bold text-stone-900 block">Lời Thề Nguyện Trăm Năm</span>
+                <p className="text-[10px] font-serif italic text-stone-700 leading-relaxed mt-1 px-1">
+                  “Từ hôm nay, ta cùng nhau đi đến trọn cuộc đời. Dù giông bão hay nắng ấm, tay vẫn nắm chặt tay.”
+                </p>
+              </div>
+              <span className="text-[8px] font-mono tracking-widest text-amber-800/80 uppercase">FOREVER & ALWAYS</span>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 21. Thư cảm ơn khách mời (p-thank-you-note)
+      if (el.presetId === "p-thank-you-note" || el.content === "thank-you") {
+        return (
+          <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-[#FFFBF8] rounded-2xl border border-pink-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
+              <div className="size-7 rounded-full bg-pink-100 flex items-center justify-center text-rose-500 mb-0.5">
+                <Heart className="size-4 fill-rose-500" />
+              </div>
+              <div className="my-auto">
+                <span className="text-xs font-serif font-bold text-stone-900 uppercase tracking-wider block">
+                  THANK YOU FOR COMING
+                </span>
+                <p className="text-[9.5px] text-stone-600 leading-relaxed mt-1 px-1">
+                  Sự hiện diện và lời chúc phúc của quý khách là món quà quý giá nhất đối với chúng mình trong ngày trọng đại.
+                </p>
+              </div>
+              <span className="text-[8.5px] font-serif italic text-pink-700 font-medium">With Love • Dâu & Rể</span>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 22. Polaroid dán băng Washi (p-polaroid-washi)
+      if (el.presetId === "p-polaroid-washi" || el.content === "polaroid-washi") {
+        const photoUrl = el.imageUrl || (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80";
+        return (
+          <ScaledPresetWrapper baseW={270} baseH={290} w={el.width} h={el.height}>
+            <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+              <div className="w-[88%] bg-white p-2.5 pb-6 shadow-xl rounded-md relative border border-stone-200 -rotate-2">
+                {/* Băng washi tape pastel mờ dán phía trên */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-20 h-5 bg-[#FDE68A]/85 backdrop-blur-2xs shadow-xs rotate-[-2deg] rounded-xs border-t border-b border-amber-300/40 z-20" />
+                <div className="w-full h-44 bg-stone-100 rounded overflow-hidden">
+                  <img
+                    src={photoUrl}
+                    alt="Polaroid Memory"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="pt-2 text-center">
+                  <span className="text-[10px] font-serif font-bold text-stone-800 tracking-wider block">Khoảnh Khắc Hạnh Phúc</span>
+                  <span className="text-[8px] font-mono text-stone-400">Sweet Memories</span>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 23. Lễ Thành Hôn / Vu Quy (p-le-thanh-hon)
+      if (el.presetId === "p-le-thanh-hon" || el.content === "le-thanh-hon") {
+        return (
+          <ScaledPresetWrapper baseW={310} baseH={180} w={el.width} h={el.height}>
+            <div className="w-full h-full p-4 bg-[#FAF6F4] rounded-2xl border border-rose-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
+              <div className="inline-block bg-rose-100/90 text-rose-800 text-[10px] font-serif font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
+                LỄ THÀNH HÔN & NHẬP TIỆC
+              </div>
+              <div className="my-auto space-y-0.5">
+                <span className="text-base font-serif font-bold text-stone-900 block">11:00 • 18 Tháng 12, 2026</span>
+                <span className="text-[9.5px] text-stone-600 block">(Nhằm ngày 10 tháng 11 năm Bính Ngọ)</span>
+                <span className="text-[9px] text-rose-800 font-medium block mt-1">Tại: Tư Gia Nhà Trai / Khách Sạn Melia</span>
+              </div>
+              <div className="w-full pt-1 border-t border-rose-100 text-[8.5px] font-serif italic text-stone-500">
+                Hân hạnh được đón tiếp quý khách!
+              </div>
+            </div>
+          </ScaledPresetWrapper>
         );
       }
 

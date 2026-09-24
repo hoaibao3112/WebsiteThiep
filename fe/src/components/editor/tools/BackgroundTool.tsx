@@ -33,12 +33,18 @@ const PATTERNS = [
 ] as const;
 
 const FALLING_EFFECTS = [
-  { id: "none", label: "Không" },
-  { id: "cherry-blossom", label: "Hoa anh đào" },
-  { id: "snow", label: "Tuyết" },
-  { id: "falling-leaves", label: "Lá rụng" },
-  { id: "apricot", label: "Hoa mai" },
-  { id: "hydrangea", label: "Hoa tú cầu" },
+  { id: "none", label: "Tắt", icon: "🚫", desc: "Không dùng hiệu ứng" },
+  { id: "rose-petals", label: "Hoa hồng", icon: "🌹", desc: "Cánh hoa hồng đỏ lãng mạn" },
+  { id: "cherry-blossom", label: "Anh đào", icon: "🌸", desc: "Hoa anh đào bay nhẹ nhàng" },
+  { id: "gold-sparkle", label: "Kim tuyến", icon: "✨", desc: "Kim tuyến vàng lấp lánh" },
+  { id: "floating-hearts", label: "Trái tim", icon: "💖", desc: "Trái tim hồng bay bổng" },
+  { id: "snow", label: "Tuyết rơi", icon: "❄️", desc: "Bông tuyết trắng tinh khôi" },
+  { id: "dandelion", label: "Bồ công anh", icon: "🌾", desc: "Cánh bồ công anh trong gió" },
+  { id: "fireflies", label: "Đom đóm", icon: "🌟", desc: "Đom đóm đêm lung linh" },
+  { id: "confetti", label: "Pháo hoa", icon: "🎉", desc: "Pháo hoa giấy lễ đường" },
+  { id: "apricot", label: "Hoa mai", icon: "🌼", desc: "Hoa mai vàng ngày cưới" },
+  { id: "falling-leaves", label: "Lá thu", icon: "🍂", desc: "Lá phong vàng mùa thu" },
+  { id: "hydrangea", label: "Hoa tú cầu", icon: "🪻", desc: "Cánh hoa tú cầu tím biếc" },
 ] as const;
 
 // Thư viện ảnh nền có sẵn tuyển chọn tối ưu dung lượng và trang nhã
@@ -308,11 +314,23 @@ export function BackgroundTool() {
             </div>
           </div>
 
-          {/* 4. HIỆU ỨNG NỀN */}
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-stone-700 block">
-              Hiệu ứng nền
-            </span>
+          {/* 4. HIỆU ỨNG NỀN (RƠI HOA, TRÁI TIM, KIM TUYẾN) */}
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-stone-700 block">
+                Hiệu ứng rơi lãng mạn
+              </span>
+              {canvasFallingEffect && canvasFallingEffect !== "none" && canvasFallingEffect !== "NONE" && (
+                <button
+                  type="button"
+                  onClick={() => setCanvasFallingEffect("none")}
+                  className="text-[11px] text-rose-600 hover:text-rose-800 font-medium hover:underline cursor-pointer"
+                >
+                  Tắt hiệu ứng
+                </button>
+              )}
+            </div>
+
             <div className="grid grid-cols-3 gap-2">
               {FALLING_EFFECTS.map((eff) => {
                 const isActive =
@@ -324,14 +342,17 @@ export function BackgroundTool() {
                     key={eff.id}
                     type="button"
                     onClick={() => setCanvasFallingEffect(eff.id)}
-                    className={`py-2 px-1 rounded-lg text-[11px] text-center border transition cursor-pointer truncate ${
+                    className={`py-2 px-2 rounded-xl text-center border transition flex flex-col items-center justify-center gap-1 cursor-pointer ${
                       isActive
-                        ? "border-stone-900 bg-white text-stone-900 font-bold shadow-2xs"
-                        : "border-stone-200 bg-white text-stone-500 hover:bg-stone-50 hover:text-stone-800"
+                        ? "border-stone-900 bg-stone-900 text-white font-bold shadow-xs scale-[1.02]"
+                        : "border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50"
                     }`}
-                    title={eff.label}
+                    title={eff.desc}
                   >
-                    {eff.label}
+                    <span className="text-base leading-none">{eff.icon}</span>
+                    <span className="text-[11px] font-medium truncate w-full">
+                      {eff.label}
+                    </span>
                   </button>
                 );
               })}
