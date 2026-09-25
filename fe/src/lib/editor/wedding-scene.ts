@@ -40,7 +40,7 @@ const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
   "wedding-modern-editorial-magazine": { primary: "#543A2C", secondary: "#E9DED5", accent: "#B9906D", surface: "#FAF8F5", text: "#211A17", headingFont: "Inter", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-sweet-editorial-romance": { primary: "#B84A39", secondary: "#F7D8D7", accent: "#E9A7A2", surface: "#FFF9F8", text: "#42272A", headingFont: "Great Vibes", bodyFont: "Quicksand", radius: "lg", density: "airy" },
   "wedding-crimson-wine-marsala": { primary: "#6B1724", secondary: "#EBD4C6", accent: "#D2A35C", surface: "#FAF8F6", text: "#32181D", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
-  "wedding-forest-green-botanical": { primary: "#3D4A34", secondary: "#DCE4D4", accent: "#A78B5B", surface: "#F8F7F0", text: "#263027", headingFont: "Outfit", bodyFont: "Outfit", radius: "md", density: "airy" },
+  "wedding-forest-green-botanical": { primary: "#364733", secondary: "#E2EAE0", accent: "#C9A45C", surface: "#F7F8F4", text: "#243322", headingFont: "Playfair Display", bodyFont: "Outfit", radius: "md", density: "airy" },
   "wedding-pure-lotus-heritage": { primary: "#3B5E43", secondary: "#E6EFE5", accent: "#B89052", surface: "#FBFCF6", text: "#213429", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-cinematic-editorial": { primary: "#1C1C1C", secondary: "#D6C9B8", accent: "#B99768", surface: "#F3F1ED", text: "#171717", headingFont: "Cinzel", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-alpine-lake-romance": { primary: "#2B6B6D", secondary: "#D8ECE8", accent: "#D0A983", surface: "#F8FCFB", text: "#1C3C3D", headingFont: "Playfair Display", bodyFont: "Quicksand", radius: "lg", density: "airy" },
@@ -117,6 +117,37 @@ function createElements(data: WeddingDataPayload, slug: string, tokens: WeddingS
     elements.push(
       sceneElement("scene-groom", data.groom?.fullName || "Nguyễn Minh", 0, 0, 0, 0, { opacity: 0 }),
       sceneElement("scene-bride", data.bride?.fullName || "Bùi Phương", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
+
+  if (slug === "wedding-forest-green-botanical") {
+    let top = 16;
+    const elements: CanvasElement[] = [];
+    elements.push({ id: "scene-envelope", type: "preset", presetId: "p-forest-envelope", content: "", x: 0, y: top, width: 390, height: 680, zIndex: 2 });
+    top += 696;
+    elements.push({ id: "scene-polaroid-calendar", type: "preset", presetId: "p-forest-polaroid-calendar", content: "", x: 0, y: top, width: 390, height: 440, zIndex: 2 });
+    top += 456;
+    elements.push({ id: "scene-invitation", type: "preset", presetId: "p-forest-invitation", content: "", x: 0, y: top, width: 390, height: 300, zIndex: 2 });
+    top += 316;
+    elements.push({ id: "scene-facing-photos", type: "preset", presetId: "p-forest-facing-photos", content: "", x: 0, y: top, width: 390, height: 420, zIndex: 2 });
+    top += 436;
+    elements.push({ id: "scene-parents", type: "preset", presetId: "p-forest-parents", content: "", x: 0, y: top, width: 390, height: 160, zIndex: 2 });
+    top += 176;
+    elements.push({ id: "scene-events-card", type: "preset", presetId: "p-forest-events-card", content: "", x: 0, y: top, width: 390, height: 820, zIndex: 2 });
+    top += 836;
+    elements.push({ id: "scene-venue", type: "widget", widgetType: "map", content: "", x: 24, y: top + 10, width: 342, height: 200, zIndex: 2, widgetConfig: { title: "Địa chỉ dự tiệc", description: "TƯ GIA NHÀ GÁI\nXóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội", buttonLabel: "Xem chỉ đường" } });
+    top += 236;
+    elements.push({ id: "scene-gallery-grid", type: "preset", presetId: "p-forest-gallery-grid", content: "", x: 0, y: top, width: 390, height: 780, zIndex: 2 });
+    top += 796;
+    elements.push({ id: "scene-rsvp", type: "preset", presetId: "p-forest-rsvp", content: "", x: 0, y: top, width: 390, height: 240, zIndex: 2 });
+    top += 256;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-forest-gift", content: "", x: 0, y: top, width: 390, height: 220, zIndex: 2 });
+    top += 236;
+    elements.push({ id: "scene-farewell", type: "preset", presetId: "p-forest-farewell", content: "", x: 0, y: top, width: 390, height: 480, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Tuấn Minh", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Mai Lan", 0, 0, 0, 0, { opacity: 0 })
     );
     return elements;
   }
@@ -316,17 +347,19 @@ export function createWeddingSceneFromWeddingData(data: WeddingDataPayload, temp
   const isRichTemplate = slug.includes("sweet") || slug.includes("heritage");
   const isMagTemplate = slug.includes("magazine");
   const isMarsalaTemplate = slug === "wedding-crimson-wine-marsala";
+  const isForestTemplate = slug === "wedding-forest-green-botanical";
   const defaultRichSections = ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"];
   const defaultMagSections = ["hero", "signatures", "parents-zigzag", "ceremony-invitation", "venue", "calendar-countdown", "rsvp-envelope", "gift", "album-gallery", "farewell"];
   const defaultMarsalaSections = ["hero", "arch-calendar", "invitation-cards", "ceremony-groom", "ceremony-bride", "venue", "photo-collage", "rsvp", "gift", "farewell"];
-  const sectionIds = isRichTemplate ? defaultRichSections : isMagTemplate ? defaultMagSections : isMarsalaTemplate ? defaultMarsalaSections : (config?.sections || ["hero", "couple", "events", "gallery", "rsvp"]);
+  const defaultForestSections = ["envelope", "polaroid-calendar", "invitation", "facing-photos", "parents", "events-card", "venue", "gallery-grid", "rsvp", "gift", "farewell"];
+  const sectionIds = isRichTemplate ? defaultRichSections : isMagTemplate ? defaultMagSections : isMarsalaTemplate ? defaultMarsalaSections : isForestTemplate ? defaultForestSections : (config?.sections || ["hero", "couple", "events", "gallery", "rsvp"]);
   const sections: WeddingSceneSection[] = sectionIds.map((rawId, index) => ({
     id: `section-${rawId}-${index}`,
     type: SECTION_ALIASES[rawId] || (rawId as WeddingSceneSectionId),
     label: rawId,
     visible: true,
     order: index,
-    elementIds: isRichTemplate || isMagTemplate || isMarsalaTemplate ? [`scene-${rawId}`] : index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
+    elementIds: isRichTemplate || isMagTemplate || isMarsalaTemplate || isForestTemplate ? [`scene-${rawId}`] : index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
   }));
   const tokens = DEFAULT_TOKENS[slug] || DEFAULT_TOKENS["wedding-heritage-crimson-gold"];
   const elements = createElements(data, slug, tokens);

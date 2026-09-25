@@ -50,9 +50,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       const firstEvent = (events[0] as Record<string, unknown>) || {};
       const mapUrl = (el.widgetConfig?.url as string) || (firstEvent.mapUrl as string) || "https://maps.google.com";
       const isMarsala = (draft as Record<string, unknown>)?.templateSlug === "wedding-crimson-wine-marsala" || (draft as Record<string, unknown>)?.slug === "wedding-crimson-wine-marsala" || (draft as Record<string, unknown>)?.primaryColor === "#6B1724" || el.color === "#6B1724";
-      const primaryColor = isMarsala ? "#6B1724" : (el.color || "#543A2C");
-      const venueName = (firstEvent.venueName as string) || "TƯ GIA NHÀ TRAI";
-      const address = (firstEvent.address as string) || (isMarsala ? "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa" : "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội");
+      const isForest = (draft as Record<string, unknown>)?.templateSlug === "wedding-forest-green-botanical" || (draft as Record<string, unknown>)?.slug === "wedding-forest-green-botanical" || (draft as Record<string, unknown>)?.primaryColor === "#364733" || el.color === "#364733";
+      const primaryColor = isForest ? "#364733" : isMarsala ? "#6B1724" : (el.color || "#543A2C");
+      const venueName = (firstEvent.venueName as string) || (isForest ? "TƯ GIA NHÀ GÁI" : "TƯ GIA NHÀ TRAI");
+      const address = (firstEvent.address as string) || (isForest ? "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội" : isMarsala ? "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa" : "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội");
       return (
         <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-center text-center select-none bg-transparent">
           <div className="inline-block border-b pb-1 mb-2" style={{ borderColor: `${primaryColor}66` }}>
@@ -1428,6 +1429,639 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               </p>
               <span className="text-[11px] font-sans tracking-widest text-stone-300 uppercase">
                 Forever &amp; Always
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // ═════════════════════════════════════════════════════════════════════════════
+      // TEMPLATE 05: RUSTIC XANH RÊU THIÊN NHIÊN & HOA DẠI (TUẤN MINH & MAI LAN)
+      // ═════════════════════════════════════════════════════════════════════════════
+
+      // 05.1 Envelope Rustic Opening + Sliding Polaroid Couple + Monogram Wax Seal + Wildflowers
+      if (el.presetId === "p-forest-envelope") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const photo1: string = (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-1.jpg";
+        const photo2: string = (typeof (photos[1] as { url?: string })?.url === "string" ? (photos[1] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-2.jpg";
+        const groomName = (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Tuấn Minh";
+        const brideName = (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Mai Lan";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const firstEvent = (events[0] as Record<string, unknown>) || null;
+        let dateStr = "02.08.2026";
+        if (firstEvent && firstEvent.eventDate) {
+          const d = new Date(firstEvent.eventDate as string | number);
+          if (!isNaN(d.getTime())) {
+            const day = String(d.getDate()).padStart(2, "0");
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const y = d.getFullYear();
+            dateStr = `${day}.${m}.${y}`;
+          }
+        }
+
+        return (
+          <div className="w-full h-full relative overflow-hidden select-none bg-[#FAFBF8] flex flex-col items-center justify-between pt-5 pb-4 px-3">
+            {/* Top header: We got married */}
+            <div className="text-center">
+              <span className="font-serif italic text-3xl text-[#465E42] drop-shadow-xs font-normal">
+                We got married
+              </span>
+            </div>
+
+            {/* Realistic Rustic Green Envelope with Photos & Wildflowers */}
+            <div className="relative w-[320px] h-[370px] my-auto flex items-center justify-center">
+              {/* Wildflower Sprigs on the left */}
+              <div className="absolute -top-3 -left-2 z-10 pointer-events-none transform -rotate-12">
+                <svg width="60" height="90" viewBox="0 0 60 90" fill="none">
+                  <path d="M30 85 C30 50 15 30 10 15" stroke="#688461" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M30 65 C40 45 45 35 48 20" stroke="#7E9A77" strokeWidth="1.5" strokeLinecap="round" />
+                  {/* Daisy 1 */}
+                  <circle cx="10" cy="15" r="4" fill="#F4D03F" />
+                  <circle cx="10" cy="9" r="3.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="15" cy="12" r="3.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="14" cy="18" r="3.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="8" cy="20" r="3.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="5" cy="14" r="3.5" fill="#FFFFFF" opacity="0.95" />
+                  {/* Daisy 2 */}
+                  <circle cx="48" cy="20" r="3" fill="#F4D03F" />
+                  <circle cx="48" cy="15" r="2.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="52" cy="18" r="2.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="50" cy="23" r="2.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="45" cy="22" r="2.5" fill="#FFFFFF" opacity="0.95" />
+                  <circle cx="44" cy="17" r="2.5" fill="#FFFFFF" opacity="0.95" />
+                </svg>
+              </div>
+
+              {/* Envelope Back Plate (Forest Green) */}
+              <div className="absolute inset-x-2 bottom-4 h-[240px] bg-[#31422E] rounded-b-xl shadow-xl" />
+
+              {/* Envelope Inside Lining (Cream / Soft Sage) */}
+              <div className="absolute inset-x-4 bottom-6 h-[220px] bg-[#EAE8DD] rounded-t-sm" />
+
+              {/* 2 Photos Sliding Up from Envelope */}
+              <div className="absolute -top-4 left-6 z-20 transform -rotate-6 transition-transform hover:rotate-0 drop-shadow-xl">
+                <div className="bg-white p-1.5 pb-3 rounded-lg shadow-lg w-[130px] border border-white">
+                  <div className="w-full aspect-[3/4] rounded overflow-hidden bg-stone-100">
+                    <img src={photo1} alt="Couple 1" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -top-1 right-6 z-20 transform rotate-8 transition-transform hover:rotate-0 drop-shadow-xl">
+                <div className="bg-white p-1.5 pb-3 rounded-lg shadow-lg w-[130px] border border-white">
+                  <div className="w-full aspect-[3/4] rounded overflow-hidden bg-stone-100">
+                    <img src={photo2} alt="Couple 2" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Invitation Letter Card (Parchment peek) */}
+              <div className="absolute top-20 inset-x-9 z-25 bg-[#FAF8F2] border border-[#DDD5C5] rounded-t-md p-3 text-center shadow-sm">
+                <span className="font-serif text-[9px] uppercase tracking-[0.25em] text-[#556950] font-bold block">
+                  CELEBRATE WITH US
+                </span>
+                <span className="font-serif italic text-[8px] text-stone-500 block mt-0.5">
+                  LOVE &amp; JOY
+                </span>
+              </div>
+
+              {/* Envelope Front Lower Fold (V-Shape Forest Green) */}
+              <div className="absolute inset-x-2 bottom-4 h-[170px] z-30 pointer-events-none">
+                <svg viewBox="0 0 304 170" className="w-full h-full filter drop-shadow-[0_-3px_5px_rgba(0,0,0,0.18)]" preserveAspectRatio="none">
+                  {/* Left & Right Fold */}
+                  <polygon points="0,0 152,110 0,170" fill="#2E3F2B" />
+                  <polygon points="304,0 152,110 304,170" fill="#2A3A27" />
+                  {/* Bottom Triangular Fold */}
+                  <polygon points="0,170 152,85 304,170" fill="#364A32" />
+                </svg>
+              </div>
+
+              {/* Olive Green 3D Wax Seal with Monogram "ML" */}
+              <div className="absolute bottom-[80px] left-1/2 -translate-x-1/2 z-40 drop-shadow-xl pointer-events-none">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#4A6146] via-[#354832] to-[#243322] border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-inner relative">
+                  <div className="w-10 h-10 rounded-full border border-dashed border-[#D4AF37]/60 flex items-center justify-center">
+                    <span className="font-serif font-bold text-sm tracking-widest text-[#F2E5C4] drop-shadow-sm">
+                      M·L
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bouquet pinned at bottom right of envelope */}
+              <div className="absolute -bottom-1 -right-3 z-40 pointer-events-none transform rotate-12">
+                <svg width="85" height="85" viewBox="0 0 100 100" fill="none">
+                  {/* Flower spray */}
+                  <circle cx="50" cy="50" r="14" fill="#698A62" opacity="0.85" />
+                  {/* Blossom 1 Pink/Coral */}
+                  <circle cx="42" cy="40" r="10" fill="#E8927C" />
+                  <circle cx="42" cy="40" r="4" fill="#FFF275" />
+                  {/* Blossom 2 Blue/Lavender */}
+                  <circle cx="60" cy="42" r="9" fill="#7EA5D9" />
+                  <circle cx="60" cy="42" r="3.5" fill="#FFFFFF" />
+                  {/* Blossom 3 Daisy */}
+                  <circle cx="48" cy="60" r="8" fill="#F7DC6F" />
+                  <circle cx="48" cy="60" r="3" fill="#D68910" />
+                  {/* Leaf accents */}
+                  <ellipse cx="28" cy="48" rx="7" ry="3" fill="#4B6F44" transform="rotate(-30 28 48)" />
+                  <ellipse cx="68" cy="58" rx="8" ry="4" fill="#4B6F44" transform="rotate(35 68 58)" />
+                  <ellipse cx="40" cy="70" rx="9" ry="3.5" fill="#3D5A37" transform="rotate(75 40 70)" />
+                  {/* Stems & Ribbon */}
+                  <path d="M42 68 L35 88" stroke="#314E2C" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M50 70 L52 90" stroke="#314E2C" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M40 72 C46 76 46 76 52 72" stroke="#E29578" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Below Envelope: Cursive Calligraphy Names & Date */}
+            <div className="text-center mt-1">
+              <h2 className="font-serif italic text-3xl font-medium tracking-wide text-[#1E5652] drop-shadow-xs">
+                {groomName} &amp; {brideName}
+              </h2>
+              <p className="font-sans text-xs font-semibold tracking-[0.3em] text-[#1E5652]/90 mt-1 uppercase">
+                {dateStr}
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.2 Polaroid "My Love" Photo + Dark Olive Calendar with Heart on Day 2
+      if (el.presetId === "p-forest-polaroid-calendar") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const polaroidPhoto = (typeof (photos[2] as { url?: string })?.url === "string" ? (photos[2] as { url?: string }).url! : "") || (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-3.jpg";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const firstEvent = (events[0] as Record<string, unknown>) || null;
+        let eventDay = 2;
+        let monthStr = "Tháng 08.2026";
+        if (firstEvent && firstEvent.eventDate) {
+          const d = new Date(firstEvent.eventDate as string | number);
+          if (!isNaN(d.getTime())) {
+            eventDay = d.getDate();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            monthStr = `Tháng ${m}.${d.getFullYear()}`;
+          }
+        }
+
+        // Calendar days 1..31 for August 2026 (Aug 1 is Saturday)
+        const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const aug2026Days: (number | null)[] = [
+          null, null, null, null, null, 1, 2,
+          3, 4, 5, 6, 7, 8, 9,
+          10, 11, 12, 13, 14, 15, 16,
+          17, 18, 19, 20, 21, 22, 23,
+          24, 25, 26, 27, 28, 29, 30,
+          31
+        ];
+
+        return (
+          <div className="w-full h-full px-3 py-2 flex items-center justify-center select-none bg-transparent">
+            <div className="w-full h-full bg-[#364733] rounded-2xl p-4 shadow-xl flex items-center justify-between gap-3 text-white">
+              {/* Left Column: Polaroid Photo Frame with "My Love" */}
+              <div className="w-[46%] flex flex-col items-center">
+                <div className="bg-white p-2 pb-3 rounded-lg shadow-xl w-full border border-white/90 transform -rotate-1 hover:rotate-0 transition-transform">
+                  <div className="w-full aspect-[3/4] rounded overflow-hidden bg-stone-100 mb-2">
+                    <img src={polaroidPhoto} alt="My Love" className="w-full h-full object-cover" />
+                  </div>
+                  <span className="font-serif italic text-base font-medium text-stone-800 text-center block leading-none">
+                    My Love
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Column: Month Header + Calendar Grid */}
+              <div className="w-[52%] flex flex-col justify-center">
+                <div className="text-right pr-1 mb-2">
+                  <span className="font-serif text-sm font-semibold tracking-wider text-[#F2EBD9]">
+                    {monthStr}
+                  </span>
+                </div>
+
+                {/* Weekday headers */}
+                <div className="grid grid-cols-7 text-center gap-0.5 mb-1 text-[9px] font-semibold text-stone-300">
+                  {weekdays.map((w) => (
+                    <span key={w}>{w}</span>
+                  ))}
+                </div>
+
+                {/* Days Grid */}
+                <div className="grid grid-cols-7 text-center gap-y-1 gap-x-0.5 text-[10px]">
+                  {aug2026Days.map((d, idx) => {
+                    if (d === null) return <span key={`empty-${idx}`} />;
+                    const isSelected = d === eventDay;
+                    return (
+                      <div key={d} className="flex items-center justify-center">
+                        {isSelected ? (
+                          <div className="relative inline-flex items-center justify-center w-6 h-6">
+                            {/* Cute red/pink heart badge */}
+                            <svg className="absolute inset-0 w-full h-full text-rose-400 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="rgba(225, 29, 72, 0.25)" />
+                            </svg>
+                            <span className="relative z-10 text-[10px] font-bold text-rose-200">
+                              {d}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-stone-200/90 font-medium py-0.5">
+                            {d}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.3 Clean Ivory Invitation Typography + Bouquet Ampersand
+      if (el.presetId === "p-forest-invitation") {
+        const groomName = (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Tuấn Minh";
+        const brideName = (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Mai Lan";
+
+        return (
+          <div className="w-full h-full px-4 py-6 flex flex-col items-center justify-center text-center select-none bg-[#FAFBF8]">
+            <span className="text-[11px] uppercase tracking-[0.25em] text-[#556950] font-bold mb-2">
+              TRÂN TRỌNG KÍNH MỜI
+            </span>
+            <h2 className="font-serif italic text-4xl text-[#1E5652] tracking-wide my-1 drop-shadow-xs">
+              Quý Khách
+            </h2>
+            <p className="text-[11px] uppercase font-bold tracking-[0.16em] text-[#344730] mt-2 mb-4">
+              THAM DỰ TIỆC MỪNG LỄ THÀNH HÔN CỦA
+            </p>
+
+            {/* Couple names with artistic floral ampersand */}
+            <div className="flex items-center justify-center gap-3">
+              <span className="font-serif text-2xl font-bold text-[#1E5652] tracking-wide">
+                {brideName}
+              </span>
+              <div className="relative inline-flex items-center justify-center">
+                <span className="font-serif italic text-3xl font-light text-[#556950]">
+                  &amp;
+                </span>
+                {/* Tiny flower bouquet next to ampersand */}
+                <div className="absolute -top-3 -right-3 pointer-events-none">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="10" r="4" fill="#F4D03F" />
+                    <circle cx="8" cy="8" r="3" fill="#E8927C" />
+                    <circle cx="15" cy="7" r="3" fill="#90CDF4" />
+                    <path d="M11 14 L9 20" stroke="#4B6F44" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M13 14 L15 19" stroke="#4B6F44" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+              </div>
+              <span className="font-serif text-2xl font-bold text-[#1E5652] tracking-wide">
+                {groomName}
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.4 Facing Photos with Center Vertical Love Poem Strip
+      if (el.presetId === "p-forest-facing-photos") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const bridePhoto = (typeof (photos[3] as { url?: string })?.url === "string" ? (photos[3] as { url?: string }).url! : "") || (typeof data.bride?.avatarUrl === "string" ? data.bride.avatarUrl : "") || "/images/demo/templates/t05-forest/gallery-4.jpg";
+        const groomPhoto = (typeof (photos[4] as { url?: string })?.url === "string" ? (photos[4] as { url?: string }).url! : "") || (typeof data.groom?.avatarUrl === "string" ? data.groom.avatarUrl : "") || "/images/demo/templates/t05-forest/gallery-5.jpg";
+
+        return (
+          <div className="w-full h-full px-3 py-2 flex items-center justify-between gap-2 select-none bg-[#FAFBF8]">
+            {/* Left Vertical Photo: Bride in Nature with Veil Fade */}
+            <div className="w-[41%] h-full rounded-xl overflow-hidden shadow-md relative bg-stone-100">
+              <img src={bridePhoto} alt="Bride" className="w-full h-full object-cover" />
+              <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white/70 via-white/20 to-transparent pointer-events-none" />
+            </div>
+
+            {/* Center Dark Green Column with Vertical Poem */}
+            <div className="w-[18%] h-full bg-[#364733] rounded-xl shadow-inner flex flex-col items-center justify-center p-2 text-white">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <span className="[writing-mode:vertical-rl] tracking-widest text-[#F2EBD9] text-[10px] font-serif leading-tight">
+                  Em là bình yên anh muốn giữ
+                </span>
+                <span className="text-base text-rose-300 drop-shadow">
+                  💕
+                </span>
+                <span className="[writing-mode:vertical-rl] tracking-widest text-[#F2EBD9] text-[10px] font-serif leading-tight">
+                  Anh là hạnh phúc em muốn trao
+                </span>
+              </div>
+            </div>
+
+            {/* Right Vertical Photo: Groom in Tux with Baby's Breath */}
+            <div className="w-[41%] h-full rounded-xl overflow-hidden shadow-md relative bg-stone-100">
+              <img src={groomPhoto} alt="Groom" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        );
+      }
+
+      // 05.5 Parents Dignified 2-Column + Center Song Hỷ Crest
+      if (el.presetId === "p-forest-parents") {
+        const brideParents = (data.bride?.parents as Record<string, unknown> | undefined) || {};
+        const groomParents = (data.groom?.parents as Record<string, unknown> | undefined) || {};
+        const brideFather = (typeof brideParents.fatherName === "string" ? brideParents.fatherName : "") || "Nguyễn Trí Thanh";
+        const brideMother = (typeof brideParents.motherName === "string" ? brideParents.motherName : "") || "Lê Thị Hải";
+        const groomFather = (typeof groomParents.fatherName === "string" ? groomParents.fatherName : "") || "Nguyễn Văn Tư";
+        const groomMother = (typeof groomParents.motherName === "string" ? groomParents.motherName : "") || "Lê Thị Mai";
+
+        return (
+          <div className="w-full h-full px-5 py-3 flex flex-col justify-between items-center select-none bg-[#FAFBF8] relative">
+            <div className="w-full grid grid-cols-2 gap-4 text-center">
+              {/* Nhà Gái */}
+              <div>
+                <span className="font-serif font-bold text-xs uppercase tracking-widest text-[#2B3E27] block mb-1">
+                  NHÀ GÁI
+                </span>
+                <span className="text-[11px] font-sans uppercase tracking-wider text-stone-600 block leading-tight">
+                  ÔNG {brideFather}
+                </span>
+                <span className="text-[11px] font-sans uppercase tracking-wider text-stone-600 block leading-tight mt-0.5">
+                  BÀ {brideMother}
+                </span>
+              </div>
+
+              {/* Nhà Trai */}
+              <div>
+                <span className="font-serif font-bold text-xs uppercase tracking-widest text-[#2B3E27] block mb-1">
+                  NHÀ TRAI
+                </span>
+                <span className="text-[11px] font-sans uppercase tracking-wider text-stone-600 block leading-tight">
+                  ÔNG {groomFather}
+                </span>
+                <span className="text-[11px] font-sans uppercase tracking-wider text-stone-600 block leading-tight mt-0.5">
+                  BÀ {groomMother}
+                </span>
+              </div>
+            </div>
+
+            {/* Traditional Song Hỷ Crest at Bottom Center */}
+            <div className="mt-2 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full border border-rose-400/80 bg-rose-50 flex items-center justify-center shadow-xs">
+                <span className="text-rose-600 text-sm font-bold">
+                  囍
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.6 Unified Dark Olive Events Card + Double Ceremony + Map Links + 4-Box Countdown
+      if (el.presetId === "p-forest-events-card") {
+        const events = Array.isArray(data.events) ? data.events : [];
+        const ev1 = (events[0] as Record<string, unknown>) || null;
+        const ev2 = (events[1] as Record<string, unknown>) || null;
+
+        const title1 = (ev1?.eventName as string) || "DỰ BỮA CƠM THÂN MẬT";
+        const title2 = (ev2?.eventName as string) || "THAM DỰ HÔN LỄ";
+
+        const venue1 = (ev1?.venueName as string) || "TẠI TƯ GIA NHÀ GÁI";
+        const addr1 = (ev1?.address as string) || "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội";
+        const mapUrl1 = (ev1?.mapUrl as string) || "https://maps.google.com";
+
+        const venue2 = (ev2?.venueName as string) || "TẠI TƯ GIA NHÀ TRAI";
+        const addr2 = (ev2?.address as string) || "Hoàng Mai, Hà Nội";
+        const mapUrl2 = (ev2?.mapUrl as string) || "https://maps.google.com";
+
+        return (
+          <div className="w-full h-full px-3 py-2 flex flex-col justify-between select-none bg-transparent">
+            {/* Dark Green Event Card */}
+            <div className="w-full bg-[#364733] rounded-2xl p-5 text-white text-center shadow-xl relative overflow-hidden">
+              {/* Event 1 (Nhà Gái) */}
+              <div className="flex flex-col items-center">
+                <h3 className="font-serif font-bold text-sm tracking-widest text-[#F2EBD9] uppercase mb-1">
+                  {title1}
+                </h3>
+                <span className="text-[10px] text-stone-300 uppercase tracking-widest font-medium">
+                  VÀO HỒI
+                </span>
+                <span className="font-sans font-bold text-base tracking-wider text-white mt-0.5">
+                  10 : 30 , CHỦ NHẬT
+                </span>
+                <span className="font-serif text-2xl font-bold tracking-widest text-[#F2EBD9] my-1">
+                  02 . 08 . 2026
+                </span>
+                <span className="italic text-[11px] text-stone-300">
+                  Tức Ngày 20 Tháng 07 Năm Bính Ngọ
+                </span>
+                <h4 className="font-serif font-bold text-base uppercase tracking-wider text-white mt-2">
+                  {venue1}
+                </h4>
+                <p className="text-xs text-stone-200 mt-0.5 mb-3 max-w-[280px]">
+                  {addr1}
+                </p>
+                <a
+                  href={mapUrl1}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-[#364733] font-bold text-[10px] tracking-wider uppercase px-6 py-2 rounded-full shadow-md hover:bg-stone-100 transition-colors pointer-events-auto cursor-pointer"
+                >
+                  XEM CHỈ ĐƯỜNG
+                </a>
+              </div>
+
+              {/* Horizontal Separator */}
+              <div className="w-full border-t border-white/20 my-5" />
+
+              {/* Event 2 (Nhà Trai) */}
+              <div className="flex flex-col items-center">
+                <h3 className="font-serif font-bold text-sm tracking-widest text-[#F2EBD9] uppercase mb-1">
+                  {title2}
+                </h3>
+                <span className="text-[10px] text-stone-300 uppercase tracking-widest font-medium">
+                  VÀO HỒI
+                </span>
+                <span className="font-sans font-bold text-base tracking-wider text-white mt-0.5">
+                  12 : 30 , CHỦ NHẬT
+                </span>
+                <span className="font-serif text-2xl font-bold tracking-widest text-[#F2EBD9] my-1">
+                  02.08.2026
+                </span>
+                <span className="italic text-[11px] text-stone-300">
+                  Tức Ngày 20 Tháng 07 Năm Bính Ngọ
+                </span>
+                <h4 className="font-serif font-bold text-base uppercase tracking-wider text-white mt-2">
+                  {venue2}
+                </h4>
+                <p className="text-xs text-stone-200 mt-0.5 mb-3 max-w-[280px]">
+                  {addr2}
+                </p>
+                <a
+                  href={mapUrl2}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-[#364733] font-bold text-[10px] tracking-wider uppercase px-6 py-2 rounded-full shadow-md hover:bg-stone-100 transition-colors pointer-events-auto cursor-pointer"
+                >
+                  XEM CHỈ ĐƯỜNG
+                </a>
+              </div>
+
+              {/* Bottom Heartfelt Message & Flower bouquet */}
+              <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-center gap-2">
+                <div className="w-8 h-8 shrink-0">
+                  <svg viewBox="0 0 32 32" className="w-full h-full" fill="none">
+                    <circle cx="16" cy="14" r="5" fill="#F4D03F" />
+                    <circle cx="11" cy="12" r="4" fill="#90CDF4" />
+                    <circle cx="21" cy="12" r="4" fill="#E8927C" />
+                    <path d="M15 19 L13 28" stroke="#718096" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M17 19 L19 28" stroke="#718096" strokeWidth="1.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <p className="text-[11px] italic text-stone-200 text-left leading-snug">
+                  Sự hiện diện của Quý Khách<br />Là niềm vinh hạnh cho gia đình chúng tôi
+                </p>
+              </div>
+            </div>
+
+            {/* Countdown Timer with 4 Dark Olive Square Boxes */}
+            <div className="mt-3 grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full">
+              {[
+                { label: "ngày", val: "0" },
+                { label: "giờ", val: "0" },
+                { label: "phút", val: "0" },
+                { label: "giây", val: "0" },
+              ].map((item) => (
+                <div key={item.label} className="bg-[#364733] rounded-lg p-2 text-center text-white shadow-md">
+                  <span className="font-serif text-lg font-bold block leading-none">
+                    {item.val}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-wider text-stone-300 font-medium block mt-1">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      // 05.7 Photo Grid: Triptych Row 1 + Wide Landscape Row 2 + Triptych Row 3
+      if (el.presetId === "p-forest-gallery-grid") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const p1 = (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-1.jpg";
+        const p2 = (typeof (photos[1] as { url?: string })?.url === "string" ? (photos[1] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-2.jpg";
+        const p3 = (typeof (photos[2] as { url?: string })?.url === "string" ? (photos[2] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-3.jpg";
+        const pLandscape = (typeof (photos[5] as { url?: string })?.url === "string" ? (photos[5] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-6.jpg";
+        const p4 = (typeof (photos[6] as { url?: string })?.url === "string" ? (photos[6] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-7.jpg";
+        const p5 = (typeof (photos[7] as { url?: string })?.url === "string" ? (photos[7] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-8.jpg";
+        const p6 = (typeof data.coverPhotoUrl === "string" ? data.coverPhotoUrl : "") || "/images/demo/templates/t05-forest/cover.jpg";
+
+        return (
+          <div className="w-full h-full px-3 py-2 flex flex-col justify-between gap-2.5 select-none bg-[#FAFBF8]">
+            {/* Row 1: 3 vertical photos side by side */}
+            <div className="grid grid-cols-3 gap-2 h-[240px]">
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p1} alt="T05-1" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p2} alt="T05-2" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p3} alt="T05-3" className="w-full h-full object-cover" />
+              </div>
+            </div>
+
+            {/* Row 2: Wide horizontal landscape photo with veil */}
+            <div className="w-full h-[250px] rounded-xl overflow-hidden shadow-md bg-stone-100">
+              <img src={pLandscape} alt="T05-Landscape" className="w-full h-full object-cover object-center" />
+            </div>
+
+            {/* Row 3: 3 vertical photos side by side */}
+            <div className="grid grid-cols-3 gap-2 h-[240px]">
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p4} alt="T05-4" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p5} alt="T05-5" className="w-full h-full object-cover" />
+              </div>
+              <div className="rounded-xl overflow-hidden shadow-sm bg-stone-100">
+                <img src={p6} alt="T05-6" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.8 Dedicated RSVP Card with Feather Pen Action Button
+      if (el.presetId === "p-forest-rsvp") {
+        return (
+          <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-center text-center select-none bg-[#FAFBF8]">
+            <p className="text-xs text-stone-600 mb-2 leading-relaxed max-w-[300px]">
+              Vui lòng điền xác nhận để chúng mình đón tiếp và chuẩn bị được chu đáo hơn. Trân trọng!
+            </p>
+            <span className="font-serif text-[10px] uppercase tracking-[0.3em] text-[#556950] font-bold block mb-1">
+              R.S.V.P.
+            </span>
+            <h3 className="font-serif text-xl font-bold text-[#2B3E27] tracking-wider mb-2">
+              Xác nhận tham dự
+            </h3>
+            <p className="text-[11px] text-stone-500 mb-4 max-w-[280px] leading-relaxed">
+              Vui lòng xác nhận tham dự để chúng mình chuẩn bị lễ cưới được thuận lợi và trọn vẹn nhất.
+            </p>
+            <button
+              onClick={() => onRsvp && onRsvp()}
+              type="button"
+              className="inline-flex items-center gap-2 bg-[#364733] text-white font-sans font-bold text-xs tracking-wider px-7 py-2.5 rounded-full shadow-md hover:bg-[#2A3927] transition-all hover:scale-105 cursor-pointer pointer-events-auto"
+            >
+              <span>✍️</span>
+              <span>Gửi xác nhận</span>
+            </button>
+          </div>
+        );
+      }
+
+      // 05.9 Dedicated Gift Card with Smartphone + Heart Icon
+      if (el.presetId === "p-forest-gift") {
+        return (
+          <div className="w-full h-full px-4 py-2 flex items-center justify-center select-none bg-[#FAFBF8]">
+            <div
+              onClick={() => onGift && onGift()}
+              className="w-full bg-[#364733] rounded-2xl p-5 shadow-xl flex flex-col items-center justify-center text-center cursor-pointer pointer-events-auto hover:bg-[#2F3F2C] transition-all group"
+            >
+              {/* Smartphone Frame with Glowing Heart Envelope */}
+              <div className="w-12 h-16 rounded-xl border-2 border-white/60 bg-stone-900/60 p-1 flex flex-col items-center justify-center shadow-md mb-2 group-hover:scale-110 transition-transform">
+                <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center">
+                  <span className="text-rose-500 text-base">💖</span>
+                </div>
+                <div className="w-2 h-1 bg-white/40 rounded-full mt-1" />
+              </div>
+
+              <h4 className="font-serif font-bold text-lg text-white tracking-wider">
+                Gửi Quà Mừng
+              </h4>
+              <span className="text-[11px] text-stone-300 font-sans mt-0.5 block">
+                Chạm để xem tài khoản mừng cưới
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // 05.10 Farewell Misty Pine Forest + "Lời Cảm Ơn" Typography
+      if (el.presetId === "p-forest-farewell") {
+        const coverPhoto = (typeof data.coverPhotoUrl === "string" ? data.coverPhotoUrl : "") || "/images/demo/templates/t05-forest/cover.jpg";
+
+        return (
+          <div className="w-full h-full relative overflow-hidden select-none bg-stone-900 flex flex-col justify-end">
+            <img src={coverPhoto} alt="Farewell Forest" className="absolute inset-0 w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-transparent pointer-events-none" />
+
+            <div className="relative z-10 px-6 pb-8 text-center flex flex-col items-center text-stone-800">
+              <h2 className="font-serif italic text-3xl font-medium tracking-wide text-[#233520] mb-3 drop-shadow-xs">
+                Lời Cảm Ơn
+              </h2>
+              <p className="text-xs text-stone-700 leading-relaxed max-w-[310px] font-sans">
+                Trân trọng cảm ơn Quý Khách đã dành thời gian đến chung vui và chúc phúc cho chúng tôi. Sự hiện diện của Quý vị là niềm vinh hạnh và hạnh phúc lớn lao của gia đình chúng tôi.
+              </p>
+            </div>
+
+            {/* Vertical Watermark */}
+            <div className="absolute right-2 bottom-8 z-10 pointer-events-none">
+              <span className="[writing-mode:vertical-rl] text-[9px] uppercase tracking-widest text-stone-400 font-medium">
+                Made with Ngày chung đôi
               </span>
             </div>
           </div>

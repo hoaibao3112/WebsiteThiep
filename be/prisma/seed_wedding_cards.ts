@@ -299,7 +299,7 @@ const WEDDING_CARDS_DATA = [
         shortName: "Tuấn Minh",
         birthOrder: "Trưởng nam",
         avatarUrl: "/images/demo/templates/t05-forest/groom.jpg",
-        parents: { fatherName: "Lê Tuấn Khang", motherName: "Ngô Mỹ Lệ" },
+        parents: { fatherName: "Nguyễn Văn Tư", motherName: "Lê Thị Mai" },
         story: "Chàng trai yêu thiên nhiên, nhiếp ảnh gia tự do mang tâm hồn mộc mạc.",
       },
       bride: {
@@ -307,7 +307,7 @@ const WEDDING_CARDS_DATA = [
         shortName: "Mai Lan",
         birthOrder: "Út nữ",
         avatarUrl: "/images/demo/templates/t05-forest/bride.jpg",
-        parents: { fatherName: "Vũ Hoàng Sơn", motherName: "Trịnh Thúy Nga" },
+        parents: { fatherName: "Nguyễn Trí Thanh", motherName: "Lê Thị Hải" },
         story: "Nhà thiết kế cảnh quan xanh, yêu hoa cỏ và những điều tự nhiên.",
       },
       loveStory: [
@@ -318,11 +318,19 @@ const WEDDING_CARDS_DATA = [
     },
     events: [
       {
-        eventName: "Hôn Lễ Ngoài Trời & Tiệc Nướng BBQ",
-        eventDate: new Date("2026-12-05T15:30:00Z"),
-        lunarDate: "Ngày 27 Tháng 10 Năm Bính Ngọ",
-        venueName: "Ana Mandara Villas Dalat Resort",
-        address: "Đường Lê Lai, Phường 5, TP. Đà Lạt, Lâm Đồng",
+        eventName: "Bữa Cơm Thân Mật (Nhà Gái)",
+        eventDate: new Date("2026-08-02T10:30:00Z"),
+        lunarDate: "Ngày 20 Tháng 07 Năm Bính Ngọ",
+        venueName: "Tư Gia Nhà Gái",
+        address: "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội",
+        mapUrl: "https://maps.google.com",
+      },
+      {
+        eventName: "Tham Dự Hôn Lễ (Nhà Trai)",
+        eventDate: new Date("2026-08-02T12:30:00Z"),
+        lunarDate: "Ngày 20 Tháng 07 Năm Bính Ngọ",
+        venueName: "Tư Gia Nhà Trai",
+        address: "Hoàng Mai, Hà Nội",
         mapUrl: "https://maps.google.com",
       },
     ],
@@ -334,8 +342,8 @@ const WEDDING_CARDS_DATA = [
       { url: "/images/demo/templates/t05-forest/gallery-5.jpg", caption: "Bình yên bên triền đồi xanh mát" },
       { url: "/images/demo/templates/t05-forest/gallery-6.jpg", caption: "Hẹn ước trăm năm trọn đời yêu thương" },
     ],
-    bankingPrimary: { bankCode: "MB", accountNumber: "0399998888", accountName: "LE TUAN MINH" },
-    bankingSecondary: { bankCode: "BIDV", accountNumber: "6868686868", accountName: "VU MAI LAN" },
+    bankingPrimary: { bankCode: "MB", accountNumber: "0399998888", accountName: "NGUYEN TUAN MINH" },
+    bankingSecondary: { bankCode: "BIDV", accountNumber: "6868686868", accountName: "MAI LAN" },
   },
 
   // 06. HOA SEN THANH KHIẾT BÁO HỶ THUẦN VIỆT

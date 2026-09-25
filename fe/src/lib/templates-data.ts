@@ -136,11 +136,12 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#2C4A34",
     musicTitle: "Perfect - Ed Sheeran",
     musicUrl: "/music/perfect.mp3",
-    coupleText: "Hoàng Nam & Thảo Vy",
-    eventDateText: "24.12.2026",
-    venueText: "Thảo Điền Village, TP. Thủ Đức",
+    coupleText: "Tuấn Minh & Mai Lan",
+    eventDateText: "02.08.2026",
+    venueText: "Tư Gia Nhà Gái & Nhà Trai, Hà Nội",
     rating: 5,
     salesCount: 940,
+    hasLiveDemo: true,
   },
 
   // ── 06. HOA SEN THANH KHIẾT BÁO HỶ ──
