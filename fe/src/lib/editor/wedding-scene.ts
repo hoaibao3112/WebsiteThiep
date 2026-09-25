@@ -63,6 +63,42 @@ function createElements(data: WeddingDataPayload, slug: string, tokens: WeddingS
   const headingFont = tokens.headingFont || "Playfair Display";
   const bodyFont = tokens.bodyFont || "Inter";
 
+  if (slug.includes("sweet") || slug.includes("heritage")) {
+    let top = 16;
+    const elements: CanvasElement[] = [
+      { id: "scene-envelope", type: "preset", presetId: "p-envelope-sweet", content: "", x: 0, y: top, width: 390, height: 400, zIndex: 2 },
+    ];
+    top += 416;
+    elements.push({ id: "scene-hero", type: "preset", presetId: "p-hero-sweet", content: "", x: 0, y: top, width: 390, height: 510, zIndex: 2 });
+    top += 526;
+    elements.push({ id: "scene-ceremony", type: "preset", presetId: "p-ceremony-parents-date", content: "", x: 0, y: top, width: 390, height: 470, zIndex: 2 });
+    top += 486;
+    elements.push({ id: "scene-location", type: "preset", presetId: "p-location-map-sweet", content: "", x: 0, y: top, width: 390, height: 330, zIndex: 2 });
+    top += 346;
+    elements.push({ id: "scene-marry-me", type: "preset", presetId: "p-sweet-marry-me", content: "", x: 0, y: top, width: 390, height: 390, zIndex: 2 });
+    top += 406;
+    elements.push({ id: "scene-about-bride", type: "preset", presetId: "p-about-bride", content: "", x: 0, y: top, width: 390, height: 400, zIndex: 2 });
+    top += 416;
+    elements.push({ id: "scene-about-groom", type: "preset", presetId: "p-about-groom", content: "", x: 0, y: top, width: 390, height: 400, zIndex: 2 });
+    top += 416;
+    elements.push({ id: "scene-calendar", type: "preset", presetId: "p-calendar-heart-photo", content: "", x: 0, y: top, width: 390, height: 440, zIndex: 2 });
+    top += 456;
+    elements.push({ id: "scene-timeline", type: "preset", presetId: "p-timeline-sweet", content: "", x: 0, y: top, width: 390, height: 250, zIndex: 2 });
+    top += 266;
+    elements.push({ id: "scene-gallery", type: "preset", presetId: "p-gallery-editorial-stack", content: "", x: 0, y: top, width: 390, height: 590, zIndex: 2 });
+    top += 606;
+    elements.push({ id: "scene-rsvp", type: "preset", presetId: "p-rsvp-arch", content: "", x: 0, y: top, width: 390, height: 280, zIndex: 2 });
+    top += 296;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-dual-gift-qr", content: "", x: 0, y: top, width: 390, height: 350, zIndex: 2 });
+    top += 366;
+    elements.push({ id: "scene-thank-you", type: "preset", presetId: "p-thank-you-chibi", content: "", x: 0, y: top, width: 390, height: 250, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Chú rể", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Cô dâu", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
+
   const elements: CanvasElement[] = [
     // Hero Banner Panel
     {
@@ -219,25 +255,30 @@ export function createWeddingSceneFromWeddingData(data: WeddingDataPayload, temp
     };
   }
 
-  const sectionIds = config?.sections || ["hero", "couple", "events", "gallery", "rsvp"];
+  const isRichTemplate = slug.includes("sweet") || slug.includes("heritage");
+  const defaultRichSections = ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"];
+  const sectionIds = isRichTemplate ? defaultRichSections : (config?.sections || ["hero", "couple", "events", "gallery", "rsvp"]);
   const sections: WeddingSceneSection[] = sectionIds.map((rawId, index) => ({
     id: `section-${rawId}-${index}`,
     type: SECTION_ALIASES[rawId] || (rawId as WeddingSceneSectionId),
     label: rawId,
     visible: true,
     order: index,
-    elementIds: index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
+    elementIds: isRichTemplate ? [`scene-${rawId}`] : index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
   }));
   const tokens = DEFAULT_TOKENS[slug] || DEFAULT_TOKENS["wedding-heritage-crimson-gold"];
+  const elements = createElements(data, slug, tokens);
+  const maxY = elements.reduce((max, el) => Math.max(max, (typeof el.y === "number" ? el.y : 0) + (typeof el.height === "number" ? el.height : 0)), 1200);
+
   return {
     schemaVersion: WEDDING_SCENE_VERSION,
     templateSlug: slug,
     width: 390,
-    height: Math.max(1200, sections.length * 340),
+    height: maxY + 40,
     background: { color: tokens.surface },
     tokens,
     sections,
-    elements: createElements(data, slug, tokens),
+    elements,
     bindings: {
       "scene-groom": "groom.fullName",
       "scene-bride": "bride.fullName",

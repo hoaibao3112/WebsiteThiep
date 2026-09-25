@@ -38,7 +38,13 @@ export function readCanvasData(value: unknown) {
   const root = readRecord(value);
   const data = { ...root, ...readRecord(root.categoryData) };
   return {
-    groom: readRecord(data.groom), bride: readRecord(data.bride),
+    groom: readRecord(data.groom),
+    bride: readRecord(data.bride),
     coverPhotoUrl: typeof data.coverPhotoUrl === "string" ? data.coverPhotoUrl : undefined,
+    events: Array.isArray(data.events) ? data.events.map(readRecord) : [],
+    photos: Array.isArray(data.photos) ? data.photos.map(readRecord) : [],
+    greeting: typeof data.greeting === "string" ? data.greeting : (typeof data.greetingMessage === "string" ? data.greetingMessage : undefined),
+    heroSubtitle: typeof data.heroSubtitle === "string" ? data.heroSubtitle : undefined,
+    loveStory: Array.isArray(data.loveStory) ? data.loveStory.map(readRecord) : [],
   };
 }
