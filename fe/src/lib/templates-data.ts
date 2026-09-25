@@ -163,11 +163,12 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#FAF7F2",
     musicTitle: "Hơn Cả Yêu - Đức Phúc",
     musicUrl: "/music/hon-ca-yeu.mp3",
-    coupleText: "Gia Huy & Khánh Linh",
-    eventDateText: "15.01.2027",
-    venueText: "Tư gia Nhà Gái & Nhà Khách Quốc Tế",
+    coupleText: "Minh Hằng & Đức Hiển",
+    eventDateText: "29.11.2026",
+    venueText: "Tư Gia & Khách Sạn CINELOVE, Hà Nội",
     rating: 5,
     salesCount: 790,
+    hasLiveDemo: true,
   },
 
   // ── 07. ĐIỆN ẢNH LOOKBOOK TÌNH YÊU ──

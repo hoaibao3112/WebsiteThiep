@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useCallback, useEffect } from "react";
+import React, { useState, Suspense, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload, PhotoItem } from "@/types/card.types";
@@ -124,6 +124,9 @@ function CardBuilderContent() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Smart Auth Gate: flag để tự động tiếp tục xuất bản sau khi đăng nhập thành công
+  const pendingPublishRef = useRef(false);
 
   // State thiệp đồng bộ theo mẫu đã chọn
   const [primaryColor, setPrimaryColor] = useState(
@@ -552,6 +555,8 @@ function CardBuilderContent() {
   // Lưu và Xuất Bản Thiệp
   const handlePublish = async () => {
     if (!user) {
+      // Đánh dấu đang chờ xuất bản, sau khi login sẽ tự động gọi lại
+      pendingPublishRef.current = true;
       openAuthModal("login");
       return;
     }
@@ -638,6 +643,16 @@ function CardBuilderContent() {
       setErrorMsg(err.message || "Đã xảy ra lỗi kết nối");
     }
   };
+
+  // Smart Auth Gate: Khi user đăng nhập thành công sau khi đã bấm "Xuất bản",
+  // tự động tiếp tục gọi handlePublish mà không mất dữ liệu đang sửa.
+  useEffect(() => {
+    if (user && pendingPublishRef.current) {
+      pendingPublishRef.current = false;
+      handlePublish();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const templatesForCategory = Object.values(TEMPLATE_CONFIGS).filter(
     (t) => t.category === category && !t.label.includes("(Legacy)")

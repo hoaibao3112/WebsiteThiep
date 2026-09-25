@@ -6,6 +6,8 @@ import { NewbornView } from "@/components/newborn/NewbornView";
 import { CanvasCardView } from "@/components/card/CanvasCardView";
 import { CardDetail } from "@/types/card.types";
 import { DEMO_TEMPLATES_MAP } from "./demo-templates-data";
+import { DemoActionBarWrapper } from "./DemoActionBarWrapper";
+import { MASTER_TEMPLATES } from "@/lib/templates-data";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -136,6 +138,12 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   // Truyền templateSlug ưu tiên từ card.template?.slug hoặc chính slug URL
   const effectiveTemplateSlug = card.template?.slug || slug;
 
+  // Xác định có phải thiệp mẫu demo hay không (để hiện Floating CTA)
+  const isDemoTemplate = Boolean(DEMO_TEMPLATES_MAP[slug]);
+  const demoTemplateName = isDemoTemplate
+    ? MASTER_TEMPLATES.find((t) => t.slug === slug)?.name
+    : undefined;
+
   const categoryData = card.categoryData as unknown as Record<string, unknown>;
   const legacyCanvas = categoryData.canvas && typeof categoryData.canvas === "object" && !Array.isArray(categoryData.canvas)
     ? categoryData.canvas as Record<string, unknown>
@@ -160,40 +168,67 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   // RENDER VIEW THEO CARD CATEGORY
   if (card.cardCategory === "WEDDING") {
     return (
-      <WeddingView
-        card={card}
-        templateSlug={effectiveTemplateSlug}
-        guestName={guestName}
-        guestPhone={guestPhone}
-        guestCode={guestCode}
-        isVipExperience={result.features?.vipOpeningExperience}
-      />
+      <>
+        <WeddingView
+          card={card}
+          templateSlug={effectiveTemplateSlug}
+          guestName={guestName}
+          guestPhone={guestPhone}
+          guestCode={guestCode}
+          isVipExperience={result.features?.vipOpeningExperience}
+        />
+        {isDemoTemplate && (
+          <DemoActionBarWrapper
+            templateSlug={effectiveTemplateSlug}
+            templateName={demoTemplateName}
+            category={card.cardCategory}
+          />
+        )}
+      </>
     );
   }
 
   if (card.cardCategory === "BIRTHDAY") {
     return (
-      <BirthdayView
-        card={card}
-        templateSlug={card.template?.slug}
-        guestName={guestName}
-        guestPhone={guestPhone}
-        guestCode={guestCode}
-        isVipExperience={result.features?.vipOpeningExperience}
-      />
+      <>
+        <BirthdayView
+          card={card}
+          templateSlug={card.template?.slug}
+          guestName={guestName}
+          guestPhone={guestPhone}
+          guestCode={guestCode}
+          isVipExperience={result.features?.vipOpeningExperience}
+        />
+        {isDemoTemplate && (
+          <DemoActionBarWrapper
+            templateSlug={effectiveTemplateSlug}
+            templateName={demoTemplateName}
+            category={card.cardCategory}
+          />
+        )}
+      </>
     );
   }
 
   if (card.cardCategory === "NEWBORN") {
     return (
-      <NewbornView
-        card={card}
-        templateSlug={card.template?.slug}
-        guestName={guestName}
-        guestPhone={guestPhone}
-        guestCode={guestCode}
-        isVipExperience={result.features?.vipOpeningExperience}
-      />
+      <>
+        <NewbornView
+          card={card}
+          templateSlug={card.template?.slug}
+          guestName={guestName}
+          guestPhone={guestPhone}
+          guestCode={guestCode}
+          isVipExperience={result.features?.vipOpeningExperience}
+        />
+        {isDemoTemplate && (
+          <DemoActionBarWrapper
+            templateSlug={effectiveTemplateSlug}
+            templateName={demoTemplateName}
+            category={card.cardCategory}
+          />
+        )}
+      </>
     );
   }
 

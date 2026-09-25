@@ -354,7 +354,7 @@ const WEDDING_CARDS_DATA = [
     fallingEffect: "PETAL" as FallingEffect,
     musicUrl: "/music/le-duong.mp3",
     isAutoPlay: true,
-    primaryColor: "#3B5E43",
+    primaryColor: "#2E5136",
     fontFamily: "Playfair Display",
     greetingMessage: "“Gió đưa cành trúc la đà — Duyên ta kết tóc trọn đời bên nhau. Trân trọng kính mời quý bà con cô bác đến dự lễ báo hỷ của đôi trẻ.”",
     categoryData: {
@@ -364,20 +364,22 @@ const WEDDING_CARDS_DATA = [
       coverPhotoUrl: "/images/demo/templates/t06-lotus/cover.jpg",
       greeting: "“Hoa sen thanh khiết — Tình nghĩa phu thê vẹn tròn”",
       groom: {
-        fullName: "Đức Hiển",
+        fullName: "Trần Đức Hiển",
         shortName: "Đức Hiển",
         birthOrder: "Trưởng nam",
         avatarUrl: "/images/demo/templates/t06-lotus/groom.jpg",
-        parents: { fatherName: "Trần Đức Trọng", motherName: "Lê Kim Oanh" },
-        story: "Giảng viên mỹ thuật truyền thống, điềm đạm, yêu văn hóa cố đô.",
+        parents: { fatherName: "Trần Văn Đạt", motherName: "Lê Như Hà" },
+        address: "Tam Trinh, Hà Nội",
+        story: "Kỹ sư công nghệ đĩnh đạc, luôn giữ gìn các giá trị cội nguồn văn hoá.",
       },
       bride: {
-        fullName: "Minh Hằng",
+        fullName: "Nguyễn Minh Hằng",
         shortName: "Minh Hằng",
-        birthOrder: "Trưởng nữ",
+        birthOrder: "Út nữ",
         avatarUrl: "/images/demo/templates/t06-lotus/bride.jpg",
-        parents: { fatherName: "Đỗ Quốc Toản", motherName: "Bùi Thanh Trúc" },
-        story: "Nghệ nhân thêu tay truyền thống, đoan trang, nhu mì và sâu sắc.",
+        parents: { fatherName: "Lê Văn Đức", motherName: "Lê Thị Hạnh" },
+        address: "Phố Huế, Hà Nội",
+        story: "Cô gái Hà Thành đoan trang, yêu áo dài truyền thống và hương sen Tây Hồ.",
       },
       loveStory: [
         { title: "Duyên Kỳ Phố Cổ", date: "2020", description: "Chạm mặt dưới cơn mưa rào bên mái ngói chùa Cầu Hội An." },
@@ -387,11 +389,19 @@ const WEDDING_CARDS_DATA = [
     },
     events: [
       {
-        eventName: "Lễ Gia Tiên & Rước Dâu",
-        eventDate: new Date("2026-11-15T09:00:00Z"),
-        lunarDate: "Ngày 07 Tháng 10 Năm Bính Ngọ",
-        venueName: "Tư Gia Họ Nhà Trai",
-        address: "Số 45 Đường Chi Lăng, TP. Huế, Thừa Thiên Huế",
+        eventName: "LỄ THÀNH HÔN",
+        eventDate: new Date("2026-11-29T15:00:00Z"),
+        lunarDate: "Ngày 15 Tháng 10 Năm Bính Ngọ",
+        venueName: "Tại Tư Gia Nhà Gái",
+        address: "Phố Huế, Hà Nội",
+        mapUrl: "https://maps.google.com",
+      },
+      {
+        eventName: "TIỆC MỪNG LỄ VU QUY",
+        eventDate: new Date("2026-11-29T16:00:00Z"),
+        lunarDate: "Ngày 15 Tháng 10 Năm Bính Ngọ",
+        venueName: "Khách sạn CINELOVE",
+        address: "Hà Nội",
         mapUrl: "https://maps.google.com",
       },
     ],
@@ -403,8 +413,8 @@ const WEDDING_CARDS_DATA = [
       { url: "/images/demo/templates/t06-lotus/gallery-5.jpg", caption: "Ánh mắt trao nhau đong đầy tình nghĩa" },
       { url: "/images/demo/templates/t06-lotus/gallery-6.jpg", caption: "Trăm năm son sắt nghĩa tào khang" },
     ],
-    bankingPrimary: { bankCode: "VCB", accountNumber: "0123456789", accountName: "TRAN DUC HIEN" },
-    bankingSecondary: { bankCode: "AGRI", accountNumber: "45002058989", accountName: "DO MINH HANG" },
+    bankingPrimary: { bankCode: "MB", accountNumber: "0388889999", accountName: "TRAN DUC HIEN" },
+    bankingSecondary: { bankCode: "VCB", accountNumber: "0451000123456", accountName: "NGUYEN MINH HANG" },
   },
 
   // 07. ĐIỆN ẢNH LOOKBOOK TẠP CHÍ VOGUE
@@ -688,6 +698,8 @@ async function seedCards() {
       cardId = created.id;
     }
 
+    const targetAccountId = existingCard ? existingCard.accountId : adminAccount.id;
+
     // Lấy danh sách ảnh đầy đủ từ expanded album (nếu có)
     const tDir = TEMPLATE_DIR_MAP[item.slug];
     const album = tDir ? expandedAlbums[tDir] : null;
@@ -702,7 +714,7 @@ async function seedCards() {
     // Thêm danh sách ảnh CardPhoto vào Backend DB
     await prisma.cardPhoto.createMany({
       data: finalPhotos.map((p: any, idx: number) => ({
-        accountId: adminAccount.id,
+        accountId: targetAccountId,
         cardId,
         url: p.url,
         caption: p.caption,
@@ -714,7 +726,7 @@ async function seedCards() {
     // Thêm danh sách sự kiện CardEvent vào Backend DB
     await prisma.cardEvent.createMany({
       data: item.events.map((e, idx) => ({
-        accountId: adminAccount.id,
+        accountId: targetAccountId,
         cardId,
         eventName: e.eventName,
         eventDate: e.eventDate,

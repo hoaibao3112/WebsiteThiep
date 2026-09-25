@@ -61,6 +61,9 @@ npm run dev                     # Chạy Frontend dev server (Port 3000)
    - Đăng ký/Đăng nhập JWT, CRUD thiệp, Rate-limit RSVP Redis, Webhook SePay VietQR, Xuất file Excel RSVP `.xlsx`.
 5. **Shared Components & Views:**
    - `WaxSealOpening`, `FallingEffect`, `AudioPlayer`, `CountdownTimer`, `GiftQrBoxModal`, `RsvpFormModal`, `GuestbookSection`, `BocDoGame`.
+
+
+   
    - `WeddingView`, `BirthdayView`, `NewbornView` (2 nhánh).
    - Live Mobile Preview Builder (`/dashboard/cards/new`).
    - RSVP Analytics Dashboard (`/dashboard/cards/[cardId]/rsvp`).

@@ -11,8 +11,16 @@ import { useAuth } from "@/context/AuthContext";
  *   - Redirect về trang chủ
  *   - Truyền ?auth=login&redirect=<path> để trang chủ tự mở modal đăng nhập
  *
+ * Ngoại lệ: /dashboard/cards/new được phép truy cập tự do (Zero-friction).
+ * Người dùng có thể trải nghiệm chỉnh sửa thiệp mẫu trước, auth gate chỉ
+ * kích hoạt khi bấm "Lưu thiệp" hoặc "Xuất bản" bên trong trang tạo thiệp.
+ *
  * Nếu đang load (chưa biết auth state) → hiển thị spinner
  */
+
+/** Các route dashboard được phép truy cập mà không cần đăng nhập */
+const PUBLIC_DASHBOARD_ROUTES = ["/dashboard/cards/new"];
+
 export default function DashboardAuthGuard({
   children,
 }: {
@@ -22,14 +30,24 @@ export default function DashboardAuthGuard({
   const router = useRouter();
   const pathname = usePathname();
 
+  // Kiểm tra route hiện tại có được miễn trừ auth hay không
+  const isExemptRoute = PUBLIC_DASHBOARD_ROUTES.some(
+    (route) => pathname === route || pathname?.startsWith(`${route}?`)
+  );
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated && !isExemptRoute) {
       // Chuyển về trang chủ và kèm đường dẫn đích đầy đủ
       const currentQuery = typeof window !== "undefined" ? window.location.search : "";
       const redirectPath = `${pathname || "/dashboard/cards"}${currentQuery}`;
       router.replace(`/?auth=login&redirect=${encodeURIComponent(redirectPath)}`);
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
+  }, [isAuthenticated, isLoading, router, pathname, isExemptRoute]);
+
+  // Route miễn trừ → cho render ngay (không cần chờ auth)
+  if (isExemptRoute) {
+    return <>{children}</>;
+  }
 
   // Đang kiểm tra auth → loading screen đẹp
   if (isLoading) {
@@ -63,3 +81,4 @@ export default function DashboardAuthGuard({
   // Render dashboard
   return <>{children}</>;
 }
+

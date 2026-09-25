@@ -51,9 +51,11 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       const mapUrl = (el.widgetConfig?.url as string) || (firstEvent.mapUrl as string) || "https://maps.google.com";
       const isMarsala = (draft as Record<string, unknown>)?.templateSlug === "wedding-crimson-wine-marsala" || (draft as Record<string, unknown>)?.slug === "wedding-crimson-wine-marsala" || (draft as Record<string, unknown>)?.primaryColor === "#6B1724" || el.color === "#6B1724";
       const isForest = (draft as Record<string, unknown>)?.templateSlug === "wedding-forest-green-botanical" || (draft as Record<string, unknown>)?.slug === "wedding-forest-green-botanical" || (draft as Record<string, unknown>)?.primaryColor === "#364733" || el.color === "#364733";
-      const primaryColor = isForest ? "#364733" : isMarsala ? "#6B1724" : (el.color || "#543A2C");
-      const venueName = (firstEvent.venueName as string) || (isForest ? "TƯ GIA NHÀ GÁI" : "TƯ GIA NHÀ TRAI");
-      const address = (firstEvent.address as string) || (isForest ? "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội" : isMarsala ? "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa" : "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội");
+      const isLotus = (draft as Record<string, unknown>)?.templateSlug === "wedding-pure-lotus-heritage" || (draft as Record<string, unknown>)?.slug === "wedding-pure-lotus-heritage" || (draft as Record<string, unknown>)?.primaryColor === "#2E5136" || el.color === "#2E5136";
+      const primaryColor = isLotus ? "#2E5136" : isForest ? "#364733" : isMarsala ? "#6B1724" : (el.color || "#543A2C");
+      const venueName = (firstEvent.venueName as string) || (isLotus ? "Khách sạn CINELOVE" : isForest ? "TƯ GIA NHÀ GÁI" : "TƯ GIA NHÀ TRAI");
+      const address = (firstEvent.address as string) || (isLotus ? "Hà Nội" : isForest ? "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội" : isMarsala ? "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa" : "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội");
+      const buttonLabel = isLotus ? "CHỈ ĐƯỜNG" : "Xem chỉ đường";
       return (
         <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-center text-center select-none bg-transparent">
           <div className="inline-block border-b pb-1 mb-2" style={{ borderColor: `${primaryColor}66` }}>
@@ -71,10 +73,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             href={mapUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-white text-xs font-semibold shadow-sm transition-opacity hover:opacity-90 cursor-pointer pointer-events-auto"
+            className="inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-white text-xs font-semibold shadow-sm transition-opacity hover:opacity-90 cursor-pointer pointer-events-auto"
             style={{ backgroundColor: primaryColor }}
           >
-            Xem chỉ đường
+            {buttonLabel}
           </a>
         </div>
       );
@@ -267,6 +269,47 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
     }
 
     if (el.type === "preset") {
+      // ── Date helpers (shared across all preset templates) ──
+      const DAYS_VN = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+      const parseEventDate = (ev: Record<string, unknown> | null): Date | null => {
+        if (!ev?.eventDate) return null;
+        const d = new Date(ev.eventDate as string | number);
+        return isNaN(d.getTime()) ? null : d;
+      };
+      const fmtDateDot = (d: Date) => `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}.${d.getFullYear()}`;
+      const fmtDay = (d: Date) => String(d.getDate()).padStart(2, "0");
+      const fmtMonth = (d: Date) => `Tháng ${d.getMonth() + 1}`;
+      const fmtYear = (d: Date) => `Năm ${d.getFullYear()}`;
+      const fmtTime = (d: Date) => `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
+      const fmtTimeColon = (d: Date) => `${String(d.getHours()).padStart(2, "0")} : ${String(d.getMinutes()).padStart(2, "0")}`;
+      const fmtDayOfWeek = (d: Date) => DAYS_VN[d.getDay()];
+      const getMonthDaysAndOffset = (d: Date) => {
+        const year = d.getFullYear();
+        const month = d.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayOffset = (new Date(year, month, 1).getDay() + 6) % 7; // Mon=0
+        return { daysInMonth, firstDayOffset };
+      };
+      const calcCountdown = (targetDate: Date | null) => {
+        if (!targetDate) return { days: "00", hours: "00", minutes: "00", seconds: "00" };
+        const now = new Date();
+        const diff = Math.max(0, targetDate.getTime() - now.getTime());
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        return {
+          days: String(days).padStart(2, "0"),
+          hours: String(hours).padStart(2, "0"),
+          minutes: String(minutes).padStart(2, "0"),
+          seconds: String(seconds).padStart(2, "0"),
+        };
+      };
+      const getParentsAddress = (parentsObj: Record<string, unknown> | undefined, personObj: Record<string, unknown> | undefined, fallback: string) => {
+        if (typeof parentsObj?.address === "string" && parentsObj.address.trim()) return parentsObj.address;
+        if (typeof personObj?.address === "string" && personObj.address.trim()) return personObj.address;
+        return fallback;
+      };
       // ═════════════════════════════════════════════════════════════════════════════
       // TEMPLATE 02: EDITORIAL MAGAZINE (CÔNG VINH & HẢI YẾN)
       // ═════════════════════════════════════════════════════════════════════════════
@@ -278,16 +321,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const quote = (typeof data.greeting === "string" && data.greeting ? data.greeting : "") || "“Chúng ta đã cùng nhau đi qua nhiều thăng trầm để nhận ra rằng được ở bên nhau là điều quý giá nhất\nHôm nay, trước sự chứng kiến của mọi người, từ khoảnh khắc này chúng ta nhẹ nhàng gọi nhau bằng hai tiếng Vợ - Chồng ”";
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let dateStr = "28.12.2026";
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            const day = String(d.getDate()).padStart(2, "0");
-            const m = String(d.getMonth() + 1).padStart(2, "0");
-            const y = d.getFullYear();
-            dateStr = `${day}.${m}.${y}`;
-          }
-        }
+        const evDate = parseEventDate(firstEvent);
+        const dateStr = evDate ? fmtDateDot(evDate) : "28.12.2026";
 
         return (
           <div className="w-full h-full relative overflow-hidden select-none bg-stone-100 flex flex-col justify-end">
@@ -369,10 +404,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const brideParents = (data.bride.parents as Record<string, unknown>) || {};
         const brideFather = (typeof brideParents.fatherName === "string" ? brideParents.fatherName : "") || "Nguyễn Tiến Minh";
         const brideMother = (typeof brideParents.motherName === "string" ? brideParents.motherName : "") || "Hoàng Cẩm Vân";
+        const brideAddr = getParentsAddress(brideParents, data.bride, "Hoàng Mai – Hà Nội");
 
         const groomParents = (data.groom.parents as Record<string, unknown>) || {};
         const groomFather = (typeof groomParents.fatherName === "string" ? groomParents.fatherName : "") || "Phạm Minh Toàn";
         const groomMother = (typeof groomParents.motherName === "string" ? groomParents.motherName : "") || "Lại Thị Tâm";
+        const groomAddr = getParentsAddress(groomParents, data.groom, "Từ Liêm – Hà Nội");
 
         return (
           <div className="w-full h-full px-4 py-3 flex flex-col justify-between select-none bg-[#FAF8F5] gap-3">
@@ -396,7 +433,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   Bà: {brideMother}
                 </p>
                 <span className="text-[10px] text-stone-500 italic mt-1">
-                  Hoàng Mai – Hà Nội
+                  {brideAddr}
                 </span>
 
                 {/* Chibi Bride with Bouquet SVG */}
@@ -445,7 +482,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   Bà: {groomMother}
                 </p>
                 <span className="text-[10px] text-stone-500 italic mt-1">
-                  Từ Liêm – Hà Nội
+                  {groomAddr}
                 </span>
 
                 {/* Chibi Couple SVG */}
@@ -501,27 +538,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let dayStr = "27";
-        let monthStr = "Tháng 12";
-        let yearStr = "Năm 2026";
-        let timeStr = "11h00";
-        let lunarStr = "(Tức ngày 10 tháng 11 năm Bính Ngọ)";
-        let dayOfWeekStr = "Chủ Nhật";
+        const evDate = parseEventDate(firstEvent);
 
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            dayStr = String(d.getDate()).padStart(2, "0");
-            monthStr = `Tháng ${d.getMonth() + 1}`;
-            yearStr = `Năm ${d.getFullYear()}`;
-            timeStr = `${String(d.getHours()).padStart(2, "0")}h${String(d.getMinutes()).padStart(2, "0")}`;
-            const daysOfWeek = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-            dayOfWeekStr = daysOfWeek[d.getDay()];
-          }
-          if (typeof firstEvent.lunarDate === "string") {
-            lunarStr = `(Tức ${firstEvent.lunarDate})`;
-          }
-        }
+        const dayStr = evDate ? fmtDay(evDate) : "27";
+        const monthStr = evDate ? fmtMonth(evDate) : "Tháng 12";
+        const yearStr = evDate ? fmtYear(evDate) : "Năm 2026";
+        const timeStr = evDate ? fmtTime(evDate) : "11h00";
+        const dayOfWeekStr = evDate ? fmtDayOfWeek(evDate) : "Chủ Nhật";
+        const lunarStr = typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? `(Tức ${firstEvent.lunarDate})` : "(Tức ngày 10 tháng 11 năm Bính Ngọ)";
+        const feastTime = evDate ? `${String(new Date(evDate.getTime() + 30 * 60000).getHours()).padStart(2, "0")}h${String(new Date(evDate.getTime() + 30 * 60000).getMinutes()).padStart(2, "0")}` : "11h30";
 
         return (
           <div className="w-full h-full px-4 py-4 flex flex-col justify-between items-center text-center select-none bg-[#FAF8F5]">
@@ -602,7 +627,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               <div className="flex items-center justify-center gap-2">
                 <span className="text-xl">🍽️</span>
                 <div className="text-left">
-                  <div className="text-xs font-bold text-[#543A2C]">11h30</div>
+                  <div className="text-xs font-bold text-[#543A2C]">{feastTime}</div>
                   <div className="text-[11px] text-stone-600">Khai Tiệc</div>
                 </div>
               </div>
@@ -650,13 +675,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const photo: string = el.imageUrl || (typeof (photos[3] as { url?: string })?.url === "string" ? (photos[3] as { url?: string }).url! : "") || "/images/demo/templates/t02-magazine/gallery-4.jpg";
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let targetDay = 27;
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            targetDay = d.getDate();
-          }
-        }
+        const evDate = parseEventDate(firstEvent);
+        const targetDay = evDate ? evDate.getDate() : 27;
+        const calMeta = evDate ? getMonthDaysAndOffset(evDate) : { daysInMonth: 31, firstDayOffset: 1 };
+        const cd = calcCountdown(evDate);
 
         return (
           <div className="w-full h-full relative overflow-hidden select-none bg-stone-900 flex flex-col justify-end text-white">
@@ -669,9 +691,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 Wedding
               </span>
 
-              {/* December 31-day Calendar Grid */}
+              {/* Dynamic Calendar Grid */}
               <div className="w-full max-w-[280px] grid grid-cols-7 gap-y-1.5 gap-x-1 text-center text-xs font-sans text-white/80 my-2">
-                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
+                {Array.from({ length: calMeta.firstDayOffset }).map((_, i) => (
+                  <span key={`blank-${i}`} />
+                ))}
+                {Array.from({ length: calMeta.daysInMonth }, (_, i) => i + 1).map((d) => {
                   const isWeddingDay = d === targetDay;
                   return (
                     <div key={d} className="flex items-center justify-center h-6">
@@ -700,10 +725,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               {/* 4 White Countdown Square Boxes */}
               <div className="grid grid-cols-4 gap-2 w-full max-w-[310px]">
                 {[
-                  { num: "93", label: "ngày" },
-                  { num: "13", label: "giờ" },
-                  { num: "02", label: "phút" },
-                  { num: "51", label: "giây" },
+                  { num: cd.days, label: "ngày" },
+                  { num: cd.hours, label: "giờ" },
+                  { num: cd.minutes, label: "phút" },
+                  { num: cd.seconds, label: "giây" },
                 ].map((item, idx) => (
                   <div key={idx} className="bg-white rounded-md py-2 px-1 text-center shadow-lg">
                     <span className="text-base font-bold text-stone-900 font-sans block leading-tight">
@@ -897,16 +922,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let dateStr = "20.12.2026";
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            const day = String(d.getDate()).padStart(2, "0");
-            const m = String(d.getMonth() + 1).padStart(2, "0");
-            const y = d.getFullYear();
-            dateStr = `${day}.${m}.${y}`;
-          }
-        }
+        const evDate = parseEventDate(firstEvent);
+        const dateStr = evDate ? fmtDateDot(evDate) : "20.12.2026";
 
         return (
           <div className="w-full h-full relative overflow-hidden select-none bg-stone-900 flex flex-col justify-between">
@@ -969,15 +986,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const archPhoto = (typeof (photos[1] as { url?: string })?.url === "string" ? (photos[1] as { url?: string }).url! : "") || (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t04-marsala/gallery-1.jpg";
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let targetDay = 20;
-        let yearNum = 2026;
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            targetDay = d.getDate();
-            yearNum = d.getFullYear();
-          }
-        }
+        const evDate = parseEventDate(firstEvent);
+        const targetDay = evDate ? evDate.getDate() : 20;
+        const yearNum = evDate ? evDate.getFullYear() : 2026;
+        const calMeta = evDate ? getMonthDaysAndOffset(evDate) : { daysInMonth: 31, firstDayOffset: 1 };
 
         return (
           <div className="w-full h-full px-4 pt-6 pb-4 flex flex-col items-center justify-between select-none bg-[#FAF8F6]">
@@ -1016,10 +1028,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                       <span key={dw}>{dw}</span>
                     ))}
                   </div>
-                  {/* Calendar 31 days (Dec 2026 starts on Tuesday -> 1 blank) */}
+                  {/* Dynamic Calendar Grid */}
                   <div className="w-full grid grid-cols-7 gap-1 text-[9px] font-mono text-center text-white">
-                    <span /> {/* Tuesday start */}
-                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => {
+                    {Array.from({ length: calMeta.firstDayOffset }).map((_, i) => (
+                      <span key={`blank-${i}`} />
+                    ))}
+                    {Array.from({ length: calMeta.daysInMonth }, (_, i) => i + 1).map((d) => {
                       const isTarget = d === targetDay;
                       return (
                         <div key={d} className="flex items-center justify-center h-4.5">
@@ -1059,6 +1073,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const ev2Lunar = (ev2.lunarDate as string) || "Tức ngày 05 tháng 11 năm Bính Ngọ";
         const ev2MapUrl = (ev2.mapUrl as string) || "https://maps.google.com";
 
+        const d1 = parseEventDate(ev1);
+        const d2 = parseEventDate(ev2);
+        const ev1TimeStr = d1 ? `${fmtDayOfWeek(d1).toUpperCase()} — ${fmtTimeColon(d1)}` : "CHỦ NHẬT — 16 : 00";
+        const ev1DateStr = d1 ? fmtDateDot(d1) : "20.12.2026";
+        const ev2TimeStr = d2 ? `${fmtDayOfWeek(d2).toUpperCase()} — ${fmtTimeColon(d2)}` : "THỨ BẢY — 18 : 00";
+        const ev2DateStr = d2 ? fmtDateDot(d2) : "19.12.2026";
+
         return (
           <div className="w-full h-full px-4 py-4 flex flex-col justify-between select-none bg-[#FAF8F6]">
             {/* Title */}
@@ -1080,10 +1101,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   {ev1Name}
                 </span>
                 <span className="text-[11px] tracking-widest text-rose-200 mt-0.5 uppercase">
-                  CHỦ NHẬT — 16 : 00
+                  {ev1TimeStr}
                 </span>
                 <span className="font-serif text-3xl font-bold text-white tracking-wide my-1">
-                  20.12.2026
+                  {ev1DateStr}
                 </span>
                 <span className="text-[10px] italic text-rose-200/90 font-light">
                   {ev1Lunar}
@@ -1112,10 +1133,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   {ev2Name}
                 </span>
                 <span className="text-[11px] tracking-widest text-rose-200 mt-0.5 uppercase">
-                  THỨ BẢY — 18 : 00
+                  {ev2TimeStr}
                 </span>
                 <span className="font-serif text-3xl font-bold text-white tracking-wide my-1">
-                  19.12.2026
+                  {ev2DateStr}
                 </span>
                 <span className="text-[10px] italic text-rose-200/90 font-light">
                   {ev2Lunar}
@@ -1150,6 +1171,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const address = (ev.address as string) || "Quảng Vinh, Nam Sầm Sơn\nThanh Hóa";
         const mapUrl = (ev.mapUrl as string) || "https://maps.google.com";
 
+        const d1 = parseEventDate(ev);
+        const dow1 = d1 ? fmtDayOfWeek(d1).toUpperCase() : "CHỦ NHẬT";
+        const month1 = d1 ? `THÁNG ${d1.getMonth() + 1}` : "THÁNG 12";
+        const day1 = d1 ? fmtDay(d1) : "20";
+        const year1 = d1 ? `NĂM ${d1.getFullYear()}` : "NĂM 2026";
+        const time1 = d1 ? fmtTimeColon(d1) : "16 : 00";
+        const lunar1 = typeof ev.lunarDate === "string" && ev.lunarDate ? `Nhằm ${ev.lunarDate}` : "Nhằm ngày 06 tháng 11 năm Bính Ngọ";
+        const cd1 = calcCountdown(d1);
+
         return (
           <div className="w-full h-full px-5 py-5 flex flex-col justify-between select-none bg-[#FAF8F6]">
             {/* Header */}
@@ -1161,25 +1191,25 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 LỄ THÀNH HÔN
               </h3>
               <span className="text-xs uppercase tracking-widest text-stone-600 font-medium block pt-1">
-                CHỦ NHẬT
+                {dow1}
               </span>
               {/* Date Box: THÁNG 12 | 20 | NĂM 2026 */}
               <div className="flex items-center justify-center gap-3 my-2">
                 <span className="border-y border-stone-400/60 py-1 px-3 text-xs font-serif font-medium text-stone-700 tracking-wider">
-                  THÁNG 12
+                  {month1}
                 </span>
                 <span className="font-serif text-4xl font-bold text-[#6B1724] px-1">
-                  20
+                  {day1}
                 </span>
                 <span className="border-y border-stone-400/60 py-1 px-3 text-xs font-serif font-medium text-stone-700 tracking-wider">
-                  NĂM 2026
+                  {year1}
                 </span>
               </div>
               <span className="text-sm font-mono font-semibold text-stone-800 block">
-                16 : 00
+                {time1}
               </span>
               <span className="text-[11px] italic text-stone-500 block">
-                Nhằm ngày 06 tháng 11 năm Bính Ngọ
+                {lunar1}
               </span>
             </div>
 
@@ -1217,10 +1247,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             {/* 4 Wine Red Countdown Boxes */}
             <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1">
               {[
-                { num: "85", label: "ngày" },
-                { num: "19", label: "giờ" },
-                { num: "22", label: "phút" },
-                { num: "43", label: "giây" },
+                { num: cd1.days, label: "ngày" },
+                { num: cd1.hours, label: "giờ" },
+                { num: cd1.minutes, label: "phút" },
+                { num: cd1.seconds, label: "giây" },
               ].map((box, idx) => (
                 <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40">
                   <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
@@ -1242,6 +1272,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const address = (ev.address as string) || "Tam Đa, Tống Trân\nHưng Yên";
         const mapUrl = (ev.mapUrl as string) || "https://maps.google.com";
 
+        const d2 = parseEventDate(ev);
+        const dow2 = d2 ? fmtDayOfWeek(d2).toUpperCase() : "CHỦ NHẬT";
+        const month2 = d2 ? `THÁNG ${d2.getMonth() + 1}` : "THÁNG 12";
+        const day2 = d2 ? fmtDay(d2) : "20";
+        const year2 = d2 ? `NĂM ${d2.getFullYear()}` : "NĂM 2026";
+        const time2 = d2 ? fmtTimeColon(d2) : "10 : 00";
+        const lunar2 = typeof ev.lunarDate === "string" && ev.lunarDate ? `Nhằm ${ev.lunarDate}` : "Nhằm ngày 06 tháng 11 năm Bính Ngọ";
+        const cd2 = calcCountdown(d2);
+
         return (
           <div className="w-full h-full px-5 py-5 flex flex-col justify-between select-none bg-[#FAF8F6]">
             {/* Header */}
@@ -1250,25 +1289,25 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 LỄ VU QUY
               </h3>
               <span className="text-xs uppercase tracking-widest text-stone-600 font-medium block pt-1">
-                CHỦ NHẬT
+                {dow2}
               </span>
               {/* Date Box: THÁNG 12 | 20 | NĂM 2026 */}
               <div className="flex items-center justify-center gap-3 my-2">
                 <span className="border-y border-stone-400/60 py-1 px-3 text-xs font-serif font-medium text-stone-700 tracking-wider">
-                  THÁNG 12
+                  {month2}
                 </span>
                 <span className="font-serif text-4xl font-bold text-[#6B1724] px-1">
-                  20
+                  {day2}
                 </span>
                 <span className="border-y border-stone-400/60 py-1 px-3 text-xs font-serif font-medium text-stone-700 tracking-wider">
-                  NĂM 2026
+                  {year2}
                 </span>
               </div>
               <span className="text-sm font-mono font-semibold text-stone-800 block">
-                10 : 00
+                {time2}
               </span>
               <span className="text-[11px] italic text-stone-500 block">
-                Nhằm ngày 06 tháng 11 năm Bính Ngọ
+                {lunar2}
               </span>
             </div>
 
@@ -1305,10 +1344,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             {/* 4 Wine Red Countdown Boxes */}
             <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1">
               {[
-                { num: "85", label: "ngày" },
-                { num: "13", label: "giờ" },
-                { num: "22", label: "phút" },
-                { num: "43", label: "giây" },
+                { num: cd2.days, label: "ngày" },
+                { num: cd2.hours, label: "giờ" },
+                { num: cd2.minutes, label: "phút" },
+                { num: cd2.seconds, label: "giây" },
               ].map((box, idx) => (
                 <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40">
                   <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
@@ -1448,16 +1487,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const brideName = (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Mai Lan";
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let dateStr = "02.08.2026";
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            const day = String(d.getDate()).padStart(2, "0");
-            const m = String(d.getMonth() + 1).padStart(2, "0");
-            const y = d.getFullYear();
-            dateStr = `${day}.${m}.${y}`;
-          }
-        }
+        const evDate = parseEventDate(firstEvent);
+        const dateStr = evDate ? fmtDateDot(evDate) : "02.08.2026";
+
+        const groomInitial = (groomName || "M").trim().charAt(0).toUpperCase();
+        const brideInitial = (brideName || "L").trim().charAt(0).toUpperCase();
+        const sealText = `${brideInitial}·${groomInitial}`;
 
         return (
           <div className="w-full h-full relative overflow-hidden select-none bg-[#FAFBF8] flex flex-col items-center justify-between pt-5 pb-4 px-3">
@@ -1536,12 +1571,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 </svg>
               </div>
 
-              {/* Olive Green 3D Wax Seal with Monogram "ML" */}
+              {/* Olive Green 3D Wax Seal with Dynamic Monogram */}
               <div className="absolute bottom-[80px] left-1/2 -translate-x-1/2 z-40 drop-shadow-xl pointer-events-none">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#4A6146] via-[#354832] to-[#243322] border-2 border-[#D4AF37]/70 flex items-center justify-center shadow-inner relative">
                   <div className="w-10 h-10 rounded-full border border-dashed border-[#D4AF37]/60 flex items-center justify-center">
                     <span className="font-serif font-bold text-sm tracking-widest text-[#F2E5C4] drop-shadow-sm">
-                      M·L
+                      {sealText}
                     </span>
                   </div>
                 </div>
@@ -1592,27 +1627,11 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const polaroidPhoto = (typeof (photos[2] as { url?: string })?.url === "string" ? (photos[2] as { url?: string }).url! : "") || (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t05-forest/gallery-3.jpg";
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
-        let eventDay = 2;
-        let monthStr = "Tháng 08.2026";
-        if (firstEvent && firstEvent.eventDate) {
-          const d = new Date(firstEvent.eventDate as string | number);
-          if (!isNaN(d.getTime())) {
-            eventDay = d.getDate();
-            const m = String(d.getMonth() + 1).padStart(2, "0");
-            monthStr = `Tháng ${m}.${d.getFullYear()}`;
-          }
-        }
-
-        // Calendar days 1..31 for August 2026 (Aug 1 is Saturday)
+        const evDate = parseEventDate(firstEvent);
+        const eventDay = evDate ? evDate.getDate() : 2;
+        const monthStr = evDate ? `Tháng ${String(evDate.getMonth() + 1).padStart(2, "0")}.${evDate.getFullYear()}` : "Tháng 08.2026";
+        const calMeta = evDate ? getMonthDaysAndOffset(evDate) : { daysInMonth: 31, firstDayOffset: 5 };
         const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        const aug2026Days: (number | null)[] = [
-          null, null, null, null, null, 1, 2,
-          3, 4, 5, 6, 7, 8, 9,
-          10, 11, 12, 13, 14, 15, 16,
-          17, 18, 19, 20, 21, 22, 23,
-          24, 25, 26, 27, 28, 29, 30,
-          31
-        ];
 
         return (
           <div className="w-full h-full px-3 py-2 flex items-center justify-center select-none bg-transparent">
@@ -1646,8 +1665,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
                 {/* Days Grid */}
                 <div className="grid grid-cols-7 text-center gap-y-1 gap-x-0.5 text-[10px]">
-                  {aug2026Days.map((d, idx) => {
-                    if (d === null) return <span key={`empty-${idx}`} />;
+                  {Array.from({ length: calMeta.firstDayOffset }).map((_, i) => (
+                    <span key={`blank-${i}`} />
+                  ))}
+                  {Array.from({ length: calMeta.daysInMonth }, (_, i) => i + 1).map((d) => {
                     const isSelected = d === eventDay;
                     return (
                       <div key={d} className="flex items-center justify-center">
@@ -1826,6 +1847,18 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const addr2 = (ev2?.address as string) || "Hoàng Mai, Hà Nội";
         const mapUrl2 = (ev2?.mapUrl as string) || "https://maps.google.com";
 
+        const d1 = parseEventDate(ev1);
+        const ev1Time = d1 ? `${fmtTimeColon(d1)} , ${fmtDayOfWeek(d1).toUpperCase()}` : "10 : 30 , CHỦ NHẬT";
+        const ev1Date = d1 ? `${fmtDay(d1)} . ${String(d1.getMonth() + 1).padStart(2, "0")} . ${d1.getFullYear()}` : "02 . 08 . 2026";
+        const ev1Lunar = typeof ev1?.lunarDate === "string" && ev1.lunarDate ? `Tức ${ev1.lunarDate}` : "Tức Ngày 20 Tháng 07 Năm Bính Ngọ";
+
+        const d2 = parseEventDate(ev2);
+        const ev2Time = d2 ? `${fmtTimeColon(d2)} , ${fmtDayOfWeek(d2).toUpperCase()}` : "12 : 30 , CHỦ NHẬT";
+        const ev2Date = d2 ? `${fmtDay(d2)} . ${String(d2.getMonth() + 1).padStart(2, "0")} . ${d2.getFullYear()}` : "02 . 08 . 2026";
+        const ev2Lunar = typeof ev2?.lunarDate === "string" && ev2.lunarDate ? `Tức ${ev2.lunarDate}` : "Tức Ngày 20 Tháng 07 Năm Bính Ngọ";
+
+        const cd = calcCountdown(d1 || d2);
+
         return (
           <div className="w-full h-full px-3 py-2 flex flex-col justify-between select-none bg-transparent">
             {/* Dark Green Event Card */}
@@ -1839,13 +1872,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   VÀO HỒI
                 </span>
                 <span className="font-sans font-bold text-base tracking-wider text-white mt-0.5">
-                  10 : 30 , CHỦ NHẬT
+                  {ev1Time}
                 </span>
                 <span className="font-serif text-2xl font-bold tracking-widest text-[#F2EBD9] my-1">
-                  02 . 08 . 2026
+                  {ev1Date}
                 </span>
                 <span className="italic text-[11px] text-stone-300">
-                  Tức Ngày 20 Tháng 07 Năm Bính Ngọ
+                  {ev1Lunar}
                 </span>
                 <h4 className="font-serif font-bold text-base uppercase tracking-wider text-white mt-2">
                   {venue1}
@@ -1875,13 +1908,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   VÀO HỒI
                 </span>
                 <span className="font-sans font-bold text-base tracking-wider text-white mt-0.5">
-                  12 : 30 , CHỦ NHẬT
+                  {ev2Time}
                 </span>
                 <span className="font-serif text-2xl font-bold tracking-widest text-[#F2EBD9] my-1">
-                  02.08.2026
+                  {ev2Date}
                 </span>
                 <span className="italic text-[11px] text-stone-300">
-                  Tức Ngày 20 Tháng 07 Năm Bính Ngọ
+                  {ev2Lunar}
                 </span>
                 <h4 className="font-serif font-bold text-base uppercase tracking-wider text-white mt-2">
                   {venue2}
@@ -1919,10 +1952,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             {/* Countdown Timer with 4 Dark Olive Square Boxes */}
             <div className="mt-3 grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full">
               {[
-                { label: "ngày", val: "0" },
-                { label: "giờ", val: "0" },
-                { label: "phút", val: "0" },
-                { label: "giây", val: "0" },
+                { label: "ngày", val: cd.days },
+                { label: "giờ", val: cd.hours },
+                { label: "phút", val: cd.minutes },
+                { label: "giây", val: cd.seconds },
               ].map((item) => (
                 <div key={item.label} className="bg-[#364733] rounded-lg p-2 text-center text-white shadow-md">
                   <span className="font-serif text-lg font-bold block leading-none">
@@ -2068,6 +2101,606 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         );
       }
 
+      // ═════════════════════════════════════════════════════════════════════════════
+      // TEMPLATE 06: HOA SEN THANH KHIẾT BÁO HỶ THUẦN VIỆT (MINH HẰNG & ĐỨC HIỂN)
+      // ═════════════════════════════════════════════════════════════════════════════
+
+      // 06.1 Hero Watercolor Lotus + Floating Petals + "THIỆP BÁO HỶ" Typography
+      if (el.presetId === "p-lotus-hero") {
+        const groomShort = (typeof data.groom?.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Đức Hiển";
+        const brideShort = (typeof data.bride?.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Minh Hằng";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const firstEvent = (events[0] as Record<string, unknown>) || null;
+        const evDate = parseEventDate(firstEvent);
+        const dateStr = evDate ? fmtDateDot(evDate) : "29.11.2026";
+
+        return (
+          <div className="w-full h-full relative overflow-hidden select-none bg-gradient-to-b from-[#FAFDF9] via-[#FFFFFF] to-[#F5FAF4] flex flex-col justify-between pt-8 pb-10 px-4">
+            {/* Top-Left Watercolor Lotus Leaf Illustration */}
+            <div className="absolute top-0 left-0 w-36 h-28 pointer-events-none opacity-90">
+              <svg viewBox="0 0 140 110" className="w-full h-full" fill="none">
+                <defs>
+                  <radialGradient id="lotusLeafGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stopColor="#7DAE84" />
+                    <stop offset="50%" stopColor="#4A7553" />
+                    <stop offset="100%" stopColor="#2E5136" />
+                  </radialGradient>
+                </defs>
+                <path d="M-10 -10 C30 -5 70 15 90 40 C110 65 100 95 70 100 C40 105 10 90 -5 65 Z" fill="url(#lotusLeafGrad)" opacity="0.85" />
+                {/* Leaf veins */}
+                <path d="M0 0 C40 35 60 55 80 80" stroke="#9FD4A7" strokeWidth="1.2" opacity="0.6" strokeLinecap="round" />
+                <path d="M35 25 C55 20 75 30 85 45" stroke="#9FD4A7" strokeWidth="0.8" opacity="0.5" strokeLinecap="round" />
+                <path d="M50 45 C45 65 55 75 70 85" stroke="#9FD4A7" strokeWidth="0.8" opacity="0.5" strokeLinecap="round" />
+              </svg>
+            </div>
+
+            {/* Drifting Pink Lotus Petals */}
+            <div className="absolute top-16 left-12 transform -rotate-12 pointer-events-none opacity-75">
+              <svg width="22" height="14" viewBox="0 0 22 14" fill="none">
+                <path d="M0 7 C5 0 17 0 22 7 C17 14 5 14 0 7 Z" fill="#F3A6B4" opacity="0.9" />
+              </svg>
+            </div>
+            <div className="absolute top-10 right-14 transform rotate-24 pointer-events-none opacity-60">
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                <path d="M0 6 C4 0 14 0 18 6 C14 12 4 12 0 6 Z" fill="#E88295" opacity="0.85" />
+              </svg>
+            </div>
+            <div className="absolute top-72 left-8 transform rotate-45 pointer-events-none opacity-70">
+              <svg width="20" height="13" viewBox="0 0 20 13" fill="none">
+                <path d="M0 6.5 C4 0 16 0 20 6.5 C16 13 4 13 0 6.5 Z" fill="#F3A6B4" opacity="0.8" />
+              </svg>
+            </div>
+            <div className="absolute top-84 right-6 transform -rotate-18 pointer-events-none opacity-65">
+              <svg width="24" height="15" viewBox="0 0 24 15" fill="none">
+                <path d="M0 7.5 C6 0 18 0 24 7.5 C18 15 6 15 0 7.5 Z" fill="#E88295" opacity="0.85" />
+              </svg>
+            </div>
+
+            {/* Center Typography: THIỆP BÁO HỶ */}
+            <div className="relative z-10 text-center mt-8">
+              <h1 className="font-serif text-3xl md:text-4xl font-normal tracking-[0.25em] text-[#223624] uppercase drop-shadow-xs">
+                THIỆP BÁO HỶ
+              </h1>
+              <div className="w-16 h-[1px] bg-[#C9A45C]/60 mx-auto mt-3 mb-4" />
+              <p className="font-serif italic text-3xl text-[#1E5652] tracking-wide my-1">
+                {brideShort} &amp; {groomShort}
+              </p>
+              <p className="font-serif text-sm tracking-[0.25em] text-stone-600 uppercase mt-3">
+                {dateStr}
+              </p>
+            </div>
+
+            {/* Bottom-Right Watercolor Lotus Flowers & Leaves Spray */}
+            <div className="relative z-10 flex justify-end pr-2 pointer-events-none">
+              <div className="w-56 h-48 relative">
+                <svg viewBox="0 0 200 170" className="w-full h-full" fill="none">
+                  {/* Lotus Leaf Base */}
+                  <ellipse cx="140" cy="130" rx="55" ry="30" fill="#4B7754" opacity="0.85" />
+                  <ellipse cx="80" cy="140" rx="45" ry="22" fill="#6B9C75" opacity="0.8" />
+                  {/* Stems */}
+                  <path d="M120 135 C115 110 110 80 108 55" stroke="#3D6345" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M150 135 C152 115 158 95 162 70" stroke="#3D6345" strokeWidth="2.5" strokeLinecap="round" />
+                  {/* Big Pink Lotus Bloom */}
+                  <g transform="translate(65, 30)">
+                    {/* Outer Petals */}
+                    <path d="M45 45 C20 30 15 10 35 0 C45 15 50 35 45 45 Z" fill="#F8B4C2" />
+                    <path d="M45 45 C70 30 75 10 55 0 C45 15 40 35 45 45 Z" fill="#F8B4C2" />
+                    <path d="M45 45 C30 20 35 -5 45 -10 C55 -5 60 20 45 45 Z" fill="#E88295" />
+                    {/* Inner Golden Stamen */}
+                    <ellipse cx="45" cy="15" rx="7" ry="5" fill="#F4D03F" opacity="0.9" />
+                  </g>
+                  {/* Small Lotus Bud */}
+                  <g transform="translate(145, 45)">
+                    <path d="M15 30 C5 20 8 5 15 0 C22 5 25 20 15 30 Z" fill="#EA95A7" />
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.2 Announcement Card with Green Border + Red Song Hỷ Crest + Gold Lotus Line-art
+      if (el.presetId === "p-lotus-announcement") {
+        const brideParents = (data.bride?.parents as Record<string, unknown> | undefined) || {};
+        const groomParents = (data.groom?.parents as Record<string, unknown> | undefined) || {};
+        const brideFather = (typeof brideParents.fatherName === "string" ? brideParents.fatherName : "") || "Lê Văn Đức";
+        const brideMother = (typeof brideParents.motherName === "string" ? brideParents.motherName : "") || "Lê Thị Hạnh";
+        const rawBrideAddr = (data.bride as Record<string, unknown>)?.address;
+        const brideAddress: string = typeof rawBrideAddr === "string" && rawBrideAddr.trim() ? rawBrideAddr : "Phố Huế, Hà Nội";
+
+        const groomFather = (typeof groomParents.fatherName === "string" ? groomParents.fatherName : "") || "Trần Văn Đạt";
+        const groomMother = (typeof groomParents.motherName === "string" ? groomParents.motherName : "") || "Lê Như Hà";
+        const rawGroomAddr = (data.groom as Record<string, unknown>)?.address;
+        const groomAddress: string = typeof rawGroomAddr === "string" && rawGroomAddr.trim() ? rawGroomAddr : "Tam Trinh, Hà Nội";
+
+        const groomFull = (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Trần Đức Hiển";
+        const brideFull = (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Minh Hằng";
+
+        return (
+          <div className="w-full h-full px-3 py-2 flex items-center justify-center select-none bg-transparent">
+            {/* Rounded Rect with Green Border & Gold Lotus Watermarks */}
+            <div className="w-full h-full rounded-3xl border border-[#2E5136]/70 bg-white/95 p-5 shadow-lg flex flex-col justify-between items-center text-center relative overflow-hidden">
+              {/* Gold Lotus Corner Line-Art at Bottom-Left & Bottom-Right */}
+              <div className="absolute -bottom-2 -left-2 pointer-events-none opacity-40">
+                <svg width="70" height="70" viewBox="0 0 60 60" fill="none">
+                  <path d="M5 55 C15 35 35 15 55 5" stroke="#C9A45C" strokeWidth="1" />
+                  <path d="M20 45 C15 30 25 20 30 15 C35 20 45 30 40 45 Z" stroke="#C9A45C" strokeWidth="0.8" fill="#C9A45C" fillOpacity="0.08" />
+                  <path d="M12 48 C8 38 15 28 20 25 C22 30 22 40 18 48 Z" stroke="#C9A45C" strokeWidth="0.6" />
+                </svg>
+              </div>
+              <div className="absolute -bottom-2 -right-2 pointer-events-none opacity-40 transform scale-x-[-1]">
+                <svg width="70" height="70" viewBox="0 0 60 60" fill="none">
+                  <path d="M5 55 C15 35 35 15 55 5" stroke="#C9A45C" strokeWidth="1" />
+                  <path d="M20 45 C15 30 25 20 30 15 C35 20 45 30 40 45 Z" stroke="#C9A45C" strokeWidth="0.8" fill="#C9A45C" fillOpacity="0.08" />
+                  <path d="M12 48 C8 38 15 28 20 25 C22 30 22 40 18 48 Z" stroke="#C9A45C" strokeWidth="0.6" />
+                </svg>
+              </div>
+
+              {/* 3-Column Header: NHÀ TRAI | Red Song Hỷ | NHÀ GÁI */}
+              <div className="w-full grid grid-cols-3 items-center">
+                {/* Nhà Trai */}
+                <div className="text-center">
+                  <span className="font-serif font-bold text-xs uppercase tracking-widest text-[#243521] block mb-1">
+                    NHÀ TRAI
+                  </span>
+                  <span className="text-[10px] font-sans uppercase font-bold text-stone-700 block leading-tight">
+                    ÔNG: {groomFather}
+                  </span>
+                  <span className="text-[10px] font-sans uppercase font-bold text-stone-700 block leading-tight mt-0.5">
+                    BÀ: {groomMother}
+                  </span>
+                  <span className="text-[9px] text-stone-500 block mt-1">
+                    {groomAddress}
+                  </span>
+                </div>
+
+                {/* Central Red Song Hỷ Medallion */}
+                <div className="flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full border-2 border-[#B71C1C] flex items-center justify-center bg-rose-50/60 shadow-xs">
+                    <span className="text-[#B71C1C] text-2xl font-serif font-black leading-none select-none">
+                      囍
+                    </span>
+                  </div>
+                </div>
+
+                {/* Nhà Gái */}
+                <div className="text-center">
+                  <span className="font-serif font-bold text-xs uppercase tracking-widest text-[#243521] block mb-1">
+                    NHÀ GÁI
+                  </span>
+                  <span className="text-[10px] font-sans uppercase font-bold text-stone-700 block leading-tight">
+                    ÔNG: {brideFather}
+                  </span>
+                  <span className="text-[10px] font-sans uppercase font-bold text-stone-700 block leading-tight mt-0.5">
+                    BÀ: {brideMother}
+                  </span>
+                  <span className="text-[9px] text-stone-500 block mt-1">
+                    {brideAddress}
+                  </span>
+                </div>
+              </div>
+
+              {/* Centered Sentence */}
+              <div className="my-2">
+                <p className="font-serif italic text-xs text-stone-600 tracking-wide">
+                  Trân Trọng Báo Tin Lễ Thành Hôn Của
+                </p>
+              </div>
+
+              {/* Couple Full Names in Flowing Cursive Script */}
+              <div className="mb-2">
+                <h3 className="font-serif italic text-2xl text-[#1E5652] tracking-wide">
+                  {brideFull}
+                </h3>
+                <span className="font-serif text-xl text-[#C9A45C] block my-0.5 font-light">
+                  &amp;
+                </span>
+                <h3 className="font-serif italic text-2xl text-[#1E5652] tracking-wide">
+                  {groomFull}
+                </h3>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.3 Romantic Couple Photo Banner + "THƯ MỜI THAM DỰ TIỆC CƯỚI"
+      if (el.presetId === "p-lotus-invitation-header") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const photoUrl = (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || (typeof data.coverPhotoUrl === "string" ? data.coverPhotoUrl : "") || "/images/demo/templates/t06-lotus/gallery-1.jpg";
+
+        return (
+          <div className="w-full h-full flex flex-col justify-between select-none bg-[#FCFDFB]">
+            {/* Full-width couple banner with bottom gradient fade */}
+            <div className="w-full h-[260px] relative overflow-hidden bg-stone-100">
+              <img src={photoUrl} alt="Invitation Banner" className="w-full h-full object-cover object-center" />
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#FCFDFB] via-[#FCFDFB]/60 to-transparent pointer-events-none" />
+            </div>
+
+            {/* Invitation Section Heading */}
+            <div className="text-center pb-3">
+              <h2 className="font-serif text-sm font-bold tracking-[0.25em] text-[#2E4731] uppercase">
+                THƯ MỜI THAM DỰ TIỆC CƯỚI
+              </h2>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.4 Dual Ceremonies (Lễ Thành Hôn & Tiệc Vu Quy) with Gold Lotus Divider
+      if (el.presetId === "p-lotus-ceremonies") {
+        const events = Array.isArray(data.events) ? data.events : [];
+        const ev1 = (events[0] as Record<string, unknown>) || null;
+        const ev2 = (events[1] as Record<string, unknown>) || null;
+
+        const formatEvTime = (dateInput?: unknown, fallbackTime = "15:00 - Chủ Nhật") => {
+          if (!dateInput) return fallbackTime;
+          const d = new Date(dateInput as string | number);
+          if (isNaN(d.getTime())) return fallbackTime;
+          const hh = String(d.getHours()).padStart(2, "0");
+          const mm = String(d.getMinutes()).padStart(2, "0");
+          const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+          return `${hh}:${mm} - ${days[d.getDay()] || "Chủ Nhật"}`;
+        };
+
+        const formatEvDate = (dateInput?: unknown, fallbackDate = "29.11.2026") => {
+          if (!dateInput) return fallbackDate;
+          const d = new Date(dateInput as string | number);
+          if (isNaN(d.getTime())) return fallbackDate;
+          const dd = String(d.getDate()).padStart(2, "0");
+          const mm = String(d.getMonth() + 1).padStart(2, "0");
+          const yy = d.getFullYear();
+          return `${dd}.${mm}.${yy}`;
+        };
+
+        const title1 = (ev1?.eventName as string) || "LỄ THÀNH HÔN";
+        const time1 = formatEvTime(ev1?.eventDate, "15:00 - Chủ Nhật");
+        const date1 = formatEvDate(ev1?.eventDate, "29.11.2026");
+        const lunar1 = (typeof ev1?.lunarDate === "string" && ev1.lunarDate.trim()) ? (ev1.lunarDate.startsWith("(") ? ev1.lunarDate : `(${ev1.lunarDate})`) : "(Tức Ngày 15 Tháng 10 Năm Bính Ngọ)";
+        const venue1 = (ev1?.venueName as string) || "Tại Tư Gia Nhà Gái";
+
+        const title2 = (ev2?.eventName as string) || "TIỆC MỪNG LỄ VU QUY";
+        const time2 = formatEvTime(ev2?.eventDate, "16:00 - Chủ Nhật");
+        const date2 = formatEvDate(ev2?.eventDate, "29.11.2026");
+        const lunar2 = (typeof ev2?.lunarDate === "string" && ev2.lunarDate.trim()) ? (ev2.lunarDate.startsWith("(") ? ev2.lunarDate : `(${ev2.lunarDate})`) : "(Tức Ngày 15 Tháng 10 Năm Bính Ngọ)";
+        const venue2 = (ev2?.venueName as string) || "khách sạn CINELOVE";
+
+        return (
+          <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-between text-center select-none bg-[#FCFDFB] relative">
+            {/* Drifting Petals Accent */}
+            <div className="absolute top-4 left-4 pointer-events-none opacity-60">
+              <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
+                <path d="M0 6 C4 0 16 0 20 6 C16 12 4 12 0 6 Z" fill="#F3A6B4" />
+              </svg>
+            </div>
+
+            {/* Event 1: LỄ THÀNH HÔN */}
+            <div className="flex flex-col items-center">
+              <h3 className="font-serif font-black text-xl tracking-wider text-[#1C2C1D] uppercase">
+                {title1}
+              </h3>
+              <span className="font-sans text-xs font-semibold text-stone-700 tracking-wide mt-1">
+                {time1}
+              </span>
+              <span className="font-serif text-2xl font-bold tracking-widest text-[#1C2C1D] my-1">
+                {date1}
+              </span>
+              <span className="text-[11px] italic text-stone-500">
+                {lunar1}
+              </span>
+              <p className="font-serif font-bold text-sm text-[#2E4731] mt-1.5">
+                {venue1}
+              </p>
+            </div>
+
+            {/* Gold Lotus Divider */}
+            <div className="flex items-center justify-center gap-3 my-2 w-full max-w-[260px]">
+              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#C9A45C]" />
+              <div className="w-6 h-6 flex items-center justify-center text-[#C9A45C]">
+                <svg viewBox="0 0 24 24" className="w-full h-full" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="12" cy="12" r="3" fill="#C9A45C" />
+                  <path d="M12 4 C10 8 10 10 12 12 C14 10 14 8 12 4 Z" />
+                  <path d="M12 20 C10 16 10 14 12 12 C14 14 14 16 12 20 Z" />
+                  <path d="M4 12 C8 10 10 10 12 12 C10 14 8 14 4 12 Z" />
+                  <path d="M20 12 C16 10 14 10 12 12 C14 14 16 14 20 12 Z" />
+                </svg>
+              </div>
+              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#C9A45C]" />
+            </div>
+
+            {/* Event 2: TIỆC MỪNG LỄ VU QUY */}
+            <div className="flex flex-col items-center">
+              <h3 className="font-serif font-black text-xl tracking-wider text-[#1C2C1D] uppercase">
+                {title2}
+              </h3>
+              <span className="font-sans text-xs font-semibold text-stone-700 tracking-wide mt-1">
+                {time2}
+              </span>
+              <span className="font-serif text-2xl font-bold tracking-widest text-[#1C2C1D] my-1">
+                {date2}
+              </span>
+              <span className="text-[11px] italic text-stone-500">
+                {lunar2}
+              </span>
+              <p className="font-serif font-bold text-sm text-[#2E4731] mt-1.5 uppercase">
+                {venue2}
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.5 Minimalist Lotus Calendar with Dark Olive Bar & Heart Badge on Selected Day
+      if (el.presetId === "p-lotus-calendar") {
+        const events = Array.isArray(data.events) ? data.events : [];
+        const firstEvent = (events[0] as Record<string, unknown>) || null;
+        let eventDate = new Date("2026-11-29T15:00:00Z");
+        if (firstEvent && firstEvent.eventDate) {
+          const d = new Date(firstEvent.eventDate as string | number);
+          if (!isNaN(d.getTime())) eventDate = d;
+        }
+
+        const eventYear = eventDate.getFullYear();
+        const eventMonth = eventDate.getMonth() + 1;
+        const eventDay = eventDate.getDate();
+
+        // Calculate calendar grid (T2..CN = Mon..Sun)
+        const daysInMonth = new Date(eventYear, eventMonth, 0).getDate();
+        const firstDayOfWeek = new Date(eventYear, eventMonth - 1, 1).getDay(); // 0 is Sun, 1 is Mon
+        const leadingBlanks = (firstDayOfWeek + 6) % 7;
+
+        const calendarDays: (number | null)[] = [];
+        for (let i = 0; i < leadingBlanks; i++) calendarDays.push(null);
+        for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
+
+        return (
+          <div className="w-full h-full px-4 py-2 flex items-center justify-center select-none bg-transparent">
+            {/* White card with subtle border and lotus decoration */}
+            <div className="w-full h-full rounded-2xl border border-[#2E5136]/50 bg-white p-5 shadow-md flex flex-col justify-between relative overflow-hidden">
+              {/* Header: Month ......... Year */}
+              <div className="flex items-center justify-between px-2 mb-2">
+                <span className="font-serif text-2xl font-bold text-stone-800">
+                  {String(eventMonth).padStart(2, "0")}
+                </span>
+                <span className="font-serif text-xl font-bold text-stone-800">
+                  {eventYear}
+                </span>
+              </div>
+
+              {/* Dark Olive Weekday Bar: T2 T3 T4 T5 T6 T7 CN */}
+              <div className="bg-[#4E6144] rounded-lg py-1.5 px-1 grid grid-cols-7 text-center text-white text-[10px] font-bold tracking-wider mb-2">
+                <span>T2</span>
+                <span>T3</span>
+                <span>T4</span>
+                <span>T5</span>
+                <span>T6</span>
+                <span>T7</span>
+                <span>CN</span>
+              </div>
+
+              {/* Days Grid */}
+              <div className="grid grid-cols-7 text-center gap-y-1.5 text-xs text-stone-700">
+                {calendarDays.map((d, idx) => {
+                  if (d === null) return <span key={`empty-${idx}`} />;
+                  const isSelected = d === eventDay;
+                  return (
+                    <div key={d} className="flex items-center justify-center">
+                      {isSelected ? (
+                        <div className="relative inline-flex items-center justify-center w-7 h-7">
+                          {/* Heart Outline Badge */}
+                          <svg className="absolute inset-0 w-full h-full text-stone-800 drop-shadow-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                          </svg>
+                          <span className="relative z-10 text-[10px] font-bold text-stone-900">
+                            {d}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-stone-700 font-medium py-0.5">
+                          {d}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Subtle Lotus Spray at Right Border */}
+              <div className="absolute -right-3 -bottom-2 pointer-events-none opacity-45">
+                <svg width="60" height="60" viewBox="0 0 50 50" fill="none">
+                  <path d="M25 45 C20 30 15 20 25 5 C35 20 30 30 25 45 Z" fill="#E88295" />
+                  <path d="M25 45 C35 35 45 25 48 15 C45 28 35 38 25 45 Z" fill="#F3A6B4" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.6 Dedicated RSVP Card with Green Border + Feather Pen Button
+      if (el.presetId === "p-lotus-rsvp") {
+        return (
+          <div className="w-full h-full px-3 py-2 flex items-center justify-center select-none bg-transparent">
+            <div className="w-full h-full rounded-3xl border border-[#2E5136]/70 bg-white/95 p-5 shadow-lg flex flex-col items-center justify-between text-center relative overflow-hidden">
+              {/* Corner Watermarks */}
+              <div className="absolute top-2 left-2 pointer-events-none opacity-30">
+                <svg width="45" height="45" viewBox="0 0 45 45" fill="none">
+                  <path d="M5 40 C10 20 25 10 40 5" stroke="#C9A45C" strokeWidth="1" />
+                </svg>
+              </div>
+
+              <h3 className="font-serif font-bold text-base tracking-[0.25em] text-[#2E4731] uppercase">
+                XÁC NHẬN THAM DỰ
+              </h3>
+              <span className="font-serif text-[10px] uppercase tracking-[0.3em] text-[#2E4731]/80 font-semibold block">
+                R.S.V.P.
+              </span>
+              <h4 className="font-serif font-bold text-lg text-[#1C2C1D]">
+                Xác nhận tham dự
+              </h4>
+              <p className="text-[11px] text-stone-600 max-w-[280px] leading-relaxed">
+                Vui lòng xác nhận tham dự để chúng mình chuẩn bị lễ cưới được thuận lợi và trọn vẹn nhất.
+              </p>
+              <button
+                onClick={() => onRsvp && onRsvp()}
+                type="button"
+                className="inline-flex items-center gap-2 bg-[#4E6144] text-white font-sans font-bold text-xs tracking-wider px-7 py-2.5 rounded-full shadow-md hover:bg-[#3D4F35] transition-all hover:scale-105 cursor-pointer pointer-events-auto mt-1"
+              >
+                <span>✍️</span>
+                <span>Gửi xác nhận</span>
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.7 Giant Traditional Red Song Hỷ Crest for Gift Section
+      if (el.presetId === "p-lotus-gift") {
+        return (
+          <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-center text-center select-none bg-[#FCFDFB]">
+            <h3 className="font-serif font-bold text-base tracking-[0.25em] text-[#2E4731] uppercase mb-3">
+              GỬI QUÀ MỪNG
+            </h3>
+            {/* Giant Red Song Hỷ Crest (Clicking opens Gift Modal) */}
+            <div
+              onClick={() => onGift && onGift()}
+              className="cursor-pointer pointer-events-auto transform hover:scale-105 transition-transform drop-shadow-md group flex flex-col items-center"
+            >
+              <div className="w-28 h-28 rounded-full border-4 border-[#B71C1C] flex items-center justify-center bg-rose-50/70 shadow-lg group-hover:border-rose-700">
+                <span className="text-[#B71C1C] text-6xl font-serif font-black leading-none select-none">
+                  囍
+                </span>
+              </div>
+              <span className="text-[11px] text-stone-500 font-sans mt-2 block tracking-wider">
+                Chạm vào chữ Hỷ để mừng cưới
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.8 Album Ảnh Cưới with 5-Photo Editorial Collage & Watercolor Lotus
+      if (el.presetId === "p-lotus-album") {
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const p1 = (typeof (photos[0] as { url?: string })?.url === "string" ? (photos[0] as { url?: string }).url! : "") || "/images/demo/templates/t06-lotus/gallery-1.jpg";
+        const p2 = (typeof (photos[1] as { url?: string })?.url === "string" ? (photos[1] as { url?: string }).url! : "") || "/images/demo/templates/t06-lotus/gallery-2.jpg";
+        const p3 = (typeof (photos[2] as { url?: string })?.url === "string" ? (photos[2] as { url?: string }).url! : "") || "/images/demo/templates/t06-lotus/gallery-3.jpg";
+        const p4 = (typeof (photos[3] as { url?: string })?.url === "string" ? (photos[3] as { url?: string }).url! : "") || "/images/demo/templates/t06-lotus/gallery-4.jpg";
+        const p5 = (typeof (photos[4] as { url?: string })?.url === "string" ? (photos[4] as { url?: string }).url! : "") || "/images/demo/templates/t06-lotus/gallery-5.jpg";
+
+        return (
+          <div className="w-full h-full px-3 py-4 flex flex-col justify-between select-none bg-[#FCFDFB] relative">
+            {/* Header: Album Ảnh cưới */}
+            <div className="text-center mb-3">
+              <span className="font-serif italic text-3xl font-normal text-stone-900 block leading-tight">
+                Album
+              </span>
+              <span className="font-serif text-sm tracking-widest text-[#2E4731] block">
+                Ảnh cưới
+              </span>
+            </div>
+
+            {/* Collage Layout matching reference */}
+            <div className="relative w-full h-[620px]">
+              {/* Photo 1: Top-Left small vertical (couple by tree) */}
+              <div className="absolute top-0 left-4 w-[110px] h-[150px] rounded-xl overflow-hidden shadow-md bg-stone-100 z-10">
+                <img src={p1} alt="Album 1" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Photo 2: Center large featured portrait (sunglasses/romantic) */}
+              <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[180px] h-[240px] rounded-xl overflow-hidden shadow-xl bg-stone-100 z-20 border-2 border-white">
+                <img src={p2} alt="Album 2" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Photo 3: Left flanking photo */}
+              <div className="absolute top-44 left-1 w-[80px] h-[120px] rounded-lg overflow-hidden shadow-sm bg-stone-100 z-10">
+                <img src={p3} alt="Album 3" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Photo 4: Right flanking photo */}
+              <div className="absolute top-44 right-1 w-[80px] h-[120px] rounded-lg overflow-hidden shadow-sm bg-stone-100 z-10">
+                <img src={p4} alt="Album 4" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Bottom Row: 2 side-by-side vertical photos */}
+              <div className="absolute bottom-2 inset-x-8 grid grid-cols-2 gap-3 h-[180px] z-10">
+                <div className="rounded-xl overflow-hidden shadow-md bg-stone-100">
+                  <img src={p5} alt="Album 5" className="w-full h-full object-cover" />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-md bg-stone-100">
+                  <img src={p1} alt="Album 6" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              {/* Delicate Lotus Watercolor Accent on right */}
+              <div className="absolute right-0 top-6 pointer-events-none opacity-60">
+                <svg width="70" height="90" viewBox="0 0 70 90" fill="none">
+                  <path d="M35 80 C40 50 50 30 55 10" stroke="#4A7553" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M55 20 C45 10 50 0 55 -5 C60 0 65 10 55 20 Z" fill="#E88295" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // 06.9 Farewell: "HÂN HẠNH ĐƯỢC ĐÓN TIẾP!" + Lotus Pond Gold & Emerald
+      if (el.presetId === "p-lotus-farewell") {
+        const groomShort = (typeof data.groom?.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Đức Hiển";
+        const brideShort = (typeof data.bride?.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Minh Hằng";
+
+        return (
+          <div className="w-full h-full relative overflow-hidden select-none bg-gradient-to-b from-[#FCFDFB] via-[#FFFFFF] to-[#EAF2EA] flex flex-col justify-between pt-6 pb-6 px-4">
+            {/* Top Pink Lotus Bud */}
+            <div className="flex items-center justify-center mb-1">
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <path d="M16 4 C12 12 12 18 16 26 C20 18 20 12 16 4 Z" fill="#E88295" />
+                <path d="M16 26 C14 28 14 30 16 31 C18 30 18 28 16 26 Z" fill="#4A7553" />
+              </svg>
+            </div>
+
+            {/* Heading: HÂN HẠNH ĐƯỢC ĐÓN TIẾP! */}
+            <div className="text-center relative z-10">
+              <h2 className="font-serif font-black text-xl tracking-[0.2em] text-[#243B27] uppercase">
+                HÂN HẠNH ĐƯỢC ĐÓN TIẾP!
+              </h2>
+              <p className="font-serif italic text-3xl text-[#1E5652] tracking-wide mt-2">
+                {brideShort} &amp; {groomShort}
+              </p>
+            </div>
+
+            {/* Bottom Magnificent Lotus Pond Illustration (Green leaves & Gold line-art) */}
+            <div className="relative w-full h-[320px] pointer-events-none mt-auto">
+              <svg viewBox="0 0 360 300" className="w-full h-full" fill="none">
+                {/* Emerald Green Lotus Leaves */}
+                <ellipse cx="60" cy="240" rx="70" ry="35" fill="#3B6344" opacity="0.85" />
+                <ellipse cx="280" cy="230" rx="75" ry="38" fill="#2E5136" opacity="0.9" />
+                <ellipse cx="180" cy="270" rx="90" ry="40" fill="#4B7754" opacity="0.8" />
+                {/* Gold Leaf Veins */}
+                <path d="M60 240 C30 220 15 235 0 250" stroke="#C9A45C" strokeWidth="1" opacity="0.7" />
+                <path d="M60 240 C80 220 100 225 120 235" stroke="#C9A45C" strokeWidth="1" opacity="0.7" />
+                <path d="M280 230 C250 210 235 220 220 235" stroke="#C9A45C" strokeWidth="1" opacity="0.7" />
+                <path d="M280 230 C310 210 330 220 350 240" stroke="#C9A45C" strokeWidth="1" opacity="0.7" />
+                {/* Gold Lotus Blossoms Line-Art */}
+                <g transform="translate(140, 160)">
+                  <path d="M40 80 C20 50 15 20 40 0 C65 20 60 50 40 80 Z" stroke="#C9A45C" strokeWidth="1.2" fill="#FFF9E6" fillOpacity="0.4" />
+                  <path d="M40 80 C10 65 0 35 15 15 C30 35 35 60 40 80 Z" stroke="#C9A45C" strokeWidth="1" fill="#FFF9E6" fillOpacity="0.2" />
+                  <path d="M40 80 C70 65 80 35 65 15 C50 35 45 60 40 80 Z" stroke="#C9A45C" strokeWidth="1" fill="#FFF9E6" fillOpacity="0.2" />
+                </g>
+              </svg>
+            </div>
+
+            {/* Vertical Watermark */}
+            <div className="absolute right-2 bottom-8 z-10 pointer-events-none">
+              <span className="[writing-mode:vertical-rl] text-[9px] uppercase tracking-widest text-stone-400 font-medium">
+                Made with Ngày chung đôi
+              </span>
+            </div>
+          </div>
+        );
+      }
+
       // 1. Phong bì terracotta mở có thiệp & ảnh cưới
       if (el.presetId === "p-envelope-sweet" || el.presetId === "p-envelope-pink" || el.presetId === "p1") {
         const photoUrl = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
@@ -2168,6 +2801,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       if (el.presetId === "p-hero-sweet") {
         const coverPhoto = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
         const greeting = data.greeting || "Gửi đến gia đình và bạn bè thân mến\nCảm ơn bạn đã dành thời gian quý báu để cùng chúng mình chung vui trong ngày đặc biệt này. Chúng mình vô cùng biết ơn vì luôn có sự đồng hành và ủng hộ của bạn, và thật vinh hạnh khi được chia sẻ niềm hạnh phúc của chúng mình cùng bạn.\nTrân trọng kính mời bạn đến dự Lễ cưới của chúng mình";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
+        const cd = calcCountdown(evDate);
 
         return (
           <div className="w-full h-full relative rounded-3xl overflow-hidden shadow-xl bg-stone-100 select-none">
@@ -2179,10 +2815,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               {/* 4 Terracotta Countdown Boxes */}
               <div className="grid grid-cols-4 gap-2 max-w-[290px] mx-auto">
                 {[
-                  { num: "90", unit: "ngày" },
-                  { num: "02", unit: "giờ" },
-                  { num: "20", unit: "phút" },
-                  { num: "40", unit: "giây" },
+                  { num: cd.days, unit: "ngày" },
+                  { num: cd.hours, unit: "giờ" },
+                  { num: cd.minutes, unit: "phút" },
+                  { num: cd.seconds, unit: "giây" },
                 ].map((box, idx) => (
                   <div key={idx} className="bg-gradient-to-b from-[#A53424] to-[#882519] text-white rounded-xl py-2 px-1 shadow-md text-center border-t border-rose-300/30">
                     <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
@@ -2208,6 +2844,18 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Mai Anh";
         const groomParents = (data.groom.parents as Record<string, string>) || {};
         const brideParents = (data.bride.parents as Record<string, string>) || {};
+        const groomAddr = getParentsAddress(groomParents, data.groom, "TP. Hà Nội");
+        const brideAddr = getParentsAddress(brideParents, data.bride, "TP. Điện Biên");
+
+        const events = Array.isArray(data.events) ? data.events : [];
+        const ev = (events[0] as Record<string, unknown>) || null;
+        const evDate = parseEventDate(ev);
+        const timeStr = evDate ? fmtTimeColon(evDate) : "10:30";
+        const dowStr = evDate ? fmtDayOfWeek(evDate).toUpperCase() : "THỨ NĂM";
+        const monthStr = evDate ? `THÁNG ${evDate.getMonth() + 1}` : "THÁNG 12";
+        const dayStr = evDate ? fmtDay(evDate) : "24";
+        const yearStr = evDate ? `NĂM ${evDate.getFullYear()}` : "NĂM 2026";
+        const lunarStr = typeof ev?.lunarDate === "string" && ev.lunarDate ? `(Tức ${ev.lunarDate})` : "(Tức ngày 17 tháng 11 năm Bính Ngọ)";
 
         return (
           <div className="w-full h-full p-4 flex flex-col justify-between select-none text-left bg-transparent">
@@ -2232,13 +2880,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 <span className="font-serif font-bold text-[#8B2E20] block uppercase tracking-wider text-xs">Nhà Trai</span>
                 <p className="text-xs font-medium text-stone-800">{groomParents.fatherName ? `Ông: ${groomParents.fatherName}` : "Ông: Phạm Quang Hải"}</p>
                 <p className="text-xs font-medium text-stone-800">{groomParents.motherName ? `Bà: ${groomParents.motherName}` : "Bà: Định Thị Mai"}</p>
-                <span className="text-[11px] text-stone-500 italic block">TP. Hà Nội</span>
+                <span className="text-[11px] text-stone-500 italic block">{groomAddr}</span>
               </div>
               <div className="space-y-1">
                 <span className="font-serif font-bold text-[#8B2E20] block uppercase tracking-wider text-xs">Nhà Gái</span>
                 <p className="text-xs font-medium text-stone-800">{brideParents.fatherName ? `Ông: ${brideParents.fatherName}` : "Ông: Nguyễn Tiến Minh"}</p>
                 <p className="text-xs font-medium text-stone-800">{brideParents.motherName ? `Bà: ${brideParents.motherName}` : "Bà: Lê Thị Hải Yến"}</p>
-                <span className="text-[11px] text-stone-500 italic block">TP. Điện Biên</span>
+                <span className="text-[11px] text-stone-500 italic block">{brideAddr}</span>
               </div>
             </div>
 
@@ -2248,17 +2896,17 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 TIỆC MỪNG LỄ THÀNH HÔN
               </span>
               <span className="text-xs font-serif text-stone-600 tracking-wider block mt-0.5">
-                VÀO LÚC 10:30 THỨ NĂM
+                VÀO LÚC {timeStr} {dowStr}
               </span>
               <div className="flex items-center justify-center gap-3 my-2 px-1">
                 <div className="h-[1px] flex-1 bg-stone-300" />
-                <span className="text-sm font-serif font-bold text-stone-800 tracking-wider">THÁNG 12</span>
-                <span className="text-5xl font-serif font-bold text-[#8B2E20] px-2 leading-none">24</span>
-                <span className="text-sm font-serif font-bold text-stone-800 tracking-wider">NĂM 2026</span>
+                <span className="text-sm font-serif font-bold text-stone-800 tracking-wider">{monthStr}</span>
+                <span className="text-5xl font-serif font-bold text-[#8B2E20] px-2 leading-none">{dayStr}</span>
+                <span className="text-sm font-serif font-bold text-stone-800 tracking-wider">{yearStr}</span>
                 <div className="h-[1px] flex-1 bg-stone-300" />
               </div>
               <span className="font-cursive text-sm text-stone-500 block">
-                (Tức ngày 17 tháng 11 năm Bính Ngọ)
+                {lunarStr}
               </span>
             </div>
           </div>
@@ -2435,6 +3083,16 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       // 1h. Save the Date (Calendar Grid)
       if (el.presetId === "p-calendar-heart-photo") {
         const photo = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
+        const targetDay = evDate ? evDate.getDate() : 24;
+        const year = evDate ? evDate.getFullYear() : 2026;
+        const month = evDate ? evDate.getMonth() : 11;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstDayOffsetSun = new Date(year, month, 1).getDay();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const headerBadge = `${year} / ${monthNames[month]}`;
+
         return (
           <div className="w-full h-full p-4 flex flex-col justify-between select-none bg-transparent">
             <div className="flex items-center justify-between pb-1">
@@ -2442,7 +3100,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 <div className="size-4 rounded-full bg-[#E8C5BC] flex items-center justify-center text-[8px] text-[#8B2E20]">✦</div>
                 <span className="font-serif font-bold text-lg text-[#8B2E20]">Save the date</span>
               </div>
-              <span className="text-[10px] font-mono font-bold bg-[#BA3E2C] text-white px-2.5 py-0.5 rounded-sm">2026 / Dec</span>
+              <span className="text-[10px] font-mono font-bold bg-[#BA3E2C] text-white px-2.5 py-0.5 rounded-sm">{headerBadge}</span>
             </div>
 
             <div className="relative flex-1 rounded-2xl overflow-hidden shadow-lg border-2 border-[#8B2E20]/30 mt-1">
@@ -2455,19 +3113,22 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
                 </div>
                 <div className="grid grid-cols-7 gap-1.5 text-center pt-1.5 text-[10px]">
-                  <span className="opacity-0">.</span><span className="opacity-0">.</span>
-                  <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                  <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
-                  <span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span>
-                  <span>20</span><span>21</span><span>22</span><span>23</span>
-                  <span className="relative font-bold text-rose-600 flex items-center justify-center">
-                    <svg className="absolute -inset-1 w-6 h-6 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                    24
-                  </span>
-                  <span>25</span><span>26</span>
-                  <span>27</span><span>28</span><span>29</span><span>30</span><span>31</span>
+                  {Array.from({ length: firstDayOffsetSun }).map((_, i) => (
+                    <span key={`blank-${i}`} className="opacity-0">.</span>
+                  ))}
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((d) => {
+                    const isSelected = d === targetDay;
+                    return isSelected ? (
+                      <span key={d} className="relative font-bold text-rose-600 flex items-center justify-center">
+                        <svg className="absolute -inset-1 w-6 h-6 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        {d}
+                      </span>
+                    ) : (
+                      <span key={d}>{d}</span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -2700,6 +3361,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       if (el.presetId === "p-wedding-typography") {
         const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
         const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
+        const year = evDate ? evDate.getFullYear() : 2026;
+
         return (
           <ScaledPresetWrapper baseW={310} baseH={290} w={el.width} h={el.height}>
             <div className="w-full h-full p-5 bg-[#FCFBF8] rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
@@ -2716,7 +3381,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               </div>
               <div className="w-full pt-2 border-t border-amber-100 flex items-center justify-between text-[9px] text-stone-500 font-mono">
                 <span>HÔN LỄ TRANG TRỌNG</span>
-                <span>2026</span>
+                <span>{year}</span>
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -2725,22 +3390,39 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 4. Lịch ngày cưới khoanh tròn
       if (el.presetId === "p-calendar-countdown") {
+        const events = Array.isArray(data.events) ? data.events : [];
+        const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
+        const targetDay = evDate ? evDate.getDate() : 12;
+        const month = evDate ? evDate.getMonth() + 1 : 12;
+        const year = evDate ? evDate.getFullYear() : 2026;
+        const calMeta = evDate ? getMonthDaysAndOffset(evDate) : { daysInMonth: 31, firstDayOffset: 1 };
+
         return (
           <ScaledPresetWrapper baseW={300} baseH={270} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col items-center justify-between pointer-events-none select-none">
               <div className="text-center w-full pb-1 border-b border-stone-100">
                 <span className="text-[10px] font-serif tracking-widest uppercase text-stone-500 block font-semibold">WELCOME TO OUR WEDDING</span>
-                <span className="text-[11px] font-serif font-bold text-stone-800">Tháng 12 / 2026</span>
+                <span className="text-[11px] font-serif font-bold text-stone-800">Tháng {month} / {year}</span>
               </div>
               <div className="w-full my-auto">
                 <div className="grid grid-cols-7 gap-1 text-[9px] font-mono text-stone-400 text-center font-bold pb-1">
                   <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span className="text-rose-400">CN</span>
                 </div>
                 <div className="grid grid-cols-7 gap-1 text-[9px] font-mono text-stone-700 text-center">
-                  <span className="text-stone-300">30</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span className="text-rose-500">6</span>
-                  <span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span className="relative font-bold text-rose-600"><span className="absolute -inset-1 rounded-full border-2 border-rose-500 bg-rose-50 -z-10 animate-pulse" />12</span><span className="text-rose-500">13</span>
-                  <span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span className="text-rose-500">20</span>
-                  <span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span className="text-rose-500">27</span>
+                  {Array.from({ length: calMeta.firstDayOffset }).map((_, i) => (
+                    <span key={`blank-${i}`} />
+                  ))}
+                  {Array.from({ length: calMeta.daysInMonth }, (_, i) => i + 1).map((d) => {
+                    const isTarget = d === targetDay;
+                    return isTarget ? (
+                      <span key={d} className="relative font-bold text-rose-600">
+                        <span className="absolute -inset-1 rounded-full border-2 border-rose-500 bg-rose-50 -z-10 animate-pulse" />
+                        {d}
+                      </span>
+                    ) : (
+                      <span key={d} className={d % 7 === 0 ? "text-rose-500" : ""}>{d}</span>
+                    );
+                  })}
                 </div>
               </div>
               <span className="text-[9px] font-serif italic text-amber-700 font-medium">Hẹn gặp bạn vào ngày hạnh phúc nhất!</span>
@@ -2751,6 +3433,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 5. Hôn phối hai họ
       if (el.presetId === "p-parents-info" || el.presetId === "p4") {
+        const groomParents = (data.groom?.parents as Record<string, unknown>) || {};
+        const brideParents = (data.bride?.parents as Record<string, unknown>) || {};
+        const gFather = (typeof groomParents.fatherName === "string" && groomParents.fatherName ? groomParents.fatherName : "") || "Nguyễn Văn A";
+        const gMother = (typeof groomParents.motherName === "string" && groomParents.motherName ? groomParents.motherName : "") || "Trần Thị B";
+        const bFather = (typeof brideParents.fatherName === "string" && brideParents.fatherName ? brideParents.fatherName : "") || "Lê Văn C";
+        const bMother = (typeof brideParents.motherName === "string" && brideParents.motherName ? brideParents.motherName : "") || "Phạm Thị D";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={180} w={el.width} h={el.height}>
             <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col justify-between pointer-events-none select-none text-center">
@@ -2760,13 +3449,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
                 <div className="border-r border-stone-100 pr-2">
                   <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ TRAI</p>
-                  <p className="text-stone-500 text-[9px] mt-0.5">Ông: Nguyễn Văn A</p>
-                  <p className="text-stone-500 text-[9px]">Bà: Trần Thị B</p>
+                  <p className="text-stone-500 text-[9px] mt-0.5">Ông: {gFather}</p>
+                  <p className="text-stone-500 text-[9px]">Bà: {gMother}</p>
                 </div>
                 <div className="pl-1">
                   <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ GÁI</p>
-                  <p className="text-stone-500 text-[9px] mt-0.5">Ông: Lê Văn C</p>
-                  <p className="text-stone-500 text-[9px]">Bà: Phạm Thị D</p>
+                  <p className="text-stone-500 text-[9px] mt-0.5">Ông: {bFather}</p>
+                  <p className="text-stone-500 text-[9px]">Bà: {bMother}</p>
                 </div>
               </div>
             </div>
@@ -3256,6 +3945,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 23. Lễ Thành Hôn / Vu Quy (p-le-thanh-hon)
       if (el.presetId === "p-le-thanh-hon" || el.content === "le-thanh-hon") {
+        const events = Array.isArray(data.events) ? data.events : [];
+        const firstEvent = (events[0] as Record<string, unknown>) || null;
+        const evDate = parseEventDate(firstEvent);
+        const timeStr = evDate ? `${fmtTime(evDate)} • ${evDate.getDate()} Tháng ${evDate.getMonth() + 1}, ${evDate.getFullYear()}` : "11:00 • 18 Tháng 12, 2026";
+        const lunarStr = typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? `(Nhằm ${firstEvent.lunarDate})` : "(Nhằm ngày 10 tháng 11 năm Bính Ngọ)";
+        const venueStr = typeof firstEvent?.venueName === "string" && firstEvent.venueName ? `Tại: ${firstEvent.venueName}` : "Tại: Tư Gia Nhà Trai / Khách Sạn Melia";
+
         return (
           <ScaledPresetWrapper baseW={310} baseH={180} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FAF6F4] rounded-2xl border border-rose-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
@@ -3263,9 +3959,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 LỄ THÀNH HÔN & NHẬP TIỆC
               </div>
               <div className="my-auto space-y-0.5">
-                <span className="text-base font-serif font-bold text-stone-900 block">11:00 • 18 Tháng 12, 2026</span>
-                <span className="text-[9.5px] text-stone-600 block">(Nhằm ngày 10 tháng 11 năm Bính Ngọ)</span>
-                <span className="text-[9px] text-rose-800 font-medium block mt-1">Tại: Tư Gia Nhà Trai / Khách Sạn Melia</span>
+                <span className="text-base font-serif font-bold text-stone-900 block">{timeStr}</span>
+                <span className="text-[9.5px] text-stone-600 block">{lunarStr}</span>
+                <span className="text-[9px] text-rose-800 font-medium block mt-1">{venueStr}</span>
               </div>
               <div className="w-full pt-1 border-t border-rose-100 text-[8.5px] font-serif italic text-stone-500">
                 Hân hạnh được đón tiếp quý khách!
