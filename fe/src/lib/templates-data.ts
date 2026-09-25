@@ -5,6 +5,7 @@ export interface MasterTemplateItem extends TemplateModalData {
   originalPrice?: string;
   rating?: number;
   salesCount?: number;
+  hasLiveDemo?: boolean;
 }
 
 export const MASTER_TEMPLATES: MasterTemplateItem[] = [
@@ -32,6 +33,7 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     venueText: "Tư gia & Trung tâm Hội nghị Hoàng Gia",
     rating: 5,
     salesCount: 1240,
+    hasLiveDemo: true,
   },
 
   // ── 02. TẠP CHÍ HÀN QUỐC EDITORIAL ──
@@ -53,11 +55,12 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#D8C7B5",
     musicTitle: "Until I Found You - Stephen Sanchez",
     musicUrl: "/music/until-i-found-you.mp3",
-    coupleText: "Quang Vinh & Hải Yến",
-    eventDateText: "18.12.2026",
+    coupleText: "Công Vinh & Hải Yến",
+    eventDateText: "28.12.2026",
     venueText: "Park Hyatt Saigon, TP. Hồ Chí Minh",
     rating: 5,
     salesCount: 980,
+    hasLiveDemo: true,
   },
 
   // ── 03. SWEET PINK LÃNG MẠN ──
@@ -79,11 +82,12 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#D48B96",
     musicTitle: "I Do - 911 Band",
     musicUrl: "/music/i-do.mp3",
-    coupleText: "Tuấn Anh & Mai Phương",
-    eventDateText: "05.10.2026",
+    coupleText: "Quốc Huy & Mai Anh",
+    eventDateText: "24.12.2026",
     venueText: "GEM Center, TP. Hồ Chí Minh",
     rating: 5,
     salesCount: 1120,
+    hasLiveDemo: true,
   },
 
   // ── 04. QUÝ TỘC ĐỎ RƯỢU MARSALA ──
@@ -105,11 +109,12 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#721B24",
     musicTitle: "A Thousand Years - Christina Perri",
     musicUrl: "/music/a-thousand-years.mp3",
-    coupleText: "Đức Trọng & Thùy Chi",
-    eventDateText: "12.11.2026",
-    venueText: "InterContinental Landmark 72, Hà Nội",
+    coupleText: "Nguyễn Minh & Bùi Phương",
+    eventDateText: "20.12.2026",
+    venueText: "Khu Phố Xuân Thượng, Sầm Sơn, Thanh Hóa",
     rating: 5,
     salesCount: 860,
+    hasLiveDemo: true,
   },
 
   // ── 05. RUSTIC XANH RÊU THIÊN NHIÊN ──

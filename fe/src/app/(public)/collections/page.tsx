@@ -117,6 +117,14 @@ function LuxuryTemplateCard({
           </span>
         )}
 
+        {/* HAS LIVE DEMO BADGE */}
+        {template.hasLiveDemo && (
+          <span className="absolute bottom-3 left-3 px-2.5 py-0.5 rounded-full bg-emerald-600/90 backdrop-blur-md text-white text-[9.5px] font-bold uppercase tracking-wider shadow-md flex items-center gap-1 border border-emerald-300/40 z-10">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-ping" />
+            <span>Đã Có Bản Mẫu</span>
+          </span>
+        )}
+
         {/* CATEGORY TAG (TOP RIGHT) */}
         <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-white/90 text-[9px] font-semibold tracking-wider uppercase border border-white/20">
           {template.category === "WEDDING"
@@ -129,17 +137,27 @@ function LuxuryTemplateCard({
         </span>
 
         {/* INTERACTIVE HOVER GLASS OVERLAY (DESKTOP) */}
-        <div className="hidden sm:flex absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex-col items-center justify-end p-4 gap-2">
+        <div className="hidden sm:flex absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex-col items-center justify-end p-4 gap-2 z-20">
+          <Link
+            href={`/thiep/${template.demoSlug || template.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold shadow-lg hover:scale-102 transition flex items-center justify-center gap-1.5 cursor-pointer pointer-events-auto"
+          >
+            <Eye className="w-3.5 h-3.5 text-white" />
+            <span>Xem Mẫu Thực Tế</span>
+          </Link>
+
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onOpenDemo(template);
             }}
-            className="w-full py-2.5 px-3 rounded-xl bg-white/95 hover:bg-white text-stone-900 text-xs font-bold shadow-lg hover:scale-102 transition flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-2 px-3 rounded-xl bg-white/95 hover:bg-white text-stone-900 text-xs font-bold shadow-md hover:scale-102 transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5 text-amber-600" />
-            <span>Xem Bản Thử Nghiệm</span>
+            <span>Chi Tiết & Tính Năng</span>
           </button>
 
           <button
@@ -148,7 +166,7 @@ function LuxuryTemplateCard({
               e.stopPropagation();
               onUseTemplate(template);
             }}
-            className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-xs font-bold shadow-lg hover:scale-102 transition flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-xs font-bold shadow-md hover:scale-102 transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Dùng Mẫu Này</span>
@@ -201,17 +219,30 @@ function LuxuryTemplateCard({
 
         {/* NÚT THAO TÁC RÕ RÀNG TRÊN ĐIỆN THOẠI (KHÔNG CẦN RÊ CHUỘT) */}
         <div className="flex sm:hidden items-center gap-1.5 pt-2 mt-1 border-t border-[#EFE5D5]">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenDemo(template);
-            }}
-            className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-[#D9C4A1] text-stone-900 text-[11px] font-bold shadow-2xs flex items-center justify-center gap-1 active:bg-stone-50 cursor-pointer"
-          >
-            <Eye className="w-3.5 h-3.5 text-amber-600" />
-            <span>Xem Mẫu</span>
-          </button>
+          {template.hasLiveDemo ? (
+            <Link
+              href={`/thiep/${template.demoSlug || template.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-1 py-1.5 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[11px] font-bold shadow-2xs flex items-center justify-center gap-1 active:opacity-90 cursor-pointer pointer-events-auto"
+            >
+              <Eye className="w-3.5 h-3.5 text-white" />
+              <span>Xem Mẫu Thật</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenDemo(template);
+              }}
+              className="flex-1 py-1.5 px-2 rounded-xl bg-white border border-[#D9C4A1] text-stone-900 text-[11px] font-bold shadow-2xs flex items-center justify-center gap-1 active:bg-stone-50 cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-amber-600" />
+              <span>Xem Mẫu</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => {
