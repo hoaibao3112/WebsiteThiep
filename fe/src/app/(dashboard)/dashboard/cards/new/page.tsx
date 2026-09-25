@@ -17,7 +17,7 @@ import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import { CreateModeChoiceModal } from "@/components/card/CreateModeChoiceModal";
-import { createWeddingSceneFromWeddingData } from "@/lib/editor/wedding-scene";
+import { createWeddingSceneFromWeddingData, hydrateWeddingScene } from "@/lib/editor/wedding-scene";
 import {
   Heart,
   Cake,
@@ -193,7 +193,7 @@ function CardBuilderContent() {
       .then((result) => {
         if (!cancelled) {
           if (result.success && result.data) {
-            setWeddingScene(result.data);
+            setWeddingScene(hydrateWeddingScene(result.data, weddingData));
           } else {
             const fallbackScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
             setWeddingScene(fallbackScene);
@@ -207,7 +207,12 @@ function CardBuilderContent() {
         }
       });
     return () => { cancelled = true; };
-  }, [category, templateSlug, weddingData]);
+  }, [category, templateSlug]);
+
+  useEffect(() => {
+    if (!weddingScene || category !== "WEDDING") return;
+    setWeddingScene((currentScene) => currentScene ? hydrateWeddingScene(currentScene, weddingData) : null);
+  }, [weddingData, category]);
   const [showQuickFill, setShowQuickFill] = useState(false);
 
   const handleApplyQuickFill = useCallback((data: QuickFillData) => {

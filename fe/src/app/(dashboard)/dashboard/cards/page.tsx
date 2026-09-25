@@ -647,16 +647,13 @@ export default function MyCardsPage() {
                               <Eye className="w-4 h-4 text-stone-700" />
                             </Link>
 
-                            {/* XEM CHI TIẾT BUTTON (WHITE ROUNDED BUTTON) */}
-                            <button
-                              onClick={() => {
-                                setSelectedCard(card);
-                                setIsDetailModalOpen(true);
-                              }}
-                              className="flex-1 py-2 sm:py-2.5 px-3 rounded-2xl bg-white hover:bg-stone-50 text-[#2B2118] font-bold text-xs sm:text-sm text-center shadow-md transition transform hover:scale-[1.02] cursor-pointer"
+                            {/* XEM CHI TIẾT BUTTON (DANH THANG VAO CHINH SUA THIEP) */}
+                            <Link
+                              href={`/dashboard/cards/${card.id}/edit`}
+                              className="flex-1 py-2 sm:py-2.5 px-3 rounded-2xl bg-white hover:bg-stone-50 text-[#2B2118] font-bold text-xs sm:text-sm text-center shadow-md transition transform hover:scale-[1.02] flex items-center justify-center"
                             >
                               Xem chi tiết
-                            </button>
+                            </Link>
 
                             {/* KÍCH HOẠT BUTTON (DARK BROWN / ESPRESSO BUTTON) */}
                             {isDraft ? (
