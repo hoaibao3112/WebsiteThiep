@@ -3,7 +3,7 @@ import { z } from "zod";
 export const RsvpSubmitSchema = z.object({
   cardId: z.string().min(1, "Mã thiệp không hợp lệ"),
   guestCode: z.string().optional(),
-  guestToken: z.string().min(32).max(64).optional(),
+  guestToken: z.string().min(1, "Mã khách không hợp lệ").max(64).optional(),
   fullName: z.string().min(2, "Vui lòng nhập họ và tên của bạn"),
   phone: z
     .string()
@@ -16,8 +16,8 @@ export const RsvpSubmitSchema = z.object({
   guestCount: z
     .number()
     .int()
-    .min(1, "Số người tối thiểu là 1")
-    .max(10, "Số người tối đa là 10")
+    .min(0, "Số người tối thiểu là 0")
+    .max(20, "Số người tối đa là 20")
     .default(1),
   side: z.enum(["GROOM_SIDE", "BRIDE_SIDE", "MUTUAL"]).default("MUTUAL"),
   note: z.string().max(500, "Lời nhắn tối đa 500 ký tự").optional(),

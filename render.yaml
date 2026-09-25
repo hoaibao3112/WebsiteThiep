@@ -4,6 +4,7 @@ services:
     env: node
     rootDir: be
     buildCommand: npm install --include=dev && npm run build
+    preDeployCommand: npm run db:deploy
     startCommand: npm start
     envVars:
       - key: NODE_ENV

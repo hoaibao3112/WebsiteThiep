@@ -21,10 +21,10 @@ export async function checkRateLimit(
       await redis.expire(key, windowSeconds);
     }
     if (count > maxCount) {
-      throw new Error(errorMessage);
+      throw new HttpError(429, errorMessage, "RATE_LIMIT_EXCEEDED");
     }
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === errorMessage) {
+    if (error instanceof HttpError) {
       throw error;
     }
     if (process.env.NODE_ENV === "production") {

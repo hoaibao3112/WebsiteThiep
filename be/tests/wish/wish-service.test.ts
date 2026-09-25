@@ -40,6 +40,62 @@ describe("WishService public lifecycle", () => {
 
     expect(prismaMock.wish.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { accountId: "account-1", cardId: "card-1", isApproved: true },
+      select: {
+        id: true,
+        senderName: true,
+        relationship: true,
+        content: true,
+        emoji: true,
+        createdAt: true,
+      },
     }));
+  });
+
+  it("projects public DTO on wish submission without ipAddress or accountId", async () => {
+    prismaMock.wish.create.mockResolvedValueOnce({
+      id: "wish-2",
+      senderName: "Binh",
+      relationship: "Bạn cô dâu",
+      content: "Chúc hai bạn trăm năm hạnh phúc",
+      emoji: "🎉",
+      createdAt: new Date(),
+    });
+
+    const result = await WishService.submitWish(
+      {
+        cardId: "card-1",
+        senderName: "Binh",
+        relationship: "Bạn cô dâu",
+        content: "Chúc hai bạn trăm năm hạnh phúc",
+        emoji: "🎉",
+      },
+      { ipAddress: "192.168.1.100" }
+    );
+
+    expect(prismaMock.wish.create).toHaveBeenCalledWith({
+      data: {
+        accountId: "account-1",
+        cardId: "card-1",
+        senderName: "Binh",
+        relationship: "Bạn cô dâu",
+        content: "Chúc hai bạn trăm năm hạnh phúc",
+        emoji: "🎉",
+        isApproved: true,
+        ipAddress: "192.168.1.100",
+      },
+      select: {
+        id: true,
+        senderName: true,
+        relationship: true,
+        content: true,
+        emoji: true,
+        createdAt: true,
+      },
+    });
+
+    expect(result).not.toHaveProperty("ipAddress");
+    expect(result).not.toHaveProperty("accountId");
+    expect(result).toHaveProperty("id", "wish-2");
+    expect(result).toHaveProperty("senderName", "Binh");
   });
 });

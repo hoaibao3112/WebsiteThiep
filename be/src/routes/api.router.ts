@@ -17,10 +17,11 @@ import { csrfGuard } from "../middlewares/csrf.middleware";
 import {
   SendOtpSchema,
   RegisterWithOtpSchema,
+  RegisterSchema,
   LoginSchema,
   GoogleLoginSchema,
   UpdateProfileSchema,
-  RsvpSchema,
+  RsvpSubmitSchema,
   WishSchema,
   CreateOrderSchema,
   ConciergeSchema,
@@ -41,7 +42,7 @@ apiRouter.post("/concierge/submit", validate(ConciergeSchema), ConciergeControll
 apiRouter.post("/auth/send-otp", validate(SendOtpSchema), AuthController.sendOtp);
 apiRouter.post("/auth/verify-otp-register", validate(RegisterWithOtpSchema), AuthController.registerWithOtp);
 apiRouter.post("/auth/google", validate(GoogleLoginSchema), AuthController.googleLogin);
-apiRouter.post("/auth/register", validate(LoginSchema), AuthController.register);
+apiRouter.post("/auth/register", validate(RegisterSchema), AuthController.register);
 apiRouter.post("/auth/login", validate(LoginSchema), AuthController.login);
 apiRouter.post("/auth/logout", AuthController.logout);
 apiRouter.get("/auth/me", authGuard, AuthController.getMe);
@@ -73,7 +74,7 @@ apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP
 
 // --- RSVP ROUTES ---
-apiRouter.post("/rsvp", validate(RsvpSchema), RsvpController.submit);
+apiRouter.post("/rsvp", validate(RsvpSubmitSchema), RsvpController.submit);
 apiRouter.get("/rsvp/:cardId/stats", authGuard, RsvpController.getStats);
 
 // --- WISHES ROUTES ---

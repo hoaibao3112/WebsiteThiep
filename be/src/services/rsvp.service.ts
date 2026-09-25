@@ -3,6 +3,7 @@ import { checkRateLimit } from "../lib/rate-limiter";
 import { RsvpSubmitInput } from "../lib/validators/rsvp.schema";
 import { rsvpNotificationQueue } from "../queues/rsvp-notification.queue";
 import { logger } from "../lib/logger";
+import { HttpError } from "../lib/http-error";
 
 export class RsvpService {
   /**
@@ -39,11 +40,11 @@ export class RsvpService {
     });
 
     if (!card) {
-      throw new Error("Thiệp không tồn tại");
+      throw new HttpError(404, "Thiệp không tồn tại", "CARD_NOT_FOUND");
     }
 
     if (card.status !== "ACTIVE" || (card.expiredAt && card.expiredAt <= new Date())) {
-      throw new Error("Thiệp đã hết hạn hoặc tạm dừng nhận phản hồi");
+      throw new HttpError(400, "Thiệp đã hết hạn hoặc tạm dừng nhận phản hồi", "CARD_INACTIVE_OR_EXPIRED");
     }
 
     // 3. Tìm Guest ID nếu có guestCode
@@ -102,7 +103,7 @@ export class RsvpService {
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
     });
-    if (!card) throw new Error("Không tìm thấy thiệp hoặc bạn không có quyền truy cập");
+    if (!card) throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập", "CARD_NOT_FOUND");
 
     const [totalAttending, totalDeclined, totalUndecided, totalGuestsCount, responses] =
       await Promise.all([

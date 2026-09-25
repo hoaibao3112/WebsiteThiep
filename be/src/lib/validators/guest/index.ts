@@ -27,5 +27,6 @@ export const DeliveryStatusSchema = z.object({
 });
 export type CreateGuestInput = z.infer<typeof CreateGuestSchema>;
 export type UpdateGuestInput = z.infer<typeof UpdateGuestSchema>;
+export type ImportGuestsInput = z.infer<typeof ImportGuestsSchema>;
 export type ListGuestsQuery = z.infer<typeof ListGuestsQuerySchema>;
 export type GuestDeliveryStatusInput = z.infer<typeof DeliveryStatusSchema>["status"];

@@ -12,6 +12,7 @@ import {
   VerifyOtpRegisterInput,
 } from "../lib/validators/auth.schema";
 import { OtpService } from "./otp.service";
+import { HttpError } from "../lib/http-error";
 
 // [SECURITY FIX] Không cho fallback hardcode — nếu thiếu JWT_SECRET thì fail sớm ngay lúc khởi động
 // thay vì âm thầm chạy với secret công khai trong source code.
@@ -22,7 +23,6 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
 // [SECURITY FIX] Rate limit cho login / register truyền thống (chống brute-force & credential stuffing)
 const MAX_LOGIN_ATTEMPTS_PER_IP = 10; // 10 lần / 15 phút / IP
@@ -32,7 +32,7 @@ const LOGIN_WINDOW_SECONDS = 900; // 15 phút
 const MAX_REGISTER_ATTEMPTS_PER_IP = 10; // 10 lần / giờ / IP
 const REGISTER_WINDOW_SECONDS = 3600;
 
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+export const getGoogleOAuthClient = (clientId?: string) => new OAuth2Client(clientId || process.env.GOOGLE_CLIENT_ID);
 
 export interface TokenPayload {
   userId: string;
@@ -109,30 +109,49 @@ export class AuthService {
    * 3 & 4. [CRITICAL] Đăng nhập / Đăng ký qua Google OAuth ID Token
    */
   static async googleLogin(idToken: string) {
-    if (!GOOGLE_CLIENT_ID) {
-      logger.warn("[GoogleAuth] GOOGLE_CLIENT_ID chưa được cấu hình trong .env");
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      logger.error("[GoogleAuth] GOOGLE_CLIENT_ID chưa được cấu hình trong .env");
+      throw new HttpError(
+        503,
+        "Đăng nhập bằng Google hiện chưa được cấu hình trên hệ thống",
+        "GOOGLE_AUTH_NOT_CONFIGURED"
+      );
     }
 
+    const client = getGoogleOAuthClient(clientId);
     let ticket;
     try {
-      ticket = await googleClient.verifyIdToken({
+      ticket = await client.verifyIdToken({
         idToken,
-        audience: GOOGLE_CLIENT_ID, // Bắt buộc check audience
+        audience: clientId,
       });
-    } catch (error: any) {
-      logger.error({ err: error?.message || error }, "[GoogleAuth] Token verification failed");
-      throw new Error("Mã xác thực Google không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!");
+    } catch (error: unknown) {
+      logger.error({ err: error }, "[GoogleAuth] Token verification failed");
+      throw new HttpError(
+        401,
+        "Mã xác thực Google không hợp lệ hoặc đã hết hạn. Vui lòng thử lại!",
+        "INVALID_GOOGLE_TOKEN"
+      );
     }
 
     const payload = ticket.getPayload();
 
     if (!payload || !payload.email) {
-      throw new Error("Không lấy được thông tin email từ tài khoản Google.");
+      throw new HttpError(
+        401,
+        "Không lấy được thông tin email từ tài khoản Google.",
+        "GOOGLE_EMAIL_MISSING"
+      );
     }
 
     // 3. [CRITICAL] Bắt buộc kiểm tra email_verified từ Google
     if (payload.email_verified !== true) {
-      throw new Error("Email Google này chưa được xác thực. Vui lòng xác thực email với Google trước khi đăng nhập.");
+      throw new HttpError(
+        401,
+        "Email Google này chưa được xác thực. Vui lòng xác thực email với Google trước khi đăng nhập.",
+        "GOOGLE_EMAIL_NOT_VERIFIED"
+      );
     }
 
     const googleId = payload.sub;
@@ -213,7 +232,7 @@ export class AuthService {
     });
 
     if (existing) {
-      throw new Error("Email này đã được đăng ký trong hệ thống");
+      throw new HttpError(409, "Email này đã được đăng ký trong hệ thống", "EMAIL_ALREADY_EXISTS");
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 10);
@@ -278,12 +297,12 @@ export class AuthService {
     });
 
     if (!user || !user.password) {
-      throw new Error("Email hoặc mật khẩu không chính xác");
+      throw new HttpError(401, "Email hoặc mật khẩu không chính xác", "INVALID_CREDENTIALS");
     }
 
     const isMatch = await bcrypt.compare(input.password, user.password);
     if (!isMatch) {
-      throw new Error("Email hoặc mật khẩu không chính xác");
+      throw new HttpError(401, "Email hoặc mật khẩu không chính xác", "INVALID_CREDENTIALS");
     }
 
     const accountId = await this.ensureDefaultAccount(user.id, user.name);
@@ -336,7 +355,7 @@ export class AuthService {
       }),
     ]);
 
-    if (!user) throw new Error("Người dùng không tồn tại");
+    if (!user) throw new HttpError(404, "Người dùng không tồn tại", "USER_NOT_FOUND");
 
     // Import here to avoid circular dependency at module level
     const { AccountEntitlementService } = await import("./account-entitlement.service");
@@ -415,7 +434,11 @@ export class AuthService {
       select: { id: true },
     });
     if (!freePlan) {
-      throw new Error("Gói dịch vụ mặc định (FREE) chưa được cấu hình trên hệ thống.");
+      throw new HttpError(
+        500,
+        "Gói dịch vụ mặc định (FREE) chưa được cấu hình trên hệ thống.",
+        "DEFAULT_PLAN_NOT_CONFIGURED"
+      );
     }
 
     const account = await prisma.account.create({

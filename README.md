@@ -38,9 +38,12 @@ npm install
 # Tạo file .env từ .env.example
 cp .env.example .env
 
-# Sinh Prisma Client & đẩy schema lên DB
+# Sinh Prisma Client
 npm run prisma:generate
-npm run prisma:push
+
+# Triển khai Migrations (Production/Staging: KHÔNG dùng prisma:push)
+npm run db:preflight
+npm run db:deploy
 
 # Gieo dữ liệu mẫu (Plans FREE/BASIC/VIP, Mẫu thiệp)
 npm run prisma:seed

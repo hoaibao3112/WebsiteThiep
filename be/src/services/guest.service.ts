@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { prisma } from "../lib/prisma";
-import type { CreateGuestInput, GuestDeliveryStatusInput, ListGuestsQuery, UpdateGuestInput } from "../lib/validators/guest";
+import type { CreateGuestInput, GuestDeliveryStatusInput, ImportGuestsInput, ListGuestsQuery, UpdateGuestInput } from "../lib/validators/guest";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
 
@@ -83,5 +83,179 @@ export class GuestService {
     const result = await prisma.guest.updateMany({ where: { id: guestId, accountId, cardId }, data: { guestToken } });
     if (!result.count) throw new HttpError(404, "Không tìm thấy khách mời");
     return { guestToken };
+  }
+
+  static async importGuests(accountId: string, cardId: string, input: ImportGuestsInput) {
+    const card = await this.requireVipCard(accountId, cardId);
+
+    return await prisma.$transaction(async (tx) => {
+      try {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${cardId}))`;
+      } catch {
+        // Fallback for non-postgres or test mocks without executeRaw support
+      }
+
+      const existingGuests = await tx.guest.findMany({
+        where: { accountId, cardId },
+      });
+
+      const getPhoneKey = (phone?: string | null) => {
+        const norm = normalizePhone(phone ?? undefined);
+        return norm ? `phone:${norm}` : null;
+      };
+
+      const getNameGroupKey = (fullName: string, group?: string | null) => {
+        const normName = normalize(fullName).toLocaleLowerCase("vi");
+        const normGroup = group ? normalize(group).toLocaleLowerCase("vi") : "";
+        return `name_group:${normName}:::${normGroup}`;
+      };
+
+      const phoneMap = new Map<string, typeof existingGuests>();
+      const nameGroupMap = new Map<string, typeof existingGuests>();
+
+      for (const g of existingGuests) {
+        if (g.normalizedPhone) {
+          const pKey = `phone:${g.normalizedPhone}`;
+          const current = phoneMap.get(pKey) || [];
+          current.push(g);
+          phoneMap.set(pKey, current);
+        }
+        const ngKey = getNameGroupKey(g.fullName, g.group);
+        const current = nameGroupMap.get(ngKey) || [];
+        current.push(g);
+        nameGroupMap.set(ngKey, current);
+      }
+
+      let created = 0;
+      let updated = 0;
+      let skipped = 0;
+      const errors: { index: number; row: number; error: string }[] = [];
+      const items: any[] = [];
+
+      for (let i = 0; i < input.guests.length; i++) {
+        const guestInput = input.guests[i];
+        const row = i + 1;
+        const phoneKey = getPhoneKey(guestInput.phone);
+        const nameGroupKey = getNameGroupKey(guestInput.fullName, guestInput.group);
+
+        let matched: typeof existingGuests | undefined;
+        if (phoneKey) {
+          matched = phoneMap.get(phoneKey);
+        } else {
+          matched = nameGroupMap.get(nameGroupKey);
+        }
+
+        // Nếu nhiều bản cũ cùng khóa nhận diện: trả row error không tự chọn một bản để ghi đè
+        if (matched && matched.length > 1) {
+          errors.push({
+            index: i,
+            row,
+            error: "Phát hiện nhiều khách mời trùng khớp thông tin trong hệ thống (dữ liệu mơ hồ)",
+          });
+          continue;
+        }
+
+        if (matched && matched.length === 1) {
+          const existing = matched[0];
+          if (input.mode === "SKIP_DUPLICATES") {
+            skipped++;
+            items.push({
+              ...existing,
+              customUrl: `/thiep/${card.slug}?g=${existing.guestToken}`,
+            });
+            continue;
+          }
+
+          if (input.mode === "UPDATE_EXISTING") {
+            const fullName = normalize(guestInput.fullName);
+            const normalizedName = fullName.toLocaleLowerCase("vi");
+            const phone = normalizePhone(guestInput.phone);
+            const salutation = guestInput.salutation ? normalize(guestInput.salutation) : existing.salutation;
+            const group = guestInput.group !== undefined ? (guestInput.group ? normalize(guestInput.group) : null) : existing.group;
+            const notes = guestInput.notes !== undefined ? (guestInput.notes?.trim() || null) : existing.notes;
+
+            const updatedGuest = await tx.guest.update({
+              where: { id: existing.id },
+              data: {
+                fullName,
+                normalizedName,
+                phone,
+                normalizedPhone: phone,
+                salutation,
+                group,
+                notes,
+              },
+            });
+
+            // Cập nhật map sau từng dòng để bắt trùng ngay trong payload
+            if (existing.normalizedPhone && `phone:${existing.normalizedPhone}` !== phoneKey) {
+              phoneMap.delete(`phone:${existing.normalizedPhone}`);
+            }
+            if (phoneKey) {
+              phoneMap.set(phoneKey, [updatedGuest]);
+            }
+            const oldNgKey = getNameGroupKey(existing.fullName, existing.group);
+            if (oldNgKey !== nameGroupKey) {
+              nameGroupMap.delete(oldNgKey);
+            }
+            nameGroupMap.set(nameGroupKey, [updatedGuest]);
+            matched[0] = updatedGuest;
+
+            updated++;
+            items.push({
+              ...updatedGuest,
+              customUrl: `/thiep/${card.slug}?g=${updatedGuest.guestToken}`,
+            });
+            continue;
+          }
+        }
+
+        // Thêm mới khách mời
+        const guestToken = GuestService.generateToken();
+        const fullName = normalize(guestInput.fullName);
+        const normalizedName = fullName.toLocaleLowerCase("vi");
+        const phone = normalizePhone(guestInput.phone);
+        const salutation = guestInput.salutation ? normalize(guestInput.salutation) : "Bạn";
+        const group = guestInput.group ? normalize(guestInput.group) : null;
+        const notes = guestInput.notes?.trim() || null;
+
+        const newGuest = await tx.guest.create({
+          data: {
+            accountId,
+            cardId,
+            guestToken,
+            guestCode: `G-${guestToken.slice(0, 8)}`,
+            fullName,
+            normalizedName,
+            phone,
+            normalizedPhone: phone,
+            salutation,
+            group,
+            notes,
+            customUrl: `/thiep/${card.slug}?g=${guestToken}`,
+          },
+        });
+
+        // Cập nhật map sau từng dòng để bắt trùng ngay trong payload
+        if (phoneKey) {
+          phoneMap.set(phoneKey, [newGuest]);
+        }
+        nameGroupMap.set(nameGroupKey, [newGuest]);
+
+        created++;
+        items.push({
+          ...newGuest,
+          customUrl: `/thiep/${card.slug}?g=${guestToken}`,
+        });
+      }
+
+      return {
+        created,
+        updated,
+        skipped,
+        errors,
+        items,
+      };
+    });
   }
 }

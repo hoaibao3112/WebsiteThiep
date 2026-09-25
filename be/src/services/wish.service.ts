@@ -2,6 +2,7 @@ import { prisma } from "../lib/prisma";
 import { cleanProfanity, containsProfanity } from "../lib/profanity-filter";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { WishSubmitInput } from "../lib/validators/wish.schema";
+import { HttpError } from "../lib/http-error";
 
 export class WishService {
   private static async getPublicCard(cardId: string) {
@@ -38,11 +39,11 @@ export class WishService {
     const card = await this.getPublicCard(cardId);
 
     if (!card) {
-      throw new Error("Thiệp không tồn tại");
+      throw new HttpError(404, "Thiệp không tồn tại", "CARD_NOT_FOUND");
     }
 
     if (card.status !== "ACTIVE" && card.status !== "DRAFT") {
-      throw new Error("Thiệp đã hết hạn hoặc tạm dừng nhận lời chúc");
+      throw new HttpError(400, "Thiệp đã hết hạn hoặc tạm dừng nhận lời chúc", "CARD_INACTIVE_OR_EXPIRED");
     }
 
     // 3. Kiểm tra và làm sạch từ ngữ phản cảm
@@ -62,6 +63,14 @@ export class WishService {
         emoji: emoji || "❤️",
         isApproved,
         ipAddress: meta?.ipAddress,
+      },
+      select: {
+        id: true,
+        senderName: true,
+        relationship: true,
+        content: true,
+        emoji: true,
+        createdAt: true,
       },
     });
 
@@ -85,6 +94,14 @@ export class WishService {
         accountId: card.accountId,
         cardId,
         isApproved: true,
+      },
+      select: {
+        id: true,
+        senderName: true,
+        relationship: true,
+        content: true,
+        emoji: true,
+        createdAt: true,
       },
       take: limit + 1,
       cursor: cursor ? { id: cursor } : undefined,

@@ -68,7 +68,20 @@ export class OrderService {
       throw new HttpError(403, "Chỉ chủ tài khoản (OWNER) mới có thể tạo đơn hàng", "OWNER_REQUIRED");
     }
 
-    // 2. Resolve target Plan
+    // 2. Early Idempotency Lookup via OrderRequest table
+    // Retry with same key & same plan returns existing order even if account is now VIP or price changed
+    const existingRequest = await prisma.orderRequest.findUnique({
+      where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
+      include: { order: { include: { plan: true } } },
+    });
+    if (existingRequest) {
+      if (existingRequest.planCode !== input.planCode) {
+        throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+      }
+      return this.formatOrderResult(existingRequest.order, true);
+    }
+
+    // 3. Resolve target Plan
     const targetPlan = await prisma.plan.findFirst({
       where: { code: input.planCode, isActive: true },
     });
@@ -79,7 +92,7 @@ export class OrderService {
       throw new HttpError(400, "Gói miễn phí không cần thanh toán", "FREE_PLAN_NOT_PURCHASABLE");
     }
 
-    // 3. Check current entitlement
+    // 4. Check current entitlement
     const effective = await AccountEntitlementService.getEffectivePlan(accountId);
     if (effective.planCode === "VIP") {
       throw new HttpError(409, "Tài khoản đã là VIP vĩnh viễn, không cần mua thêm", "ALREADY_VIP");
@@ -88,7 +101,7 @@ export class OrderService {
       // Allow BASIC extension — this is renewal
     }
 
-    // 3.5. Validate payment configuration BEFORE creating order
+    // 5. Validate payment configuration BEFORE creating order
     const bankCode = process.env.BANK_CODE;
     const bankAccount = process.env.BANK_ACCOUNT;
     const bankAccountName = process.env.BANK_ACCOUNT_NAME;
@@ -97,7 +110,7 @@ export class OrderService {
       throw new HttpError(503, "Hệ thống thanh toán chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
     }
 
-    // 4. Expire stale orders for this account (both PENDING and AWAITING_REVIEW past expiredAt)
+    // 6. Expire stale orders for this account (both PENDING and AWAITING_REVIEW past expiredAt)
     await prisma.order.updateMany({
       where: {
         accountId,
@@ -107,89 +120,40 @@ export class OrderService {
       data: { status: "EXPIRED" },
     });
 
-    // 5. Idempotency check
-    const existingOrder = await prisma.order.findUnique({
-      where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
-      include: { plan: true },
-    });
-    if (existingOrder) {
-      if (existingOrder.planId !== targetPlan.id) {
-        throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
-      }
-      return this.formatOrderResult(existingOrder, true);
-    }
-
-    // 6. Reuse active same-Plan order
-    const activeOrder = await prisma.order.findFirst({
-      where: {
-        accountId,
-        planId: targetPlan.id,
-        status: { in: ["PENDING", "AWAITING_REVIEW"] },
-        expiredAt: { gt: new Date() },
-      },
-      include: { plan: true },
-    });
-    if (activeOrder) {
-      return this.formatOrderResult(activeOrder, true);
-    }
-
-    // 7. Create new order
+    // 7. Atomic Create / Reuse order and record OrderRequest mapping
     const generateOrderCode = () =>
       `THIEP${Date.now().toString(36).slice(-3).toUpperCase()}${crypto.randomInt(10000, 100000)}`;
-    let orderCode = generateOrderCode();
-    const pollingToken = crypto.randomBytes(32).toString("base64url");
-    const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
-    const expiredAt = new Date(Date.now() + this.ORDER_EXPIRY_MS);
 
-    let order;
+    let orderResult: {
+      order: Prisma.OrderGetPayload<{ include: { plan: true } }>;
+      isReplay: boolean;
+      pollingToken: string | null;
+    } | null = null;
+
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        order = await prisma.order.create({
-          data: {
-            accountId,
-            idempotencyKey,
-            pollingTokenHash,
-            orderCode,
-            userId,
-            cardId: null, // Account-level order, no cardId
-            planId: targetPlan.id,
-            amount: targetPlan.price, // Backend-authoritative
-            status: "PENDING",
-            paymentGateway: "MANUAL",
-            expiredAt,
-          },
-          include: { plan: true },
-        });
-        break;
-      } catch (err) {
-        if (!(err instanceof Prisma.PrismaClientKnownRequestError) || err.code !== "P2002") {
-          throw err;
-        }
+        const runTx = typeof prisma.$transaction === "function"
+          ? (cb: (tx: any) => Promise<any>) =>
+              prisma.$transaction(cb, {
+                isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+              })
+          : (cb: (tx: any) => Promise<any>) => cb(prisma);
 
-        const rawTarget = err.meta?.target;
-        const targets = Array.isArray(rawTarget)
-          ? rawTarget.filter((target): target is string => typeof target === "string")
-          : typeof rawTarget === "string"
-            ? [rawTarget]
-            : [];
-
-        const isIdempotencyConflict = targets.some((t) => t.toLowerCase().includes("idempotencykey"));
-        const isOrderCodeConflict = targets.some((t) => t.toLowerCase().includes("ordercode"));
-        const isPlanConflict = targets.some((t) => t.toLowerCase().includes("plan") || t.toLowerCase().includes("uniq"));
-
-        if (isIdempotencyConflict) {
-          const racedOrder = await prisma.order.findUnique({
+        orderResult = await runTx(async (tx: any) => {
+          // Check raced OrderRequest mapping inside transaction
+          const racedRequest = await tx.orderRequest.findUnique({
             where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
-            include: { plan: true },
+            include: { order: { include: { plan: true } } },
           });
-          if (racedOrder?.planId === targetPlan.id) {
-            return this.formatOrderResult(racedOrder, true);
+          if (racedRequest) {
+            if (racedRequest.planCode !== input.planCode) {
+              throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+            }
+            return { order: racedRequest.order, isReplay: true, pollingToken: null };
           }
-          throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
-        }
 
-        if (isPlanConflict) {
-          const racedActive = await prisma.order.findFirst({
+          // Check active order for same plan to reuse
+          const activeOrder = await tx.order.findFirst({
             where: {
               accountId,
               planId: targetPlan.id,
@@ -198,45 +162,109 @@ export class OrderService {
             },
             include: { plan: true },
           });
-          if (racedActive) {
-            return this.formatOrderResult(racedActive, true);
+
+          let targetOrder = activeOrder;
+          let isReplay = false;
+          let pollingToken: string | null = null;
+
+          if (!targetOrder) {
+            const orderCode = generateOrderCode();
+            pollingToken = crypto.randomBytes(32).toString("base64url");
+            const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
+            const expiredAt = new Date(Date.now() + this.ORDER_EXPIRY_MS);
+
+            targetOrder = await tx.order.create({
+              data: {
+                accountId,
+                idempotencyKey,
+                pollingTokenHash,
+                orderCode,
+                userId,
+                cardId: null,
+                planId: targetPlan.id,
+                amount: targetPlan.price,
+                status: "PENDING",
+                paymentGateway: "MANUAL",
+                expiredAt,
+              },
+              include: { plan: true },
+            });
+          } else {
+            isReplay = true;
           }
+
+          // Persist the request-to-order mapping
+          await tx.orderRequest.create({
+            data: {
+              accountId,
+              idempotencyKey,
+              planCode: input.planCode,
+              orderId: targetOrder.id,
+            },
+          });
+
+          return { order: targetOrder, isReplay, pollingToken };
+        });
+
+        break;
+      } catch (err: unknown) {
+        if (err instanceof HttpError) throw err;
+
+        const isPrismaError = err instanceof Prisma.PrismaClientKnownRequestError;
+        const isRetryable = isPrismaError && (err.code === "P2002" || err.code === "P2034");
+
+        if (isRetryable && attempt < 3) {
+          continue;
         }
 
-        if (isOrderCodeConflict) {
-          if (attempt === 3) {
-            throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
+        if (isPrismaError && err.code === "P2002") {
+          // Double-check if raced mapping was committed concurrently
+          const raced = await prisma.orderRequest.findUnique({
+            where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
+            include: { order: { include: { plan: true } } },
+          });
+          if (raced) {
+            if (raced.planCode !== input.planCode) {
+              throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+            }
+            orderResult = { order: raced.order, isReplay: true, pollingToken: null };
+            break;
           }
-          orderCode = generateOrderCode();
-          continue;
         }
 
         throw err;
       }
     }
-    if (!order) {
+
+    if (!orderResult) {
       throw new HttpError(503, "Không thể tạo mã đơn hàng sau nhiều lần thử", "ORDER_CREATE_RETRY_EXHAUSTED");
     }
 
-    // 8. Generate VietQR
+    const { order, isReplay, pollingToken } = orderResult;
+
+    if (isReplay) {
+      return this.formatOrderResult(order, true);
+    }
+
+    // Fresh order VietQR
     const qrUrl = generateVietQrUrl({
       bankCode,
       accountNumber: bankAccount,
       accountName: bankAccountName,
-      amount: targetPlan.price,
-      description: orderCode,
+      amount: order.amount,
+      description: order.orderCode,
     });
 
     return {
       order: this.toSafeDTO(order),
       paymentInfo: {
-        orderCode,
-        amount: targetPlan.price,
+        orderCode: order.orderCode,
+        amount: order.amount,
         bankCode,
         bankAccount,
         bankAccountName,
         qrUrl,
-        expiredAt,
+        expiredAt: order.expiredAt,
         pollingToken,
       },
       replayed: false,

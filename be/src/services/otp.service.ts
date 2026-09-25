@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { mailQueue } from "../queues/mail.queue";
 import { MailService } from "./mail.service";
+import { HttpError } from "../lib/http-error";
 
 const OTP_TTL_SECONDS = 300; // 5 phút
 const EMAIL_COOLDOWN_SECONDS = 60; // 60s giữa 2 lần xin mã
@@ -32,7 +33,7 @@ export class OtpService {
     const inCooldown = await redis.get(cooldownKey);
     if (inCooldown) {
       const ttl = await redis.ttl(cooldownKey);
-      throw new Error(`Vui lòng chờ ${ttl > 0 ? ttl : 60} giây trước khi yêu cầu mã OTP mới.`);
+      throw new HttpError(429, `Vui lòng chờ ${ttl > 0 ? ttl : 60} giây trước khi yêu cầu mã OTP mới.`, "OTP_COOLDOWN");
     }
 
     // Sinh mã OTP 6 số ngẫu nhiên chuẩn an toàn
@@ -87,7 +88,7 @@ export class OtpService {
     const savedOtp = await redis.get(otpKey);
 
     if (!savedOtp) {
-      throw new Error("Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.");
+      throw new HttpError(400, "Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.", "OTP_EXPIRED_OR_NOT_FOUND");
     }
 
     // Kiểm tra số lần đã thử sai
@@ -98,7 +99,7 @@ export class OtpService {
       // Đã vượt quá 5 lần -> Xóa luôn OTP hiện tại
       await redis.del(otpKey);
       await redis.del(attemptsKey);
-      throw new Error("Bạn đã nhập sai mã OTP quá 5 lần. Mã đã bị hủy để đảm bảo an toàn, vui lòng yêu cầu mã mới.");
+      throw new HttpError(400, "Bạn đã nhập sai mã OTP quá 5 lần. Mã đã bị hủy để đảm bảo an toàn, vui lòng yêu cầu mã mới.", "OTP_MAX_ATTEMPTS_EXCEEDED");
     }
 
     // So khớp mã OTP
@@ -111,11 +112,11 @@ export class OtpService {
       if (newAttempts >= MAX_VERIFY_ATTEMPTS) {
         await redis.del(otpKey);
         await redis.del(attemptsKey);
-        throw new Error("Bạn đã nhập sai mã OTP quá 5 lần. Mã đã bị hủy để đảm bảo an toàn, vui lòng yêu cầu mã mới.");
+        throw new HttpError(400, "Bạn đã nhập sai mã OTP quá 5 lần. Mã đã bị hủy để đảm bảo an toàn, vui lòng yêu cầu mã mới.", "OTP_MAX_ATTEMPTS_EXCEEDED");
       }
 
       const remaining = MAX_VERIFY_ATTEMPTS - newAttempts;
-      throw new Error(`Mã OTP không chính xác. Bạn còn ${remaining} lần thử.`);
+      throw new HttpError(400, `Mã OTP không chính xác. Bạn còn ${remaining} lần thử.`, "OTP_INVALID");
     }
 
     // Verify thành công -> Xóa sạch key OTP và attempts

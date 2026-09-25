@@ -1,10 +1,11 @@
 import type { DraftCardInput } from "../lib/validators/card";
+import type { WeddingSceneSectionType } from "../lib/validators/card/wedding-scene.schema";
 
 type JsonRecord = Record<string, unknown>;
 
 interface WeddingSceneSection {
   id: string;
-  type: string;
+  type: WeddingSceneSectionType;
   label: string;
   visible: boolean;
   order: number;
@@ -23,7 +24,7 @@ interface WeddingSceneDocument extends JsonRecord {
   bindings: Record<string, string>;
 }
 
-const TEMPLATE_SECTIONS: Record<string, string[]> = {
+const TEMPLATE_SECTIONS: Record<string, WeddingSceneSectionType[]> = {
   "wedding-blank": ["hero"],
   "wedding-heritage-crimson-gold": ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"],
   "wedding-modern-editorial-magazine": ["hero", "signatures", "parents-zigzag", "ceremony-invitation", "venue", "calendar-countdown", "rsvp-envelope", "gift", "album-gallery", "farewell"],
@@ -329,7 +330,7 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
     } else if (section.type === "ceremony") {
       sectionHeight = 470;
       add(makePreset(`${section.id}-ceremony`, "p-ceremony-parents-date", 0, top, 390, sectionHeight));
-    } else if (section.type === "location" || section.type === "map") {
+    } else if (section.type === "location") {
       sectionHeight = 330;
       add(makeWidget(`${section.id}-widget`, "map", 24, top + 20, 342, 280, "Địa điểm tổ chức", primary, {
         url: readString(event.mapUrl, "https://maps.google.com"),

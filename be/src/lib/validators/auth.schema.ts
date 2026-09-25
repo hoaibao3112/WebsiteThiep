@@ -12,9 +12,11 @@ export type RegisterInput = z.infer<typeof RegisterSchema>;
 // 9. [MEDIUM] Schema gửi OTP - chỉ giữ type: 'REGISTER', comment reserved cho login/forgot password sau
 export const SendOtpSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
-  type: z.literal("REGISTER", {
-    errorMap: () => ({ message: "Loại OTP hiện tại chỉ hỗ trợ REGISTER (Đăng ký tài khoản)" }),
-  }),
+  type: z
+    .literal("REGISTER", {
+      errorMap: () => ({ message: "Loại OTP hiện tại chỉ hỗ trợ REGISTER (Đăng ký tài khoản)" }),
+    })
+    .default("REGISTER"),
   // Ghi chú: 'LOGIN' và 'FORGOT_PASSWORD' chưa implement, reserved cho tính năng nâng cấp sau
 });
 

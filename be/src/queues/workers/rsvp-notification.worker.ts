@@ -2,6 +2,7 @@ import { Worker, Job, Queue } from "bullmq";
 import { redisConnectionOptions } from "../../lib/bullmq";
 import {
   RSVP_NOTIFICATION_QUEUE_NAME,
+  RSVP_NOTIFICATION_DLQ_NAME,
 } from "../rsvp-notification.queue";
 import {
   dispatchTelegramNotification,
@@ -10,8 +11,7 @@ import {
 import { logger } from "../../lib/logger";
 
 // Dead Letter Queue — nhận job bị fail sau tất cả các lần thử lại
-const DLQ_NAME = `${RSVP_NOTIFICATION_QUEUE_NAME}:dlq`;
-const dlq = new Queue<RsvpNotificationData>(DLQ_NAME, {
+export const rsvpDlq = new Queue<RsvpNotificationData>(RSVP_NOTIFICATION_DLQ_NAME, {
   connection: redisConnectionOptions,
   defaultJobOptions: {
     removeOnComplete: false, // Giữ lại để xem và replay thủ công
@@ -45,7 +45,7 @@ rsvpWorker.on("failed", async (job, err) => {
   const maxAttempts = (job?.opts?.attempts ?? 3);
   if (job && job.attemptsMade >= maxAttempts) {
     logger.warn({ jobId: job.id }, "[BullMQ] Max attempts reached. Moving to DLQ.");
-    await dlq.add("dlq-rsvp", job.data, {
+    await rsvpDlq.add("dlq-rsvp", job.data, {
       jobId: `dlq-${job.id}`,
     });
   }

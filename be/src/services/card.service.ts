@@ -373,7 +373,11 @@ export class CardService {
     const [card, effectivePlan] = await Promise.all([
       prisma.card.findFirst({
         where: { id: cardId, accountId },
-        include: { plan: true },
+        include: {
+          plan: true,
+          template: true,
+          photos: { select: { id: true } },
+        },
       }),
       AccountEntitlementService.getEffectivePlan(accountId),
     ]);
@@ -390,14 +394,39 @@ export class CardService {
     }
     if (card.status === "ACTIVE") return card;
 
+    // Kiểm tra quyền template & photo của draft trước khi lần đầu publish
+    if (card.template?.isPremium && !effectivePlan.capabilities.allowPremiumTemplates) {
+      throw new HttpError(400, "Mẫu thiệp VIP không khả dụng cho gói hiện tại", "TEMPLATE_UNAVAILABLE");
+    }
+    if (card.photos && card.photos.length > effectivePlan.capabilities.maxPhotos) {
+      throw new HttpError(
+        400,
+        `Gói ${effectivePlan.planName} chỉ cho phép tối đa ${effectivePlan.capabilities.maxPhotos} ảnh`,
+        "PHOTO_LIMIT_EXCEEDED"
+      );
+    }
+
     PublishCardDataSchema.parse(card.categoryData);
 
-    const publishedAt = new Date();
+    const now = new Date();
+    const publishedAt = card.publishedAt || now;
     let expiredAt: Date | null = null;
-    if (effectivePlan.planCode === "BASIC") {
-      expiredAt = effectivePlan.planExpiresAt;
-    } else if (effectivePlan.planCode === "FREE" && card.plan?.durationDays) {
-      expiredAt = new Date(publishedAt.getTime() + card.plan.durationDays * 24 * 60 * 60 * 1_000);
+
+    if (effectivePlan.isPaid || effectivePlan.planCode === "BASIC" || effectivePlan.planCode === "VIP") {
+      // Paid BASIC/VIP tại thời điểm publish có expiredAt = null theo spec ngày 23/09
+      expiredAt = null;
+    } else {
+      // FREE: dùng duration FREE được backend cấu hình; publish lặp không kéo dài hạn
+      if (card.publishedAt && card.expiredAt) {
+        expiredAt = card.expiredAt;
+      } else {
+        const freePlan = await prisma.plan.findUnique({
+          where: { code: "FREE" },
+          select: { durationDays: true },
+        });
+        const durationDays = freePlan?.durationDays ?? card.plan?.durationDays ?? 7;
+        expiredAt = new Date(publishedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
+      }
     }
 
     return prisma.card.update({

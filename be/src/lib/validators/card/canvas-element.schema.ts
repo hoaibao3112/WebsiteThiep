@@ -7,8 +7,8 @@ export const CanvasElementSchema = z
     content: z.string().default(""),
     x: z.number(), // Tọa độ X (px) - do người dùng tự do kéo thả
     y: z.number(), // Tọa độ Y (px) - do người dùng tự do kéo thả
-    width: z.number().min(5), // Chiều rộng (px) - do người dùng kéo to nhỏ
-    height: z.number().min(5), // Chiều cao (px) - do người dùng kéo to nhỏ
+    width: z.number().min(0), // Chiều rộng (px)
+    height: z.number().min(0), // Chiều cao (px)
     rotation: z.number().default(0), // Góc xoay độ (0-360)
     zIndex: z.number().default(1), // Thứ tự lớp hiển thị
     // Styling & Typography

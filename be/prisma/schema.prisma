@@ -44,6 +44,7 @@ model Account {
   rsvpResponses       RsvpResponse[]
   wishes              Wish[]
   orders              Order[]
+  orderRequests       OrderRequest[]
   paymentTransactions PaymentTransaction[]
 
   @@index([currentPlanId])
@@ -442,6 +443,7 @@ model Order {
   reviewNote     String?   // Ghi chú của ADMIN (lý do từ chối hoặc ghi chú duyệt)
 
   transactions PaymentTransaction[]
+  requests     OrderRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -476,3 +478,19 @@ model PaymentTransaction {
   @@index([accountId, orderId])
   @@map("payment_transactions")
 }
+
+model OrderRequest {
+  id             String    @id @default(cuid())
+  accountId      String
+  account        Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  idempotencyKey String
+  planCode       PlanCode
+  orderId        String
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+
+  @@unique([accountId, idempotencyKey])
+  @@index([orderId])
+  @@map("order_requests")
+}
+

@@ -105,13 +105,14 @@ export class GuestController {
   static async import(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const input = ImportGuestsSchema.parse(req.body);
-      const items = [];
-      for (const guest of input.guests) {
-        items.push(await GuestService.create(accountIdOf(req), String(req.params.cardId), guest));
-      }
+      const result = await GuestService.importGuests(
+        accountIdOf(req),
+        String(req.params.cardId),
+        input
+      );
       res.status(201).json({
         success: true,
-        data: { created: items.length, updated: 0, skipped: 0, errors: [], items },
+        data: result,
       });
     } catch (error) {
       handleGuestError(error, res, next);
