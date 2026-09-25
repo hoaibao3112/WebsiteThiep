@@ -46,5 +46,7 @@ export function readCanvasData(value: unknown) {
     greeting: typeof data.greeting === "string" ? data.greeting : (typeof data.greetingMessage === "string" ? data.greetingMessage : undefined),
     heroSubtitle: typeof data.heroSubtitle === "string" ? data.heroSubtitle : undefined,
     loveStory: Array.isArray(data.loveStory) ? data.loveStory.map(readRecord) : [],
+    bankingPrimary: readRecord(data.bankingPrimary),
+    bankingSecondary: readRecord(data.bankingSecondary),
   };
 }

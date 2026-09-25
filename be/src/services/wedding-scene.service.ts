@@ -26,9 +26,9 @@ interface WeddingSceneDocument extends JsonRecord {
 const TEMPLATE_SECTIONS: Record<string, string[]> = {
   "wedding-blank": ["hero"],
   "wedding-heritage-crimson-gold": ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"],
-  "wedding-modern-editorial-magazine": ["hero", "couple", "events", "calendar", "gallery", "rsvp"],
+  "wedding-modern-editorial-magazine": ["hero", "signatures", "parents-zigzag", "ceremony-invitation", "venue", "calendar-countdown", "rsvp-envelope", "gift", "album-gallery", "farewell"],
   "wedding-sweet-editorial-romance": ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"],
-  "wedding-crimson-wine-marsala": ["hero", "couple", "events", "countdown", "gallery", "rsvp", "gift"],
+  "wedding-crimson-wine-marsala": ["hero", "arch-calendar", "invitation-cards", "ceremony-groom", "ceremony-bride", "venue", "photo-collage", "rsvp", "gift", "farewell"],
   "wedding-forest-green-botanical": ["hero", "calendar", "couple", "events", "gallery", "rsvp", "farewell"],
   "wedding-pure-lotus-heritage": ["hero", "couple", "events", "calendar", "rsvp", "gallery", "farewell"],
   "wedding-cinematic-editorial": ["hero", "couple", "story", "calendar", "map", "gallery", "rsvp"],
@@ -41,7 +41,7 @@ const TOKENS: Record<string, JsonRecord> = {
   "wedding-heritage-crimson-gold": { primary: "#8B1E2D", secondary: "#F4E8D0", accent: "#C9A45C", surface: "#FFFDF8", text: "#2E1B1B", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-modern-editorial-magazine": { primary: "#543A2C", secondary: "#E9DED5", accent: "#B9906D", surface: "#FAF8F5", text: "#211A17", headingFont: "Inter", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-sweet-editorial-romance": { primary: "#B84A39", secondary: "#F7D8D7", accent: "#E9A7A2", surface: "#FFF9F8", text: "#42272A", headingFont: "Great Vibes", bodyFont: "Quicksand", radius: "lg", density: "airy" },
-  "wedding-crimson-wine-marsala": { primary: "#6B1724", secondary: "#EBD4C6", accent: "#D2A35C", surface: "#FFF9F2", text: "#32181D", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-crimson-wine-marsala": { primary: "#6B1724", secondary: "#EBD4C6", accent: "#D2A35C", surface: "#FAF8F6", text: "#32181D", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-forest-green-botanical": { primary: "#3D4A34", secondary: "#DCE4D4", accent: "#A78B5B", surface: "#F8F7F0", text: "#263027", headingFont: "Outfit", bodyFont: "Outfit", radius: "md", density: "airy" },
   "wedding-pure-lotus-heritage": { primary: "#3B5E43", secondary: "#E6EFE5", accent: "#B89052", surface: "#FBFCF6", text: "#213429", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-cinematic-editorial": { primary: "#1C1C1C", secondary: "#D6C9B8", accent: "#B99768", surface: "#F3F1ED", text: "#171717", headingFont: "Cinzel", bodyFont: "Inter", radius: "none", density: "compact" },
@@ -94,6 +94,8 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
   const elements: SceneElement[] = [];
   const bindings: Record<string, string> = {};
   const isRichSlug = slug === "wedding-sweet-editorial-romance" || slug === "wedding-heritage-crimson-gold";
+  const isMagSlug = slug === "wedding-modern-editorial-magazine";
+  const isMarsalaSlug = slug === "wedding-crimson-wine-marsala";
 
   if (slug === "wedding-blank") {
     const blankSection = sections[0];
@@ -140,7 +142,87 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
       bindings[id] = binding;
     };
 
-    if (section.type === "envelope") {
+    if (isMagSlug) {
+      if (section.type === "hero") {
+        sectionHeight = 540;
+        add(makePreset(`${section.id}-hero`, "p-mag-hero", 0, top, 390, sectionHeight));
+      } else if (section.type === "signatures") {
+        sectionHeight = 170;
+        add(makePreset(`${section.id}-signatures`, "p-mag-signatures", 0, top, 390, sectionHeight));
+      } else if (section.type === "parents-zigzag") {
+        sectionHeight = 520;
+        add(makePreset(`${section.id}-parents`, "p-mag-parents-zigzag", 0, top, 390, sectionHeight));
+      } else if (section.type === "ceremony-invitation") {
+        sectionHeight = 680;
+        add(makePreset(`${section.id}-ceremony`, "p-mag-ceremony-invitation", 0, top, 390, sectionHeight));
+      } else if (section.type === "venue") {
+        sectionHeight = 220;
+        add(makeWidget(`${section.id}-widget`, "map", 24, top + 10, 342, 200, "Địa chỉ dự tiệc", primary, {
+          url: readString(event.mapUrl, "https://maps.google.com"),
+          description: [readString(event.venueName, "TƯ GIA NHÀ TRAI"), readString(event.address, "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội")].filter(Boolean).join("\n"),
+          buttonLabel: "Chỉ đường",
+        }));
+        bindings[`${section.id}-widget`] = "events[0].mapUrl";
+      } else if (section.type === "calendar-countdown") {
+        sectionHeight = 530;
+        add(makePreset(`${section.id}-countdown`, "p-mag-calendar-countdown", 0, top, 390, sectionHeight));
+      } else if (section.type === "rsvp-envelope") {
+        sectionHeight = 380;
+        add(makePreset(`${section.id}-rsvp`, "p-mag-rsvp-envelope", 0, top, 390, sectionHeight));
+      } else if (section.type === "gift") {
+        sectionHeight = 200;
+        add(makePreset(`${section.id}-gift`, "p-mag-gift", 0, top, 390, sectionHeight));
+      } else if (section.type === "album-gallery") {
+        sectionHeight = 780;
+        add(makePreset(`${section.id}-album`, "p-mag-album", 0, top, 390, sectionHeight));
+      } else if (section.type === "farewell") {
+        sectionHeight = 440;
+        add(makePreset(`${section.id}-farewell`, "p-mag-farewell", 0, top, 390, sectionHeight));
+      } else {
+        sectionHeight = 200;
+        add(makeText(`${section.id}-misc`, "", 0, top, 390, sectionHeight, primary, bodyFont, 14));
+      }
+    } else if (isMarsalaSlug) {
+      if (section.type === "hero") {
+        sectionHeight = 680;
+        add(makePreset(`${section.id}-hero`, "p-marsala-hero", 0, top, 390, sectionHeight));
+      } else if (section.type === "arch-calendar") {
+        sectionHeight = 720;
+        add(makePreset(`${section.id}-arch-calendar`, "p-marsala-arch-calendar", 0, top, 390, sectionHeight));
+      } else if (section.type === "invitation-cards") {
+        sectionHeight = 580;
+        add(makePreset(`${section.id}-invitation-cards`, "p-marsala-invitation-cards", 0, top, 390, sectionHeight));
+      } else if (section.type === "ceremony-groom") {
+        sectionHeight = 680;
+        add(makePreset(`${section.id}-ceremony-groom`, "p-marsala-ceremony-groom", 0, top, 390, sectionHeight));
+      } else if (section.type === "ceremony-bride") {
+        sectionHeight = 740;
+        add(makePreset(`${section.id}-ceremony-bride`, "p-marsala-ceremony-bride", 0, top, 390, sectionHeight));
+      } else if (section.type === "venue") {
+        sectionHeight = 220;
+        add(makeWidget(`${section.id}-widget`, "map", 24, top + 10, 342, 200, "Địa chỉ dự tiệc", primary, {
+          url: readString(event.mapUrl, "https://maps.google.com"),
+          description: [readString(event.venueName, "TƯ GIA NHÀ TRAI"), readString(event.address, "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa")].filter(Boolean).join("\n"),
+          buttonLabel: "Xem chỉ đường",
+        }));
+        bindings[`${section.id}-widget`] = "events[0].mapUrl";
+      } else if (section.type === "photo-collage") {
+        sectionHeight = 540;
+        add(makePreset(`${section.id}-photo-collage`, "p-marsala-photo-collage", 0, top, 390, sectionHeight));
+      } else if (section.type === "rsvp") {
+        sectionHeight = 200;
+        add(makePreset(`${section.id}-rsvp`, "p-marsala-rsvp", 0, top, 390, sectionHeight));
+      } else if (section.type === "gift") {
+        sectionHeight = 240;
+        add(makePreset(`${section.id}-gift`, "p-marsala-gift", 0, top, 390, sectionHeight));
+      } else if (section.type === "farewell") {
+        sectionHeight = 580;
+        add(makePreset(`${section.id}-farewell`, "p-marsala-farewell", 0, top, 390, sectionHeight));
+      } else {
+        sectionHeight = 200;
+        add(makeText(`${section.id}-misc`, "", 0, top, 390, sectionHeight, primary, bodyFont, 14));
+      }
+    } else if (section.type === "envelope") {
       sectionHeight = 400;
       add(makePreset(`${section.id}-envelope`, "p-envelope-sweet", 0, top, 390, sectionHeight));
     } else if (section.type === "hero") {
@@ -268,6 +350,18 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
 
     currentTop += sectionHeight + 16;
   });
+
+  if (isMagSlug || isMarsalaSlug) {
+    const hiddenGroom = makeText("scene-groom", readString(groom.fullName, isMarsalaSlug ? "Nguyễn Minh" : "Công Vinh"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
+    const hiddenBride = makeText("scene-bride", readString(bride.fullName, isMarsalaSlug ? "Bùi Phương" : "Hải Yến"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
+    elements.push(hiddenGroom, hiddenBride);
+    bindings["scene-groom"] = "groom.fullName";
+    bindings["scene-bride"] = "bride.fullName";
+    const heroSec = sections.find((s) => s.type === "hero");
+    if (heroSec) {
+      heroSec.elementIds.push("scene-groom", "scene-bride");
+    }
+  }
 
   return { elements, bindings };
 }

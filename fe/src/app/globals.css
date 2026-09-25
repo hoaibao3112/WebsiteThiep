@@ -1,9 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@500;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-serif: var(--font-playfair), "Playfair Display", "Times New Roman", Georgia, serif;
   --font-sans: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-playfair), "Playfair Display", "Times New Roman", Georgia, serif;
+  --font-script: "Great Vibes", "Alex Brush", cursive;
+}
+
+.font-script {
+  font-family: 'Great Vibes', 'Alex Brush', cursive !important;
+}
+.font-cursive {
+  font-family: 'Alex Brush', 'Dancing Script', cursive !important;
 }
 
 @layer base {

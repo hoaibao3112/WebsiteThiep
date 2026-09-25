@@ -39,7 +39,7 @@ const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
   "wedding-heritage-crimson-gold": { primary: "#8B1E2D", secondary: "#F4E8D0", accent: "#C9A45C", surface: "#FFFDF8", text: "#2E1B1B", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-modern-editorial-magazine": { primary: "#543A2C", secondary: "#E9DED5", accent: "#B9906D", surface: "#FAF8F5", text: "#211A17", headingFont: "Inter", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-sweet-editorial-romance": { primary: "#B84A39", secondary: "#F7D8D7", accent: "#E9A7A2", surface: "#FFF9F8", text: "#42272A", headingFont: "Great Vibes", bodyFont: "Quicksand", radius: "lg", density: "airy" },
-  "wedding-crimson-wine-marsala": { primary: "#6B1724", secondary: "#EBD4C6", accent: "#D2A35C", surface: "#FFF9F2", text: "#32181D", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-crimson-wine-marsala": { primary: "#6B1724", secondary: "#EBD4C6", accent: "#D2A35C", surface: "#FAF8F6", text: "#32181D", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-forest-green-botanical": { primary: "#3D4A34", secondary: "#DCE4D4", accent: "#A78B5B", surface: "#F8F7F0", text: "#263027", headingFont: "Outfit", bodyFont: "Outfit", radius: "md", density: "airy" },
   "wedding-pure-lotus-heritage": { primary: "#3B5E43", secondary: "#E6EFE5", accent: "#B89052", surface: "#FBFCF6", text: "#213429", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-cinematic-editorial": { primary: "#1C1C1C", secondary: "#D6C9B8", accent: "#B99768", surface: "#F3F1ED", text: "#171717", headingFont: "Cinzel", bodyFont: "Inter", radius: "none", density: "compact" },
@@ -62,6 +62,64 @@ function createElements(data: WeddingDataPayload, slug: string, tokens: WeddingS
   const accent = tokens.accent || "#C9A45C";
   const headingFont = tokens.headingFont || "Playfair Display";
   const bodyFont = tokens.bodyFont || "Inter";
+
+  if (slug.includes("magazine")) {
+    let top = 16;
+    const elements: CanvasElement[] = [];
+    elements.push({ id: "scene-hero", type: "preset", presetId: "p-mag-hero", content: "", x: 0, y: top, width: 390, height: 540, zIndex: 2 });
+    top += 556;
+    elements.push({ id: "scene-signatures", type: "preset", presetId: "p-mag-signatures", content: "", x: 0, y: top, width: 390, height: 170, zIndex: 2 });
+    top += 186;
+    elements.push({ id: "scene-parents-zigzag", type: "preset", presetId: "p-mag-parents-zigzag", content: "", x: 0, y: top, width: 390, height: 520, zIndex: 2 });
+    top += 536;
+    elements.push({ id: "scene-ceremony-invitation", type: "preset", presetId: "p-mag-ceremony-invitation", content: "", x: 0, y: top, width: 390, height: 680, zIndex: 2 });
+    top += 696;
+    elements.push({ id: "scene-venue", type: "widget", widgetType: "map", content: "", x: 24, y: top + 10, width: 342, height: 200, zIndex: 2, widgetConfig: { title: "Địa chỉ dự tiệc", description: "TƯ GIA NHÀ TRAI\n16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội", buttonLabel: "Chỉ đường" } });
+    top += 236;
+    elements.push({ id: "scene-calendar-countdown", type: "preset", presetId: "p-mag-calendar-countdown", content: "", x: 0, y: top, width: 390, height: 530, zIndex: 2 });
+    top += 546;
+    elements.push({ id: "scene-rsvp-envelope", type: "preset", presetId: "p-mag-rsvp-envelope", content: "", x: 0, y: top, width: 390, height: 380, zIndex: 2 });
+    top += 396;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-mag-gift", content: "", x: 0, y: top, width: 390, height: 200, zIndex: 2 });
+    top += 216;
+    elements.push({ id: "scene-album-gallery", type: "preset", presetId: "p-mag-album", content: "", x: 0, y: top, width: 390, height: 780, zIndex: 2 });
+    top += 796;
+    elements.push({ id: "scene-farewell", type: "preset", presetId: "p-mag-farewell", content: "", x: 0, y: top, width: 390, height: 440, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Chú rể", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Cô dâu", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
+
+  if (slug === "wedding-crimson-wine-marsala") {
+    let top = 16;
+    const elements: CanvasElement[] = [];
+    elements.push({ id: "scene-hero", type: "preset", presetId: "p-marsala-hero", content: "", x: 0, y: top, width: 390, height: 680, zIndex: 2 });
+    top += 696;
+    elements.push({ id: "scene-arch-calendar", type: "preset", presetId: "p-marsala-arch-calendar", content: "", x: 0, y: top, width: 390, height: 720, zIndex: 2 });
+    top += 736;
+    elements.push({ id: "scene-invitation-cards", type: "preset", presetId: "p-marsala-invitation-cards", content: "", x: 0, y: top, width: 390, height: 580, zIndex: 2 });
+    top += 596;
+    elements.push({ id: "scene-ceremony-groom", type: "preset", presetId: "p-marsala-ceremony-groom", content: "", x: 0, y: top, width: 390, height: 680, zIndex: 2 });
+    top += 696;
+    elements.push({ id: "scene-ceremony-bride", type: "preset", presetId: "p-marsala-ceremony-bride", content: "", x: 0, y: top, width: 390, height: 740, zIndex: 2 });
+    top += 756;
+    elements.push({ id: "scene-venue", type: "widget", widgetType: "map", content: "", x: 24, y: top + 10, width: 342, height: 200, zIndex: 2, widgetConfig: { title: "Địa chỉ dự tiệc", description: "TƯ GIA NHÀ TRAI\nKhu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa", buttonLabel: "Xem chỉ đường" } });
+    top += 236;
+    elements.push({ id: "scene-photo-collage", type: "preset", presetId: "p-marsala-photo-collage", content: "", x: 0, y: top, width: 390, height: 540, zIndex: 2 });
+    top += 556;
+    elements.push({ id: "scene-rsvp", type: "preset", presetId: "p-marsala-rsvp", content: "", x: 0, y: top, width: 390, height: 200, zIndex: 2 });
+    top += 216;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-marsala-gift", content: "", x: 0, y: top, width: 390, height: 240, zIndex: 2 });
+    top += 256;
+    elements.push({ id: "scene-farewell", type: "preset", presetId: "p-marsala-farewell", content: "", x: 0, y: top, width: 390, height: 580, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Nguyễn Minh", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Bùi Phương", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
 
   if (slug.includes("sweet") || slug.includes("heritage")) {
     let top = 16;
@@ -256,15 +314,19 @@ export function createWeddingSceneFromWeddingData(data: WeddingDataPayload, temp
   }
 
   const isRichTemplate = slug.includes("sweet") || slug.includes("heritage");
+  const isMagTemplate = slug.includes("magazine");
+  const isMarsalaTemplate = slug === "wedding-crimson-wine-marsala";
   const defaultRichSections = ["envelope", "hero", "ceremony", "location", "marry-me", "about-bride", "about-groom", "calendar", "timeline", "gallery", "rsvp", "gift", "thank-you"];
-  const sectionIds = isRichTemplate ? defaultRichSections : (config?.sections || ["hero", "couple", "events", "gallery", "rsvp"]);
+  const defaultMagSections = ["hero", "signatures", "parents-zigzag", "ceremony-invitation", "venue", "calendar-countdown", "rsvp-envelope", "gift", "album-gallery", "farewell"];
+  const defaultMarsalaSections = ["hero", "arch-calendar", "invitation-cards", "ceremony-groom", "ceremony-bride", "venue", "photo-collage", "rsvp", "gift", "farewell"];
+  const sectionIds = isRichTemplate ? defaultRichSections : isMagTemplate ? defaultMagSections : isMarsalaTemplate ? defaultMarsalaSections : (config?.sections || ["hero", "couple", "events", "gallery", "rsvp"]);
   const sections: WeddingSceneSection[] = sectionIds.map((rawId, index) => ({
     id: `section-${rawId}-${index}`,
     type: SECTION_ALIASES[rawId] || (rawId as WeddingSceneSectionId),
     label: rawId,
     visible: true,
     order: index,
-    elementIds: isRichTemplate ? [`scene-${rawId}`] : index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
+    elementIds: isRichTemplate || isMagTemplate || isMarsalaTemplate ? [`scene-${rawId}`] : index === 0 ? ["hero-panel", "hero-subtitle", "scene-groom", "scene-ampersand", "scene-bride", "hero-date", "scene-greeting"] : [],
   }));
   const tokens = DEFAULT_TOKENS[slug] || DEFAULT_TOKENS["wedding-heritage-crimson-gold"];
   const elements = createElements(data, slug, tokens);
