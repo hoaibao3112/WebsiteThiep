@@ -7,7 +7,7 @@ export default function DashboardLayout({
 }) {
   return (
     <DashboardAuthGuard>
-      <div className="text-stone-900 min-h-screen">{children}</div>
+      <div className="text-stone-900 min-h-screen bg-[#FAF7F2]">{children}</div>
     </DashboardAuthGuard>
   );
 }
