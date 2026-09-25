@@ -61,7 +61,7 @@ apiRouter.post(
 );
 
 // --- CARD ROUTES ---
-apiRouter.get("/templates/:slug/wedding-scene", authGuard, CardController.getWeddingScenePreview);
+apiRouter.get("/templates/:slug/wedding-scene", CardController.getWeddingScenePreview);
 apiRouter.post("/cards", authGuard, CardController.create); // Tạo bản nháp FREE
 apiRouter.get("/cards/my-cards", authGuard, CardController.getUserCards); // Danh sách thiệp của Host
 apiRouter.get("/cards/slug-availability", authGuard, CardController.slugAvailability);

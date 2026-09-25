@@ -88,7 +88,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   const effectiveSlug = templateSlug || card.template?.slug;
   const config = getTemplateConfig(effectiveSlug, "WEDDING");
   const variant = config?.variant || "wedding-heritage-crimson-gold";
-  const scene = getWeddingScene(card);
+  const scene = getWeddingScene(card, effectiveSlug);
 
   const groomShortName = data.groom?.shortName || data.groom?.fullName || "Chú rể";
   const brideShortName = data.bride?.shortName || data.bride?.fullName || "Cô dâu";
@@ -96,7 +96,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   return (
     <div
       data-template-variant={variant}
-        data-scene-template={scene?.templateSlug}
+      data-scene-template={scene?.templateSlug}
       className={`relative min-h-screen font-sans ${isPreview ? "overflow-hidden" : "overflow-x-hidden"} selection:bg-amber-200`}
       style={{
         fontFamily: card.fontFamily || scene?.tokens.bodyFont || config?.defaultFontFamily || "inherit",
@@ -140,16 +140,18 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
       {/* 4. RENDER TEMPLATE GIAO DIỆN TƯƠNG ỨNG */}
       <div className="relative">
-        {scene ? <WeddingSceneRenderer
-          card={card}
-          data={data}
-          scene={scene}
-          guestName={activeGuestName}
-          onOpenRsvp={() => setShowRsvp(true)}
-          onOpenGift={() => setShowGift(true)}
-          onSelectPhoto={(url) => setSelectedPhoto(url)}
-          isPreview={isPreview}
-        /> : <div className="mx-auto min-h-[60vh] max-w-md p-8 text-center" role="status">Thiệp này chưa có cấu hình thiết kế từ máy chủ.</div>}
+        {scene && (
+          <WeddingSceneRenderer
+            card={card}
+            data={data}
+            scene={scene}
+            guestName={activeGuestName}
+            onOpenRsvp={() => setShowRsvp(true)}
+            onOpenGift={() => setShowGift(true)}
+            onSelectPhoto={(url) => setSelectedPhoto(url)}
+            isPreview={isPreview}
+          />
+        )}
       </div>
 
       {/* 5. MODAL FORM RSVP XÁC NHẬN THAM DỰ */}

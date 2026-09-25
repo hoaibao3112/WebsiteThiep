@@ -76,6 +76,15 @@ export default function EditCardPage() {
 
 const TEMPLATE_PRESETS = [
   {
+    id: "wedding-blank",
+    name: "Mẫu Trắng Sáng Tạo",
+    category: "WEDDING",
+    tag: "BLANK",
+    color: "#2A2A2A",
+    font: "Playfair Display",
+    bg: "",
+  },
+  {
     id: "wedding-heritage-crimson-gold",
     name: "Á Đông Cung Đình",
     category: "WEDDING",

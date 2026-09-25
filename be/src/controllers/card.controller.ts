@@ -6,9 +6,8 @@ import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { ensureWeddingSceneData } from "../services/wedding-scene.service";
 
 export class CardController {
-  static async getWeddingScenePreview(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  static async getWeddingScenePreview(req: Request, res: Response, next: NextFunction) {
     try {
-      CardController.getAuth(req);
       const templateSlug = z.enum([
         "wedding-heritage-crimson-gold",
         "wedding-modern-editorial-magazine",
@@ -19,8 +18,9 @@ export class CardController {
         "wedding-cinematic-editorial",
         "wedding-alpine-lake-romance",
         "wedding-imperial-dragon-crimson",
+        "wedding-blank",
       ]).safeParse(req.params.slug);
-      if (!templateSlug.success) return res.status(404).json({ success: false, error: "Khong tim thay mau thiep cuoi" });
+      if (!templateSlug.success) return res.status(404).json({ success: false, error: "Không tìm thấy mẫu thiệp cưới" });
       const data = ensureWeddingSceneData(templateSlug.data, { cardCategory: "WEDDING" });
       return res.status(200).json({ success: true, data: data.canvasDocument });
     } catch (error: unknown) {

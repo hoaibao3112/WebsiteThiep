@@ -1,6 +1,7 @@
 import type { CardCategory } from "@/types/card.types";
 
 export type TemplateVariant =
+  | "wedding-blank"
   | "minimalist-gold"
   | "hong-xanh-luxury"
   | "wedding-heritage-crimson-gold"
@@ -28,6 +29,16 @@ export interface TemplateConfig {
 }
 
 export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
+  // ── MẪU TRẮNG SÁNG TẠO ──
+  "wedding-blank": {
+    slug: "wedding-blank",
+    category: "WEDDING",
+    variant: "wedding-blank",
+    label: "Mẫu Trắng Sáng Tạo",
+    defaultPrimaryColor: "#2A2A2A",
+    defaultFontFamily: "Playfair Display",
+    sections: ["hero"],
+  },
   // ── 9 MẪU THIỆP CƯỚI ĐỘC BẢN CHUẨN HOÁ ──
   "wedding-heritage-crimson-gold": {
     slug: "wedding-heritage-crimson-gold",
@@ -163,8 +174,11 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
 
 export function getTemplateConfig(slug?: string, category?: CardCategory): TemplateConfig | undefined {
   if (slug && TEMPLATE_CONFIGS[slug]) return TEMPLATE_CONFIGS[slug];
+  if (category === "WEDDING") {
+    return TEMPLATE_CONFIGS["wedding-heritage-crimson-gold"];
+  }
   if (category) {
-    return Object.values(TEMPLATE_CONFIGS).find((config) => config.category === category);
+    return Object.values(TEMPLATE_CONFIGS).find((config) => config.category === category && config.slug !== "wedding-blank");
   }
   return undefined;
 }

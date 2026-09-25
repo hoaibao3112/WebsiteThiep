@@ -24,6 +24,7 @@ interface WeddingSceneDocument extends JsonRecord {
 }
 
 const TEMPLATE_SECTIONS: Record<string, string[]> = {
+  "wedding-blank": ["hero"],
   "wedding-heritage-crimson-gold": ["hero", "couple", "events", "gallery", "guestbook", "rsvp"],
   "wedding-modern-editorial-magazine": ["hero", "couple", "events", "calendar", "gallery", "rsvp"],
   "wedding-sweet-editorial-romance": ["hero", "countdown", "parents", "map", "story", "calendar", "rsvp", "gift"],
@@ -36,6 +37,7 @@ const TEMPLATE_SECTIONS: Record<string, string[]> = {
 };
 
 const TOKENS: Record<string, JsonRecord> = {
+  "wedding-blank": { primary: "#2A2A2A", secondary: "#F0F0F0", accent: "#BE944E", surface: "#FFFFFF", text: "#1A1A1A", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-heritage-crimson-gold": { primary: "#8B1E2D", secondary: "#F4E8D0", accent: "#C9A45C", surface: "#FFFDF8", text: "#2E1B1B", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-modern-editorial-magazine": { primary: "#543A2C", secondary: "#E9DED5", accent: "#B9906D", surface: "#FAF8F5", text: "#211A17", headingFont: "Inter", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-sweet-editorial-romance": { primary: "#B84A39", secondary: "#F7D8D7", accent: "#E9A7A2", surface: "#FFF9F8", text: "#42272A", headingFont: "Great Vibes", bodyFont: "Quicksand", radius: "lg", density: "airy" },
@@ -48,6 +50,7 @@ const TOKENS: Record<string, JsonRecord> = {
 };
 
 const TEMPLATE_MOTIFS: Record<string, string> = {
+  "wedding-blank": "",
   "wedding-heritage-crimson-gold": "❖",
   "wedding-modern-editorial-magazine": "—",
   "wedding-sweet-editorial-romance": "♡",
@@ -88,6 +91,36 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
   const bindings: Record<string, string> = {};
   const sectionGap = slug.includes("cinematic") || slug.includes("magazine") ? 330 : 360;
 
+  if (slug === "wedding-blank") {
+    const blankSection = sections[0];
+    if (blankSection) {
+      blankSection.elementIds = ["blank-welcome"];
+    }
+    return {
+      elements: [
+        makeText(
+          "blank-welcome",
+          "MẪU TRẮNG SÁNG TẠO\n\nNhấn vào thanh công cụ bên trái để bắt đầu thêm Chữ, Ảnh hoặc Tiện ích",
+          20,
+          180,
+          350,
+          120,
+          "#666666",
+          bodyFont,
+          14,
+          {
+            backgroundColor: "#f9f9f9",
+            borderRadius: 16,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: "#e5e5e5",
+          }
+        ),
+      ],
+      bindings: {},
+    };
+  }
+
   sections.forEach((section, index) => {
     const top = 24 + index * sectionGap;
     section.elementIds = [];
@@ -103,7 +136,9 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
 
     if (section.type === "hero") {
       add({ id: `${section.id}-panel`, type: "shape", content: "", x: 0, y: top, width: 390, height: 290, zIndex: 1, shapeType: "rect", backgroundColor: primary, borderRadius: slug.includes("magazine") || slug.includes("cinematic") ? 0 : 28, opacity: 1 });
-      add(makeText(`${section.id}-motif`, motif, 40, top + 18, 310, 36, accent, headingFont, 28));
+      if (motif) {
+        add(makeText(`${section.id}-motif`, motif, 40, top + 18, 310, 36, accent, headingFont, 28));
+      }
       add(makeText(`${section.id}-subtitle`, readString(data.heroSubtitle, "TRÂN TRỌNG KÍNH MỜI"), 32, top + 58, 326, 30, "#ffffff", bodyFont, 11, { isUppercase: true, letterSpacing: 3 }));
       addBoundText("scene-groom", "groom.fullName", groom.shortName || groom.fullName, "Chú rể", top + 100, 30, { color: "#ffffff", isBold: true });
       add(makeText(`${section.id}-ampersand`, "&", 32, top + 139, 326, 28, accent, headingFont, 21));
@@ -111,10 +146,10 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
       add(makeText(`${section.id}-date`, readString(event.eventDate, ""), 32, top + 222, 326, 26, "#ffffff", bodyFont, 13));
     } else if (section.type === "couple") {
       add(makeText(`${section.id}-label`, "CÔ DÂU & CHÚ RỂ", 32, top, 326, 26, accent, bodyFont, 11, { isUppercase: true, letterSpacing: 2 }));
-      const groomAvatar = readString(groom.avatarUrl, "");
-      const brideAvatar = readString(bride.avatarUrl, "");
-      if (groomAvatar) add({ id: "scene-groom-avatar", type: "image", content: groomAvatar, imageUrl: groomAvatar, x: 42, y: top + 42, width: 130, height: 150, zIndex: 1, borderRadius: slug.includes("forest") ? 20 : 80, borderWidth: 2, borderColor: accent });
-      if (brideAvatar) add({ id: "scene-bride-avatar", type: "image", content: brideAvatar, imageUrl: brideAvatar, x: 218, y: top + 42, width: 130, height: 150, zIndex: 1, borderRadius: slug.includes("forest") ? 20 : 80, borderWidth: 2, borderColor: accent });
+      const groomAvatar = readString(groom.avatarUrl, "/images/demo/groom-avatar.png");
+      const brideAvatar = readString(bride.avatarUrl, "/images/demo/bride-avatar.png");
+      add({ id: "scene-groom-avatar", type: "image", content: groomAvatar, imageUrl: groomAvatar, x: 42, y: top + 42, width: 130, height: 150, zIndex: 1, borderRadius: slug.includes("forest") ? 20 : 80, borderWidth: 2, borderColor: accent });
+      add({ id: "scene-bride-avatar", type: "image", content: brideAvatar, imageUrl: brideAvatar, x: 218, y: top + 42, width: 130, height: 150, zIndex: 1, borderRadius: slug.includes("forest") ? 20 : 80, borderWidth: 2, borderColor: accent });
       addBoundText("scene-couple-groom", "groom.fullName", groom.fullName, "Chú rể", top + 200, 17, { isBold: true });
       addBoundText("scene-couple-bride", "bride.fullName", bride.fullName, "Cô dâu", top + 244, 17, { isBold: true });
     } else if (["events", "calendar", "countdown"].includes(section.type)) {

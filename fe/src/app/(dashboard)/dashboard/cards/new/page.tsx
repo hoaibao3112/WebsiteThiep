@@ -16,6 +16,8 @@ import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordion
 import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
 import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-config";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
+import { CreateModeChoiceModal } from "@/components/card/CreateModeChoiceModal";
+import { createWeddingSceneFromWeddingData } from "@/lib/editor/wedding-scene";
 import {
   Heart,
   Cake,
@@ -26,6 +28,8 @@ import {
   Check,
   Loader2,
   Sparkle,
+  LayoutTemplate,
+  FilePlus2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -168,23 +172,40 @@ function CardBuilderContent() {
         ]
   );
 
+  const hasTemplateInQuery = Boolean(searchParams.get("template"));
+  const [showChoiceModal, setShowChoiceModal] = useState(!hasTemplateInQuery);
+
   useEffect(() => {
     if (category !== "WEDDING") {
       setWeddingScene(null);
       return;
     }
+    if (templateSlug === "wedding-blank") {
+      const blankScene = createWeddingSceneFromWeddingData(weddingData, "wedding-blank");
+      setWeddingScene(blankScene);
+      return;
+    }
     let cancelled = false;
-    setWeddingScene(null);
     ApiClient.request<WeddingSceneDocument>(`/templates/${encodeURIComponent(templateSlug)}/wedding-scene`)
       .then((result) => {
-        if (!cancelled) setWeddingScene(result.success ? result.data ?? null : null);
+        if (!cancelled) {
+          if (result.success && result.data) {
+            setWeddingScene(result.data);
+          } else {
+            const fallbackScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
+            setWeddingScene(fallbackScene);
+          }
+        }
       })
       .catch(() => {
-        if (!cancelled) setWeddingScene(null);
+        if (!cancelled) {
+          const fallbackScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
+          setWeddingScene(fallbackScene);
+        }
       });
     return () => { cancelled = true; };
-  }, [category, templateSlug]);
-  const [showQuickFill, setShowQuickFill] = useState(true);
+  }, [category, templateSlug, weddingData]);
+  const [showQuickFill, setShowQuickFill] = useState(false);
 
   const handleApplyQuickFill = useCallback((data: QuickFillData) => {
     setWeddingData((prev) => ({
@@ -447,6 +468,14 @@ function CardBuilderContent() {
   // Chuyển Template Slug: Tự động đổ dữ liệu chữ, ảnh, nhạc, màu sắc của mẫu đó
   const handleTemplateChange = (slugKey: string) => {
     setTemplateSlug(slugKey);
+    if (slugKey === "wedding-blank") {
+      setPrimaryColor("#2A2A2A");
+      setFontFamily("Playfair Display");
+      setGreetingMessage("");
+      const blankScene = createWeddingSceneFromWeddingData(weddingData, "wedding-blank");
+      setWeddingScene(blankScene);
+      return;
+    }
     const demoCard = DEMO_TEMPLATES_MAP[slugKey];
     if (demoCard) {
       setPrimaryColor(demoCard.primaryColor || "#8B1E2D");
@@ -647,13 +676,39 @@ function CardBuilderContent() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => setShowChoiceModal(true)}
+                className="min-h-10 px-3 sm:px-4 py-2 rounded-xl border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+                title="Chọn một trong 9 mẫu thiết kế sẵn từ máy chủ hoặc tạo mẫu trắng"
+              >
+                <LayoutTemplate className="w-3.5 h-3.5 text-amber-600" />
+                <span className="hidden sm:inline">Chọn Mẫu Có Sẵn</span>
+                <span className="sm:hidden">Mẫu</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTemplateChange("wedding-blank")}
+                className={`min-h-10 px-3 sm:px-3.5 py-2 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0 ${
+                  templateSlug === "wedding-blank"
+                    ? "bg-stone-900 border-stone-800 text-white font-bold"
+                    : "border-stone-200 bg-white hover:bg-stone-50 text-stone-700"
+                }`}
+                title="Khởi tạo khung trắng sạch sẽ để tự thiết kế"
+              >
+                <FilePlus2 className="w-3.5 h-3.5" />
+                <span>Mẫu Trắng</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowApplyProfileModal(true)}
-                className="min-h-10 px-3.5 sm:px-4 py-2 rounded-xl border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+                className="min-h-10 px-3 sm:px-3.5 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
                 title="Lấy dữ liệu từ Hồ Sơ Cưới tài khoản đưa vào thiệp"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                <span>Áp Dụng Từ Hồ Sơ</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <span className="hidden md:inline">Từ Hồ Sơ</span>
               </button>
+
               <button
                 type="button"
                 onClick={() => setShowQuickFill(true)}
@@ -811,6 +866,15 @@ function CardBuilderContent() {
         isOpen={showApplyProfileModal}
         onClose={() => setShowApplyProfileModal(false)}
         onApply={handleApplyProfileSections}
+      />
+
+      {/* ── CREATE MODE CHOICE MODAL (MẪU TRẮNG VS 9 MẪU CÓ SẴN) ── */}
+      <CreateModeChoiceModal
+        isOpen={showChoiceModal}
+        onClose={() => setShowChoiceModal(false)}
+        onSelectBlank={() => handleTemplateChange("wedding-blank")}
+        onSelectPreset={(slug) => handleTemplateChange(slug)}
+        currentTemplateSlug={templateSlug}
       />
     </div>
   );
