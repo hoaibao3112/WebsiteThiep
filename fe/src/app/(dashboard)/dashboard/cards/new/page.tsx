@@ -124,6 +124,7 @@ function CardBuilderContent() {
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const categoryDataRef = useRef<Record<string, any>>(initialDemoCard?.categoryData || {});
 
   // Smart Auth Gate: flag để tự động tiếp tục xuất bản sau khi đăng nhập thành công
   const pendingPublishRef = useRef(false);
@@ -186,6 +187,10 @@ function CardBuilderContent() {
     if (templateSlug === "wedding-blank") {
       const blankScene = createWeddingSceneFromWeddingData(weddingData, "wedding-blank");
       setWeddingScene(blankScene);
+      categoryDataRef.current = {
+        ...categoryDataRef.current,
+        canvasDocument: blankScene,
+      };
       return;
     }
     let cancelled = false;
@@ -193,10 +198,19 @@ function CardBuilderContent() {
       .then((result) => {
         if (!cancelled) {
           if (result.success && result.data) {
-            setWeddingScene(hydrateWeddingScene(result.data, weddingData));
+            const hydrated = hydrateWeddingScene(result.data, weddingData);
+            setWeddingScene(hydrated);
+            categoryDataRef.current = {
+              ...categoryDataRef.current,
+              canvasDocument: hydrated,
+            };
           } else {
             const fallbackScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
             setWeddingScene(fallbackScene);
+            categoryDataRef.current = {
+              ...categoryDataRef.current,
+              canvasDocument: fallbackScene,
+            };
           }
         }
       })
@@ -204,49 +218,60 @@ function CardBuilderContent() {
         if (!cancelled) {
           const fallbackScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
           setWeddingScene(fallbackScene);
+          categoryDataRef.current = {
+            ...categoryDataRef.current,
+            canvasDocument: fallbackScene,
+          };
         }
       });
     return () => { cancelled = true; };
   }, [category, templateSlug]);
 
-  useEffect(() => {
-    if (!weddingScene || category !== "WEDDING") return;
-    setWeddingScene((currentScene) => currentScene ? hydrateWeddingScene(currentScene, weddingData) : null);
-  }, [weddingData, category]);
   const [showQuickFill, setShowQuickFill] = useState(false);
 
   const handleApplyQuickFill = useCallback((data: QuickFillData) => {
-    setWeddingData((prev) => ({
-      ...prev,
-      groom: {
-        ...prev.groom,
-        fullName: data.groomName || prev.groom.fullName,
-        parents: {
-          fatherName: data.groomFather || prev.groom.parents?.fatherName,
-          motherName: data.groomMother || prev.groom.parents?.motherName,
+    setWeddingData((prev) => {
+      const next: WeddingDataPayload = {
+        ...prev,
+        groom: {
+          ...prev.groom,
+          fullName: data.groomName || prev.groom.fullName,
+          parents: {
+            fatherName: data.groomFather || prev.groom.parents?.fatherName,
+            motherName: data.groomMother || prev.groom.parents?.motherName,
+          },
         },
-      },
-      bride: {
-        ...prev.bride,
-        fullName: data.brideName || prev.bride.fullName,
-        parents: {
-          fatherName: data.brideFather || prev.bride.parents?.fatherName,
-          motherName: data.brideMother || prev.bride.parents?.motherName,
+        bride: {
+          ...prev.bride,
+          fullName: data.brideName || prev.bride.fullName,
+          parents: {
+            fatherName: data.brideFather || prev.bride.parents?.fatherName,
+            motherName: data.brideMother || prev.bride.parents?.motherName,
+          },
         },
-      },
-      coverPhotoUrl: data.photos && data.photos[0] ? data.photos[0].url : prev.coverPhotoUrl,
-      events: data.eventDate
-        ? [
-            {
-              id: "ev-main",
-              eventName: "Lễ Thành Hôn",
-              eventDate: new Date(`${data.eventDate}T${String(data.eventHour || "10").padStart(2, "0")}:${String(data.eventMinute || "0").padStart(2, "0")}`),
-              venueName: "Trung tâm tiệc cưới",
-              address: data.address || "Tư gia",
-            },
-          ]
-        : prev.events,
-    }));
+        coverPhotoUrl: data.photos && data.photos[0] ? data.photos[0].url : prev.coverPhotoUrl,
+        events: data.eventDate
+          ? [
+              {
+                id: "ev-main",
+                eventName: "Lễ Thành Hôn",
+                eventDate: new Date(`${data.eventDate}T${String(data.eventHour || "10").padStart(2, "0")}:${String(data.eventMinute || "0").padStart(2, "0")}`),
+                venueName: "Trung tâm tiệc cưới",
+                address: data.address || "Tư gia",
+              },
+            ]
+          : prev.events,
+      };
+
+      setWeddingScene((curr) => {
+        if (!curr) return null;
+        const hydrated = hydrateWeddingScene(curr, next);
+        categoryDataRef.current = { ...categoryDataRef.current, canvasDocument: hydrated };
+        return hydrated;
+      });
+
+      return next;
+    });
 
     if (data.photos && data.photos.length > 0) {
       setCustomPhotos(
@@ -531,29 +556,43 @@ function CardBuilderContent() {
         : (newbornData.events || []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
     photos: customPhotos,
     categoryData: {
+      ...categoryDataRef.current,
       ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
       ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
       canvasWidth: 390,
-      canvasHeight: (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
+      canvasHeight: categoryDataRef.current?.canvasHeight ?? (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
     } as CardDetail["categoryData"],
   };
 
   // Xử lý khi người dùng chỉnh sửa trên Visual Card Editor
   const handleVisualDraftChange = (next: CardDetail) => {
-    setPrimaryColor(next.primaryColor);
-    setFontFamily(next.fontFamily);
-    setGreetingMessage(next.greetingMessage || "");
-    setOpeningEffect(next.openingEffect);
-    setFallingEffect(next.fallingEffect);
-    setMusicUrl(next.musicUrl || "");
+    categoryDataRef.current = (next.categoryData as Record<string, any>) || {};
+
+    if (next.primaryColor) setPrimaryColor(next.primaryColor);
+    if (next.fontFamily) setFontFamily(next.fontFamily);
+    if (next.greetingMessage !== undefined) setGreetingMessage(next.greetingMessage || "");
+    if (next.openingEffect) setOpeningEffect(next.openingEffect);
+    if (next.fallingEffect) setFallingEffect(next.fallingEffect);
+    if (next.musicUrl !== undefined) setMusicUrl(next.musicUrl || "");
     if (next.photos) setCustomPhotos(next.photos);
 
-    if (category === "WEDDING" && next.categoryData.cardCategory === "WEDDING") {
-      setWeddingData(next.categoryData as WeddingDataPayload);
-    } else if (category === "BIRTHDAY" && next.categoryData.cardCategory === "BIRTHDAY") {
-      setBirthdayData(next.categoryData as BirthdayDataPayload);
-    } else if (category === "NEWBORN" && next.categoryData.cardCategory === "NEWBORN") {
-      setNewbornData(next.categoryData as NewbornDataPayload);
+    const catData = next.categoryData as any;
+    if (catData) {
+      if (category === "WEDDING") {
+        setWeddingData((prev) => ({
+          ...prev,
+          ...catData,
+          groom: { ...prev.groom, ...(catData.groom || {}) },
+          bride: { ...prev.bride, ...(catData.bride || {}) },
+        }));
+        if (catData.canvasDocument) {
+          setWeddingScene(catData.canvasDocument);
+        }
+      } else if (category === "BIRTHDAY") {
+        setBirthdayData(catData);
+      } else if (category === "NEWBORN") {
+        setNewbornData(catData);
+      }
     }
   };
 
@@ -602,9 +641,13 @@ function CardBuilderContent() {
           isCover: p.isCover ?? idx === 0,
         }));
 
-      const payloadData = category === "WEDDING"
-        ? { ...weddingData, canvasWidth: 390, canvasHeight: weddingData.canvasHeight ?? 1200 }
-        : { ...(category === "BIRTHDAY" ? birthdayData : newbornData), canvasWidth: 390, canvasHeight: (category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200 };
+      const payloadData = {
+        ...categoryDataRef.current,
+        ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
+        ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
+        canvasWidth: 390,
+        canvasHeight: categoryDataRef.current?.canvasHeight ?? (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
+      };
 
       const payload = {
         slug,

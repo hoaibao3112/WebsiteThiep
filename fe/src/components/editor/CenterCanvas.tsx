@@ -590,14 +590,16 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                 !canvasBackgroundColor.startsWith("/") &&
                 !canvasBackgroundColor.startsWith("data:")
                   ? canvasBackgroundColor
-                  : "#FFFFFF",
+                  : ((draft as any)?.categoryData?.canvasDocument?.background?.color || "#FFFFFF"),
               backgroundImage:
                 canvasBackgroundColor &&
                 (canvasBackgroundColor.startsWith("http") ||
                   canvasBackgroundColor.startsWith("/") ||
                   canvasBackgroundColor.startsWith("data:"))
                   ? `url(${canvasBackgroundColor})`
-                  : undefined,
+                  : ((draft as any)?.categoryData?.canvasDocument?.background?.imageUrl
+                      ? `url(${(draft as any)?.categoryData?.canvasDocument?.background?.imageUrl})`
+                      : undefined),
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
@@ -609,12 +611,24 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             {/* Falling Particles Effect (Hiệu ứng hoa lá tuyết rơi) */}
             <CanvasFallingEffect effect={canvasFallingEffect} />
 
-            {/* ── TEMPLATE VIEW LAYER (WeddingView / BirthdayView / NewbornView) ── */}
-            {/* pointer-events-none on entire template to prevent buttons/links/modals
-                from firing in editor mode. Only [data-editable-field] elements get
-                pointer-events-auto so users can click to select and edit them. */}
+            {/* Empty Canvas Guide (Khi chưa có phần tử nào trên thiệp) */}
+            {canvasElements.length === 0 && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center pointer-events-none select-none z-10">
+                <div className="w-full max-w-[300px] border-2 border-dashed border-stone-300 rounded-2xl p-6 bg-white/90 shadow-sm flex flex-col items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+                    <Sparkles className="size-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-stone-800 font-serif">Khung Thiệp Trống</h4>
+                  <p className="text-xs text-stone-500 leading-relaxed">
+                    Nhấn vào thanh công cụ bên trái (Văn bản, Thư viện Stock, Ảnh, v.v.) hoặc kéo thả vào đây để thêm nội dung.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ── TEMPLATE VIEW LAYER (Chỉ hiển thị cho mẫu Birthday, Newborn hoặc HTML legacy không dùng canvasDocument) ── */}
             <div
-              className="relative z-0 w-full overflow-hidden"
+              className={`relative z-0 w-full overflow-hidden ${(draft as any)?.categoryData?.canvasDocument ? "hidden" : ""}`}
               style={{ pointerEvents: "none", minHeight: 0 }}
             >
               <div
