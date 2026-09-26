@@ -534,7 +534,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("nw", e)}
-            className="absolute -top-1 -left-1 size-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group"
+            className="absolute -top-1 -left-1 size-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi kích thước"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -543,7 +543,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("n", e)}
-            className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group"
+            className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi chiều cao"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -552,7 +552,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("ne", e)}
-            className="absolute -top-1 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group"
+            className="absolute -top-1 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi kích thước"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -561,7 +561,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("w", e)}
-            className="absolute top-1/2 -left-1 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group"
+            className="absolute top-1/2 -left-1 -translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi chiều rộng"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -570,7 +570,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("e", e)}
-            className="absolute top-1/2 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group"
+            className="absolute top-1/2 -right-1 translate-x-1/2 -translate-y-1/2 size-7 flex items-center justify-center cursor-ew-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi chiều rộng"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -579,7 +579,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("sw", e)}
-            className="absolute -bottom-1 -left-1 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group"
+            className="absolute -bottom-1 -left-1 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nesw-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi kích thước"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -588,7 +588,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("s", e)}
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group"
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-ns-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi chiều cao"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
@@ -597,7 +597,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           <div
             data-canvas-control
             onPointerDown={(e) => handlePointerDownResize("se", e)}
-            className="absolute -bottom-1 -right-1 translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group"
+            className="absolute -bottom-1 -right-1 translate-x-1/2 translate-y-1/2 size-7 flex items-center justify-center cursor-nwse-resize touch-none select-none z-30 group pointer-events-auto"
             title="Kéo để thay đổi kích thước"
           >
             <div className="size-3.5 rounded-full bg-[#0091FF] border-2 border-white shadow-md group-hover:scale-125 transition-transform pointer-events-none" />
