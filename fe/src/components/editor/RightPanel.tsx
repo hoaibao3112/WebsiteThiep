@@ -31,6 +31,7 @@ import {
   Unlock,
   Plus,
   Minus,
+  QrCode,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -803,6 +804,32 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateCustomData = (patch: Record<string, any>) => {
+    updateCanvasElement(element.id, {
+      customData: {
+        ...(element.customData || {}),
+        ...patch,
+      },
+    });
+  };
+
+  const handleQrImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const url = await uploadSingleImage(file);
+      if (url) {
+        updateCustomData({ qrUrl: url });
+      }
+    } catch (err) {
+      console.error("Lỗi tải mã QR:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -941,6 +968,207 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                 </button>
               </div>
             ) : null}
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA THÔNG TIN CHO PRESET MỪNG CƯỚI & QR (p-wedding-gift-luxury) ── */}
+        {element.presetId === "p-wedding-gift-luxury" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <div className="flex items-center gap-2 pb-1.5 border-b border-stone-200">
+              <QrCode className="size-4 text-amber-700" />
+              <span className="text-xs font-bold text-stone-800 uppercase tracking-wide">
+                Cài đặt Mừng Cưới & Mã QR
+              </span>
+            </div>
+
+            {/* Chú rể */}
+            <div className="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-stone-700 flex items-center gap-1">
+                🤵 Tài khoản Chú Rể
+              </span>
+              <input
+                type="text"
+                placeholder="Tên chú rể (VD: Minh Khôi)"
+                value={element.customData?.groomName ?? ""}
+                onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Ngân hàng (Vietcombank...)"
+                  value={element.customData?.groomBank ?? ""}
+                  onChange={(e) => updateCustomData({ groomBank: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+                />
+                <input
+                  type="text"
+                  placeholder="Số tài khoản"
+                  value={element.customData?.groomAccount ?? ""}
+                  onChange={(e) => updateCustomData({ groomAccount: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50 font-mono font-medium"
+                />
+              </div>
+            </div>
+
+            {/* Cô dâu */}
+            <div className="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-stone-700 flex items-center gap-1">
+                👰 Tài khoản Cô Dâu
+              </span>
+              <input
+                type="text"
+                placeholder="Tên cô dâu (VD: Ngọc Hân)"
+                value={element.customData?.brideName ?? ""}
+                onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Ngân hàng (Techcombank...)"
+                  value={element.customData?.brideBank ?? ""}
+                  onChange={(e) => updateCustomData({ brideBank: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+                />
+                <input
+                  type="text"
+                  placeholder="Số tài khoản"
+                  value={element.customData?.brideAccount ?? ""}
+                  onChange={(e) => updateCustomData({ brideAccount: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50 font-mono font-medium"
+                />
+              </div>
+            </div>
+
+            {/* Ảnh QR Tùy chỉnh */}
+            <div className="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-stone-700 block">
+                📷 Ảnh Mã QR (Tùy chọn)
+              </span>
+              <p className="text-[10px] text-stone-500 leading-relaxed">
+                Hệ thống tự động sinh mã VietQR theo số tài khoản ở trên. Nếu muốn dùng mã QR riêng (MoMo, ZaloPay, QR ngân hàng có logo), bạn hãy tải ảnh lên:
+              </p>
+              <input
+                type="file"
+                ref={qrFileInputRef}
+                accept="image/*"
+                className="hidden"
+                onChange={handleQrImageUpload}
+              />
+              <div className="flex gap-2 items-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => qrFileInputRef.current?.click()}
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-lg text-xs font-semibold cursor-pointer transition"
+                >
+                  {isUploading ? "Đang tải..." : "Tải ảnh QR lên"}
+                </button>
+                {element.customData?.qrUrl && (
+                  <button
+                    type="button"
+                    onClick={() => updateCustomData({ qrUrl: undefined })}
+                    className="text-[10px] text-rose-600 hover:underline cursor-pointer"
+                  >
+                    Dùng lại VietQR tự động
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Lời nhắn mừng cưới */}
+            <div className="space-y-1.5 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-stone-700 block">
+                ✍️ Lời mời mừng cưới
+              </span>
+              <input
+                type="text"
+                placeholder="Tiêu đề (MỪNG CƯỚI)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+              />
+              <textarea
+                rows={3}
+                placeholder="Lời nhắn gửi khách mời"
+                value={element.customData?.message ?? ""}
+                onChange={(e) => updateCustomData({ message: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA THÔNG TIN CHO PHONG BÌ SÁP SONG HỶ (p-envelope-songhy) ── */}
+        {element.presetId === "p-envelope-songhy" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💌 Chữ trên thiệp phong bì
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Tên Chú Rể"
+                  value={element.customData?.groomName ?? ""}
+                  onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Cô Dâu"
+                  value={element.customData?.brideName ?? ""}
+                  onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Ngày cưới (VD: 28 • 12 • 2026)"
+                value={element.customData?.dateStr ?? ""}
+                onChange={(e) => updateCustomData({ dateStr: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono"
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề (Save Our Date / THIỆP MỜI)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA THÔNG TIN CHO LỄ THÀNH HÔN (p-le-thanh-hon) ── */}
+        {element.presetId === "p-le-thanh-hon" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💒 Thông tin Lễ Thành Hôn
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Thời gian (VD: 11:00 • 18 Tháng 12, 2026)"
+                value={element.customData?.timeStr ?? ""}
+                onChange={(e) => updateCustomData({ timeStr: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Ngày âm lịch (VD: Nhằm ngày 10 tháng 11 năm Bính Ngọ)"
+                value={element.customData?.lunarStr ?? ""}
+                onChange={(e) => updateCustomData({ lunarStr: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Địa điểm (VD: Tại Tư gia Nhà Trai / Khách sạn Melia)"
+                value={element.customData?.venueStr ?? ""}
+                onChange={(e) => updateCustomData({ venueStr: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+            </div>
           </div>
         )}
 

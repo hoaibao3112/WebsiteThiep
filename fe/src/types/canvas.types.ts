@@ -86,4 +86,5 @@ export interface CanvasElement {
   flipY?: boolean;
   widgetType?: WidgetType;
   widgetConfig?: WidgetConfig;
+  customData?: Record<string, any>;
 }

@@ -34,10 +34,18 @@ interface PresetItem {
     | "polaroid-washi"
     | "orchid-arch"
     | "envelope-songhy"
+    | "wedding-gift-luxury"
     | "le-thanh-hon";
 }
 
 const PRESET_CATALOG: PresetItem[] = [
+  {
+    id: "p-wedding-gift-luxury",
+    title: "Bảng mừng cưới & QR Song Hỷ",
+    cat: "info",
+    desc: "Bảng mừng cưới hoàng gia, hiển thị QR và tài khoản ngân hàng hai họ",
+    previewType: "wedding-gift-luxury",
+  },
   {
     id: "p-orchid-arch",
     title: "Khung vòm hoa lan hoàng gia",
@@ -252,6 +260,27 @@ export function PresetTool() {
             <div className="absolute bottom-1 right-2 bg-amber-100 text-amber-900 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-xs">
               Lồng ảnh
             </div>
+          </div>
+        );
+
+      case "wedding-gift-luxury":
+        return (
+          <div className="w-full h-28 bg-[#FAF7F2] rounded-xl relative overflow-hidden flex flex-col items-center justify-between p-2 border border-amber-300/80 shadow-2xs">
+            <div className="text-center">
+              <span className="text-[6px] tracking-widest text-amber-800 uppercase font-serif block">WEDDING GIFT</span>
+              <span className="text-[9px] font-serif font-bold text-[#543A2C] uppercase leading-tight block">MỪNG CƯỚI</span>
+            </div>
+            {/* Mini QR card */}
+            <div className="w-24 bg-white rounded-lg border border-amber-200/80 p-1 flex items-center justify-center gap-1.5 shadow-xs">
+              <div className="size-9 bg-stone-100 rounded border border-stone-200 flex items-center justify-center text-[10px]">
+                📱
+              </div>
+              <div className="flex-1 text-[6px] font-sans leading-tight">
+                <span className="font-bold text-stone-700 block">Hai họ</span>
+                <span className="text-stone-400 block font-mono">Vietcombank</span>
+              </div>
+            </div>
+            <span className="text-[6.5px] font-serif italic text-amber-900/70">Thank you ❤️</span>
           </div>
         );
 

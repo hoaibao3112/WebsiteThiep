@@ -910,6 +910,32 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
+      } else if (item.id === "p-wedding-gift-luxury") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-wedding-gift-luxury",
+          title: "Bảng mừng cưới & Mã QR hoàng gia",
+          content: "wedding-gift-luxury",
+          x: pos?.x ?? 25,
+          y: pos?.y ?? 80,
+          width: 340,
+          height: 540,
+          customData: {
+            title: "MỪNG CƯỚI",
+            subtitle: "Thay cho những lời chúc tốt đẹp",
+            message: "Sự hiện diện và lời chúc của bạn là món quà quý giá nhất với chúng mình. Nếu muốn gửi thêm chút yêu thương, bạn có thể mừng cưới qua số tài khoản bên dưới ạ.",
+            groomName: (draft as any)?.categoryData?.groom?.fullName || (draft as any)?.groom?.fullName || "Minh Khôi",
+            groomBank: (draft as any)?.bankingPrimary?.bankCode || "Vietcombank",
+            groomAccount: (draft as any)?.bankingPrimary?.accountNumber || "0123 456 789",
+            brideName: (draft as any)?.categoryData?.bride?.fullName || (draft as any)?.bride?.fullName || "Ngọc Hân",
+            brideBank: (draft as any)?.bankingSecondary?.bankCode || "Techcombank",
+            brideAccount: (draft as any)?.bankingSecondary?.accountNumber || "9876 543 210",
+          },
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
       } else if (item.id === "p-envelope-songhy") {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import type { CanvasElement } from "@/types/canvas.types";
 import { readCanvasData } from "@/lib/editor/canvas-presentation";
 import { CanvasWidget } from "./CanvasWidget";
 
-import { Heart } from "lucide-react";
+import { Heart, Copy, Check, QrCode } from "lucide-react";
 import { STOCK_CATALOG } from "@/config/stock-catalog";
 
 export function ScaledPresetWrapper({
@@ -39,6 +39,188 @@ export function ScaledPresetWrapper({
         {children}
       </div>
     </div>
+  );
+}
+
+function WeddingGiftLuxuryCard({
+  el,
+  data,
+  onGift,
+}: {
+  el: CanvasElement;
+  data: any;
+  onGift?: () => void;
+}) {
+  const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+
+  const custom = el.customData || {};
+  const groomName = custom.groomName || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
+  const groomBank = custom.groomBank || (typeof data.bankingPrimary?.bankCode === "string" ? data.bankingPrimary.bankCode : "") || "Vietcombank";
+  const groomAccount = custom.groomAccount || (typeof data.bankingPrimary?.accountNumber === "string" ? data.bankingPrimary.accountNumber : "") || "0123 456 789";
+
+  const brideName = custom.brideName || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
+  const brideBank = custom.brideBank || (typeof data.bankingSecondary?.bankCode === "string" ? data.bankingSecondary.bankCode : "") || "Techcombank";
+  const brideAccount = custom.brideAccount || (typeof data.bankingSecondary?.accountNumber === "string" ? data.bankingSecondary.accountNumber : "") || "9876 543 210";
+
+  const title = custom.title || "MỪNG CƯỚI";
+  const subtitle = custom.subtitle || "Thay cho những lời chúc tốt đẹp";
+  const message = custom.message || "Sự hiện diện và lời chúc của bạn là món quà quý giá nhất với chúng mình. Nếu muốn gửi thêm chút yêu thương, bạn có thể mừng cưới qua số tài khoản bên dưới ạ.";
+
+  const cleanBank = groomBank.replace(/[^a-zA-Z0-9]/g, "");
+  const cleanAcc = groomAccount.replace(/[^a-zA-Z0-9]/g, "");
+  const defaultVietQr = cleanBank && cleanAcc
+    ? `https://img.vietqr.io/image/${cleanBank}-${cleanAcc}-compact2.png?accountName=${encodeURIComponent(groomName)}`
+    : "https://api.vietqr.io/image/970422-012345678-compact2.jpg?amount=0&addInfo=MungCuoi";
+
+  const qrImageUrl = custom.qrUrl || el.imageUrl || defaultVietQr;
+
+  const handleCopy = (acc: string, type: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      navigator.clipboard.writeText(acc.replace(/\s/g, ""));
+      setCopiedAccount(type);
+      setTimeout(() => setCopiedAccount(null), 2000);
+    } catch {}
+  };
+
+  return (
+    <ScaledPresetWrapper baseW={340} baseH={550} w={el.width} h={el.height}>
+      <div className="w-full h-full relative overflow-visible flex flex-col items-center justify-between p-3 select-none text-center">
+        {/* Top Header */}
+        <div className="w-full space-y-1 mb-1">
+          <span className="text-[#A27B38] text-xs block leading-none">♡</span>
+          <span className="text-[9px] font-serif uppercase tracking-[0.3em] text-[#8C6D37] font-semibold block">
+            WEDDING GIFT
+          </span>
+          <h2 className="text-2xl font-serif font-bold text-[#4A3225] uppercase tracking-wider leading-tight">
+            {title}
+          </h2>
+          <p className="font-script text-lg text-[#8C6D37] leading-none pt-0.5">
+            {subtitle}
+          </p>
+          <p className="text-[9.5px] text-stone-600 font-serif leading-relaxed max-w-[285px] mx-auto pt-1">
+            {message}
+          </p>
+        </div>
+
+        {/* Luxury Rounded White Card */}
+        <div className="w-[310px] bg-[#FFFDF9] rounded-[24px] border border-amber-200/90 shadow-xl p-4 flex flex-col items-center relative space-y-3">
+          {/* Pill Badge: QUÉT MÃ QR */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FAF5EC] border border-amber-200 text-[#8C6D37] text-[9px] font-bold tracking-widest uppercase shadow-2xs">
+            QUÉT MÃ QR
+          </div>
+
+          {/* QR Code Container with Gold Brackets */}
+          <div className="relative p-2.5 bg-white rounded-2xl shadow-sm border border-stone-200/80">
+            <div className="absolute top-1 left-1 size-3 border-t-2 border-l-2 border-[#D4AF37] rounded-tl-sm pointer-events-none" />
+            <div className="absolute top-1 right-1 size-3 border-t-2 border-r-2 border-[#D4AF37] rounded-tr-sm pointer-events-none" />
+            <div className="absolute bottom-1 left-1 size-3 border-b-2 border-l-2 border-[#D4AF37] rounded-bl-sm pointer-events-none" />
+            <div className="absolute bottom-1 right-1 size-3 border-b-2 border-r-2 border-[#D4AF37] rounded-br-sm pointer-events-none" />
+
+            <div className="size-36 relative flex items-center justify-center overflow-hidden rounded-lg bg-white">
+              <img
+                src={qrImageUrl}
+                alt="QR Mừng Cưới"
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "/images/vietqr-admin.png";
+                }}
+              />
+              <div className="absolute inset-0 m-auto size-6 rounded-md bg-white shadow-md border border-pink-200 flex items-center justify-center">
+                <span className="text-xs">💖</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section: CHÚ RỂ */}
+          <div className="w-full text-left space-y-1">
+            <div className="flex items-center gap-1.5 pl-1">
+              <span className="text-sm">🤵</span>
+              <div>
+                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">CHÚ RỂ</span>
+                <span className="text-xs font-serif font-bold text-[#4A3225] block leading-tight">{groomName}</span>
+              </div>
+            </div>
+
+            <div className="w-full bg-[#FAF7F2] rounded-xl border border-stone-200/90 px-3 py-1.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-5 rounded-full bg-emerald-600 flex items-center justify-center text-[7px] text-white font-bold shrink-0">
+                  {groomBank.slice(0, 3).toUpperCase()}
+                </div>
+                <div>
+                  <span className="text-[9px] font-sans text-stone-500 block leading-tight">{groomBank}</span>
+                  <span className="text-xs font-mono font-bold text-stone-800 tracking-wide block">{groomAccount}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => handleCopy(groomAccount, "groom", e)}
+                className="p-1.5 hover:bg-stone-200/60 rounded-lg text-stone-600 hover:text-stone-900 transition pointer-events-auto cursor-pointer"
+                title="Sao chép số tài khoản"
+              >
+                {copiedAccount === "groom" ? (
+                  <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5">
+                    <Check className="size-3" /> Đã chép
+                  </span>
+                ) : (
+                  <Copy className="size-3.5 text-stone-500" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Delicate Divider */}
+          <div className="w-full flex items-center justify-center gap-2 py-0.5">
+            <div className="h-[1px] flex-1 bg-amber-200/60" />
+            <span className="text-[#A27B38] text-[10px]">♡</span>
+            <div className="h-[1px] flex-1 bg-amber-200/60" />
+          </div>
+
+          {/* Section: CÔ DÂU */}
+          <div className="w-full text-left space-y-1">
+            <div className="flex items-center gap-1.5 pl-1">
+              <span className="text-sm">👰</span>
+              <div>
+                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">CÔ DÂU</span>
+                <span className="text-xs font-serif font-bold text-[#4A3225] block leading-tight">{brideName}</span>
+              </div>
+            </div>
+
+            <div className="w-full bg-[#FAF7F2] rounded-xl border border-stone-200/90 px-3 py-1.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-5 rounded-full bg-rose-600 flex items-center justify-center text-[7px] text-white font-bold shrink-0">
+                  {brideBank.slice(0, 3).toUpperCase()}
+                </div>
+                <div>
+                  <span className="text-[9px] font-sans text-stone-500 block leading-tight">{brideBank}</span>
+                  <span className="text-xs font-mono font-bold text-stone-800 tracking-wide block">{brideAccount}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => handleCopy(brideAccount, "bride", e)}
+                className="p-1.5 hover:bg-stone-200/60 rounded-lg text-stone-600 hover:text-stone-900 transition pointer-events-auto cursor-pointer"
+                title="Sao chép số tài khoản"
+              >
+                {copiedAccount === "bride" ? (
+                  <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5">
+                    <Check className="size-3" /> Đã chép
+                  </span>
+                ) : (
+                  <Copy className="size-3.5 text-stone-500" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Footer Calligraphy */}
+          <div className="pt-1 text-center">
+            <span className="font-script text-xl text-[#8C6D37] block leading-none">Thank you</span>
+            <span className="text-[#A27B38] text-[9px] block pt-0.5">♡</span>
+          </div>
+        </div>
+      </div>
+    </ScaledPresetWrapper>
   );
 }
 
@@ -3486,6 +3668,11 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             </p>
           </div>
         );
+      }
+
+      // 00. Bảng Mừng Cưới & Mã QR Song Hỷ (Wedding Gift & QR Card)
+      if (el.presetId === "p-wedding-gift-luxury" || el.content === "wedding-gift-luxury") {
+        return <WeddingGiftLuxuryCard el={el} data={data} onGift={onGift} />;
       }
 
       // 0a. Khung vòm hoa lan hoàng gia (Orchid Arch Photo Frame)
