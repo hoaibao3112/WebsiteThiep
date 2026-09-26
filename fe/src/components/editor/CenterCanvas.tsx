@@ -319,10 +319,6 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
         if (fieldId) {
           selectElement(fieldId, fieldType);
         }
-      } else {
-        // Clicked outside any editable -> deselect
-        selectElement(null);
-        setInlineEditingId(null);
       }
     };
 
@@ -459,7 +455,6 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
         return;
       }
 
-      e.preventDefault();
       e.stopPropagation();
 
       selectElement(el.id, "canvas-element");
@@ -483,6 +478,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       const handlePointerUp = () => {
         endInteraction();
         setActiveDraggingId(null);
+        selectElement(el.id, "canvas-element");
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
         window.removeEventListener("pointercancel", handlePointerUp);
@@ -549,7 +545,15 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       </div>
 
       {/* ── CANVAS VIEWPORT WITH ZOOM TRANSFORM ── */}
-      <div className="relative w-full min-h-0 flex-1 overflow-auto">
+      <div
+        className="relative w-full min-h-0 flex-1 overflow-auto"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            selectElement(null);
+            setInlineEditingId(null);
+          }
+        }}
+      >
         <div className="relative mx-auto my-8" style={{ width: 390 * zoomLevel / 100, height: canvasHeight * zoomLevel / 100 }}>
         <div
           ref={containerRef}

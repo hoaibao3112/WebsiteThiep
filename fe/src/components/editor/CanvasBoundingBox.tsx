@@ -37,6 +37,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
     pasteElement,
     beginInteraction,
     endInteraction,
+    selectElement,
   } = useEditor();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -92,9 +93,9 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
       const target = e.target as HTMLElement;
       if (target.closest("[data-canvas-control]")) return;
 
-      e.preventDefault();
       e.stopPropagation();
 
+      selectElement(element.id, "canvas-element");
       beginInteraction();
       setIsDragging(true);
       dragStartRef.current = {
@@ -119,6 +120,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
       const handlePointerUp = () => {
         setIsDragging(false);
         endInteraction();
+        selectElement(element.id, "canvas-element");
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
         window.removeEventListener("pointercancel", handlePointerUp);
