@@ -747,6 +747,60 @@ function SelectInspector({
 // 6. CANVAS ELEMENT INSPECTOR (WYSIWYG Free Drag Elements)
 // ────────────────────────────────────────────────────────────────
 
+function PresetImageUploader({
+  label,
+  currentUrl,
+  onImageChange,
+  isCircular = false,
+}: {
+  label: string;
+  currentUrl?: string;
+  onImageChange: (url: string) => void;
+  isCircular?: boolean;
+}) {
+  const [isUploading, setIsUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const url = await uploadSingleImage(file);
+      if (url) onImageChange(url);
+    } catch (err) {
+      console.error("Lỗi upload ảnh:", err);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2.5 p-2 bg-stone-50 rounded-xl border border-stone-200 shadow-2xs">
+      <div className={`size-12 overflow-hidden bg-white border border-stone-200 shrink-0 flex items-center justify-center ${isCircular ? "rounded-full" : "rounded-lg"}`}>
+        {currentUrl ? (
+          <img src={currentUrl} alt={label} className="w-full h-full object-cover" />
+        ) : (
+          <ImageIcon className="size-5 text-stone-300" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[11px] font-bold text-stone-700 block truncate">{label}</span>
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={() => inputRef.current?.click()}
+          className="mt-1 text-[10px] font-semibold text-amber-800 hover:text-amber-950 bg-white hover:bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 transition cursor-pointer disabled:opacity-50 inline-flex items-center gap-1 shadow-2xs"
+        >
+          <UploadCloud className="size-3 text-amber-700" />
+          {isUploading ? "Đang tải..." : "Đổi ảnh"}
+        </button>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      </div>
+    </div>
+  );
+}
+
 function CanvasElementInspector({ element }: { element: CanvasElement }) {
   const {
     updateCanvasElement,
@@ -1149,6 +1203,13 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
             <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
               <input
                 type="text"
+                placeholder="Tiêu đề (LỄ THÀNH HÔN & NHẬP TIỆC)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <input
+                type="text"
                 placeholder="Thời gian (VD: 11:00 • 18 Tháng 12, 2026)"
                 value={element.customData?.timeStr ?? ""}
                 onChange={(e) => updateCustomData({ timeStr: e.target.value })}
@@ -1168,6 +1229,912 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                 onChange={(e) => updateCustomData({ venueStr: e.target.value })}
                 className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
               />
+              <input
+                type="text"
+                placeholder="Lời cảm ơn chân trang (Hân hạnh được đón tiếp quý khách!)"
+                value={element.customData?.footerNote ?? ""}
+                onChange={(e) => updateCustomData({ footerNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO CHÂN DUNG ĐÔI (p-groom-bride-duo) ── */}
+        {element.presetId === "p-groom-bride-duo" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              👥 Chân dung Chú Rể & Cô Dâu
+            </span>
+
+            {/* Chú rể */}
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-stone-700 block">🤵 Chú Rể</span>
+              <PresetImageUploader
+                label="Ảnh Chú Rể"
+                currentUrl={element.customData?.groomPhoto || element.imageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80"}
+                onImageChange={(url) => updateCustomData({ groomPhoto: url })}
+                isCircular
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Nhãn (GROOM)"
+                  value={element.customData?.groomLabel ?? "GROOM"}
+                  onChange={(e) => updateCustomData({ groomLabel: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Chú Rể"
+                  value={element.customData?.groomName ?? ""}
+                  onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+                />
+              </div>
+            </div>
+
+            {/* Cô dâu */}
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <span className="text-[11px] font-bold text-pink-700 block">👰 Cô Dâu</span>
+              <PresetImageUploader
+                label="Ảnh Cô Dâu"
+                currentUrl={element.customData?.bridePhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"}
+                onImageChange={(url) => updateCustomData({ bridePhoto: url })}
+                isCircular
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Nhãn (BRIDE)"
+                  value={element.customData?.brideLabel ?? "BRIDE"}
+                  onChange={(e) => updateCustomData({ brideLabel: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Cô Dâu"
+                  value={element.customData?.brideName ?? ""}
+                  onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO THƯ MỜI WEDDING TYPOGRAPHY (p-wedding-typography) ── */}
+        {element.presetId === "p-wedding-typography" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              ✍️ Thư Mời Typography
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Nhãn tiêu đề (WEDDING)"
+                value={element.customData?.tag ?? ""}
+                onChange={(e) => updateCustomData({ tag: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Tên Chú Rể"
+                  value={element.customData?.groomName ?? ""}
+                  onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Cô Dâu"
+                  value={element.customData?.brideName ?? ""}
+                  onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Tiêu đề chính (THƯ MỜI TIỆC CƯỚI)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Phụ đề (HÔN LỄ TRANG TRỌNG)"
+                  value={element.customData?.subtitle ?? ""}
+                  onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Năm (VD: 2026)"
+                  value={element.customData?.yearStr ?? ""}
+                  onChange={(e) => updateCustomData({ yearStr: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO THIỆP SONG HỶ ĐỎ (p-song-hy-red) ── */}
+        {element.presetId === "p-song-hy-red" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              囍 Thiệp Song Hỷ Đỏ Á Đông
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Thẻ đầu (LỄ THÀNH HÔN)"
+                value={element.customData?.tag ?? ""}
+                onChange={(e) => updateCustomData({ tag: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Tên Chú Rể"
+                  value={element.customData?.groomName ?? ""}
+                  onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Cô Dâu"
+                  value={element.customData?.brideName ?? ""}
+                  onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Câu đề chúc (TRĂM NĂM TÌNH VIÊN MÃN)"
+                value={element.customData?.subtitle ?? ""}
+                onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif font-bold"
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Câu đối trái (DUYÊN NỢ BA SINH)"
+                  value={element.customData?.leftFooter ?? ""}
+                  onChange={(e) => updateCustomData({ leftFooter: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif text-[11px]"
+                />
+                <input
+                  type="text"
+                  placeholder="Câu đối phải (HẠNH PHÚC TRỌN ĐỜI)"
+                  value={element.customData?.rightFooter ?? ""}
+                  onChange={(e) => updateCustomData({ rightFooter: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif text-[11px]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO HÔN PHỐI HAI HỌ (p-parents-info / p4) ── */}
+        {(element.presetId === "p-parents-info" || element.presetId === "p4") && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              👨‍👩‍👧‍👦 Hôn Phối Hai Họ
+            </span>
+            <div className="space-y-2.5 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề khối (Hôn Phối Hai Họ)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              {/* Nhà Trai */}
+              <div className="p-2 bg-stone-50 rounded-lg border border-stone-200/70 space-y-1.5">
+                <span className="text-[11px] font-bold text-stone-700 block">NHÀ TRAI</span>
+                <input
+                  type="text"
+                  placeholder="Thân phụ (Ông: Nguyễn Văn A)"
+                  value={element.customData?.gFather ?? ""}
+                  onChange={(e) => updateCustomData({ gFather: e.target.value })}
+                  className="w-full px-2 py-1 text-xs rounded border border-stone-200 bg-white focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Thân mẫu (Bà: Trần Thị B)"
+                  value={element.customData?.gMother ?? ""}
+                  onChange={(e) => updateCustomData({ gMother: e.target.value })}
+                  className="w-full px-2 py-1 text-xs rounded border border-stone-200 bg-white focus:outline-blue-500"
+                />
+              </div>
+              {/* Nhà Gái */}
+              <div className="p-2 bg-stone-50 rounded-lg border border-stone-200/70 space-y-1.5">
+                <span className="text-[11px] font-bold text-stone-700 block">NHÀ GÁI</span>
+                <input
+                  type="text"
+                  placeholder="Thân phụ (Ông: Lê Văn C)"
+                  value={element.customData?.bFather ?? ""}
+                  onChange={(e) => updateCustomData({ bFather: e.target.value })}
+                  className="w-full px-2 py-1 text-xs rounded border border-stone-200 bg-white focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Thân mẫu (Bà: Phạm Thị D)"
+                  value={element.customData?.bMother ?? ""}
+                  onChange={(e) => updateCustomData({ bMother: e.target.value })}
+                  className="w-full px-2 py-1 text-xs rounded border border-stone-200 bg-white focus:outline-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO ĐỊA ĐIỂM & BẢN ĐỒ (p-venue-map) ── */}
+        {element.presetId === "p-venue-map" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              📍 Địa Điểm Tiệc Cưới & Bản Đồ
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Thẻ (ĐỊA ĐIỂM TỔ CHỨC)"
+                value={element.customData?.tag ?? ""}
+                onChange={(e) => updateCustomData({ tag: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Tên địa điểm (White Palace Convention Center)"
+                value={element.customData?.venueName ?? ""}
+                onChange={(e) => updateCustomData({ venueName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <input
+                type="text"
+                placeholder="Sảnh tiệc (Sảnh Grand Hall • Tầng 2)"
+                value={element.customData?.hallName ?? ""}
+                onChange={(e) => updateCustomData({ hallName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <textarea
+                rows={2}
+                placeholder="Địa chỉ chi tiết"
+                value={element.customData?.address ?? ""}
+                onChange={(e) => updateCustomData({ address: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <PresetImageUploader
+                label="Mã QR Chỉ Đường Google Maps"
+                currentUrl={element.customData?.qrUrl || "https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=ChiDuong"}
+                onImageChange={(url) => updateCustomData({ qrUrl: url })}
+              />
+              <input
+                type="text"
+                placeholder="Ghi chú dưới QR (QUÉT MỞ MAPS)"
+                value={element.customData?.qrNote ?? ""}
+                onChange={(e) => updateCustomData({ qrNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO THỰC ĐƠN TIỆC CƯỚI (p-wedding-menu) ── */}
+        {element.presetId === "p-wedding-menu" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🍽️ Thực Đơn Bàn Tiệc
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề (THỰC ĐƠN TIỆC CƯỚI)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề phụ (WEDDING BANQUET MENU)"
+                value={element.customData?.subtitle ?? ""}
+                onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+              />
+              <div className="space-y-1.5 pt-1">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    placeholder={`Món ${i}...`}
+                    value={element.customData?.[`dish${i}`] ?? ""}
+                    onChange={(e) => updateCustomData({ [`dish${i}`]: e.target.value })}
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                  />
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Lời chúc cuối (Chúc quý khách ngon miệng!)"
+                value={element.customData?.footerNote ?? ""}
+                onChange={(e) => updateCustomData({ footerNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO LỊCH KHOANH TRÒN (p-calendar-countdown) ── */}
+        {element.presetId === "p-calendar-countdown" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              📅 Lịch Ngày Cưới
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Dòng chữ chào mừng"
+                value={element.customData?.header ?? ""}
+                onChange={(e) => updateCustomData({ header: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif"
+              />
+              <div className="grid grid-cols-3 gap-1.5">
+                <div>
+                  <label className="text-[10px] text-stone-500 block mb-0.5">Ngày khoanh</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={31}
+                    value={element.customData?.selectedDay ?? 12}
+                    onChange={(e) => updateCustomData({ selectedDay: Number(e.target.value) || 1 })}
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-stone-500 block mb-0.5">Tháng</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={element.customData?.month ?? 12}
+                    onChange={(e) => updateCustomData({ month: Number(e.target.value) || 1 })}
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-stone-500 block mb-0.5">Năm</label>
+                  <input
+                    type="number"
+                    value={element.customData?.year ?? 2026}
+                    onChange={(e) => updateCustomData({ year: Number(e.target.value) || 2026 })}
+                    className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono font-bold"
+                  />
+                </div>
+              </div>
+              <input
+                type="text"
+                placeholder="Lời nhắn dưới lịch"
+                value={element.customData?.note ?? ""}
+                onChange={(e) => updateCustomData({ note: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO ĐẾM NGƯỢC (p-wedding-countdown) ── */}
+        {element.presetId === "p-wedding-countdown" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              ⏳ Đếm Ngược Ngày Cưới
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề (CÙNG ĐẾM NGƯỢC THỜI GIAN)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <input
+                type="text"
+                placeholder="Lời dẫn"
+                value={element.customData?.subtitle ?? ""}
+                onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <div className="grid grid-cols-4 gap-1">
+                <div>
+                  <label className="text-[9px] text-stone-400 block">Ngày</label>
+                  <input
+                    type="text"
+                    value={element.customData?.days ?? "28"}
+                    onChange={(e) => updateCustomData({ days: e.target.value })}
+                    className="w-full px-2 py-1 text-xs text-center rounded border border-stone-200 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-stone-400 block">Giờ</label>
+                  <input
+                    type="text"
+                    value={element.customData?.hours ?? "14"}
+                    onChange={(e) => updateCustomData({ hours: e.target.value })}
+                    className="w-full px-2 py-1 text-xs text-center rounded border border-stone-200 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-stone-400 block">Phút</label>
+                  <input
+                    type="text"
+                    value={element.customData?.mins ?? "35"}
+                    onChange={(e) => updateCustomData({ mins: e.target.value })}
+                    className="w-full px-2 py-1 text-xs text-center rounded border border-stone-200 font-mono font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="text-[9px] text-stone-400 block">Giây</label>
+                  <input
+                    type="text"
+                    value={element.customData?.secs ?? "59"}
+                    onChange={(e) => updateCustomData({ secs: e.target.value })}
+                    className="w-full px-2 py-1 text-xs text-center rounded border border-stone-200 font-mono font-bold text-rose-600"
+                  />
+                </div>
+              </div>
+              <input
+                type="text"
+                placeholder="Lời nhắn kết"
+                value={element.customData?.footerNote ?? ""}
+                onChange={(e) => updateCustomData({ footerNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO LỊCH TRÌNH TIỆC (p-timeline-flow / p3) ── */}
+        {(element.presetId === "p-timeline-flow" || element.presetId === "p3") && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🕒 Lịch Trình Hôn Lễ
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Tiêu đề"
+                  value={element.customData?.title ?? ""}
+                  onChange={(e) => updateCustomData({ title: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+                />
+                <input
+                  type="text"
+                  placeholder="Phụ đề"
+                  value={element.customData?.subtitle ?? ""}
+                  onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+                />
+              </div>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="grid grid-cols-3 gap-1.5">
+                  <input
+                    type="text"
+                    placeholder="Giờ"
+                    value={element.customData?.[`item${i}Time`] ?? (i === 1 ? "17:30" : i === 2 ? "18:00" : i === 3 ? "18:30" : "19:30")}
+                    onChange={(e) => updateCustomData({ [`item${i}Time`]: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded border border-stone-200 focus:outline-blue-500 font-mono font-bold text-amber-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder={`Hoạt động ${i}`}
+                    value={element.customData?.[`item${i}Label`] ?? (i === 1 ? "Đón Khách" : i === 2 ? "Làm Lễ" : i === 3 ? "Khai Tiệc" : "Chụp Hình")}
+                    onChange={(e) => updateCustomData({ [`item${i}Label`]: e.target.value })}
+                    className="col-span-2 w-full px-2 py-1 text-xs rounded border border-stone-200 focus:outline-blue-500"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO DRESS CODE (p-dress-code) ── */}
+        {element.presetId === "p-dress-code" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              👗 Quy Định Trang Phục (Dress Code)
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <textarea
+                rows={2}
+                placeholder="Lời dẫn hướng dẫn trang phục"
+                value={element.customData?.desc ?? ""}
+                onChange={(e) => updateCustomData({ desc: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[10px] font-bold text-stone-500 block">5 Tông màu trang phục:</span>
+                {[
+                  { id: "c1", defName: "Trắng", defColor: "#FFFFFF" },
+                  { id: "c2", defName: "Kem Be", defColor: "#F5E6D3" },
+                  { id: "c3", defName: "Pastel", defColor: "#FCE7F3" },
+                  { id: "c4", defName: "Xanh Mint", defColor: "#D1FAE5" },
+                  { id: "c5", defName: "Nâu ấm", defColor: "#5C3D2E" },
+                ].map((item) => (
+                  <div key={item.id} className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={element.customData?.[`${item.id}Color`] ?? item.defColor}
+                      onChange={(e) => updateCustomData({ [`${item.id}Color`]: e.target.value })}
+                      className="size-7 rounded-lg border border-stone-200 cursor-pointer p-0.5"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Tên màu"
+                      value={element.customData?.[`${item.id}Name`] ?? item.defName}
+                      onChange={(e) => updateCustomData({ [`${item.id}Name`]: e.target.value })}
+                      className="flex-1 px-2 py-1 text-xs rounded border border-stone-200 focus:outline-blue-500"
+                    />
+                  </div>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Lời cảm ơn chân trang"
+                value={element.customData?.footerNote ?? ""}
+                onChange={(e) => updateCustomData({ footerNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO POLAROID WASHI (p-polaroid-washi) ── */}
+        {element.presetId === "p-polaroid-washi" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              📸 Ảnh Polaroid Kỷ Niệm
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Ảnh Polaroid"
+                currentUrl={element.customData?.photoUrl || element.imageUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề ảnh (Khoảnh Khắc Hạnh Phúc)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif font-bold"
+              />
+              <input
+                type="text"
+                placeholder="Phụ đề (Sweet Memories)"
+                value={element.customData?.subtitle ?? ""}
+                onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO POLAROIDS 3 TẤM (p2) ── */}
+        {element.presetId === "p2" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🎞️ Bộ 3 Tấm Ảnh Polaroid
+            </span>
+            <div className="space-y-2.5">
+              {[
+                { id: "1", defCaption: "Tình Đầu", defUrl: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300&auto=format&fit=crop&q=80" },
+                { id: "2", defCaption: "Hẹn Ước", defUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&auto=format&fit=crop&q=80" },
+                { id: "3", defCaption: "Trọn Đời", defUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&auto=format&fit=crop&q=80" },
+              ].map((p) => (
+                <div key={p.id} className="p-2.5 bg-white rounded-xl border border-stone-200 space-y-1.5">
+                  <PresetImageUploader
+                    label={`Ảnh ${p.id}`}
+                    currentUrl={element.customData?.[`photo${p.id}`] || p.defUrl}
+                    onImageChange={(url) => updateCustomData({ [`photo${p.id}`]: url })}
+                  />
+                  <input
+                    type="text"
+                    placeholder={`Chú thích ảnh ${p.id}`}
+                    value={element.customData?.[`caption${p.id}`] ?? p.defCaption}
+                    onChange={(e) => updateCustomData({ [`caption${p.id}`]: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded border border-stone-200 focus:outline-blue-500 font-serif"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO CỔNG VÒM HOÀNG GIA (p-arch-portrait / p1-arch) ── */}
+        {(element.presetId === "p-arch-portrait" || element.presetId === "p1-arch") && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🏛️ Cổng Vòm Chân Dung Hoàng Gia
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Ảnh Cưới Khung Vòm"
+                currentUrl={element.customData?.photoUrl || element.imageUrl || element.content || "/images/demo/couple-cover.png"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Dòng chữ trên ảnh (HOÀNG GIA Á ĐÔNG)"
+                value={element.customData?.caption ?? ""}
+                onChange={(e) => updateCustomData({ caption: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO KHUNG VÒM HOA LAN (p-orchid-arch) ── */}
+        {element.presetId === "p-orchid-arch" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🌸 Khung Vòm Hoa Lan Hoàng Gia
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Ảnh cưới bên trong vòm lan"
+                currentUrl={element.imageUrl || element.customData?.photoUrl || "/images/presets/arch-orchid-sample.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO PHONG BÌ HỒNG (p-envelope-pink / p-envelope-sweet / p1) ── */}
+        {(element.presetId === "p-envelope-pink" || element.presetId === "p-envelope-sweet" || element.presetId === "p1") && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💌 Phong Bì Hồng Mở Có Thiệp
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Ảnh Cưới Trong Thiệp"
+                currentUrl={element.customData?.photoUrl || element.imageUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <div className="grid grid-cols-2 gap-1.5">
+                <input
+                  type="text"
+                  placeholder="Tên Chú Rể"
+                  value={element.customData?.groomName ?? ""}
+                  onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên Cô Dâu"
+                  value={element.customData?.brideName ?? ""}
+                  onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                  className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Tiêu đề (THIỆP MỜI CƯỚI)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề phụ (WEDDING INVITATION)"
+                value={element.customData?.subtitle ?? ""}
+                onChange={(e) => updateCustomData({ subtitle: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+              />
+              <input
+                type="text"
+                placeholder="Dòng chạm mở (Chạm để mở thiệp)"
+                value={element.customData?.note ?? ""}
+                onChange={(e) => updateCustomData({ note: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO PHONG BÌ XANH (p-envelope-green) ── */}
+        {element.presetId === "p-envelope-green" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🌿 Phong Bì Xanh Sáp
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Ảnh Cưới Trong Phong Bì"
+                currentUrl={element.customData?.photoUrl || element.imageUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề (We got married)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif italic"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO NHẪN CƯỚI & LỜI HẸN ƯỚC (p-rings-vow) ── */}
+        {element.presetId === "p-rings-vow" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💍 Cặp Nhẫn Cưới & Lời Thề Nguyện
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề (Lời Thề Nguyện Trăm Năm)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <textarea
+                rows={3}
+                placeholder="Lời thề ước trăm năm"
+                value={element.customData?.vowText ?? ""}
+                onChange={(e) => updateCustomData({ vowText: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif italic"
+              />
+              <input
+                type="text"
+                placeholder="Dòng kết (FOREVER & ALWAYS)"
+                value={element.customData?.footerNote ?? ""}
+                onChange={(e) => updateCustomData({ footerNote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO THƯ CẢM ƠN (p-thank-you-note / p-thank-you-chibi) ── */}
+        {(element.presetId === "p-thank-you-note" || element.presetId === "p-thank-you-chibi") && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💌 Thư Cảm Ơn Quan Khách
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <input
+                type="text"
+                placeholder="Tiêu đề (THANK YOU FOR COMING)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <textarea
+                rows={3}
+                placeholder="Lời cảm ơn chân thành"
+                value={element.customData?.message ?? ""}
+                onChange={(e) => updateCustomData({ message: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+              <input
+                type="text"
+                placeholder="Ký tên (With Love • Dâu & Rể)"
+                value={element.customData?.sign ?? ""}
+                onChange={(e) => updateCustomData({ sign: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif italic"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO HỘP MỪNG CƯỚI & QR (p-banking-qr) ── */}
+        {element.presetId === "p-banking-qr" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🎁 Hộp Mừng Cưới & Mã QR
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <PresetImageUploader
+                label="Mã QR Mừng Cưới"
+                currentUrl={element.customData?.qrUrl || element.imageUrl || "https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=MungCuoi"}
+                onImageChange={(url) => {
+                  updateCustomData({ qrUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Thẻ (MỪNG CƯỚI ONLINE)"
+                value={element.customData?.tag ?? ""}
+                onChange={(e) => updateCustomData({ tag: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-mono text-[11px]"
+              />
+              <input
+                type="text"
+                placeholder="Tiêu đề (Gửi Lời Chúc & Hồng Bao)"
+                value={element.customData?.title ?? ""}
+                onChange={(e) => updateCustomData({ title: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-bold"
+              />
+              <textarea
+                rows={2}
+                placeholder="Lời dẫn hướng dẫn chuyển khoản"
+                value={element.customData?.desc ?? ""}
+                onChange={(e) => updateCustomData({ desc: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO LỜI NGỎ TRĂM NĂM (p-love-quote) ── */}
+        {(element.presetId === "p-love-quote" || (!element.presetId && element.type === "preset")) && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💬 Lời Ngỏ & Trích Dẫn Yêu Thương
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <textarea
+                rows={2}
+                placeholder="Câu nói ý nghĩa trăm năm"
+                value={element.customData?.quote ?? ""}
+                onChange={(e) => updateCustomData({ quote: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-serif italic"
+              />
+              <input
+                type="text"
+                placeholder="Lời nhắn kèm theo"
+                value={element.customData?.note ?? ""}
+                onChange={(e) => updateCustomData({ note: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO CON DẤU SÁP (p-wax-seal) ── */}
+        {element.presetId === "p-wax-seal" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💮 Ký Tự Con Dấu Sáp
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200">
+              <div>
+                <label className="text-[10px] text-stone-500 block mb-1">Chữ cái lồng (Monogram - tối đa 3 ký tự)</label>
+                <input
+                  type="text"
+                  maxLength={3}
+                  placeholder="ML"
+                  value={element.customData?.monogram ?? "ML"}
+                  onChange={(e) => updateCustomData({ monogram: e.target.value.toUpperCase() })}
+                  className="w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 focus:outline-blue-500 font-serif italic font-bold text-center"
+                />
+              </div>
             </div>
           </div>
         )}

@@ -3038,19 +3038,22 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1. Phong bì terracotta mở có thiệp & ảnh cưới
       if (el.presetId === "p-envelope-sweet" || el.presetId === "p-envelope-pink" || el.presetId === "p1") {
-        const photoUrl = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
-        const groomShort = (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Quốc Huy";
-        const brideShort = (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Mai Anh";
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
+        const groomShort = el.customData?.groomName || (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Quốc Huy";
+        const brideShort = el.customData?.brideName || (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Mai Anh";
+        const title = el.customData?.title || "THIỆP MỜI CƯỚI";
+        const subtitle = el.customData?.subtitle || "WEDDING INVITATION";
+        const note = el.customData?.note || "Chạm để mở thiệp";
 
         return (
           <div className="w-full h-full pt-4 pb-2 px-3 text-center flex flex-col items-center justify-between select-none relative bg-transparent">
             {/* Header text */}
             <div className="space-y-1">
               <span className="text-[11px] uppercase tracking-[0.35em] text-[#8B2E20]/80 font-medium block">
-                WEDDING INVITATION
+                {subtitle}
               </span>
               <h2 className="text-2xl font-serif text-[#8B2E20] uppercase tracking-wider font-bold">
-                THIỆP MỜI CƯỚI
+                {title}
               </h2>
               <div className="text-3xl text-[#8B2E20] font-script flex items-center justify-center gap-2 pt-0.5 drop-shadow-xs">
                 <span>{brideShort}</span>
@@ -3124,7 +3127,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             {/* Bottom Calligraphy & Ground Shadow */}
             <div className="pt-1">
               <span className="font-cursive text-xl text-[#8B2E20]/85 block drop-shadow-xs">
-                Chạm để mở thiệp
+                {note}
               </span>
               <div className="w-44 h-3 mx-auto bg-black/10 rounded-full blur-[4px] mt-0.5" />
             </div>
@@ -3788,13 +3791,16 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 0b. Phong bì kem sáp Song Hỷ (Luxury Wax Seal Envelope)
       if (el.presetId === "p-envelope-songhy" || el.content === "envelope-songhy") {
-        const photoUrl = el.imageUrl || data.coverPhotoUrl;
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || data.coverPhotoUrl;
         const hasCustomPhoto = Boolean(photoUrl && photoUrl !== "/images/presets/envelope-songhy-luxury.jpg");
-        const groom = (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
-        const bride = (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
+        const groom = el.customData?.groomName || (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
+        const bride = el.customData?.brideName || (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
         const events = Array.isArray(data.events) ? data.events : [];
         const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
-        const dateStr = evDate ? `${evDate.getDate()} • ${evDate.getMonth() + 1} • ${evDate.getFullYear()}` : "28 • 12 • 2026";
+        const dateStr = el.customData?.dateStr || (evDate ? `${evDate.getDate()} • ${evDate.getMonth() + 1} • ${evDate.getFullYear()}` : "28 • 12 • 2026");
+        const title = el.customData?.title || "Save Our Date";
+        const subtitle = el.customData?.subtitle || "WEDDING INVITATION";
+        const note = el.customData?.note || "Chạm để mở thiệp";
 
         return (
           <ScaledPresetWrapper baseW={330} baseH={380} w={el.width} h={el.height}>
@@ -3826,17 +3832,17 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                     <div className="w-full h-full rounded-lg overflow-hidden relative">
                       <img src={photoUrl} alt="Invitation Card" className="w-full h-full object-cover" />
                       <div className="absolute inset-x-0 bottom-0 py-1.5 bg-white/90 backdrop-blur-xs text-center border-t border-amber-200">
-                        <span className="text-[10px] font-serif font-bold text-[#8C6D37] tracking-wider block">SAVE OUR DATE</span>
+                        <span className="text-[10px] font-serif font-bold text-[#8C6D37] tracking-wider block">{title.toUpperCase()}</span>
                         <span className="text-[8px] font-sans text-stone-600 block">{bride} & {groom}</span>
                       </div>
                     </div>
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-center py-2 space-y-1">
                       <span className="text-[9px] font-serif tracking-[0.25em] text-[#8C6D37] uppercase font-semibold">
-                        WEDDING INVITATION
+                        {subtitle}
                       </span>
                       <h3 className="text-xl font-serif font-bold text-[#6D4C1D] uppercase tracking-wider">
-                        Save Our Date
+                        {title}
                       </h3>
                       <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-1" />
                       <div className="text-base font-serif font-medium text-[#7D5620] italic">
@@ -3846,7 +3852,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                         {dateStr}
                       </span>
                       <span className="text-[8px] font-serif italic text-stone-400 block pt-1">
-                        Chạm để mở thiệp
+                        {note}
                       </span>
                     </div>
                   )}
@@ -3873,13 +3879,14 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 2. We got married - Phong bì sáp xanh
       if (el.presetId === "p-envelope-green") {
-        const photoUrl = el.imageUrl || data.coverPhotoUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80";
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || data.coverPhotoUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80";
+        const title = el.customData?.title || "We got married";
         return (
           <ScaledPresetWrapper baseW={300} baseH={250} w={el.width} h={el.height}>
             <div className="w-full h-full relative overflow-visible flex items-center justify-center pointer-events-none select-none">
               <div className="absolute -top-6 w-[84%] h-22 bg-[#2D3E31] shadow-xs [clip-path:polygon(50%_0%,0%_100%,100%_100%)] rounded-t-sm" />
               <div className="w-[78%] h-[80%] -top-3 absolute bg-[#FDFBF7] rounded-lg shadow-lg border border-stone-200 overflow-hidden flex flex-col items-center p-2 z-10 text-center">
-                <span className="text-[10px] font-serif italic text-stone-700">We got married</span>
+                <span className="text-[10px] font-serif italic text-stone-700">{title}</span>
                 <div className="w-full flex-1 bg-stone-100 rounded overflow-hidden my-1">
                   <img src={photoUrl} alt="Photo" className="w-full h-full object-cover" />
                 </div>
@@ -3895,28 +3902,31 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 3. Thư mời WEDDING typography
       if (el.presetId === "p-wedding-typography") {
-        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
-        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
+        const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
+        const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
         const events = Array.isArray(data.events) ? data.events : [];
         const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
-        const year = evDate ? evDate.getFullYear() : 2026;
+        const year = el.customData?.yearStr || (evDate ? evDate.getFullYear() : 2026);
+        const tag = el.customData?.tag || "WEDDING";
+        const title = el.customData?.title || "THƯ MỜI TIỆC CƯỚI";
+        const subtitle = el.customData?.subtitle || "HÔN LỄ TRANG TRỌNG";
 
         return (
           <ScaledPresetWrapper baseW={310} baseH={290} w={el.width} h={el.height}>
             <div className="w-full h-full p-5 bg-[#FCFBF8] rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
               <div className="w-full flex items-center justify-center gap-2">
                 <div className="h-[1px] flex-1 bg-amber-300/70" />
-                <span className="text-[11px] font-serif tracking-[0.25em] text-amber-800 uppercase font-bold">WEDDING</span>
+                <span className="text-[11px] font-serif tracking-[0.25em] text-amber-800 uppercase font-bold">{tag}</span>
                 <div className="h-[1px] flex-1 bg-amber-300/70" />
               </div>
               <div className="my-auto py-2">
                 <h3 className="font-serif text-lg font-bold text-stone-800 leading-tight">
                   {groom} <span className="text-amber-600 font-normal font-sans">&</span> {bride}
                 </h3>
-                <p className="text-[10px] font-serif uppercase tracking-widest text-amber-900/80 mt-1">THƯ MỜI TIỆC CƯỚI</p>
+                <p className="text-[10px] font-serif uppercase tracking-widest text-amber-900/80 mt-1">{title}</p>
               </div>
               <div className="w-full pt-2 border-t border-amber-100 flex items-center justify-between text-[9px] text-stone-500 font-mono">
-                <span>HÔN LỄ TRANG TRỌNG</span>
+                <span>{subtitle}</span>
                 <span>{year}</span>
               </div>
             </div>
@@ -3928,16 +3938,18 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       if (el.presetId === "p-calendar-countdown") {
         const events = Array.isArray(data.events) ? data.events : [];
         const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
-        const targetDay = evDate ? evDate.getDate() : 12;
-        const month = evDate ? evDate.getMonth() + 1 : 12;
-        const year = evDate ? evDate.getFullYear() : 2026;
+        const targetDay = Number(el.customData?.selectedDay) || (evDate ? evDate.getDate() : 12);
+        const month = Number(el.customData?.month) || (evDate ? evDate.getMonth() + 1 : 12);
+        const year = Number(el.customData?.year) || (evDate ? evDate.getFullYear() : 2026);
+        const header = el.customData?.header || "WELCOME TO OUR WEDDING";
+        const note = el.customData?.note || "Hẹn gặp bạn vào ngày hạnh phúc nhất!";
         const calMeta = evDate ? getMonthDaysAndOffset(evDate) : { daysInMonth: 31, firstDayOffset: 1 };
 
         return (
           <ScaledPresetWrapper baseW={300} baseH={270} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col items-center justify-between pointer-events-none select-none">
               <div className="text-center w-full pb-1 border-b border-stone-100">
-                <span className="text-[10px] font-serif tracking-widest uppercase text-stone-500 block font-semibold">WELCOME TO OUR WEDDING</span>
+                <span className="text-[10px] font-serif tracking-widest uppercase text-stone-500 block font-semibold">{header}</span>
                 <span className="text-[11px] font-serif font-bold text-stone-800">Tháng {month} / {year}</span>
               </div>
               <div className="w-full my-auto">
@@ -3961,7 +3973,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   })}
                 </div>
               </div>
-              <span className="text-[9px] font-serif italic text-amber-700 font-medium">Hẹn gặp bạn vào ngày hạnh phúc nhất!</span>
+              <span className="text-[9px] font-serif italic text-amber-700 font-medium">{note}</span>
             </div>
           </ScaledPresetWrapper>
         );
@@ -3971,25 +3983,28 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       if (el.presetId === "p-parents-info" || el.presetId === "p4") {
         const groomParents = (data.groom?.parents as Record<string, unknown>) || {};
         const brideParents = (data.bride?.parents as Record<string, unknown>) || {};
-        const gFather = (typeof groomParents.fatherName === "string" && groomParents.fatherName ? groomParents.fatherName : "") || "Nguyễn Văn A";
-        const gMother = (typeof groomParents.motherName === "string" && groomParents.motherName ? groomParents.motherName : "") || "Trần Thị B";
-        const bFather = (typeof brideParents.fatherName === "string" && brideParents.fatherName ? brideParents.fatherName : "") || "Lê Văn C";
-        const bMother = (typeof brideParents.motherName === "string" && brideParents.motherName ? brideParents.motherName : "") || "Phạm Thị D";
+        const title = el.customData?.title || "Hôn Phối Hai Họ";
+        const gFather = el.customData?.gFather ?? ((typeof groomParents.fatherName === "string" && groomParents.fatherName ? groomParents.fatherName : "") || "Nguyễn Văn A");
+        const gMother = el.customData?.gMother ?? ((typeof groomParents.motherName === "string" && groomParents.motherName ? groomParents.motherName : "") || "Trần Thị B");
+        const bFather = el.customData?.bFather ?? ((typeof brideParents.fatherName === "string" && brideParents.fatherName ? brideParents.fatherName : "") || "Lê Văn C");
+        const bMother = el.customData?.bMother ?? ((typeof brideParents.motherName === "string" && brideParents.motherName ? brideParents.motherName : "") || "Phạm Thị D");
+        const gSideTitle = el.customData?.gSideTitle || "NHÀ TRAI";
+        const bSideTitle = el.customData?.bSideTitle || "NHÀ GÁI";
 
         return (
           <ScaledPresetWrapper baseW={320} baseH={180} w={el.width} h={el.height}>
             <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col justify-between pointer-events-none select-none text-center">
               <div className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase border-b border-stone-100 pb-1">
-                Hôn Phối Hai Họ
+                {title}
               </div>
               <div className="grid grid-cols-2 gap-2 text-[10px] pt-1">
                 <div className="border-r border-stone-100 pr-2">
-                  <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ TRAI</p>
+                  <p className="font-bold text-stone-800 font-serif text-[10px]">{gSideTitle}</p>
                   <p className="text-stone-500 text-[9px] mt-0.5">Ông: {gFather}</p>
                   <p className="text-stone-500 text-[9px]">Bà: {gMother}</p>
                 </div>
                 <div className="pl-1">
-                  <p className="font-bold text-stone-800 font-serif text-[10px]">NHÀ GÁI</p>
+                  <p className="font-bold text-stone-800 font-serif text-[10px]">{bSideTitle}</p>
                   <p className="text-stone-500 text-[9px] mt-0.5">Ông: {bFather}</p>
                   <p className="text-stone-500 text-[9px]">Bà: {bMother}</p>
                 </div>
@@ -4001,11 +4016,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 6. Khung ảnh vòm
       if (el.presetId === "p-arch-portrait" || el.presetId === "p1-arch") {
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || el.content || "/images/demo/couple-cover.png";
+        const caption = el.customData?.caption || "HOÀNG GIA Á ĐÔNG";
         return (
           <ScaledPresetWrapper baseW={280} baseH={360} w={el.width} h={el.height}>
             <div className="w-full h-full rounded-t-[140px] rounded-b-2xl border-4 border-[#BE944E] overflow-hidden shadow-md bg-stone-100 relative pointer-events-none select-none">
               <img
-                src={el.content || el.imageUrl || "/images/demo/couple-cover.png"}
+                src={photoUrl}
                 alt="Cổng vòm"
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -4014,40 +4031,45 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-center pb-3">
-                <span className="text-white text-xs font-serif tracking-widest drop-shadow uppercase">HOÀNG GIA Á ĐÔNG</span>
+                <span className="text-white text-xs font-serif tracking-widest drop-shadow uppercase">{caption}</span>
               </div>
             </div>
           </ScaledPresetWrapper>
         );
       }
 
-      // 7. Groom & Bride Duo
+      // 7. Groom & Bride Duo (Cặp ảnh Chú rể & Cô dâu)
       if (el.presetId === "p-groom-bride-duo") {
-        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Chú Rể";
-        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Cô Dâu";
+        const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Nguyễn Minh Khôi";
+        const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Lê Ngọc Hân";
+        const groomPhoto = el.customData?.groomPhoto || el.imageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80";
+        const bridePhoto = el.customData?.bridePhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80";
+        const groomLabel = el.customData?.groomLabel || "GROOM";
+        const brideLabel = el.customData?.brideLabel || "BRIDE";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={220} w={el.width} h={el.height}>
             <div className="w-full h-full p-3 bg-white/95 rounded-2xl border border-stone-200 shadow-md flex items-center justify-around gap-2 pointer-events-none select-none">
               <div className="flex-1 flex flex-col items-center">
                 <div className="w-full h-32 rounded-t-full rounded-b-md overflow-hidden bg-stone-100 border border-stone-200 shadow-xs">
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80"
+                    src={groomPhoto}
                     alt="Groom"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-[9px] font-serif font-bold text-stone-800 uppercase tracking-wider mt-1.5">GROOM</span>
+                <span className="text-[9px] font-serif font-bold text-stone-800 uppercase tracking-wider mt-1.5">{groomLabel}</span>
                 <span className="text-[8px] text-stone-500 truncate max-w-[100px]">{groom}</span>
               </div>
               <div className="flex-1 flex flex-col items-center">
                 <div className="w-full h-32 rounded-t-full rounded-b-md overflow-hidden bg-stone-100 border border-stone-200 shadow-xs">
                   <img
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+                    src={bridePhoto}
                     alt="Bride"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-[9px] font-serif font-bold text-pink-700 uppercase tracking-wider mt-1.5">BRIDE</span>
+                <span className="text-[9px] font-serif font-bold text-pink-700 uppercase tracking-wider mt-1.5">{brideLabel}</span>
                 <span className="text-[8px] text-stone-500 truncate max-w-[100px]">{bride}</span>
               </div>
             </div>
@@ -4057,31 +4079,42 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 8. Lịch trình tiệc cưới
       if (el.presetId === "p-timeline-flow" || el.presetId === "p3") {
+        const title = el.customData?.title || "Lịch Trình Hôn Lễ";
+        const subtitle = el.customData?.subtitle || "WEDDING TIMELINE";
+        const item1Time = el.customData?.item1Time || "17:30";
+        const item1Label = el.customData?.item1Label || "Đón Khách";
+        const item2Time = el.customData?.item2Time || "18:00";
+        const item2Label = el.customData?.item2Label || "Làm Lễ";
+        const item3Time = el.customData?.item3Time || "18:30";
+        const item3Label = el.customData?.item3Label || "Khai Tiệc";
+        const item4Time = el.customData?.item4Time || "19:30";
+        const item4Label = el.customData?.item4Label || "Chụp Hình";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={200} w={el.width} h={el.height}>
             <div className="w-full h-full p-3.5 bg-white/95 backdrop-blur-xs rounded-2xl border border-[#D4AF37]/50 shadow-md flex flex-col justify-between pointer-events-none select-none text-left">
               <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
                 <span className="text-[11px] font-bold text-amber-900 tracking-wider font-serif uppercase">
-                  Lịch Trình Hôn Lễ
+                  {title}
                 </span>
-                <span className="text-[9px] text-stone-400 font-sans">WEDDING TIMELINE</span>
+                <span className="text-[9px] text-stone-400 font-sans">{subtitle}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-[10px] text-stone-700 mt-1">
                 <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">17:30</span>
-                  <span className="font-medium text-stone-700">Đón Khách</span>
+                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">{item1Time}</span>
+                  <span className="font-medium text-stone-700">{item1Label}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:00</span>
-                  <span className="font-medium text-stone-700">Làm Lễ</span>
+                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">{item2Time}</span>
+                  <span className="font-medium text-stone-700">{item2Label}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">18:30</span>
-                  <span className="font-medium text-stone-700">Khai Tiệc</span>
+                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">{item3Time}</span>
+                  <span className="font-medium text-stone-700">{item3Label}</span>
                 </div>
                 <div className="flex items-center gap-1.5 p-1 bg-amber-50/50 rounded-lg">
-                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">19:30</span>
-                  <span className="font-medium text-stone-700">Chụp Hình</span>
+                  <span className="font-bold text-amber-800 text-[10px] bg-amber-100/80 px-1 py-0.5 rounded">{item4Time}</span>
+                  <span className="font-medium text-stone-700">{item4Label}</span>
                 </div>
               </div>
             </div>
@@ -4091,12 +4124,17 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 9. Hộp mừng cưới & QR
       if (el.presetId === "p-banking-qr") {
+        const qrUrl = el.customData?.qrUrl || el.imageUrl || "https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=MungCuoi";
+        const tag = el.customData?.tag || "MỪNG CƯỚI ONLINE";
+        const title = el.customData?.title || "Gửi Lời Chúc & Hồng Bao";
+        const desc = el.customData?.desc || "Quý khách có thể mừng cưới từ xa qua mã QR tiện ích.";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={160} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FFFDF9] rounded-2xl border border-amber-300/80 shadow-md flex items-center justify-around gap-3 pointer-events-none select-none">
               <div className="size-24 bg-white border border-stone-300 rounded-xl p-1.5 shadow-xs flex flex-col items-center justify-center shrink-0">
                 <img
-                  src="https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=MungCuoi"
+                  src={qrUrl}
                   alt="QR"
                   className="w-full h-full object-contain"
                   onError={(e) => {
@@ -4105,9 +4143,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 />
               </div>
               <div className="flex-1 text-left space-y-1">
-                <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">MỪNG CƯỚI ONLINE</span>
-                <h4 className="text-xs font-serif font-bold text-stone-900 leading-tight">Gửi Lời Chúc & Hồng Bao</h4>
-                <p className="text-[9px] text-stone-500 leading-tight">Quý khách có thể mừng cưới từ xa qua mã QR tiện ích.</p>
+                <span className="text-[8px] font-mono font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">{tag}</span>
+                <h4 className="text-xs font-serif font-bold text-stone-900 leading-tight">{title}</h4>
+                <p className="text-[9px] text-stone-500 leading-tight">{desc}</p>
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4116,38 +4154,45 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 10. Polaroids 3 tấm
       if (el.presetId === "p2") {
+        const photo1 = el.customData?.photo1 || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300&auto=format&fit=crop&q=80";
+        const caption1 = el.customData?.caption1 || "Tình Đầu";
+        const photo2 = el.customData?.photo2 || "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&auto=format&fit=crop&q=80";
+        const caption2 = el.customData?.caption2 || "Hẹn Ước";
+        const photo3 = el.customData?.photo3 || "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&auto=format&fit=crop&q=80";
+        const caption3 = el.customData?.caption3 || "Trọn Đời";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={160} w={el.width} h={el.height}>
             <div className="w-full h-full flex items-center justify-center gap-1.5 p-2 pointer-events-none select-none">
               <div className="w-24 bg-white p-1.5 pb-4 shadow-md rounded -rotate-6 border border-stone-200">
                 <div className="w-full h-20 bg-stone-200 rounded overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=300&auto=format&fit=crop&q=80"
+                    src={photo1}
                     alt="p1"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="text-[8px] text-center font-serif text-stone-600 mt-1 font-semibold">Tình Đầu</div>
+                <div className="text-[8px] text-center font-serif text-stone-600 mt-1 font-semibold">{caption1}</div>
               </div>
               <div className="w-24 bg-white p-1.5 pb-4 shadow-lg rounded z-10 border border-stone-200">
                 <div className="w-full h-20 bg-stone-200 rounded overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1519741497674-611481863552?w=300&auto=format&fit=crop&q=80"
+                    src={photo2}
                     alt="p2"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="text-[8px] text-center font-serif text-amber-700 mt-1 font-bold">Hẹn Ước</div>
+                <div className="text-[8px] text-center font-serif text-amber-700 mt-1 font-bold">{caption2}</div>
               </div>
               <div className="w-24 bg-white p-1.5 pb-4 shadow-md rounded rotate-6 border border-stone-200">
                 <div className="w-full h-20 bg-stone-200 rounded overflow-hidden">
                   <img
-                    src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&auto=format&fit=crop&q=80"
+                    src={photo3}
                     alt="p3"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="text-[8px] text-center font-serif text-stone-600 mt-1 font-semibold">Trọn Đời</div>
+                <div className="text-[8px] text-center font-serif text-stone-600 mt-1 font-semibold">{caption3}</div>
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4188,13 +4233,14 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 12. Con dấu sáp hồng niêm phong thiệp
       if (el.presetId === "p-wax-seal" || el.content === "wax-seal") {
+        const monogram = el.customData?.monogram || "ML";
         return (
           <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
             <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
               <path d="M 50 4 C 64 2 73 9 84 18 C 95 28 98 42 96 55 C 94 69 88 80 77 88 C 65 96 48 98 35 94 C 20 90 9 79 5 65 C 2 50 6 36 15 24 C 24 12 36 6 50 4 Z" fill="#F47291" />
               <circle cx="50" cy="51" r="32" fill="none" stroke="#E11D48" strokeWidth="2" strokeOpacity="0.3" />
               <circle cx="50" cy="51" r="28" fill="#FB7185" />
-              <text x="50" y="58" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.95" fontFamily="serif" fontStyle="italic" fontWeight="bold" fontSize="22">ML</text>
+              <text x="50" y="58" textAnchor="middle" fill="#FFFFFF" fillOpacity="0.95" fontFamily="serif" fontStyle="italic" fontWeight="bold" fontSize="22">{monogram}</text>
             </svg>
           </div>
         );
@@ -4232,8 +4278,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 15. Thiệp Song Hỷ Đỏ Á Đông (p-song-hy-red)
       if (el.presetId === "p-song-hy-red" || el.content === "song-hy-red") {
-        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
-        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
+        const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Văn Anh";
+        const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Minh Thơ";
+        const tag = el.customData?.tag || "LỄ THÀNH HÔN";
+        const subtitle = el.customData?.subtitle || "TRĂM NĂM TÌNH VIÊN MÃN";
+        const leftFooter = el.customData?.leftFooter || "DUYÊN NỢ BA SINH";
+        const rightFooter = el.customData?.rightFooter || "HẠNH PHÚC TRỌN ĐỜI";
+
         return (
           <ScaledPresetWrapper baseW={310} baseH={290} w={el.width} h={el.height}>
             <div className="w-full h-full p-5 bg-gradient-to-br from-[#9B1C26] via-[#851620] to-[#690F17] rounded-3xl border-2 border-[#D4AF37]/80 shadow-xl flex flex-col items-center justify-between text-center pointer-events-none select-none text-[#FDF0D5] relative overflow-hidden">
@@ -4245,7 +4296,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
               <div className="flex items-center gap-2 w-full justify-center pt-1">
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#D4AF37]/80" />
-                <span className="text-[10px] font-serif uppercase tracking-[0.3em] text-[#F3E5AB] font-bold">LỄ THÀNH HÔN</span>
+                <span className="text-[10px] font-serif uppercase tracking-[0.3em] text-[#F3E5AB] font-bold">{tag}</span>
                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#D4AF37]/80" />
               </div>
 
@@ -4257,13 +4308,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   {groom} <span className="text-[#FFD700] font-sans font-light">&</span> {bride}
                 </h3>
                 <p className="text-[10px] font-serif uppercase tracking-widest text-[#F3E5AB]/90 mt-1">
-                  TRĂM NĂM TÌNH VIÊN MÃN
+                  {subtitle}
                 </p>
               </div>
 
               <div className="w-full pt-2 border-t border-[#D4AF37]/30 flex items-center justify-between text-[9px] text-[#FDF0D5]/80 font-serif">
-                <span>DUYÊN NỢ BA SINH</span>
-                <span>HẠNH PHÚC TRỌN ĐỜI</span>
+                <span>{leftFooter}</span>
+                <span>{rightFooter}</span>
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4272,42 +4323,56 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 16. Quy định trang phục Dress Code (p-dress-code)
       if (el.presetId === "p-dress-code" || el.content === "dress-code") {
+        const title = el.customData?.title || "DRESS CODE TIỆC CƯỚI";
+        const desc = el.customData?.desc || "Khuyến khích trang phục theo bảng màu để khung hình trọn vẹn nhất";
+        const c1Name = el.customData?.c1Name || "Trắng";
+        const c1Color = el.customData?.c1Color || "#FFFFFF";
+        const c2Name = el.customData?.c2Name || "Kem Be";
+        const c2Color = el.customData?.c2Color || "#F5E6D3";
+        const c3Name = el.customData?.c3Name || "Pastel";
+        const c3Color = el.customData?.c3Color || "#FCE7F3";
+        const c4Name = el.customData?.c4Name || "Xanh Mint";
+        const c4Color = el.customData?.c4Color || "#D1FAE5";
+        const c5Name = el.customData?.c5Name || "Nâu ấm";
+        const c5Color = el.customData?.c5Color || "#5C3D2E";
+        const footerNote = el.customData?.footerNote || "Cảm ơn quý khách đã đồng điệu cùng chúng mình!";
+
         return (
           <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-stone-200 shadow-md flex flex-col items-center justify-between pointer-events-none select-none text-center">
               <div>
                 <span className="text-[11px] font-serif font-bold text-stone-900 tracking-wider uppercase block">
-                  DRESS CODE TIỆC CƯỚI
+                  {title}
                 </span>
                 <span className="text-[9px] text-stone-500 block mt-0.5">
-                  Khuyến khích trang phục theo bảng màu để khung hình trọn vẹn nhất
+                  {desc}
                 </span>
               </div>
 
               <div className="flex items-center justify-center gap-3 my-auto pt-1">
                 <div className="flex flex-col items-center gap-1">
-                  <span className="size-7 rounded-full bg-[#FFFFFF] border-2 border-stone-300 shadow-sm" />
-                  <span className="text-[8px] text-stone-600 font-medium">Trắng</span>
+                  <span className="size-7 rounded-full border-2 border-stone-300 shadow-sm" style={{ backgroundColor: c1Color }} />
+                  <span className="text-[8px] text-stone-600 font-medium">{c1Name}</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="size-7 rounded-full bg-[#F5E6D3] border-2 border-stone-300 shadow-sm" />
-                  <span className="text-[8px] text-stone-600 font-medium">Kem Be</span>
+                  <span className="size-7 rounded-full border-2 border-stone-300 shadow-sm" style={{ backgroundColor: c2Color }} />
+                  <span className="text-[8px] text-stone-600 font-medium">{c2Name}</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="size-7 rounded-full bg-[#FCE7F3] border-2 border-pink-200 shadow-sm" />
-                  <span className="text-[8px] text-stone-600 font-medium">Pastel</span>
+                  <span className="size-7 rounded-full border-2 border-pink-200 shadow-sm" style={{ backgroundColor: c3Color }} />
+                  <span className="text-[8px] text-stone-600 font-medium">{c3Name}</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="size-7 rounded-full bg-[#D1FAE5] border-2 border-emerald-200 shadow-sm" />
-                  <span className="text-[8px] text-stone-600 font-medium">Xanh Mint</span>
+                  <span className="size-7 rounded-full border-2 border-emerald-200 shadow-sm" style={{ backgroundColor: c4Color }} />
+                  <span className="text-[8px] text-stone-600 font-medium">{c4Name}</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                  <span className="size-7 rounded-full bg-[#5C3D2E] border-2 border-amber-950 shadow-sm" />
-                  <span className="text-[8px] text-stone-600 font-medium">Nâu ấm</span>
+                  <span className="size-7 rounded-full border-2 border-amber-950 shadow-sm" style={{ backgroundColor: c5Color }} />
+                  <span className="text-[8px] text-stone-600 font-medium">{c5Name}</span>
                 </div>
               </div>
 
-              <span className="text-[8.5px] font-serif italic text-amber-800">Cảm ơn quý khách đã đồng điệu cùng chúng mình!</span>
+              <span className="text-[8.5px] font-serif italic text-amber-800">{footerNote}</span>
             </div>
           </ScaledPresetWrapper>
         );
@@ -4315,32 +4380,39 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 17. Địa điểm sảnh tiệc & Bản đồ chỉ đường (p-venue-map)
       if (el.presetId === "p-venue-map" || el.content === "venue-map") {
+        const tag = el.customData?.tag || "ĐỊA ĐIỂM TỔ CHỨC";
+        const venueName = el.customData?.venueName || "White Palace Convention Center";
+        const hallName = el.customData?.hallName || "Sảnh Grand Hall • Tầng 2";
+        const address = el.customData?.address || "194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh";
+        const qrUrl = el.customData?.qrUrl || el.imageUrl || "https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=ChiDuong";
+        const qrNote = el.customData?.qrNote || "QUÉT MỞ MAPS";
+
         return (
           <ScaledPresetWrapper baseW={320} baseH={170} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FFFDF9] rounded-2xl border border-amber-200/90 shadow-md flex items-center justify-between gap-3 pointer-events-none select-none text-left">
               <div className="flex-1 space-y-1">
                 <span className="text-[8px] font-mono font-bold text-amber-900 bg-amber-100/90 px-1.5 py-0.5 rounded">
-                  ĐỊA ĐIỂM TỔ CHỨC
+                  {tag}
                 </span>
                 <h4 className="text-xs font-serif font-bold text-stone-900 leading-tight">
-                  White Palace Convention Center
+                  {venueName}
                 </h4>
-                <p className="text-[9.5px] font-medium text-amber-800">Sảnh Grand Hall • Tầng 2</p>
+                <p className="text-[9.5px] font-medium text-amber-800">{hallName}</p>
                 <p className="text-[8.5px] text-stone-500 leading-tight">
-                  194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh
+                  {address}
                 </p>
               </div>
 
               <div className="size-22 bg-white border border-stone-200 rounded-xl p-1.5 shadow-xs flex flex-col items-center justify-center shrink-0 text-center">
                 <img
-                  src="https://api.vietqr.io/image/970422-0988888888-compact2.jpg?amount=0&addInfo=ChiDuong"
+                  src={qrUrl}
                   alt="QR Map"
                   className="w-14 h-14 object-contain"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src = "/images/demo/qr-demo.png";
                   }}
                 />
-                <span className="text-[7.5px] text-stone-600 font-semibold mt-1">QUÉT MỞ MAPS</span>
+                <span className="text-[7.5px] text-stone-600 font-semibold mt-1">{qrNote}</span>
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4349,27 +4421,37 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 18. Thực đơn tiệc cưới (p-wedding-menu)
       if (el.presetId === "p-wedding-menu" || el.content === "wedding-menu") {
+        const title = el.customData?.title || "THỰC ĐƠN TIỆC CƯỚI";
+        const subtitle = el.customData?.subtitle || "WEDDING BANQUET MENU";
+        const dish1 = el.customData?.dish1 || "1. Súp Bào Ngư Hải Sâm Vi Cá";
+        const dish2 = el.customData?.dish2 || "2. Gỏi Củ Hủ Dừa Tôm Thịt Bánh Phồng";
+        const dish3 = el.customData?.dish3 || "3. Thăn Bò Úc Sốt Tiêu Đen Kèm Bánh Mì";
+        const dish4 = el.customData?.dish4 || "4. Cá Chẽm Hấp Tàu Xì Hồng Kông";
+        const dish5 = el.customData?.dish5 || "5. Lẩu Hải Sản Nấm Thảo Mộc";
+        const dish6 = el.customData?.dish6 || "6. Chè Hạt Sen Nhãn Nhục Tuyết Nhĩ";
+        const footerNote = el.customData?.footerNote || "Chúc quý khách một bữa tiệc ngon miệng và ấm cúng!";
+
         return (
           <ScaledPresetWrapper baseW={310} baseH={260} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FCFBF8] rounded-2xl border border-amber-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
               <div className="border-b border-amber-200/80 w-full pb-1">
                 <span className="text-[10px] font-serif font-bold text-amber-900 tracking-[0.2em] uppercase block">
-                  THỰC ĐƠN TIỆC CƯỚI
+                  {title}
                 </span>
-                <span className="text-[8px] font-mono text-stone-400">WEDDING BANQUET MENU</span>
+                <span className="text-[8px] font-mono text-stone-400">{subtitle}</span>
               </div>
 
               <div className="my-auto space-y-1.5 text-stone-700 font-serif text-[10px] py-1">
-                <p className="font-semibold text-amber-950">1. Súp Bào Ngư Hải Sâm Vi Cá</p>
-                <p>2. Gỏi Củ Hủ Dừa Tôm Thịt Bánh Phồng</p>
-                <p>3. Thăn Bò Úc Sốt Tiêu Đen Kèm Bánh Mì</p>
-                <p>4. Cá Chẽm Hấp Tàu Xì Hồng Kông</p>
-                <p>5. Lẩu Hải Sản Nấm Thảo Mộc</p>
-                <p className="font-medium text-pink-700">6. Chè Hạt Sen Nhãn Nhục Tuyết Nhĩ</p>
+                <p className="font-semibold text-amber-950">{dish1}</p>
+                <p>{dish2}</p>
+                <p>{dish3}</p>
+                <p>{dish4}</p>
+                <p>{dish5}</p>
+                <p className="font-medium text-pink-700">{dish6}</p>
               </div>
 
               <div className="w-full pt-1 border-t border-amber-100 text-[8px] font-serif italic text-stone-500">
-                Chúc quý khách một bữa tiệc ngon miệng và ấm cúng!
+                {footerNote}
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4378,36 +4460,44 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 19. Đếm ngược khoảnh khắc hạnh phúc (p-wedding-countdown)
       if (el.presetId === "p-wedding-countdown" || el.content === "countdown") {
+        const title = el.customData?.title || "CÙNG ĐẾM NGƯỢC THỜI GIAN";
+        const subtitle = el.customData?.subtitle || "Đến khoảnh khắc hai ta chung một nhà";
+        const days = el.customData?.days || "28";
+        const hours = el.customData?.hours || "14";
+        const mins = el.customData?.mins || "35";
+        const secs = el.customData?.secs || "59";
+        const footerNote = el.customData?.footerNote || "Hẹn gặp bạn trong khoảnh khắc thiêng liêng nhất!";
+
         return (
           <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-gradient-to-b from-[#FFFDF9] to-[#FDF8EE] rounded-2xl border border-amber-200/90 shadow-md flex flex-col items-center justify-between pointer-events-none select-none text-center">
               <div>
                 <span className="text-[10.5px] font-serif font-bold text-amber-900 uppercase tracking-widest block">
-                  CÙNG ĐẾM NGƯỢC THỜI GIAN
+                  {title}
                 </span>
-                <span className="text-[8.5px] text-stone-500">Đến khoảnh khắc hai ta chung một nhà</span>
+                <span className="text-[8.5px] text-stone-500">{subtitle}</span>
               </div>
 
               <div className="grid grid-cols-4 gap-2 w-full px-2 my-auto">
                 <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
-                  <span className="text-base font-bold text-stone-800 font-mono leading-none">28</span>
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">{days}</span>
                   <span className="text-[7px] text-stone-400 mt-1 font-semibold">NGÀY</span>
                 </div>
                 <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
-                  <span className="text-base font-bold text-stone-800 font-mono leading-none">14</span>
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">{hours}</span>
                   <span className="text-[7px] text-stone-400 mt-1 font-semibold">GIỜ</span>
                 </div>
                 <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
-                  <span className="text-base font-bold text-stone-800 font-mono leading-none">35</span>
+                  <span className="text-base font-bold text-stone-800 font-mono leading-none">{mins}</span>
                   <span className="text-[7px] text-stone-400 mt-1 font-semibold">PHÚT</span>
                 </div>
                 <div className="bg-white border border-amber-100 rounded-xl py-2 px-1 shadow-xs flex flex-col items-center">
-                  <span className="text-base font-bold text-rose-600 font-mono leading-none animate-pulse">59</span>
+                  <span className="text-base font-bold text-rose-600 font-mono leading-none animate-pulse">{secs}</span>
                   <span className="text-[7px] text-stone-400 mt-1 font-semibold">GIÂY</span>
                 </div>
               </div>
 
-              <span className="text-[8px] font-serif italic text-amber-800">Hẹn gặp bạn trong khoảnh khắc thiêng liêng nhất!</span>
+              <span className="text-[8px] font-serif italic text-amber-800">{footerNote}</span>
             </div>
           </ScaledPresetWrapper>
         );
@@ -4415,17 +4505,21 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 20. Cặp nhẫn cưới & Lời hẹn ước (p-rings-vow)
       if (el.presetId === "p-rings-vow" || el.content === "rings-vow") {
+        const title = el.customData?.title || "Lời Thề Nguyện Trăm Năm";
+        const vowText = el.customData?.vowText || "“Từ hôm nay, ta cùng nhau đi đến trọn cuộc đời. Dù giông bão hay nắng ấm, tay vẫn nắm chặt tay.”";
+        const footerNote = el.customData?.footerNote || "FOREVER & ALWAYS";
+
         return (
           <ScaledPresetWrapper baseW={300} baseH={170} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FAF7F2] rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
               <div className="text-2xl drop-shadow-sm">💍✨💍</div>
               <div className="my-auto">
-                <span className="text-xs font-serif font-bold text-stone-900 block">Lời Thề Nguyện Trăm Năm</span>
+                <span className="text-xs font-serif font-bold text-stone-900 block">{title}</span>
                 <p className="text-[10px] font-serif italic text-stone-700 leading-relaxed mt-1 px-1">
-                  “Từ hôm nay, ta cùng nhau đi đến trọn cuộc đời. Dù giông bão hay nắng ấm, tay vẫn nắm chặt tay.”
+                  {vowText}
                 </p>
               </div>
-              <span className="text-[8px] font-mono tracking-widest text-amber-800/80 uppercase">FOREVER & ALWAYS</span>
+              <span className="text-[8px] font-mono tracking-widest text-amber-800/80 uppercase">{footerNote}</span>
             </div>
           </ScaledPresetWrapper>
         );
@@ -4433,6 +4527,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 21. Thư cảm ơn khách mời (p-thank-you-note)
       if (el.presetId === "p-thank-you-note" || el.content === "thank-you") {
+        const title = el.customData?.title || "THANK YOU FOR COMING";
+        const message = el.customData?.message || "Sự hiện diện và lời chúc phúc của quý khách là món quà quý giá nhất đối với chúng mình trong ngày trọng đại.";
+        const sign = el.customData?.sign || "With Love • Dâu & Rể";
+
         return (
           <ScaledPresetWrapper baseW={300} baseH={160} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FFFBF8] rounded-2xl border border-pink-200/80 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
@@ -4441,13 +4539,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               </div>
               <div className="my-auto">
                 <span className="text-xs font-serif font-bold text-stone-900 uppercase tracking-wider block">
-                  THANK YOU FOR COMING
+                  {title}
                 </span>
                 <p className="text-[9.5px] text-stone-600 leading-relaxed mt-1 px-1">
-                  Sự hiện diện và lời chúc phúc của quý khách là món quà quý giá nhất đối với chúng mình trong ngày trọng đại.
+                  {message}
                 </p>
               </div>
-              <span className="text-[8.5px] font-serif italic text-pink-700 font-medium">With Love • Dâu & Rể</span>
+              <span className="text-[8.5px] font-serif italic text-pink-700 font-medium">{sign}</span>
             </div>
           </ScaledPresetWrapper>
         );
@@ -4455,7 +4553,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 22. Polaroid dán băng Washi (p-polaroid-washi)
       if (el.presetId === "p-polaroid-washi" || el.content === "polaroid-washi") {
-        const photoUrl = el.imageUrl || (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80";
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || (draft as any)?.coverPhotoUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop&q=80";
+        const title = el.customData?.title || "Khoảnh Khắc Hạnh Phúc";
+        const subtitle = el.customData?.subtitle || "Sweet Memories";
+
         return (
           <ScaledPresetWrapper baseW={270} baseH={290} w={el.width} h={el.height}>
             <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
@@ -4470,8 +4571,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   />
                 </div>
                 <div className="pt-2 text-center">
-                  <span className="text-[10px] font-serif font-bold text-stone-800 tracking-wider block">Khoảnh Khắc Hạnh Phúc</span>
-                  <span className="text-[8px] font-mono text-stone-400">Sweet Memories</span>
+                  <span className="text-[10px] font-serif font-bold text-stone-800 tracking-wider block">{title}</span>
+                  <span className="text-[8px] font-mono text-stone-400">{subtitle}</span>
                 </div>
               </div>
             </div>
@@ -4484,15 +4585,17 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
         const evDate = parseEventDate(firstEvent);
-        const timeStr = evDate ? `${fmtTime(evDate)} • ${evDate.getDate()} Tháng ${evDate.getMonth() + 1}, ${evDate.getFullYear()}` : "11:00 • 18 Tháng 12, 2026";
-        const lunarStr = typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? `(Nhằm ${firstEvent.lunarDate})` : "(Nhằm ngày 10 tháng 11 năm Bính Ngọ)";
-        const venueStr = typeof firstEvent?.venueName === "string" && firstEvent.venueName ? `Tại: ${firstEvent.venueName}` : "Tại: Tư Gia Nhà Trai / Khách Sạn Melia";
+        const title = el.customData?.title || "LỄ THÀNH HÔN & NHẬP TIỆC";
+        const timeStr = el.customData?.timeStr || (evDate ? `${fmtTime(evDate)} • ${evDate.getDate()} Tháng ${evDate.getMonth() + 1}, ${evDate.getFullYear()}` : "11:00 • 18 Tháng 12, 2026");
+        const lunarStr = el.customData?.lunarStr || (typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? `(Nhằm ${firstEvent.lunarDate})` : "(Nhằm ngày 10 tháng 11 năm Bính Ngọ)");
+        const venueStr = el.customData?.venueStr || (typeof firstEvent?.venueName === "string" && firstEvent.venueName ? `Tại: ${firstEvent.venueName}` : "Tại: Tư Gia Nhà Trai / Khách Sạn Melia");
+        const footerNote = el.customData?.footerNote || "Hân hạnh được đón tiếp quý khách!";
 
         return (
           <ScaledPresetWrapper baseW={310} baseH={180} w={el.width} h={el.height}>
             <div className="w-full h-full p-4 bg-[#FAF6F4] rounded-2xl border border-rose-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
               <div className="inline-block bg-rose-100/90 text-rose-800 text-[10px] font-serif font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                LỄ THÀNH HÔN & NHẬP TIỆC
+                {title}
               </div>
               <div className="my-auto space-y-0.5">
                 <span className="text-base font-serif font-bold text-stone-900 block">{timeStr}</span>
@@ -4500,7 +4603,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 <span className="text-[9px] text-rose-800 font-medium block mt-1">{venueStr}</span>
               </div>
               <div className="w-full pt-1 border-t border-rose-100 text-[8.5px] font-serif italic text-stone-500">
-                Hân hạnh được đón tiếp quý khách!
+                {footerNote}
               </div>
             </div>
           </ScaledPresetWrapper>
@@ -4508,15 +4611,17 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       }
 
       // Default: Quote
+      const quoteText = el.customData?.quote || "Trăm năm tình viên mãn, bạc đầu nghĩa phu thê.";
+      const quoteNote = el.customData?.note || "Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi.";
       return (
         <ScaledPresetWrapper baseW={300} baseH={140} w={el.width} h={el.height}>
           <div className="w-full h-full p-3.5 bg-gradient-to-br from-amber-50/90 to-stone-50/90 backdrop-blur-xs rounded-2xl border border-amber-200/80 shadow-md flex flex-col items-center justify-center pointer-events-none select-none text-center">
             <span className="text-amber-600 text-lg leading-none font-serif">“</span>
             <p className="text-[11px] font-serif italic text-stone-800 font-medium px-2 leading-relaxed">
-              Trăm năm tình viên mãn, bạc đầu nghĩa phu thê.
+              {quoteText}
             </p>
             <p className="text-[9px] text-amber-800/80 mt-1 font-sans">
-              Sự hiện diện của quý khách là niềm vinh hạnh cho chúng tôi.
+              {quoteNote}
             </p>
           </div>
         </ScaledPresetWrapper>
