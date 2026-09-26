@@ -133,18 +133,14 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
     [element.id, element.isLocked, element.x, element.y, zoomLevel, updateCanvasElement, beginInteraction, endInteraction]
   );
 
-  // Handle Resize Handles with Pointer Capture & Natural Ratio Scaling
+  // Handle Resize Handles with Natural Proportional & Edge Scaling
   const handlePointerDownResize = useCallback(
     (handle: string, e: React.PointerEvent) => {
       if (element.isLocked) return;
       e.preventDefault();
       e.stopPropagation();
 
-      const targetEl = e.currentTarget as HTMLElement;
-      try {
-        targetEl.setPointerCapture(e.pointerId);
-      } catch {}
-
+      selectElement(element.id, "canvas-element");
       beginInteraction();
       setIsResizing(handle);
       resizeStartRef.current = {
@@ -163,39 +159,59 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
         const deltaX = (moveEvt.clientX - resizeStartRef.current.startX) / zoomFactor;
         const deltaY = (moveEvt.clientY - resizeStartRef.current.startY) / zoomFactor;
         const { startWidth, startHeight, startElX, startElY } = resizeStartRef.current;
+        const aspectRatio = startWidth / Math.max(1, startHeight);
 
         let newWidth = startWidth;
         let newHeight = startHeight;
         let newX = startElX;
         let newY = startElY;
 
-        const isCorner = handle === "se" || handle === "nw" || handle === "ne" || handle === "sw";
-        if (isCorner) {
-          const aspectRatio = startWidth / Math.max(1, startHeight);
-          let scaleDelta = deltaX;
-          if (handle === "se") scaleDelta = Math.max(deltaX, deltaY);
-          else if (handle === "sw") scaleDelta = Math.max(-deltaX, deltaY);
-          else if (handle === "ne") scaleDelta = Math.max(deltaX, -deltaY);
-          else if (handle === "nw") scaleDelta = Math.max(-deltaX, -deltaY);
-
-          const scaleRatio = Math.max(0.1, (startWidth + scaleDelta) / startWidth);
-          newWidth = Math.max(25, Math.round(startWidth * scaleRatio));
-          newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
-
-          if (handle.includes("w")) newX = startElX + (startWidth - newWidth);
-          if (handle.includes("n")) newY = startElY + (startHeight - newHeight);
-        } else {
-          if (handle === "e") newWidth = Math.max(25, startWidth + deltaX);
-          if (handle === "w") {
-            const w = Math.max(25, startWidth - deltaX);
-            newWidth = w;
-            newX = startElX + (startWidth - w);
+        switch (handle) {
+          case "se": { // Bottom-Right corner
+            const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY * aspectRatio;
+            newWidth = Math.max(20, Math.round(startWidth + delta));
+            newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
+            break;
           }
-          if (handle === "s") newHeight = Math.max(20, startHeight + deltaY);
-          if (handle === "n") {
-            const h = Math.max(20, startHeight - deltaY);
-            newHeight = h;
-            newY = startElY + (startHeight - h);
+          case "nw": { // Top-Left corner
+            const delta = Math.abs(deltaX) > Math.abs(deltaY) ? -deltaX : -deltaY * aspectRatio;
+            newWidth = Math.max(20, Math.round(startWidth + delta));
+            newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
+            newX = startElX + (startWidth - newWidth);
+            newY = startElY + (startHeight - newHeight);
+            break;
+          }
+          case "ne": { // Top-Right corner
+            const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : -deltaY * aspectRatio;
+            newWidth = Math.max(20, Math.round(startWidth + delta));
+            newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
+            newY = startElY + (startHeight - newHeight);
+            break;
+          }
+          case "sw": { // Bottom-Left corner
+            const delta = Math.abs(deltaX) > Math.abs(deltaY) ? -deltaX : deltaY * aspectRatio;
+            newWidth = Math.max(20, Math.round(startWidth + delta));
+            newHeight = Math.max(20, Math.round(newWidth / aspectRatio));
+            newX = startElX + (startWidth - newWidth);
+            break;
+          }
+          case "e": { // Right edge
+            newWidth = Math.max(20, Math.round(startWidth + deltaX));
+            break;
+          }
+          case "w": { // Left edge
+            newWidth = Math.max(20, Math.round(startWidth - deltaX));
+            newX = startElX + (startWidth - newWidth);
+            break;
+          }
+          case "s": { // Bottom edge
+            newHeight = Math.max(20, Math.round(startHeight + deltaY));
+            break;
+          }
+          case "n": { // Top edge
+            newHeight = Math.max(20, Math.round(startHeight - deltaY));
+            newY = startElY + (startHeight - newHeight);
+            break;
           }
         }
 
@@ -208,9 +224,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
 
         // Proportionally scale fontSize for stickers, stock items and text
         if (element.type === "sticker" || element.type === "text" || element.type === "stock") {
-          const ratioH = newHeight / Math.max(20, startHeight);
-          const ratioW = newWidth / Math.max(25, startWidth);
-          const scaleRatio = isCorner ? newWidth / startWidth : (handle === "w" || handle === "e" ? ratioW : ratioH);
+          const ratio = newWidth / Math.max(20, startWidth);
           const defaultBase =
             element.type === "text"
               ? 28
@@ -218,7 +232,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
               ? 26
               : 60;
           const baseSize = element.fontSize || defaultBase;
-          patch.fontSize = Math.max(10, Math.min(260, Math.round(baseSize * scaleRatio)));
+          patch.fontSize = Math.max(10, Math.min(260, Math.round(baseSize * ratio)));
         }
 
         updateCanvasElement(element.id, patch);
@@ -227,9 +241,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
       const handlePointerUp = () => {
         setIsResizing(null);
         endInteraction();
-        try {
-          targetEl.releasePointerCapture(e.pointerId);
-        } catch {}
+        selectElement(element.id, "canvas-element");
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
         window.removeEventListener("pointercancel", handlePointerUp);
@@ -239,7 +251,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
       window.addEventListener("pointerup", handlePointerUp);
       window.addEventListener("pointercancel", handlePointerUp);
     },
-    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, element.content, zoomLevel, updateCanvasElement, beginInteraction, endInteraction]
+    [element.id, element.isLocked, element.width, element.height, element.x, element.y, element.type, element.fontSize, element.content, zoomLevel, selectElement, updateCanvasElement, beginInteraction, endInteraction]
   );
 
   const handlePointerDownRotate = useCallback(
