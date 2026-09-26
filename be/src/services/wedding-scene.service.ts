@@ -462,21 +462,35 @@ export function ensureWeddingSceneData(templateSlug: string, rawData: unknown): 
   const data = readRecord(rawData) ?? {};
   const existing = readRecord(data.canvasDocument);
   const slug = canonicalSlug(templateSlug);
-  if (existing?.schemaVersion === 1 && canonicalSlug(String(existing.templateSlug || "")) === slug && Array.isArray(existing.sections) && Array.isArray(existing.elements)) {
+
+  // If existing canvasDocument has elements, ALWAYS PRESERVE THEM!
+  if (Array.isArray(existing?.elements) && existing.elements.length > 0) {
     const bindings = readRecord(existing.bindings);
     const elements = existing.elements.map((element) => {
-      const binding = typeof bindings?.[String(element.id)] === "string" ? String(bindings[element.id]) : "";
+      const elRec = readRecord(element) || {};
+      // If user customized content or customData, ALWAYS KEEP USER'S EDITS!
+      const hasCustomData = elRec.customData && Object.keys(readRecord(elRec.customData) || {}).length > 0;
+      if (hasCustomData) {
+        return element;
+      }
+      const elId = String(elRec.id);
+      const binding = typeof bindings?.[elId] === "string" ? String(bindings[elId]) : "";
       const value = binding ? resolveBinding(data, binding) : undefined;
       if (!binding || value === undefined) return element;
-      if (element.type === "widget") {
-        const widgetConfig = readRecord(element.widgetConfig) ?? {};
+      if (elRec.type === "widget") {
+        const widgetConfig = readRecord(elRec.widgetConfig) ?? {};
         const configKey = binding.endsWith(".eventDate") ? "eventDate" : binding.endsWith(".mapUrl") ? "url" : binding.endsWith(".eventName") ? "title" : "description";
-        return { ...element, widgetConfig: { ...widgetConfig, [configKey]: typeof value === "string" ? value : "" } };
+        return { ...elRec, widgetConfig: { ...widgetConfig, [configKey]: typeof value === "string" ? value : "" } };
       }
-      if (element.type === "image") return { ...element, content: String(value), imageUrl: String(value) };
-      return { ...element, content: typeof value === "string" ? value : "" };
+      if (elRec.type === "image") {
+        return { ...elRec, content: String(value), imageUrl: String(value) };
+      }
+      if (typeof value === "string" && value.trim().length > 0) {
+        return { ...elRec, content: value };
+      }
+      return element;
     });
-    return { ...data, canvasDocument: { ...existing, elements } };
+    return { ...data, canvasDocument: { ...existing, templateSlug: slug, elements } };
   }
 
   const tokens: JsonRecord = { ...TOKENS[slug], motif: TEMPLATE_MOTIFS[slug] };

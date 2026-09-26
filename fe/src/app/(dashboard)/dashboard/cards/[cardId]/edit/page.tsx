@@ -880,18 +880,18 @@ function EditCardContent() {
             coverPhotoUrl: coverPhotoUrl || photos.find((p) => p.isCover)?.url || photos[0]?.url,
             groom: {
               ...((categoryDataRef.current as WeddingDataPayload).groom ?? {}),
-              fullName: groomName,
-              shortName: groomShort,
-              birthOrder: groomBirthOrder,
-              avatarUrl: groomAvatar,
+              fullName: groomName || ((categoryDataRef.current as WeddingDataPayload).groom?.fullName) || "Chú Rể",
+              shortName: groomShort || ((categoryDataRef.current as WeddingDataPayload).groom?.shortName),
+              birthOrder: groomBirthOrder || ((categoryDataRef.current as WeddingDataPayload).groom?.birthOrder),
+              avatarUrl: groomAvatar || ((categoryDataRef.current as WeddingDataPayload).groom?.avatarUrl),
               parents: { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather, motherName: groomMother },
             },
             bride: {
               ...((categoryDataRef.current as WeddingDataPayload).bride ?? {}),
-              fullName: brideName,
-              shortName: brideShort,
-              birthOrder: brideBirthOrder,
-              avatarUrl: brideAvatar,
+              fullName: brideName || ((categoryDataRef.current as WeddingDataPayload).bride?.fullName) || "Cô Dâu",
+              shortName: brideShort || ((categoryDataRef.current as WeddingDataPayload).bride?.shortName),
+              birthOrder: brideBirthOrder || ((categoryDataRef.current as WeddingDataPayload).bride?.birthOrder),
+              avatarUrl: brideAvatar || ((categoryDataRef.current as WeddingDataPayload).bride?.avatarUrl),
               parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother },
             },
             loveStory,
@@ -1059,57 +1059,89 @@ function EditCardContent() {
     const cleanMusicUrl = selectedMusicSrc?.startsWith("blob:") ? undefined : (selectedMusicSrc?.trim() || undefined);
 
     // 5. Chuẩn hóa Category Data
+    const effectiveDraft = draftSnapshot || previewCard;
+    const catData = {
+      ...(categoryDataRef.current || {}),
+      ...(effectiveDraft?.categoryData || {}),
+      ...(draftSnapshot?.categoryData || {}),
+    } as any;
+
+    const resolvedGroomName =
+      catData?.groom?.fullName?.trim() ||
+      groomName?.trim() ||
+      "Chú Rể";
+
+    const resolvedBrideName =
+      catData?.bride?.fullName?.trim() ||
+      brideName?.trim() ||
+      "Cô Dâu";
+
     const categoryDataPayload = {
-      ...categoryDataRef.current,
-      ...draftSnapshot?.categoryData,
+      ...catData,
       canvasWidth: 390,
-      canvasHeight: draftSnapshot?.categoryData.canvasHeight ?? categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
+      canvasHeight: draftSnapshot?.categoryData?.canvasHeight ?? catData.canvasHeight ?? catData.canvasDocument?.height ?? categoryDataRef.current.canvasHeight ?? 1200,
       cardCategory: category,
       events: formattedEvents,
+      canvasDocument: catData.canvasDocument,
+      canvasElements: catData.canvasElements || catData.canvasDocument?.elements,
+      fieldPositions: catData.fieldPositions || {},
+      fieldScales: catData.fieldScales || {},
+      showBottomToolbar: catData.showBottomToolbar ?? true,
+      showWishButton: catData.showWishButton ?? true,
+      showGiftQR: catData.showGiftQR ?? true,
+      showRSVP: catData.showRSVP ?? true,
       ...(category === "WEDDING"
         ? {
             groom: {
-              ...((categoryDataRef.current as WeddingDataPayload).groom ?? {}),
-              fullName: groomName?.trim() || "Chú Rể",
-              shortName: groomShort?.trim() || undefined,
-              birthOrder: groomBirthOrder?.trim() || undefined,
-              phone: groomPhone?.trim() || undefined,
-              address: groomAddress?.trim() || undefined,
-              parents: (groomFather?.trim() || groomMother?.trim())
-                ? { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather?.trim() || undefined, motherName: groomMother?.trim() || undefined }
+              ...(catData.groom ?? {}),
+              fullName: resolvedGroomName,
+              shortName: catData.groom?.shortName?.trim() || groomShort?.trim() || undefined,
+              birthOrder: catData.groom?.birthOrder?.trim() || groomBirthOrder?.trim() || undefined,
+              phone: catData.groom?.phone?.trim() || groomPhone?.trim() || undefined,
+              address: catData.groom?.address?.trim() || groomAddress?.trim() || undefined,
+              parents: (catData.groom?.parents?.fatherName || catData.groom?.parents?.motherName || groomFather?.trim() || groomMother?.trim())
+                ? {
+                    ...(catData.groom?.parents ?? {}),
+                    fatherName: catData.groom?.parents?.fatherName?.trim() || groomFather?.trim() || undefined,
+                    motherName: catData.groom?.parents?.motherName?.trim() || groomMother?.trim() || undefined,
+                  }
                 : undefined,
             },
             bride: {
-              ...((categoryDataRef.current as WeddingDataPayload).bride ?? {}),
-              fullName: brideName?.trim() || "Cô Dâu",
-              shortName: brideShort?.trim() || undefined,
-              birthOrder: brideBirthOrder?.trim() || undefined,
-              phone: bridePhone?.trim() || undefined,
-              address: brideAddress?.trim() || undefined,
-              parents: (brideFather?.trim() || brideMother?.trim())
-                ? { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather?.trim() || undefined, motherName: brideMother?.trim() || undefined }
+              ...(catData.bride ?? {}),
+              fullName: resolvedBrideName,
+              shortName: catData.bride?.shortName?.trim() || brideShort?.trim() || undefined,
+              birthOrder: catData.bride?.birthOrder?.trim() || brideBirthOrder?.trim() || undefined,
+              phone: catData.bride?.phone?.trim() || bridePhone?.trim() || undefined,
+              address: catData.bride?.address?.trim() || brideAddress?.trim() || undefined,
+              parents: (catData.bride?.parents?.fatherName || catData.bride?.parents?.motherName || brideFather?.trim() || brideMother?.trim())
+                ? {
+                    ...(catData.bride?.parents ?? {}),
+                    fatherName: catData.bride?.parents?.fatherName?.trim() || brideFather?.trim() || undefined,
+                    motherName: catData.bride?.parents?.motherName?.trim() || brideMother?.trim() || undefined,
+                  }
                 : undefined,
             },
-            loveStory: loveStory.map((item) => ({
+            loveStory: (catData.loveStory || loveStory).map((item: any) => ({
               title: item.title?.trim() || "Kỷ niệm",
               date: item.date?.trim() || "",
               description: item.description?.trim() || undefined,
               imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl || undefined,
             })),
             photos: validPhotos,
-            videoUrl: videoUrl?.trim() || undefined,
-            isReverseOrder,
+            videoUrl: catData.videoUrl?.trim() || videoUrl?.trim() || undefined,
+            isReverseOrder: catData.isReverseOrder ?? isReverseOrder,
           }
         : category === "BIRTHDAY"
-        ? { celebrantName: celebrantName?.trim() || "Chủ Tiệc", age: Number(age) || 18, events: formattedEvents }
+        ? { celebrantName: catData.celebrantName?.trim() || celebrantName?.trim() || "Chủ Tiệc", age: Number(catData.age) || Number(age) || 18, events: formattedEvents }
         : {
-            babyName: babyName?.trim() || "Bé Yêu",
-            nickname: nickname?.trim() || undefined,
+            babyName: catData.babyName?.trim() || babyName?.trim() || "Bé Yêu",
+            nickname: catData.nickname?.trim() || nickname?.trim() || undefined,
             gender: "GIRL" as const,
-            birthDate: new Date().toISOString(),
-            weight: weight?.trim() || undefined,
-            height: height?.trim() || undefined,
-            ceremonyType,
+            birthDate: catData.birthDate || new Date().toISOString(),
+            weight: catData.weight?.trim() || weight?.trim() || undefined,
+            height: catData.height?.trim() || height?.trim() || undefined,
+            ceremonyType: catData.ceremonyType || ceremonyType,
             events: formattedEvents,
           }),
     };

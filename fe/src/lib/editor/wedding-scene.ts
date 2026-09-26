@@ -424,14 +424,24 @@ export function hydrateWeddingScene(scene: WeddingSceneDocument, data: WeddingDa
 export function isWeddingSceneDocument(value: unknown): value is WeddingSceneDocument {
   if (!value || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
-  return record.schemaVersion === WEDDING_SCENE_VERSION && typeof record.templateSlug === "string" && Array.isArray(record.elements) && Array.isArray(record.sections);
+  return Array.isArray(record.elements) && record.elements.length > 0;
 }
 
 export function getWeddingScene(card: CardDetail, fallbackSlug?: string): WeddingSceneDocument | null {
   const categoryData = card?.categoryData as unknown as Record<string, unknown> | undefined;
   const existing = categoryData?.canvasDocument;
   if (isWeddingSceneDocument(existing)) {
-    return existing;
+    return {
+      schemaVersion: 1,
+      templateSlug: (existing as any).templateSlug || fallbackSlug || "wedding-heritage-crimson-gold",
+      width: (existing as any).width || 390,
+      height: (existing as any).height || 1200,
+      background: (existing as any).background || { color: "#ffffff" },
+      tokens: (existing as any).tokens || DEFAULT_TOKENS["wedding-heritage-crimson-gold"],
+      sections: Array.isArray((existing as any).sections) ? (existing as any).sections : [],
+      elements: (existing as any).elements,
+      bindings: (existing as any).bindings || {},
+    };
   }
   // Fallback an toàn: Luôn tự tạo scene hợp lệ cho thiệp cưới, không bao giờ để scene bị null gây trang trắng
   if (card?.cardCategory === "WEDDING") {

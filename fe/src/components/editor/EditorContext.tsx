@@ -1422,8 +1422,21 @@ export function EditorProvider<T extends object>({
     (id: string, patch: Partial<CanvasElement>) => {
       const updated = canvasElements.map((el) => (el.id === id ? { ...el, ...patch } : el));
       persistElements(updated);
+
+      // Đồng bộ 2 chiều: nếu element có binding (groom.fullName, bride.fullName, greeting), cập nhật luôn vào draft.categoryData
+      if (patch.content !== undefined) {
+        const cat = (draft as any)?.categoryData || {};
+        const bindings = cat.canvasDocument?.bindings || {};
+        const bindingKey = bindings[id] || (id === "scene-groom" ? "groom.fullName" : id === "scene-bride" ? "bride.fullName" : undefined);
+        if (bindingKey) {
+          try {
+            const next = applyDraftPatch(draft, `categoryData.${bindingKey}`, patch.content);
+            onDraftChange(next);
+          } catch {}
+        }
+      }
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElements, draft, onDraftChange]
   );
 
   const removeCanvasElement = useCallback(

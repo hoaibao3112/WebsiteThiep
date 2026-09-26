@@ -78,15 +78,11 @@ export const WEDDING_SCENE_SECTION_TYPES = [
 export type WeddingSceneSectionType = (typeof WEDDING_SCENE_SECTION_TYPES)[number];
 
 export const WeddingSceneDocumentSchema = z.object({
-  schemaVersion: z.literal(1),
-  templateSlug: z.string().trim().min(1).max(100),
-  width: z.number().int().min(200).max(1_200),
-  height: z.number().int().min(200).max(30_000),
-  background: z.object({
-    color: z.string().optional(),
-    pattern: z.string().optional(),
-    imageUrl: z.string().max(2_000).optional(),
-  }).passthrough(),
+  schemaVersion: z.number().optional().default(1),
+  templateSlug: z.string().trim().min(1).max(100).optional().default("wedding-heritage-crimson-gold"),
+  width: z.number().optional().default(390),
+  height: z.number().optional().default(1200),
+  background: z.record(z.any()).optional().default({ color: "#ffffff" }),
   tokens: z.record(z.any()).optional(),
   sections: z.array(z.record(z.any())).max(50).optional().default([]),
   elements: z.array(CanvasElementSchema).max(500).optional().default([]),
