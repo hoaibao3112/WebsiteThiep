@@ -148,6 +148,8 @@ function TemplateFieldBoundingBox({
 
   return (
     <div
+      data-template-bounding-box
+      onClick={(e) => e.stopPropagation()}
       style={{
         position: "absolute",
         left: `${rect.left}px`,
@@ -301,7 +303,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       if (
         target.closest("[data-canvas-control]") ||
         target.closest("[data-canvas-element]") ||
-        target.closest("[data-template-control]")
+        target.closest("[data-canvas-bounding-box]") ||
+        target.closest("[data-template-control]") ||
+        target.closest("[data-template-bounding-box]")
       ) {
         return;
       }
@@ -579,7 +583,12 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           {/* Canvas Sheet Artboard - 100% Free Movable Elements */}
           <div
             ref={scrollContainerRef}
-            onClick={() => selectElement(null)}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                selectElement(null);
+                setInlineEditingId(null);
+              }
+            }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -678,6 +687,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
               <CanvasBoundingBox
                 element={selectedCanvasElement}
                 containerRef={scrollContainerRef}
+                onStartInlineEdit={() => setInlineEditingId(selectedCanvasElement.id)}
               />
             )}
 

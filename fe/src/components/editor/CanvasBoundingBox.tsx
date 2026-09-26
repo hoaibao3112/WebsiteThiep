@@ -21,9 +21,10 @@ import {
 interface CanvasBoundingBoxProps {
   element: CanvasElement;
   containerRef: React.RefObject<HTMLDivElement | null>;
+  onStartInlineEdit?: () => void;
 }
 
-export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxProps) {
+export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: CanvasBoundingBoxProps) {
   const {
     zoomLevel,
     updateCanvasElement,
@@ -275,6 +276,16 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
 
   return (
     <div
+      data-canvas-bounding-box
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+      onDoubleClick={(e) => {
+        e.stopPropagation();
+        if (element.type === "text" && onStartInlineEdit) {
+          onStartInlineEdit();
+        }
+      }}
       style={{
         position: "absolute",
         left: `${element.x}px`,
@@ -293,16 +304,19 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
       {/* ── FLOATING TOP ACTION BAR ── */}
       <div
         data-canvas-control
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
         className="absolute -top-11 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-stone-200/90 px-1 py-1 flex items-center gap-1 z-50 animate-in fade-in zoom-in-95 duration-100"
       >
         {/* Duplicate Button */}
         <button
           type="button"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             duplicateCanvasElement(element.id);
           }}
-          className="p-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition"
+          className="p-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition cursor-pointer"
           title="Tạo bản sao (Nhân bản)"
         >
           <Copy className="w-3.5 h-3.5" />
@@ -311,11 +325,12 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         {/* Delete Button */}
         <button
           type="button"
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             removeCanvasElement(element.id);
           }}
-          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition"
+          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition cursor-pointer"
           title="Xóa phần tử"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -325,11 +340,12 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
         <div className="relative" ref={menuRef}>
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu((prev) => !prev);
             }}
-            className={`p-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition ${
+            className={`p-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition cursor-pointer ${
               showMenu ? "bg-stone-200/70 text-stone-900" : ""
             }`}
             title="Tùy chọn khác"
@@ -340,7 +356,9 @@ export function CanvasBoundingBox({ element, containerRef }: CanvasBoundingBoxPr
           {/* Context Dropdown Menu matching ngaychungdoi.com */}
           {showMenu && (
             <div
+              data-canvas-control
               className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 w-56 max-h-[420px] overflow-y-auto rounded-2xl shadow-2xl border border-stone-200/90 bg-white py-1.5 text-xs text-stone-700 z-50 divide-y divide-stone-100 font-sans animate-in fade-in zoom-in-95"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Clipboard Actions */}
