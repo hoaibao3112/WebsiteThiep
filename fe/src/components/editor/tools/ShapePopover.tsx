@@ -32,9 +32,12 @@ export function ShapePopover({ isOpen, onClose, topOffset }: ShapePopoverProps) 
   return (
     <div
       ref={popoverRef}
-      style={{ top: Math.max(10, topOffset - 40) }}
-      className="absolute left-[76px] z-50 w-52 bg-white rounded-2xl shadow-xl border border-stone-200/90 py-2 px-1.5 animate-in fade-in zoom-in-95 duration-150 select-none"
+      style={{ top: Math.max(10, Math.min(topOffset - 40, window.innerHeight - 440)) }}
+      className="absolute left-[76px] z-50 w-64 max-h-[420px] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-stone-200/90 py-2.5 px-2 animate-in fade-in zoom-in-95 duration-150 select-none custom-scrollbar"
     >
+      <div className="px-2 py-1 mb-1 border-b border-stone-100 flex items-center justify-between">
+        <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">Hình dạng ({SHAPE_ITEMS.length})</span>
+      </div>
       <div className="flex flex-col gap-0.5">
         {SHAPE_ITEMS.map((item) => (
           <button

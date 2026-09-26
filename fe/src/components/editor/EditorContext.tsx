@@ -3,8 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { EditorField, getTemplateFields } from "@/lib/editor/template-registry";
 import { applyDraftPatch, readDraftPath } from "@/lib/editor/patch-draft";
-import type { CanvasElement, WidgetType } from "@/types/canvas.types";
-export type { CanvasElement, WidgetType, WidgetConfig } from "@/types/canvas.types";
+import type { CanvasElement, WidgetType, ShapeType } from "@/types/canvas.types";
+export type { CanvasElement, WidgetType, WidgetConfig, ShapeType } from "@/types/canvas.types";
 
 export type ToolCategory =
   | "text"
@@ -38,10 +38,10 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   setCanvasBackgroundPattern: (pat: "none" | "flower-small" | "flower-large") => void;
   canvasFallingEffect: string;
   setCanvasFallingEffect: (eff: string) => void;
-  addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => string;
+  addTextElement: (preset?: { text?: string; fontSize?: number; isBold?: boolean; fontFamily?: string; color?: string }, pos?: { x?: number; y?: number }) => string;
   addStickerElement: (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => string;
   addStockElement: (item: { id: string; title: string; imageUrl?: string; icon?: string; width?: number; height?: number; color?: string; svgContent?: string; svgType?: "frame" | "divider" | "custom" }, pos?: { x?: number; y?: number }) => string;
-  addShapeElement: (item: { shapeType: "line" | "rect" | "circle" | "corner" | "square" | "triangle"; title: string }, pos?: { x?: number; y?: number }) => string;
+  addShapeElement: (item: { shapeType: ShapeType; title: string }, pos?: { x?: number; y?: number }) => string;
   addPresetElement: (item: { id: string; title: string; cat: string }, pos?: { x?: number; y?: number }) => string;
   addImageElement: (url: string, caption?: string, pos?: { x?: number; y?: number }) => string;
   addWidgetElement: (widgetType: WidgetType, pos?: { x?: number; y?: number }) => string;
@@ -398,7 +398,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addTextElement = useCallback(
-    (preset?: { text?: string; fontSize?: number; isBold?: boolean }, pos?: { x?: number; y?: number }) => {
+    (preset?: { text?: string; fontSize?: number; isBold?: boolean; fontFamily?: string; color?: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const newEl: CanvasElement = {
         id: `elem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -409,8 +409,8 @@ export function EditorProvider<T extends object>({
         width: 300,
         height: 54,
         fontSize: preset?.fontSize || 28,
-        fontFamily: (draft as any)?.fontFamily || "Playfair Display",
-        color: (draft as any)?.primaryColor || "#333333",
+        fontFamily: preset?.fontFamily || (draft as any)?.fontFamily || "Playfair Display",
+        color: preset?.color || (draft as any)?.primaryColor || "#333333",
         opacity: 1,
         textAlign: "center",
         isBold: preset?.isBold || false,
@@ -585,7 +585,7 @@ export function EditorProvider<T extends object>({
   );
 
   const addShapeElement = useCallback(
-    (item: { shapeType: "line" | "rect" | "circle" | "corner" | "square" | "triangle"; title: string }, pos?: { x?: number; y?: number }) => {
+    (item: { shapeType: ShapeType; title: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
@@ -674,6 +674,186 @@ export function EditorProvider<T extends object>({
           y: pos?.y ?? 240,
           width: 160,
           height: 160,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "arch") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "arch",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 95,
+          y: pos?.y ?? 200,
+          width: 200,
+          height: 260,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "heart") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "heart",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 115,
+          y: pos?.y ?? 240,
+          width: 160,
+          height: 160,
+          borderWidth: 2,
+          borderColor: "#E11D48",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "star") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "star",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 125,
+          y: pos?.y ?? 240,
+          width: 140,
+          height: 140,
+          borderWidth: 2,
+          borderColor: "#D4AF37",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "diamond") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "diamond",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 115,
+          y: pos?.y ?? 240,
+          width: 160,
+          height: 160,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "hexagon") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "hexagon",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 110,
+          y: pos?.y ?? 240,
+          width: 170,
+          height: 170,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "oval") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "oval",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 95,
+          y: pos?.y ?? 210,
+          width: 200,
+          height: 250,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "ribbon") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "ribbon",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 65,
+          y: pos?.y ?? 270,
+          width: 260,
+          height: 70,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "wavy-line") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "wavy-line",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 300,
+          width: 280,
+          height: 24,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "dashed-line") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "dashed-line",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 300,
+          width: 280,
+          height: 14,
+          borderWidth: 2,
+          borderColor: "#BE944E",
+          backgroundColor: "transparent",
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.shapeType === "flourish-line") {
+        newEl = {
+          id: `shape-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "shape",
+          shapeType: "flourish-line",
+          content: "",
+          title: item.title,
+          x: pos?.x ?? 55,
+          y: pos?.y ?? 300,
+          width: 280,
+          height: 30,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",

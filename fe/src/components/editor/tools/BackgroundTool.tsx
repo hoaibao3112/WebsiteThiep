@@ -14,16 +14,52 @@ import {
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 
-// Dải màu Pastel chuẩn theo ảnh chụp thực tế ngaychungdoi
-const PASTEL_PALETTE = [
-  { id: "white", color: "#FFFFFF", label: "Trắng tinh khôi" },
-  { id: "blush", color: "#F9ECEC", label: "Hồng pastel" },
-  { id: "ivory", color: "#FBF7EE", label: "Kem champagne" },
-  { id: "mint", color: "#EDF5F0", label: "Xanh bạc hà" },
-  { id: "lavender", color: "#F3EEF9", label: "Tím oải hương" },
-  { id: "ice-blue", color: "#ECF2F8", label: "Xanh băng" },
-  { id: "warm-sand", color: "#F5EFE6", label: "Cát ấm" },
-  { id: "rose-tint", color: "#FCE7EC", label: "Hồng đào" },
+// Bảng màu cưới chuyên nghiệp theo Concept tiệc cưới
+const WEDDING_COLOR_PALETTES = [
+  {
+    name: "Lãng Mạn & Pastel",
+    colors: [
+      { id: "white", color: "#FFFFFF", label: "Trắng tinh khôi" },
+      { id: "blush", color: "#F9ECEC", label: "Hồng pastel" },
+      { id: "ivory", color: "#FBF7EE", label: "Kem champagne" },
+      { id: "rose-tint", color: "#FCE7EC", label: "Hồng đào" },
+      { id: "lavender", color: "#F3EEF9", label: "Tím oải hương" },
+      { id: "warm-sand", color: "#F5EFE6", label: "Cát ấm" },
+    ],
+  },
+  {
+    name: "Á Đông & Hoàng Gia",
+    colors: [
+      { id: "crimson-red", color: "#8B1E2D", label: "Đỏ nhung truyền thống" },
+      { id: "marsala", color: "#6B1724", label: "Đỏ rượu Marsala" },
+      { id: "imperial-gold", color: "#D4AF37", label: "Vàng Gold hoàng gia" },
+      { id: "ruby-red", color: "#9E1B32", label: "Đỏ Ruby quý phái" },
+      { id: "bronze-sand", color: "#C5A059", label: "Vàng đồng cổ điển" },
+      { id: "deep-burgundy", color: "#4A0E17", label: "Rượu vang đậm" },
+    ],
+  },
+  {
+    name: "Thiên Nhiên & Rustic",
+    colors: [
+      { id: "sage-green", color: "#87A987", label: "Xanh xô thơm Sage" },
+      { id: "mint", color: "#EDF5F0", label: "Xanh bạc hà" },
+      { id: "forest-green", color: "#2D5A27", label: "Xanh rừng nhiệt đới" },
+      { id: "olive-green", color: "#556B2F", label: "Xanh olive hòa hợp" },
+      { id: "lotus-green", color: "#1A4850", label: "Xanh búp sen" },
+      { id: "kraft-brown", color: "#D7C4B7", label: "Nâu mộc mạc" },
+    ],
+  },
+  {
+    name: "Biển Hồ & Hiện Đại",
+    colors: [
+      { id: "ice-blue", color: "#ECF2F8", label: "Xanh băng tinh khôi" },
+      { id: "dusty-blue", color: "#96AEC2", label: "Xanh Dusty lãng mạn" },
+      { id: "alpine-blue", color: "#4169A1", label: "Xanh hồ Alpine" },
+      { id: "navy-blue", color: "#1B2A4A", label: "Xanh đêm Navy" },
+      { id: "pearl-gray", color: "#E2E8F0", label: "Xám ngọc trai" },
+      { id: "charcoal-black", color: "#1C1917", label: "Đen huyền bí" },
+    ],
+  },
 ];
 
 const PATTERNS = [
@@ -84,6 +120,30 @@ const PRESET_BACKGROUND_IMAGES = [
     label: "Vân nước lụa hồng",
     url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=800&auto=format&fit=crop&q=80",
     thumb: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-7",
+    label: "Vân màu nước hồng phấn",
+    url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-8",
+    label: "Vân giấy hoa ép khô",
+    url: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-9",
+    label: "Vân sương mù lãng mạn",
+    url: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=300&auto=format&fit=crop&q=80",
+  },
+  {
+    id: "bg-paper-10",
+    label: "Vân cát sa mạc ấm",
+    url: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&auto=format&fit=crop&q=80",
+    thumb: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=300&auto=format&fit=crop&q=80",
   },
 ];
 
@@ -238,45 +298,21 @@ export function BackgroundTool() {
 
       {activeTab === "color" ? (
         <div className="space-y-5">
-          {/* 2. CHỌN MÀU NỀN ĐỒNG NHẤT CHO TOÀN THIỆP */}
-          <div className="space-y-2.5">
-            <span className="text-xs text-stone-600 block">
-              Chọn màu nền đồng nhất cho toàn thiệp
-            </span>
-
-            <div className="flex flex-wrap items-center gap-2.5 pt-1">
-              {PASTEL_PALETTE.map((item) => {
-                const isSelected =
-                  canvasBackgroundColor.toLowerCase() === item.color.toLowerCase();
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setCanvasBackgroundColor(item.color)}
-                    style={{ backgroundColor: item.color }}
-                    className={`size-8 rounded-full border transition cursor-pointer relative shadow-2xs flex items-center justify-center hover:scale-105 ${
-                      isSelected
-                        ? "border-stone-900 ring-2 ring-stone-900 ring-offset-2"
-                        : "border-stone-300"
-                    }`}
-                    title={item.label}
-                  >
-                    {isSelected && (
-                      <span className="size-1.5 rounded-full bg-stone-900" />
-                    )}
-                  </button>
-                );
-              })}
-
+          {/* 2. CHỌN MÀU NỀN THEO CONCEPT CƯỚI */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-stone-700 block">
+                Bảng màu Concept tiệc cưới
+              </span>
               {/* Pipette Eye Dropper for custom color */}
               <button
                 type="button"
                 onClick={() => colorInputRef.current?.click()}
-                className="size-8 rounded-full border border-stone-300 bg-white hover:bg-stone-50 transition cursor-pointer flex items-center justify-center shadow-2xs text-stone-600 hover:text-stone-900 hover:scale-105"
-                title="Chọn màu khác (Pipette)"
+                className="h-7 px-2.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 transition cursor-pointer flex items-center gap-1.5 shadow-2xs text-[11px] font-medium text-stone-600 hover:text-stone-900"
+                title="Tự chọn mã màu bất kỳ"
               >
-                <Pipette className="size-3.5" />
+                <Pipette className="size-3 text-amber-600" />
+                <span>Màu tùy biến</span>
                 <input
                   ref={colorInputRef}
                   type="color"
@@ -285,6 +321,47 @@ export function BackgroundTool() {
                   className="sr-only"
                 />
               </button>
+            </div>
+
+            <div className="space-y-3">
+              {WEDDING_COLOR_PALETTES.map((palette) => (
+                <div key={palette.name} className="space-y-1.5 p-2 rounded-xl bg-stone-50/80 border border-stone-100">
+                  <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
+                    {palette.name}
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {palette.colors.map((item) => {
+                      const isSelected =
+                        canvasBackgroundColor.toLowerCase() === item.color.toLowerCase();
+
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setCanvasBackgroundColor(item.color)}
+                          style={{ backgroundColor: item.color }}
+                          className={`size-7 rounded-full border transition cursor-pointer relative shadow-2xs flex items-center justify-center hover:scale-110 ${
+                            isSelected
+                              ? "border-stone-900 ring-2 ring-stone-900 ring-offset-2 scale-105"
+                              : "border-stone-300"
+                          }`}
+                          title={`${item.label} (${item.color})`}
+                        >
+                          {isSelected && (
+                            <span
+                              className={`size-1.5 rounded-full ${
+                                item.color === "#FFFFFF" || item.color.startsWith("#F") || item.color.startsWith("#E")
+                                  ? "bg-stone-900"
+                                  : "bg-white"
+                              }`}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

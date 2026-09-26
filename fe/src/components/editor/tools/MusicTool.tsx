@@ -6,25 +6,35 @@ import { Music, Play, Pause, Check, Upload, VolumeX, Search } from "lucide-react
 
 const MUSIC_LIBRARY = [
   { id: "le-duong", name: "Lễ Đường (Nhạc Cưới Truyền Thống)", artist: "Traditional", src: "/music/le-duong.mp3", category: "vn" },
+  { id: "ngay-dau-tien", name: "Ngày Đầu Tiên", artist: "Đức Phúc", src: "/music/ngay-dau-tien.mp3", category: "vn" },
+  { id: "hon-ca-yeu", name: "Hơn Cả Yêu", artist: "Đức Phúc", src: "/music/hon-ca-yeu.mp3", category: "vn" },
+  { id: "anh-nang-cua-anh", name: "Ánh Nắng Của Anh", artist: "Đức Phúc", src: "/music/anh-nang-cua-anh.mp3", category: "vn" },
+  { id: "cuoi-nhau-di", name: "Cưới Nhau Đi (Yes I Do)", artist: "Bùi Anh Tuấn & Hiền Hồ", src: "/music/cuoi-nhau-di.mp3", category: "vn" },
+  { id: "ta-la-cua-nhau", name: "Ta Là Của Nhau", artist: "Đông Nhi & Ông Cao Thắng", src: "/music/ta-la-cua-nhau.mp3", category: "vn" },
+  { id: "mot-nha", name: "Một Nhà", artist: "Da LAB", src: "/music/mot-nha.mp3", category: "vn" },
+  { id: "xin-ma-ruoc-dau", name: "Xin Má Rước Dâu", artist: "Diệu Kiên", src: "/music/xin-ma-ruoc-dau.mp3", category: "vn" },
+  { id: "yeu-la-cuoi", name: "Yêu Là Cưới", artist: "Phát Hồ", src: "/music/yeu-la-cuoi.mp3", category: "vn" },
   { id: "until-i-found-you", name: "Until I Found You", artist: "Stephen Sanchez", src: "/music/until-i-found-you.mp3", category: "intl" },
   { id: "i-do", name: "I Do", artist: "911 Band", src: "/music/i-do.mp3", category: "intl" },
   { id: "a-thousand-years", name: "A Thousand Years", artist: "Christina Perri", src: "/music/a-thousand-years.mp3", category: "intl" },
   { id: "perfect", name: "Perfect", artist: "Ed Sheeran", src: "/music/perfect.mp3", category: "intl" },
-  { id: "hon-ca-yeu", name: "Hơn Cả Yêu", artist: "Đức Phúc", src: "/music/hon-ca-yeu.mp3", category: "vn" },
   { id: "beautiful-in-white", name: "Beautiful In White", artist: "Shane Filan", src: "/music/beautiful-in-white.mp3", category: "intl" },
   { id: "die-with-a-smile", name: "Die With A Smile", artist: "Lady Gaga & Bruno Mars", src: "/music/die-with-a-smile.mp3", category: "intl" },
-  { id: "ngay-dau-tien", name: "Ngày Đầu Tiên", artist: "Đức Phúc", src: "/music/ngay-dau-tien.mp3", category: "vn" },
   { id: "marry-you", name: "Marry You", artist: "Bruno Mars", src: "/music/marry-you.mp3", category: "intl" },
-  { id: "mot-nha", name: "Một Nhà", artist: "Da LAB", src: "/music/mot-nha.mp3", category: "vn" },
-  { id: "xin-ma-ruoc-dau", name: "Xin Má Rước Dâu", artist: "Diệu Kiên", src: "/music/xin-ma-ruoc-dau.mp3", category: "vn" },
   { id: "everytime-we-touch", name: "Everytime We Touch (Acoustic)", artist: "Cascada", src: "/music/everytime-we-touch.mp3", category: "intl" },
   { id: "like-my-father", name: "Like My Father", artist: "Jax", src: "/music/like-my-father.mp3", category: "intl" },
+  { id: "can-help-falling", name: "Can't Help Falling In Love", artist: "Kina Grannis", src: "/music/can-help-falling.mp3", category: "intl" },
+  { id: "you-are-the-reason", name: "You Are The Reason", artist: "Calum Scott", src: "/music/you-are-the-reason.mp3", category: "intl" },
+  { id: "all-of-me", name: "All of Me", artist: "John Legend", src: "/music/all-of-me.mp3", category: "intl" },
+  { id: "canon-in-d", name: "Canon In D (Wedding Piano)", artist: "Johann Pachelbel", src: "/music/canon-in-d.mp3", category: "piano" },
+  { id: "river-flows-in-you", name: "River Flows In You", artist: "Yiruma", src: "/music/river-flows-in-you.mp3", category: "piano" },
+  { id: "wedding-march", name: "Wedding March (Lễ Đường)", artist: "Felix Mendelssohn", src: "/music/wedding-march.mp3", category: "piano" },
 ];
 
 export function MusicTool() {
   const { fields, updateFieldById, getFieldValue } = useEditor();
   const [tab, setTab] = useState<"library" | "upload">("library");
-  const [filterCat, setFilterCat] = useState<"all" | "vn" | "intl">("all");
+  const [filterCat, setFilterCat] = useState<"all" | "vn" | "intl" | "piano">("all");
   const [search, setSearch] = useState("");
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
 
@@ -127,11 +137,12 @@ export function MusicTool() {
           </div>
 
           {/* Filter categories */}
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-x-auto pb-0.5">
             {[
               { id: "all", label: "Tất cả" },
               { id: "vn", label: "Nhạc Việt" },
               { id: "intl", label: "Quốc tế" },
+              { id: "piano", label: "Piano / Acoustic" },
             ].map((c) => (
               <button
                 key={c.id}

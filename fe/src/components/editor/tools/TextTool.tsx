@@ -67,40 +67,145 @@ export function TextTool() {
       </div>
 
       {/* ── NGHỆ THUẬT CHỮ CƯỚI (TYPOGRAPHY PRESETS) ── */}
-      <div className="space-y-2 border-t border-stone-200 pt-3">
-        <h4 className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
-          Chữ nghệ thuật phối sẵn
-        </h4>
-        <div className="grid grid-cols-2 gap-1.5">
-          {[
-            { text: "Save The Date", font: "Playfair Display", size: 26, isBold: true, color: "#BE944E" },
-            { text: "Thư Mời Tiệc Cưới", font: "Great Vibes", size: 32, isBold: false, color: "#8B1E2D" },
-            { text: "Lễ Thành Hôn", font: "Cinzel", size: 24, isBold: true, color: "#6B1724" },
-            { text: "Trân Trọng Kính Mời", font: "Playfair Display", size: 20, isBold: false, color: "#333333" },
-            { text: "Forever & Always", font: "Alex Brush", size: 30, isBold: false, color: "#B84A39" },
-            { text: "Trăm Năm Hạnh Phúc", font: "Great Vibes", size: 28, isBold: false, color: "#8B1E2D" },
-          ].map((item, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() =>
-                addTextElement({
-                  text: item.text,
-                  fontSize: item.size,
-                  isBold: item.isBold,
-                })
-              }
-              className="p-2.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-center transition flex flex-col items-center justify-center cursor-pointer shadow-2xs group"
-            >
-              <span
-                style={{ fontFamily: item.font, color: item.color }}
-                className="text-sm truncate max-w-full group-hover:scale-105 transition-transform"
+      <div className="space-y-3 border-t border-stone-200 pt-3">
+        <div>
+          <h4 className="text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-0.5">
+            Chữ nghệ thuật phối sẵn
+          </h4>
+          <p className="text-[10px] text-stone-400">
+            Chạm để thêm cụm chữ đã phối sẵn kiểu chữ và màu sắc.
+          </p>
+        </div>
+
+        {/* 1. Nghi thức truyền thống */}
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+            Nghi thức cưới Việt Nam
+          </span>
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              { text: "Lễ Vu Quy", font: "Great Vibes", size: 30, isBold: false, color: "#8B1E2D" },
+              { text: "Lễ Tân Hôn", font: "Great Vibes", size: 30, isBold: false, color: "#8B1E2D" },
+              { text: "Lễ Thành Hôn", font: "Cinzel", size: 24, isBold: true, color: "#6B1724" },
+              { text: "Trân Trọng Kính Mời", font: "Playfair Display", size: 18, isBold: false, color: "#333333" },
+              { text: "Trăm Năm Hạnh Phúc", font: "Great Vibes", size: 26, isBold: false, color: "#8B1E2D" },
+              { text: "Thiệp Báo Hỷ", font: "Cinzel", size: 22, isBold: true, color: "#BE944E" },
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() =>
+                  addTextElement({
+                    text: item.text,
+                    fontSize: item.size,
+                    isBold: item.isBold,
+                    fontFamily: item.font,
+                    color: item.color,
+                  })
+                }
+                className="p-2.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-center transition flex flex-col items-center justify-center cursor-pointer shadow-2xs group"
               >
-                {item.text}
-              </span>
-              <span className="text-[8px] text-stone-400 mt-0.5 font-mono">{item.font}</span>
-            </button>
-          ))}
+                <span
+                  style={{ fontFamily: item.font, color: item.color }}
+                  className="text-sm truncate max-w-full group-hover:scale-105 transition-transform"
+                >
+                  {item.text}
+                </span>
+                <span className="text-[8px] text-stone-400 mt-0.5 font-mono">{item.font}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Hiện đại & Quốc tế */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+            Hiện đại & Quốc tế
+          </span>
+          <div className="grid grid-cols-2 gap-1.5">
+            {[
+              { text: "Save The Date", font: "Playfair Display", size: 26, isBold: true, color: "#BE944E" },
+              { text: "The Wedding of", font: "Cinzel", size: 20, isBold: true, color: "#6B1724" },
+              { text: "Forever & Always", font: "Alex Brush", size: 28, isBold: false, color: "#B84A39" },
+              { text: "Better Together", font: "Great Vibes", size: 26, isBold: false, color: "#D4AF37" },
+              { text: "Just Married", font: "Playfair Display", size: 24, isBold: true, color: "#1C1917" },
+              { text: "Our Love Story", font: "Alex Brush", size: 28, isBold: false, color: "#8B1E2D" },
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() =>
+                  addTextElement({
+                    text: item.text,
+                    fontSize: item.size,
+                    isBold: item.isBold,
+                    fontFamily: item.font,
+                    color: item.color,
+                  })
+                }
+                className="p-2.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-center transition flex flex-col items-center justify-center cursor-pointer shadow-2xs group"
+              >
+                <span
+                  style={{ fontFamily: item.font, color: item.color }}
+                  className="text-sm truncate max-w-full group-hover:scale-105 transition-transform"
+                >
+                  {item.text}
+                </span>
+                <span className="text-[8px] text-stone-400 mt-0.5 font-mono">{item.font}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Lời nhắn & Câu chúc */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+            Lời mời & Lời nhắn
+          </span>
+          <div className="space-y-1.5">
+            {[
+              {
+                text: "Sự hiện diện của quý khách là niềm vinh hạnh cho gia đình chúng tôi",
+                font: "Playfair Display",
+                size: 15,
+                color: "#444444",
+              },
+              {
+                text: "Hẹn gặp bạn trong ngày hạnh phúc nhất của chúng mình!",
+                font: "Playfair Display",
+                size: 15,
+                color: "#8B1E2D",
+              },
+              {
+                text: "Tình yêu là khi hai trái tim cùng chung một nhịp đập",
+                font: "Alex Brush",
+                size: 22,
+                color: "#B84A39",
+              },
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() =>
+                  addTextElement({
+                    text: item.text,
+                    fontSize: item.size,
+                    fontFamily: item.font,
+                    color: item.color,
+                  })
+                }
+                className="w-full p-2.5 rounded-xl border border-stone-200 bg-white hover:border-amber-400 hover:bg-amber-50/40 text-left transition flex items-center justify-between cursor-pointer shadow-2xs group"
+              >
+                <span
+                  style={{ fontFamily: item.font, color: item.color }}
+                  className="text-xs line-clamp-1 group-hover:text-amber-900"
+                >
+                  "{item.text}"
+                </span>
+                <span className="text-[9px] text-stone-400 shrink-0 ml-2 font-mono">+ Thêm</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

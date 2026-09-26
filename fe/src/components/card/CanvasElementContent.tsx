@@ -256,6 +256,159 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           </div>
         );
       }
+      if (el.shapeType === "arch") {
+        return (
+          <div
+            className="w-full h-full pointer-events-none select-none transition-colors"
+            style={{
+              borderWidth: `${bWidth}px`,
+              borderStyle: "solid",
+              borderColor: shapeColor,
+              backgroundColor: shapeBg,
+              borderTopLeftRadius: "999px",
+              borderTopRightRadius: "999px",
+              borderBottomLeftRadius: el.borderRadius ? `${el.borderRadius}px` : "0px",
+              borderBottomRightRadius: el.borderRadius ? `${el.borderRadius}px` : "0px",
+            }}
+          />
+        );
+      }
+      if (el.shapeType === "heart") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+              <path
+                d="M 50,30 C 50,15 35,5 20,5 C 8,5 0,15 0,28 C 0,52 35,76 50,95 C 65,76 100,52 100,28 C 100,15 92,5 80,5 C 65,5 50,15 50,30 Z"
+                fill={shapeBg === "transparent" ? "none" : shapeBg}
+                stroke={shapeColor}
+                strokeWidth={bWidth}
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "star") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+              <path
+                d="M 50,0 Q 50,50 100,50 Q 50,50 50,100 Q 50,50 0,50 Q 50,50 50,0 Z"
+                fill={shapeBg === "transparent" ? "none" : shapeBg}
+                stroke={shapeColor}
+                strokeWidth={bWidth}
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "diamond") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+              <polygon
+                points="50,4 96,50 50,96 4,50"
+                fill={shapeBg === "transparent" ? "none" : shapeBg}
+                stroke={shapeColor}
+                strokeWidth={bWidth}
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "hexagon") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 100 100" className="w-full h-full" preserveAspectRatio="none">
+              <polygon
+                points="26,6 74,6 96,50 74,94 26,94 4,50"
+                fill={shapeBg === "transparent" ? "none" : shapeBg}
+                stroke={shapeColor}
+                strokeWidth={bWidth}
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "oval") {
+        return (
+          <div
+            className="w-full h-full pointer-events-none select-none transition-colors"
+            style={{
+              borderWidth: `${bWidth}px`,
+              borderStyle: "solid",
+              borderColor: shapeColor,
+              backgroundColor: shapeBg,
+              borderRadius: "50%",
+            }}
+          />
+        );
+      }
+      if (el.shapeType === "ribbon") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 200 60" className="w-full h-full" preserveAspectRatio="none">
+              <path
+                d="M 20,10 L 180,10 L 165,30 L 180,50 L 20,50 L 35,30 Z"
+                fill={shapeBg === "transparent" ? "none" : shapeBg}
+                stroke={shapeColor}
+                strokeWidth={bWidth}
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "wavy-line") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 200 20" className="w-full h-full" preserveAspectRatio="none">
+              <path
+                d="M 0,10 Q 25,0 50,10 T 100,10 T 150,10 T 200,10"
+                fill="none"
+                stroke={shapeColor}
+                strokeWidth={Math.max(bWidth, 2)}
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+        );
+      }
+      if (el.shapeType === "dashed-line") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none px-1">
+            <div
+              className="w-full"
+              style={{
+                borderTopWidth: `${Math.max(bWidth, 2)}px`,
+                borderTopStyle: "dashed",
+                borderTopColor: shapeColor,
+              }}
+            />
+          </div>
+        );
+      }
+      if (el.shapeType === "flourish-line") {
+        return (
+          <div className="w-full h-full flex items-center justify-center pointer-events-none select-none">
+            <svg viewBox="0 0 240 24" className="w-full h-full" preserveAspectRatio="none">
+              <path
+                d="M 10,12 C 30,5 40,19 60,12 L 100,12 M 140,12 L 180,12 C 200,19 210,5 230,12"
+                fill="none"
+                stroke={shapeColor}
+                strokeWidth={Math.max(bWidth, 1.8)}
+                strokeLinecap="round"
+              />
+              <circle cx="120" cy="12" r="4" fill={shapeColor} />
+              <circle cx="108" cy="12" r="2" fill={shapeColor} />
+              <circle cx="132" cy="12" r="2" fill={shapeColor} />
+            </svg>
+          </div>
+        );
+      }
       if (el.shapeType === "corner") {
         return (
           <div className="w-full h-full flex items-center justify-center pointer-events-none select-none text-amber-700/80">

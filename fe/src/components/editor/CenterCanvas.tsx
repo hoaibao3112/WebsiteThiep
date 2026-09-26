@@ -609,6 +609,22 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             {/* Falling Particles Effect (Hiệu ứng hoa lá tuyết rơi) */}
             <CanvasFallingEffect effect={canvasFallingEffect} />
 
+            {/* ── TEMPLATE VIEW LAYER (WeddingView / BirthdayView / NewbornView) ── */}
+            {/* pointer-events-none on entire template to prevent buttons/links/modals
+                from firing in editor mode. Only [data-editable-field] elements get
+                pointer-events-auto so users can click to select and edit them. */}
+            <div
+              className="relative z-0 w-full overflow-hidden"
+              style={{ pointerEvents: "none", minHeight: 0 }}
+            >
+              <div
+                className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer"
+                style={{ minHeight: 0 }}
+              >
+                {children}
+              </div>
+            </div>
+
             {/* ── FREE CANVAS ELEMENTS LAYER ── */}
             {canvasElements.map((el) => {
               const isSelected = selectedElementId === el.id;
@@ -662,6 +678,24 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
               <CanvasBoundingBox
                 element={selectedCanvasElement}
                 containerRef={scrollContainerRef}
+              />
+            )}
+
+            {/* ── BOUNDING BOX OVERLAY FOR SELECTED TEMPLATE FIELD ── */}
+            {selectedField && selectedElementId && selectedElementType !== "canvas-element" && (
+              <TemplateFieldBoundingBox
+                fieldId={selectedElementId}
+                label={selectedField.label}
+                containerRef={containerRef}
+                scrollContainerRef={scrollContainerRef}
+                zoomLevel={zoomLevel}
+                fieldOffsets={fieldOffsets}
+                fieldScales={fieldScales}
+                updateFieldPositionOffset={updateFieldPositionOffset}
+                resetFieldPositionOffset={resetFieldPositionOffset}
+                updateFieldScale={updateFieldScale}
+                resetFieldScale={resetFieldScale}
+                onDeselect={() => selectElement(null)}
               />
             )}
           </div>

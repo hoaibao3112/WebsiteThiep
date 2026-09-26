@@ -1,4 +1,17 @@
-export type WidgetType = "calendar" | "countdown" | "map" | "contact" | "rsvp" | "album" | "guest-name" | "gift" | "envelope";
+export type WidgetType =
+  | "calendar"
+  | "countdown"
+  | "map"
+  | "contact"
+  | "rsvp"
+  | "album"
+  | "guest-name"
+  | "gift"
+  | "envelope"
+  | "timeline"
+  | "dress-code"
+  | "love-story"
+  | "menu";
 export type CanvasWidgetType = WidgetType;
 
 export interface WidgetConfig {
@@ -11,6 +24,24 @@ export interface WidgetConfig {
   showTitle?: boolean;
 }
 export type CanvasWidgetConfig = WidgetConfig;
+
+export type ShapeType =
+  | "line"
+  | "rect"
+  | "circle"
+  | "corner"
+  | "square"
+  | "triangle"
+  | "arch"
+  | "heart"
+  | "star"
+  | "diamond"
+  | "hexagon"
+  | "oval"
+  | "ribbon"
+  | "wavy-line"
+  | "dashed-line"
+  | "flourish-line";
 
 export interface CanvasElement {
   id: string;
@@ -40,7 +71,7 @@ export interface CanvasElement {
   shadow?: string;
   zIndex: number;
   isLocked?: boolean;
-  shapeType?: "line" | "rect" | "circle" | "corner" | "square" | "triangle";
+  shapeType?: ShapeType;
   presetId?: string;
   stockId?: string;
   svgContent?: string;

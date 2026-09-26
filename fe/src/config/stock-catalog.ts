@@ -269,6 +269,14 @@ export const STOCK_CATALOG: StockItem[] = [
   { id: "w8", title: "Ly rượu mừng", cat: "wedding", icon: "🥂", width: 100, height: 100 },
   { id: "w9", title: "Bồ câu trắng", cat: "wedding", icon: "🕊️", width: 110, height: 110 },
   { id: "w10", title: "Chuông cưới vàng", cat: "wedding", icon: "🔔", width: 100, height: 100 },
+  { id: "w11", title: "Bánh cưới 3 tầng", cat: "wedding", icon: "🎂", width: 110, height: 110 },
+  { id: "w12", title: "Xe hoa rước dâu", cat: "wedding", icon: "🚗💐", isWide: true, width: 140, height: 80 },
+  { id: "w13", title: "Tem sáp hoàng gia", cat: "wedding", icon: "🏷️", color: "#8B1E2D", width: 100, height: 100 },
+  { id: "w14", title: "Khóa tình yêu vĩnh cửu", cat: "wedding", icon: "🔒💖", width: 100, height: 100 },
+  { id: "w15", title: "Thư tình trao tay", cat: "wedding", icon: "💌", width: 100, height: 100 },
+  { id: "w16", title: "Pháo hoa chúc mừng", cat: "wedding", icon: "🎉", width: 100, height: 100 },
+  { id: "w17", title: "Vương miện công chúa", cat: "wedding", icon: "👑", color: "#D4AF37", width: 110, height: 110 },
+  { id: "w18", title: "Giày cưới pha lê", cat: "wedding", icon: "👠", width: 100, height: 100 },
 
   // ── 4. VĂN HÓA VIỆT ──
   { id: "vn1", title: "Cột cờ Hà Nội", cat: "vietnam", icon: "🏛️", width: 100, height: 100 },
@@ -279,6 +287,11 @@ export const STOCK_CATALOG: StockItem[] = [
   { id: "vn6", title: "Hoa sen hồng", cat: "vietnam", icon: "🪷", width: 110, height: 110 },
   { id: "vn7", title: "Chim Lạc hoàng cung", cat: "vietnam", icon: "🦅", color: "#BE944E", width: 120, height: 120 },
   { id: "vn8", title: "Đường kẻ gấm Á Đông", cat: "vietnam", icon: "❖ ❖ ❖", color: "#BE944E", isWide: true, width: 160, height: 70 },
+  { id: "vn9", title: "Lồng đèn đỏ Tân hôn", cat: "vietnam", icon: "🏮", color: "#DC2626", width: 100, height: 110 },
+  { id: "vn10", title: "Đôi uyên ương hồ điệp", cat: "vietnam", icon: "🦆💕🦆", color: "#8B1E2D", isWide: true, width: 160, height: 70 },
+  { id: "vn11", title: "Mây cát tường Á Đông", cat: "vietnam", icon: "☁️✨", color: "#D4AF37", isWide: true, width: 140, height: 70 },
+  { id: "vn12", title: "Pháo đỏ tân xuân", cat: "vietnam", icon: "🧨", width: 100, height: 100 },
+  { id: "vn13", title: "Chữ Phúc mạ vàng", cat: "vietnam", icon: "福", color: "#D4AF37", width: 100, height: 100 },
 
   // ── 5. NHÂN VẬT ──
   { id: "c1", title: "Chú rể áo vest", cat: "character", icon: "🤵", width: 100, height: 120 },
@@ -297,6 +310,10 @@ export const STOCK_CATALOG: StockItem[] = [
   { id: "f4", title: "Hoa anh đào hồng", cat: "flower", icon: "🌸", width: 100, height: 100 },
   { id: "f5", title: "Hoa hướng dương", cat: "flower", icon: "🌻", width: 100, height: 100 },
   { id: "f6", title: "Hoa mẫu đơn quý phái", cat: "flower", icon: "🌺", width: 100, height: 100 },
+  { id: "f7", title: "Nhành Olive hòa hợp", cat: "flower", icon: "🫒🌿", isWide: true, width: 140, height: 80 },
+  { id: "f8", title: "Cành Lavender tím", cat: "flower", icon: "🪻", width: 100, height: 100 },
+  { id: "f9", title: "Bồ công anh may mắn", cat: "flower", icon: "🌾", width: 100, height: 100 },
+  { id: "f10", title: "Vòng nguyệt quế tròn", cat: "flower", icon: "🌿⭕🌿", width: 120, height: 120 },
 
   // ── 7. CHỮ HỶ ──
   { id: "h1", title: "Chữ Hỷ Song Hỷ Đỏ", cat: "hy", icon: "囍", color: "#DC2626", width: 110, height: 110 },
@@ -313,4 +330,6 @@ export const STOCK_CATALOG: StockItem[] = [
   { id: "ht4", title: "Bong bóng trái tim", cat: "heart", icon: "🎈", width: 100, height: 100 },
   { id: "ht5", title: "Hộp quà trái tim", cat: "heart", icon: "💝", width: 100, height: 100 },
   { id: "ht6", title: "Trái tim ánh sao", cat: "heart", icon: "✨❤️✨", isWide: true, width: 150, height: 70 },
+  { id: "ht7", title: "Trái tim viền nhung đỏ", cat: "heart", icon: "♥️", color: "#DC2626", width: 100, height: 100 },
+  { id: "ht8", title: "Nhịp đập yêu thương", cat: "heart", icon: "💓", width: 100, height: 100 },
 ];
