@@ -358,17 +358,8 @@ export function createWeddingSceneFromWeddingData(data: WeddingDataPayload, temp
       height: 1200,
       background: { color: tokens.surface },
       tokens,
-      sections: [{ id: "section-hero-0", type: "hero", label: "hero", visible: true, order: 0, elementIds: ["blank-welcome"] }],
-      elements: [
-        sceneElement("blank-welcome", "MẪU TRẮNG SÁNG TẠO\n\nNhấn vào thanh công cụ bên trái để bắt đầu thêm Chữ, Ảnh hoặc Tiện ích", 20, 180, 350, 120, {
-          fontSize: 14,
-          color: "#666666",
-          backgroundColor: "#f9f9f9",
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: "#e5e5e5",
-        }),
-      ],
+      sections: [{ id: "section-hero-0", type: "hero", label: "hero", visible: true, order: 0, elementIds: [] }],
+      elements: [],
       bindings: {},
     };
   }

@@ -103,29 +103,10 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
   if (slug === "wedding-blank") {
     const blankSection = sections[0];
     if (blankSection) {
-      blankSection.elementIds = ["blank-welcome"];
+      blankSection.elementIds = [];
     }
     return {
-      elements: [
-        makeText(
-          "blank-welcome",
-          "MẪU TRẮNG SÁNG TẠO\n\nNhấn vào thanh công cụ bên trái để bắt đầu thêm Chữ, Ảnh hoặc Tiện ích",
-          20,
-          180,
-          350,
-          120,
-          "#666666",
-          bodyFont,
-          14,
-          {
-            backgroundColor: "#f9f9f9",
-            borderRadius: 16,
-            padding: 16,
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-          }
-        ),
-      ],
+      elements: [],
       bindings: {},
     };
   }

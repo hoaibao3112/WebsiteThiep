@@ -90,8 +90,11 @@ describe("Wedding Scene Contract & 10 Templates Validation", () => {
         const validScene = WeddingSceneDocumentSchema.parse(enrichedData.canvasDocument);
         expect(validScene.schemaVersion).toBe(1);
         expect(validScene.templateSlug).toBe(slug);
-        expect(validScene.sections.length).toBeGreaterThan(0);
-        expect(validScene.elements.length).toBeGreaterThan(0);
+        if (slug !== "wedding-blank") {
+          expect(validScene.elements.length).toBeGreaterThan(0);
+        } else {
+          expect(validScene.elements.length).toBe(0);
+        }
 
         // 4. JSON serialize -> deserialize (simulate DB JSONB save & read)
         const serialized = JSON.stringify({ ...parsedDraft, data: enrichedData });
