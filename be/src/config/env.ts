@@ -5,6 +5,7 @@ const BaseEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   JWT_SECRET: z.string().min(32).optional(),
   DATABASE_URL: z.string().min(1).optional(),
+  REDIS_URL: z.string().optional(),
   REDIS_HOST: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().optional(),
   SEPAY_WEBHOOK_SECRET: z.string().min(16).optional(),
@@ -32,14 +33,13 @@ export function validateRuntimeEnv(input: NodeJS.ProcessEnv) {
       console.warn(`[WARN] Thanh toán VietQR sẽ không hoạt động — thiếu: ${missingBank.join(", ")}`);
     }
 
-    const optionalServices = [
-      "REDIS_HOST",
-      "ALLOWED_ORIGINS",
-      "CLOUDINARY_CLOUD_NAME",
-      "CLOUDINARY_API_KEY",
-      "CLOUDINARY_API_SECRET",
-    ] as const;
-    const missingOptional = optionalServices.filter((key) => !env[key]);
+    const missingOptional: string[] = [];
+    if (!env.REDIS_URL && !env.REDIS_HOST) missingOptional.push("REDIS_URL (hoặc REDIS_HOST)");
+    if (!env.ALLOWED_ORIGINS) missingOptional.push("ALLOWED_ORIGINS");
+    if (!env.CLOUDINARY_CLOUD_NAME) missingOptional.push("CLOUDINARY_CLOUD_NAME");
+    if (!env.CLOUDINARY_API_KEY) missingOptional.push("CLOUDINARY_API_KEY");
+    if (!env.CLOUDINARY_API_SECRET) missingOptional.push("CLOUDINARY_API_SECRET");
+
     if (missingOptional.length > 0) {
       console.warn(`[WARN] Chú ý: Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
     }
