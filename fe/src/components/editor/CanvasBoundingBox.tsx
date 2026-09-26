@@ -296,11 +296,10 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
         height: `${element.height}px`,
         transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
         zIndex: (element.zIndex || 10) + 100,
-        pointerEvents: "auto",
+        pointerEvents: "none",
       }}
-      onPointerDown={handlePointerDownDrag}
       className={`border-2 border-[#0091FF] select-none transition-shadow ${
-        isDragging ? "cursor-grabbing shadow-lg" : element.isLocked ? "cursor-not-allowed" : "cursor-move"
+        isDragging ? "shadow-lg" : ""
       }`}
     >
       {/* ── FLOATING TOP ACTION BAR ── */}
@@ -308,7 +307,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
         data-canvas-control
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
-        className="absolute -top-11 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-stone-200/90 px-1 py-1 flex items-center gap-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+        className="absolute -top-11 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-lg border border-stone-200/90 px-2 py-1 flex items-center gap-1.5 z-50 pointer-events-auto animate-in fade-in zoom-in-95 duration-100"
       >
         {/* Duplicate Button */}
         <button
@@ -321,7 +320,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
           className="p-1.5 text-stone-700 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition cursor-pointer"
           title="Tạo bản sao (Nhân bản)"
         >
-          <Copy className="w-3.5 h-3.5" />
+          <Copy className="w-4 h-4" />
         </button>
 
         {/* Delete Button */}
@@ -332,10 +331,10 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
             e.stopPropagation();
             removeCanvasElement(element.id);
           }}
-          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+          className="p-1.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
           title="Xóa phần tử"
         >
-          <Trash2 className="w-3.5 h-3.5" />
+          <Trash2 className="w-4 h-4" />
         </button>
 
         {/* More Options (...) Button */}
@@ -352,14 +351,14 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
             }`}
             title="Tùy chọn khác"
           >
-            <MoreHorizontal className="w-3.5 h-3.5" />
+            <MoreHorizontal className="w-4 h-4" />
           </button>
 
-          {/* Context Dropdown Menu matching ngaychungdoi.com */}
+          {/* Context Dropdown Menu matching screenshot */}
           {showMenu && (
             <div
               data-canvas-control
-              className="absolute left-1/2 -translate-x-1/2 top-full mt-1.5 w-56 max-h-[420px] overflow-y-auto rounded-2xl shadow-2xl border border-stone-200/90 bg-white py-1.5 text-xs text-stone-700 z-50 divide-y divide-stone-100 font-sans animate-in fade-in zoom-in-95"
+              className="absolute right-0 top-full mt-2 w-60 rounded-2xl shadow-2xl border border-stone-200/90 bg-white py-1.5 text-xs text-stone-700 z-50 divide-y divide-stone-100 font-sans animate-in fade-in zoom-in-95 pointer-events-auto"
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => e.stopPropagation()}
             >
@@ -368,10 +367,25 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                 <button
                   type="button"
                   onClick={() => {
+                    copySelectedElement();
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left cursor-pointer"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <Copy className="w-4 h-4 text-stone-600" />
+                    <span className="text-xs text-stone-800 font-medium">Sao chép</span>
+                  </span>
+                  <span className="text-[11px] text-stone-400 font-mono">Ctrl+C</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
                     cutSelectedElement();
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <span className="flex items-center gap-2.5">
                     <Scissors className="w-4 h-4 text-stone-600" />
@@ -386,7 +400,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     pasteElement();
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <span className="flex items-center gap-2.5">
                     <Clipboard className="w-4 h-4 text-stone-600" />
@@ -401,7 +415,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     duplicateCanvasElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <Copy className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Tạo bản sao</span>
@@ -413,7 +427,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     removeCanvasElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 text-stone-800 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 text-stone-800 transition text-left cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Xóa phần tử</span>
@@ -428,7 +442,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     reorderElementLayer(element.id, "top");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <Layers className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Đưa lên trên cùng</span>
@@ -440,7 +454,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     reorderElementLayer(element.id, "bottom");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <Layers className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Đưa xuống dưới cùng</span>
@@ -452,7 +466,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     reorderElementLayer(element.id, "up");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <ArrowUp className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Đưa lên một lớp</span>
@@ -464,7 +478,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     reorderElementLayer(element.id, "down");
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   <ArrowDown className="w-4 h-4 text-stone-600" />
                   <span className="text-xs text-stone-800 font-medium">Đưa xuống một lớp</span>
@@ -476,7 +490,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
                     toggleLockElement(element.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left"
+                  className="w-full px-3.5 py-2 flex items-center gap-2.5 hover:bg-stone-50 transition text-left cursor-pointer"
                 >
                   {element.isLocked ? (
                     <>
@@ -493,7 +507,7 @@ export function CanvasBoundingBox({ element, containerRef, onStartInlineEdit }: 
               </div>
 
               {/* Layer Info */}
-              <div className="px-3.5 py-2.5 text-xs text-stone-500 font-medium">
+              <div className="px-3.5 py-2 text-xs text-stone-400 font-medium">
                 Lớp hiện tại: {element.zIndex || 1}
               </div>
             </div>

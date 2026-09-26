@@ -289,6 +289,8 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [activeDraggingId, setActiveDraggingId] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const isInteractingRef = useRef(false);
+  const lastInteractionTimeRef = useRef(0);
 
   // Capture click events inside preview container to detect [data-editable-field] or deselect
   useEffect(() => {
@@ -298,6 +300,10 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
+
+      if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
+        return;
+      }
 
       // If clicked inside a canvas control (bounding box, menu, resize handles, template pill), do nothing
       if (
@@ -455,6 +461,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
         return;
       }
 
+      isInteractingRef.current = true;
+      lastInteractionTimeRef.current = Date.now();
+
       e.stopPropagation();
 
       selectElement(el.id, "canvas-element");
@@ -479,6 +488,10 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
         endInteraction();
         setActiveDraggingId(null);
         selectElement(el.id, "canvas-element");
+        lastInteractionTimeRef.current = Date.now();
+        setTimeout(() => {
+          isInteractingRef.current = false;
+        }, 250);
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("pointerup", handlePointerUp);
         window.removeEventListener("pointercancel", handlePointerUp);
@@ -548,6 +561,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
       <div
         className="relative w-full min-h-0 flex-1 overflow-auto"
         onClick={(e) => {
+          if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
+            return;
+          }
           if (e.target === e.currentTarget) {
             selectElement(null);
             setInlineEditingId(null);
@@ -588,6 +604,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           <div
             ref={scrollContainerRef}
             onClick={(e) => {
+              if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
+                return;
+              }
               if (e.target === e.currentTarget) {
                 selectElement(null);
                 setInlineEditingId(null);
@@ -651,6 +670,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                   onPointerDown={(e) => handleElementPointerDown(el, e)}
                   onClick={(e) => {
                     e.stopPropagation();
+                    lastInteractionTimeRef.current = Date.now();
                     selectElement(el.id, "canvas-element");
                   }}
                   onContextMenu={(e) => {
