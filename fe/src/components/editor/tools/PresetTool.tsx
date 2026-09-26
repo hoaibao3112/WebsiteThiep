@@ -32,10 +32,26 @@ interface PresetItem {
     | "wedding-menu"
     | "thank-you"
     | "polaroid-washi"
+    | "orchid-arch"
+    | "envelope-songhy"
     | "le-thanh-hon";
 }
 
 const PRESET_CATALOG: PresetItem[] = [
+  {
+    id: "p-orchid-arch",
+    title: "Khung vòm hoa lan hoàng gia",
+    cat: "photo",
+    desc: "Khung vòm nghệ thuật hoa lan trắng, dễ dàng thay ảnh cưới cá nhân",
+    previewType: "orchid-arch",
+  },
+  {
+    id: "p-envelope-songhy",
+    title: "Phong bì kem sáp Song Hỷ",
+    cat: "invite",
+    desc: "Phong bì hé mở đính tem sáp Song Hỷ mạ vàng, chứa thiệp & ảnh",
+    previewType: "envelope-songhy",
+  },
   {
     id: "p-envelope-pink",
     title: "Phong bì hồng mở kèm thiệp",
@@ -216,6 +232,49 @@ export function PresetTool() {
 
   const renderVisualPreview = (type: PresetItem["previewType"]) => {
     switch (type) {
+      case "orchid-arch":
+        return (
+          <div className="w-full h-28 bg-[#FBF9F5] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-amber-200/80 shadow-2xs">
+            {/* Arch frame */}
+            <div className="w-20 h-24 rounded-t-[40px] rounded-b-md border-2 border-[#D4AF37] overflow-hidden relative shadow-md bg-stone-100">
+              <img
+                src="/images/presets/arch-orchid-sample.jpg"
+                alt="Orchid Arch"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&auto=format&fit=crop&q=80";
+                }}
+              />
+              {/* Floral accent badges */}
+              <div className="absolute top-0 left-0 size-6 bg-white/70 rounded-full blur-[1px] flex items-center justify-center text-[10px]">🌸</div>
+              <div className="absolute bottom-0 right-0 size-6 bg-white/70 rounded-full blur-[1px] flex items-center justify-center text-[10px]">🌿</div>
+            </div>
+            <div className="absolute bottom-1 right-2 bg-amber-100 text-amber-900 text-[8px] font-medium px-1.5 py-0.5 rounded shadow-xs">
+              Lồng ảnh
+            </div>
+          </div>
+        );
+
+      case "envelope-songhy":
+        return (
+          <div className="w-full h-28 bg-[#F7F4EE] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-amber-300/60 shadow-2xs">
+            {/* Open flap */}
+            <div className="absolute top-1.5 w-32 h-14 bg-[#EDE7DA] [clip-path:polygon(50%_0%,0%_100%,100%_100%)] opacity-90 border-t border-amber-200" />
+            {/* Card inside */}
+            <div className="w-28 h-18 bg-[#FFFDF9] rounded shadow-md border border-[#D4AF37]/50 z-10 flex flex-col items-center justify-center p-1 translate-y-[-2px]">
+              <span className="text-[7.5px] font-serif font-bold text-[#8C6D37] tracking-wider italic">Save Our Date</span>
+              <div className="w-6 h-[0.5px] bg-[#D4AF37] my-0.5" />
+              <span className="text-[6.5px] font-sans text-stone-600">THIỆP MỜI</span>
+            </div>
+            {/* Pocket */}
+            <div className="absolute bottom-1 w-36 h-14 bg-[#F5EFE4] rounded-b-lg z-20 flex items-center justify-center shadow-inner [clip-path:polygon(0%_20%,50%_55%,100%_20%,100%_100%,0%_100%)] border-b border-stone-200" />
+            {/* Gold Wax Seal 囍 */}
+            <div className="absolute bottom-2 z-30 size-6 rounded-full bg-gradient-to-br from-[#E6C673] to-[#B38728] border border-amber-200 shadow-md flex items-center justify-center text-[9px] font-serif font-bold text-amber-950">
+              囍
+            </div>
+          </div>
+        );
+
       case "envelope-pink":
         return (
           <div className="w-full h-28 bg-gradient-to-b from-[#FDE8EC] to-[#FCE2E7] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-pink-200 shadow-2xs">

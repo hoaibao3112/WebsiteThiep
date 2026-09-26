@@ -894,7 +894,39 @@ export function EditorProvider<T extends object>({
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       let newEl: CanvasElement;
 
-      if (item.id === "p-envelope-pink" || item.id === "p1") {
+      if (item.id === "p-orchid-arch") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-orchid-arch",
+          title: "Khung vòm hoa lan hoàng gia",
+          content: "orchid-arch",
+          imageUrl: (draft as any)?.coverPhotoUrl || "/images/presets/arch-orchid-sample.jpg",
+          x: pos?.x ?? 35,
+          y: pos?.y ?? 130,
+          width: 320,
+          height: 420,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-envelope-songhy") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "preset",
+          presetId: "p-envelope-songhy",
+          title: "Phong bì kem sáp Song Hỷ",
+          content: "envelope-songhy",
+          imageUrl: (draft as any)?.coverPhotoUrl || "/images/presets/envelope-songhy-luxury.jpg",
+          x: pos?.x ?? 30,
+          y: pos?.y ?? 150,
+          width: 330,
+          height: 380,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
+      } else if (item.id === "p-envelope-pink" || item.id === "p1") {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           type: "preset",

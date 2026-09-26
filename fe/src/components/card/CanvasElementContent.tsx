@@ -3488,6 +3488,202 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         );
       }
 
+      // 0a. Khung vòm hoa lan hoàng gia (Orchid Arch Photo Frame)
+      if (el.presetId === "p-orchid-arch" || el.content === "orchid-arch") {
+        const photoUrl = el.imageUrl || data.coverPhotoUrl || "/images/presets/arch-orchid-sample.jpg";
+        return (
+          <ScaledPresetWrapper baseW={320} baseH={420} w={el.width} h={el.height}>
+            <div className="w-full h-full relative p-3 flex items-center justify-center pointer-events-none select-none">
+              {/* Outer Luxury Arch Frame */}
+              <div className="relative w-[280px] h-[390px] rounded-t-[140px] rounded-b-2xl p-[5px] bg-gradient-to-b from-[#F2DFAC] via-[#D4AF37] to-[#AA7E22] shadow-2xl">
+                {/* Inner Arch with double gold line */}
+                <div className="w-full h-full rounded-t-[136px] rounded-b-[12px] bg-[#FAF8F5] p-[4px] relative overflow-hidden flex flex-col items-center">
+                  {/* Photo inside the Arch */}
+                  <div className="w-full h-full rounded-t-[132px] rounded-b-[8px] overflow-hidden bg-stone-100 relative">
+                    <img
+                      src={photoUrl}
+                      alt="Wedding Arch Photo"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&fit=crop&q=80";
+                      }}
+                    />
+                    {/* Subtle soft gradient overlay at bottom for elegance */}
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-stone-900/30 to-transparent pointer-events-none" />
+                  </div>
+
+                  {/* Inner subtle gold border outline */}
+                  <div className="absolute inset-1 rounded-t-[133px] rounded-b-[9px] border border-amber-300/40 pointer-events-none" />
+                </div>
+
+                {/* ── TOP-LEFT ORCHID & BABY'S BREATH BOUQUET ── */}
+                <div className="absolute -top-4 -left-4 w-32 h-36 pointer-events-none z-30 drop-shadow-md">
+                  <svg viewBox="0 0 120 140" fill="none" className="w-full h-full">
+                    <defs>
+                      <radialGradient id="orchidCenter" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#FFF4D0" />
+                        <stop offset="60%" stopColor="#FFE082" />
+                        <stop offset="100%" stopColor="#D4AF37" />
+                      </radialGradient>
+                    </defs>
+                    
+                    {/* Stems & leafy vines */}
+                    <path d="M 20 20 Q 50 15 85 45 Q 95 65 80 95" stroke="#7A8B6E" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M 15 40 Q 40 35 60 70" stroke="#8E9F80" strokeWidth="1.8" strokeLinecap="round" />
+                    
+                    {/* Flower 1 (Large Orchid at top curve) */}
+                    <g transform="translate(42, 28) rotate(-15)">
+                      <circle cx="-14" cy="-3" r="13" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                      <circle cx="14" cy="-3" r="13" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                      <circle cx="0" cy="-14" r="13" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                      <path d="M -7 4 C -6 12 6 12 7 4 C 5 1 -5 1 -7 4 Z" fill="url(#orchidCenter)" stroke="#C59B27" strokeWidth="0.8" />
+                      <circle cx="0" cy="5" r="2.5" fill="#C59B27" />
+                      <circle cx="-2" cy="7" r="1" fill="#B71C1C" />
+                      <circle cx="2" cy="7" r="1" fill="#B71C1C" />
+                    </g>
+
+                    {/* Flower 2 (Medium Orchid hanging down) */}
+                    <g transform="translate(20, 68) rotate(25)">
+                      <circle cx="-10" cy="-2" r="10" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                      <circle cx="10" cy="-2" r="10" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                      <circle cx="0" cy="-10" r="10" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                      <path d="M -5 3 C -4 9 4 9 5 3 Z" fill="url(#orchidCenter)" stroke="#C59B27" strokeWidth="0.6" />
+                      <circle cx="0" cy="4" r="1.8" fill="#C59B27" />
+                    </g>
+
+                    {/* Baby's breath little white dots */}
+                    <circle cx="78" cy="18" r="2.5" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="86" cy="24" r="2.2" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="72" cy="32" r="2" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="95" cy="48" r="2.6" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="102" cy="58" r="2.2" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="88" cy="72" r="2.5" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="28" cy="100" r="2.3" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <circle cx="15" cy="85" r="2" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                    <ellipse cx="98" cy="38" rx="2.5" ry="4" fill="#A8BA97" stroke="#7A8B6E" strokeWidth="0.5" transform="rotate(35 98 38)" />
+                    <ellipse cx="105" cy="70" rx="2" ry="3.5" fill="#A8BA97" stroke="#7A8B6E" strokeWidth="0.5" transform="rotate(45 105 70)" />
+                  </svg>
+                </div>
+
+                {/* ── BOTTOM-RIGHT ORCHID & BABY'S BREATH BOUQUET ── */}
+                <div className="absolute -bottom-4 -right-4 w-32 h-36 pointer-events-none z-30 drop-shadow-md">
+                  <svg viewBox="0 0 120 140" fill="none" className="w-full h-full">
+                    <g transform="translate(60, 70) rotate(180) translate(-60, -70)">
+                      <path d="M 20 20 Q 50 15 85 45 Q 95 65 80 95" stroke="#7A8B6E" strokeWidth="2.5" strokeLinecap="round" />
+                      <g transform="translate(45, 35) rotate(-20)">
+                        <circle cx="-13" cy="-3" r="12" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                        <circle cx="13" cy="-3" r="12" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                        <circle cx="0" cy="-13" r="12" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.8" />
+                        <path d="M -6 4 C -5 11 5 11 6 4 Z" fill="url(#orchidCenter)" stroke="#C59B27" strokeWidth="0.8" />
+                        <circle cx="0" cy="5" r="2.2" fill="#C59B27" />
+                        <circle cx="-1.5" cy="7" r="0.8" fill="#B71C1C" />
+                        <circle cx="1.5" cy="7" r="0.8" fill="#B71C1C" />
+                      </g>
+                      <g transform="translate(75, 75) rotate(15)">
+                        <circle cx="-9" cy="-2" r="9" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                        <circle cx="9" cy="-2" r="9" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                        <circle cx="0" cy="-9" r="9" fill="#FFFFFF" stroke="#EAE6DC" strokeWidth="0.6" />
+                        <path d="M -4 3 C -3 8 3 8 4 3 Z" fill="url(#orchidCenter)" stroke="#C59B27" strokeWidth="0.6" />
+                      </g>
+                      <circle cx="20" cy="40" r="2.5" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                      <circle cx="32" cy="25" r="2.2" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                      <circle cx="85" cy="45" r="2.4" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                      <circle cx="95" cy="95" r="2.3" fill="#FFFFFF" stroke="#E2DAC9" strokeWidth="0.5" />
+                      <ellipse cx="25" cy="55" rx="2.5" ry="4" fill="#A8BA97" stroke="#7A8B6E" strokeWidth="0.5" transform="rotate(-30 25 55)" />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 0b. Phong bì kem sáp Song Hỷ (Luxury Wax Seal Envelope)
+      if (el.presetId === "p-envelope-songhy" || el.content === "envelope-songhy") {
+        const photoUrl = el.imageUrl || data.coverPhotoUrl;
+        const hasCustomPhoto = Boolean(photoUrl && photoUrl !== "/images/presets/envelope-songhy-luxury.jpg");
+        const groom = (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
+        const bride = (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
+        const events = Array.isArray(data.events) ? data.events : [];
+        const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
+        const dateStr = evDate ? `${evDate.getDate()} • ${evDate.getMonth() + 1} • ${evDate.getFullYear()}` : "28 • 12 • 2026";
+
+        return (
+          <ScaledPresetWrapper baseW={330} baseH={380} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-visible flex items-center justify-center pointer-events-none select-none p-3">
+              {/* Scattered soft blush rose petals */}
+              <div className="absolute top-2 left-3 size-7 rounded-full bg-gradient-to-br from-[#FAD2D8] to-[#F1A7B5] opacity-75 blur-[0.5px] rotate-[-25deg] [clip-path:polygon(50%_0%,100%_50%,50%_100%,0%_50%)]" />
+              <div className="absolute bottom-2 left-6 size-8 rounded-full bg-gradient-to-tr from-[#FCD9DF] to-[#EFA0AF] opacity-80 rotate-[35deg] [clip-path:polygon(30%_0%,100%_30%,70%_100%,0%_70%)]" />
+              <div className="absolute bottom-4 right-5 size-7 rounded-full bg-gradient-to-br from-[#FAD2D8] to-[#EAA0B0] opacity-75 rotate-[-45deg]" />
+
+              {/* Envelope Body */}
+              <div className="relative w-[300px] h-[340px] flex items-center justify-center">
+                {/* Back flap opened triangle */}
+                <div className="absolute top-0 inset-x-3 h-32 bg-[#F3EFE7] border-t border-l border-r border-[#E6DEC8] rounded-t-xl [clip-path:polygon(50%_0%,0%_100%,100%_100%)] shadow-sm">
+                  {/* Floral pattern liner inside flap */}
+                  <div className="w-full h-full opacity-35 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:12px_12px]" />
+                </div>
+
+                {/* Sliding Invitation Card */}
+                <div className="absolute -top-3 w-[256px] h-[250px] bg-[#FFFDF9] rounded-xl shadow-xl border border-[#D4AF37]/60 overflow-hidden flex flex-col items-center justify-between p-3.5 z-10">
+                  {/* Gold double corner border */}
+                  <div className="absolute inset-1.5 border border-[#D4AF37]/30 rounded-lg pointer-events-none">
+                    <div className="absolute top-1 left-1 size-2 border-t-2 border-l-2 border-[#D4AF37]" />
+                    <div className="absolute top-1 right-1 size-2 border-t-2 border-r-2 border-[#D4AF37]" />
+                    <div className="absolute bottom-1 left-1 size-2 border-b-2 border-l-2 border-[#D4AF37]" />
+                    <div className="absolute bottom-1 right-1 size-2 border-b-2 border-r-2 border-[#D4AF37]" />
+                  </div>
+
+                  {hasCustomPhoto ? (
+                    <div className="w-full h-full rounded-lg overflow-hidden relative">
+                      <img src={photoUrl} alt="Invitation Card" className="w-full h-full object-cover" />
+                      <div className="absolute inset-x-0 bottom-0 py-1.5 bg-white/90 backdrop-blur-xs text-center border-t border-amber-200">
+                        <span className="text-[10px] font-serif font-bold text-[#8C6D37] tracking-wider block">SAVE OUR DATE</span>
+                        <span className="text-[8px] font-sans text-stone-600 block">{bride} & {groom}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-center py-2 space-y-1">
+                      <span className="text-[9px] font-serif tracking-[0.25em] text-[#8C6D37] uppercase font-semibold">
+                        WEDDING INVITATION
+                      </span>
+                      <h3 className="text-xl font-serif font-bold text-[#6D4C1D] uppercase tracking-wider">
+                        Save Our Date
+                      </h3>
+                      <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent my-1" />
+                      <div className="text-base font-serif font-medium text-[#7D5620] italic">
+                        {bride} <span className="font-sans text-amber-500">&</span> {groom}
+                      </div>
+                      <span className="text-[9px] font-mono text-stone-500 tracking-widest pt-1 block">
+                        {dateStr}
+                      </span>
+                      <span className="text-[8px] font-serif italic text-stone-400 block pt-1">
+                        Chạm để mở thiệp
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Envelope Front Pocket (Lower Triangular Fold) */}
+                <div className="absolute bottom-0 inset-x-0 h-[210px] bg-gradient-to-b from-[#FAF7F2] to-[#EFE9DD] rounded-b-2xl z-20 shadow-md border-b border-x border-[#E0D7C3] [clip-path:polygon(0%_24%,50%_62%,100%_24%,100%_100%,0%_100%)] flex items-center justify-center" />
+
+                {/* Golden Wax Seal with Double Happiness 囍 */}
+                <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center">
+                  <div className="size-14 rounded-full bg-gradient-to-br from-[#F5D88E] via-[#D4AF37] to-[#8C6212] p-1 shadow-2xl flex items-center justify-center border border-[#FFE8A3]">
+                    <div className="w-full h-full rounded-full border-2 border-[#FFEBB3]/70 flex items-center justify-center bg-gradient-to-br from-[#D4AF37] to-[#A37B1E] shadow-inner">
+                      <span className="text-white text-2xl font-serif font-black leading-none drop-shadow-[0_1.5px_1px_rgba(0,0,0,0.6)] select-none">
+                        囍
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
       // 2. We got married - Phong bì sáp xanh
       if (el.presetId === "p-envelope-green") {
         const photoUrl = el.imageUrl || data.coverPhotoUrl || "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop&q=80";

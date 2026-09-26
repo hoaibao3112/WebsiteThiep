@@ -922,7 +922,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               >
                 Đổi stock
               </button>
-            ) : element.type === "image" ? (
+            ) : (element.type === "image" || Boolean(element.imageUrl)) ? (
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
