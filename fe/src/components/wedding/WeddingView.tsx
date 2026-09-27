@@ -116,6 +116,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           guestName={activeGuestName}
           isVipExperience={isVipExperience}
           monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
+          envelopeConfig={data.envelopeConfig || (card.categoryData as any)?.envelopeConfig}
           onOpenStart={() => setAudioStarted(true)}
           onOpened={() => setOpened(true)}
         />

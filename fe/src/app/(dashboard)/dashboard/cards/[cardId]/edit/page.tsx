@@ -1091,6 +1091,7 @@ function EditCardContent() {
       showWishButton: catData.showWishButton ?? true,
       showGiftQR: catData.showGiftQR ?? true,
       showRSVP: catData.showRSVP ?? true,
+      envelopeConfig: catData.envelopeConfig || (draftSnapshot as any)?.envelopeConfig || (draftSnapshot as any)?.categoryData?.envelopeConfig || undefined,
       ...(category === "WEDDING"
         ? {
             groom: {

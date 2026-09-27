@@ -120,6 +120,37 @@ export interface CanvasCategoryData {
   showWishButton?: boolean;
   showGiftQR?: boolean;
   showRSVP?: boolean;
+  envelopeConfig?: EnvelopeConfig;
+}
+
+export interface EnvelopeStyle {
+  id: string;
+  name: string;
+  envelopeColor: string;
+  flapColor: string;
+  innerColor: string;
+  sealColor: string;
+  sealBorderColor: string;
+  monogramColor: string;
+  bgTexture: string;
+  bgColor: string;
+  decorStyle: string;
+  defaultTitle: string;
+  defaultFont: string;
+  defaultButtonText: string;
+  isVip: boolean;
+}
+
+export interface EnvelopeConfig {
+  styleId: string;
+  styleName?: string;
+  groomName?: string;
+  brideName?: string;
+  title?: string;
+  fontFamily?: string;
+  buttonText?: string;
+  monogram?: string;
+  updatedAt?: string;
 }
 
 export interface CardDetail {

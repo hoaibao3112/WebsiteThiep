@@ -12,6 +12,7 @@ import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
 import { CardElementController } from "../controllers/card-element.controller";
+import { EnvelopeController } from "../controllers/envelope.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -72,6 +73,9 @@ apiRouter.get("/cards/:id", authGuard, CardController.getOwner);
 apiRouter.put("/cards/:id", authGuard, CardController.update); // Cập nhật thiệp
 apiRouter.get("/cards/:cardId/elements/:elementId", authGuard, CardElementController.getElement); // Đọc 1 element
 apiRouter.patch("/cards/:cardId/elements/:elementId", authGuard, CardElementController.patchElement); // PATCH 1 element
+apiRouter.get("/envelope-styles", EnvelopeController.getStyles); // Danh mục mẫu phong bì từ Backend
+apiRouter.get("/cards/:cardId/envelope-config", authGuard, EnvelopeController.getCardConfig); // Đọc cấu hình phong bì
+apiRouter.patch("/cards/:cardId/envelope-config", authGuard, EnvelopeController.updateCardConfig); // Cập nhật cấu hình phong bì mở đầu
 apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xuất bản thiệp
 apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP

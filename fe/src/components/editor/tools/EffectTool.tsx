@@ -1,8 +1,8 @@
-"use client";
-
-import React from "react";
+import React, { useState } from "react";
 import { useEditor } from "../EditorContext";
-import { Sparkles, Check, Trash2, ShieldAlert } from "lucide-react";
+import { Sparkles, Check, Trash2, Sliders, MailOpen } from "lucide-react";
+import { EnvelopeConfigModal } from "../EnvelopeConfigModal";
+import { EnvelopeConfig } from "@/types/card.types";
 
 const OPENING_EFFECTS = [
   {
@@ -36,10 +36,20 @@ const OPENING_EFFECTS = [
 ];
 
 export function EffectTool() {
-  const { fields, updateFieldById, getFieldValue, isVip } = useEditor();
+  const { draft, fields, updateFieldById, getFieldValue, isVip } = useEditor();
+  const [isEnvelopeModalOpen, setIsEnvelopeModalOpen] = useState(false);
 
   const openingEffectField = fields.find((f) => f.id === "opening-effect");
   const currentEffect = openingEffectField ? (getFieldValue(openingEffectField) as string) || "NONE" : "NONE";
+
+  const draftObj = (draft as Record<string, unknown>) || {};
+  const cardId = (draftObj.id as string) || (draftObj._id as string) || undefined;
+  const catData = ((draftObj.data || draftObj.categoryData) as Record<string, unknown>) || {};
+  const groom = (catData.groom as Record<string, unknown>) || {};
+  const bride = (catData.bride as Record<string, unknown>) || {};
+  const groomName = (groom.fullName as string) || "";
+  const brideName = (bride.fullName as string) || "";
+  const currentEnvelopeConfig = (catData.envelopeConfig || draftObj.envelopeConfig) as EnvelopeConfig | undefined;
 
   return (
     <div className="space-y-4">
@@ -73,50 +83,103 @@ export function EffectTool() {
           return (
             <div
               key={item.id}
-              onClick={() => {
-                if (!isLocked) {
-                  updateFieldById("opening-effect", item.id);
-                }
-              }}
-              className={`p-3 rounded-2xl border transition relative flex items-start gap-3 cursor-pointer ${
+              className={`rounded-2xl border transition relative overflow-hidden ${
                 isSelected
                   ? "bg-amber-50/70 border-amber-400 shadow-2xs ring-1 ring-amber-400"
                   : "bg-white border-stone-200 hover:bg-stone-50"
               } ${isLocked ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               <div
-                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.previewBg} shadow-inner flex items-center justify-center shrink-0 border border-white/20`}
+                onClick={() => {
+                  if (!isLocked) {
+                    updateFieldById("opening-effect", item.id);
+                    if (item.id === "WAX_SEAL") {
+                      // Mở modal cấu hình phong bì khi click vào WAX_SEAL
+                      setIsEnvelopeModalOpen(true);
+                    }
+                  }
+                }}
+                className="p-3 flex items-start gap-3 cursor-pointer"
               >
-                <Sparkles className="size-5" />
-              </div>
+                <div
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.previewBg} shadow-inner flex items-center justify-center shrink-0 border border-white/20`}
+                >
+                  <Sparkles className="size-5" />
+                </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <h4 className="text-xs font-bold text-stone-900">{item.title}</h4>
-                  {item.vipOnly && (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
-                      VIP
-                    </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-bold text-stone-900">{item.title}</h4>
+                    {item.vipOnly && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                        VIP
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                <div className="shrink-0 pt-0.5">
+                  {isSelected ? (
+                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
+                      <Check className="size-3 stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border border-stone-300" />
                   )}
                 </div>
-                <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
-                  {item.description}
-                </p>
               </div>
 
-              <div className="shrink-0 pt-0.5">
-                {isSelected ? (
-                  <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
-                    <Check className="size-3 stroke-[3]" />
+              {/* Nút Cấu hình phong bì mở rộng khi chọn WAX_SEAL */}
+              {item.id === "WAX_SEAL" && isSelected && (
+                <div className="px-3 pb-3 pt-1 border-t border-amber-200/60 bg-amber-50/40 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] text-amber-900 font-medium">
+                    <MailOpen className="w-3.5 h-3.5 text-amber-700" />
+                    <span>
+                      {currentEnvelopeConfig?.styleName
+                        ? `Mẫu: ${currentEnvelopeConfig.styleName}`
+                        : "Chưa cấu hình chi tiết phong bì"}
+                    </span>
                   </div>
-                ) : (
-                  <div className="w-5 h-5 rounded-full border border-stone-300" />
-                )}
-              </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEnvelopeModalOpen(true);
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-xs cursor-pointer transition"
+                  >
+                    <Sliders className="w-3 h-3" />
+                    <span>Cấu hình phong bì</span>
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* MODAL CẤU HÌNH PHONG BÌ MỞ ĐẦU (BACKEND DATA DRIVEN) */}
+      <EnvelopeConfigModal
+        isOpen={isEnvelopeModalOpen}
+        onClose={() => setIsEnvelopeModalOpen(false)}
+        cardId={cardId}
+        initialConfig={currentEnvelopeConfig}
+        initialGroomName={groomName || "Mai Lan"}
+        initialBrideName={brideName || "Tuấn Minh"}
+        onSaveSuccess={(savedConfig) => {
+          updateFieldById("opening-effect", "WAX_SEAL");
+          // Đồng bộ vào draft data
+          if (catData) {
+            catData.envelopeConfig = savedConfig;
+          }
+          if (draftObj) {
+            (draftObj as Record<string, unknown>).envelopeConfig = savedConfig;
+          }
+        }}
+      />
     </div>
   );
 }

@@ -11,6 +11,8 @@ export * from "./canvas-element.schema";
 import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
 import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 export { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
+import { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
+export { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
 
 export const CategoryDataSchema = z.discriminatedUnion("cardCategory", [
   WeddingDataSchema,
@@ -92,6 +94,7 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     canvas: CanvasDocumentSchema.optional(),
     canvasElements: z.array(CanvasElementSchema).optional(),
     canvasDocument: WeddingSceneDocumentSchema.optional(),
+    envelopeConfig: EnvelopeConfigSchema.optional(),
     fieldPositions: z.record(z.any()).optional(),
     fieldScales: z.record(z.any()).optional(),
   }).passthrough(),

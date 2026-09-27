@@ -109,5 +109,34 @@ export class ApiClient {
   ): Promise<ApiResult<T>> {
     return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/elements/${encodeURIComponent(elementId)}`);
   }
+
+  /**
+   * Lấy danh sách toàn bộ kiểu phong bì mở đầu từ Backend (không hardcode FE)
+   */
+  static async getEnvelopeStyles<T = import("@/types/card.types").EnvelopeStyle[]>(): Promise<ApiResult<T>> {
+    return ApiClient.request<T>("/envelope-styles");
+  }
+
+  /**
+   * Lấy cấu hình phong bì của thiệp cụ thể
+   */
+  static async getCardEnvelopeConfig<T = import("@/types/card.types").EnvelopeConfig>(
+    cardId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/envelope-config`);
+  }
+
+  /**
+   * Lưu cấu hình phong bì mở đầu vào Backend PostgreSQL
+   */
+  static async updateCardEnvelopeConfig<T = unknown>(
+    cardId: string,
+    config: import("@/types/card.types").EnvelopeConfig
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/envelope-config`, {
+      method: "PATCH",
+      body: JSON.stringify(config),
+    });
+  }
 }
 
