@@ -15,7 +15,16 @@ const PatchElementBodySchema = z.object({
   fontSize: z.number().min(1).max(300).optional(),
   fontFamily: z.string().max(100).optional(),
   color: z.string().max(50).optional(),
-}).strict();
+  backgroundColor: z.string().optional(),
+  borderRadius: z.number().optional(),
+  borderWidth: z.number().optional(),
+  borderColor: z.string().optional(),
+  opacity: z.number().optional(),
+  rotation: z.number().optional(),
+  zIndex: z.number().optional(),
+  shapeType: z.string().optional(),
+  widgetConfig: z.record(z.unknown()).optional(),
+}).passthrough();
 
 export class CardElementController {
   private static getAuth(req: AuthenticatedRequest) {

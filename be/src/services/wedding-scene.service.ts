@@ -463,8 +463,8 @@ export function ensureWeddingSceneData(templateSlug: string, rawData: unknown): 
   const existing = readRecord(data.canvasDocument);
   const slug = canonicalSlug(templateSlug);
 
-  // If existing canvasDocument has elements, ALWAYS PRESERVE THEM!
-  if (Array.isArray(existing?.elements) && existing.elements.length > 0) {
+  // If existing canvasDocument has elements array, ALWAYS PRESERVE THEM!
+  if (Array.isArray(existing?.elements)) {
     const bindings = readRecord(existing.bindings);
     const elements = existing.elements.map((element) => {
       const elRec = readRecord(element) || {};
