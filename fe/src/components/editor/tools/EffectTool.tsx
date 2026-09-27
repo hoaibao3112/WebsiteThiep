@@ -108,22 +108,52 @@ export function EffectTool() {
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="text-xs font-bold text-stone-900">{item.title}</h4>
-                    {item.vipOnly && (
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
-                        VIP
-                      </span>
+                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-stone-900">{item.title}</h4>
+                      {item.vipOnly && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+                          VIP
+                        </span>
+                      )}
+                    </div>
+
+                    {/* NÚT CẤU HÌNH NHANH CHO CON DẤU SÁP HOÀNG GIA - LUÔN HIỂN THỊ TẠI ĐÂY */}
+                    {item.id === "WAX_SEAL" && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateFieldById("opening-effect", "WAX_SEAL");
+                          setIsEnvelopeModalOpen(true);
+                        }}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-900 border border-stone-200 hover:border-amber-300 text-[10px] font-bold transition cursor-pointer shadow-2xs"
+                        title="Tùy chỉnh kiểu dáng và nội dung phong bì"
+                      >
+                        <Sliders className="w-2.5 h-2.5 text-amber-700" />
+                        <span>Cấu hình</span>
+                      </button>
                     )}
                   </div>
+
                   <p className="text-[11px] text-stone-500 mt-0.5 leading-relaxed">
                     {item.description}
                   </p>
+
+                  {/* THÔNG TIN MẪU PHONG BÌ ĐANG DÙNG */}
+                  {item.id === "WAX_SEAL" && (
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-800 font-medium">
+                      <MailOpen className="w-3 h-3 text-amber-600" />
+                      <span>
+                        Mẫu: <strong className="font-bold">{currentEnvelopeConfig?.styleName || "Kem cổ điển"}</strong>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="shrink-0 pt-0.5">
                   {isSelected ? (
-                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-xs">
                       <Check className="size-3 stroke-[3]" />
                     </div>
                   ) : (
@@ -132,27 +162,26 @@ export function EffectTool() {
                 </div>
               </div>
 
-              {/* Nút Cấu hình phong bì mở rộng khi chọn WAX_SEAL */}
+              {/* KHUNG CẤU HÌNH MỞ RỘNG KHI ĐANG CHỌN WAX_SEAL */}
               {item.id === "WAX_SEAL" && isSelected && (
-                <div className="px-3 pb-3 pt-1 border-t border-amber-200/60 bg-amber-50/40 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11px] text-amber-900 font-medium">
-                    <MailOpen className="w-3.5 h-3.5 text-amber-700" />
-                    <span>
-                      {currentEnvelopeConfig?.styleName
-                        ? `Mẫu: ${currentEnvelopeConfig.styleName}`
-                        : "Chưa cấu hình chi tiết phong bì"}
+                <div className="px-3 pb-3 pt-2 border-t border-amber-200/70 bg-gradient-to-r from-amber-50/60 to-orange-50/40 flex flex-col gap-2">
+                  <div className="flex items-center justify-between text-[11px] text-amber-900">
+                    <span className="text-stone-600">Kiểu phong bì hiện tại:</span>
+                    <span className="font-bold text-amber-950 px-2 py-0.5 rounded-full bg-amber-100/80 border border-amber-200">
+                      {currentEnvelopeConfig?.styleName || "Kem cổ điển"}
                     </span>
                   </div>
+
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsEnvelopeModalOpen(true);
                     }}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-xs cursor-pointer transition"
+                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs cursor-pointer transition"
                   >
-                    <Sliders className="w-3 h-3" />
-                    <span>Cấu hình phong bì</span>
+                    <Sliders className="w-3.5 h-3.5" />
+                    <span>Cấu hình phong bì mở đầu</span>
                   </button>
                 </div>
               )}
