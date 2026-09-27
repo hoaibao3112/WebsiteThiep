@@ -9,6 +9,8 @@ describe("card routes", () => {
     expect(routes).toContain('get("/cards/slug-availability"');
     expect(routes).toContain('get("/cards/:id"');
     expect(routes).toContain('delete("/cards/:id"');
+    expect(routes).toContain('get("/cards/:cardId/elements/:elementId"');
+    expect(routes).toContain('patch("/cards/:cardId/elements/:elementId"');
     expect(routes.indexOf('get("/cards/slug-availability"')).toBeLessThan(
       routes.indexOf('get("/cards/:id"')
     );

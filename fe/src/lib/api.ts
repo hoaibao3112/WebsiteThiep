@@ -84,4 +84,30 @@ export class ApiClient {
       return { success: false, error: error instanceof Error ? error.message : "Lỗi kết nối máy chủ" };
     }
   }
+
+  /**
+   * PATCH 1 canvas element cụ thể (Phương án C)
+   * Nhanh gọn (< 1KB), tiết kiệm bandwidth, auto-save realtime
+   */
+  static async patchCardElement<T = unknown>(
+    cardId: string,
+    elementId: string,
+    patch: Record<string, unknown>
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/elements/${encodeURIComponent(elementId)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  }
+
+  /**
+   * Lấy chi tiết 1 canvas element
+   */
+  static async getCardElement<T = unknown>(
+    cardId: string,
+    elementId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/elements/${encodeURIComponent(elementId)}`);
+  }
 }
+

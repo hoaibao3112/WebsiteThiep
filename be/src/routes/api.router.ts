@@ -11,6 +11,7 @@ import { GuestController } from "../controllers/guest.controller";
 import { ExportController } from "../controllers/export.controller";
 import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
+import { CardElementController } from "../controllers/card-element.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -69,6 +70,8 @@ apiRouter.get("/cards/slug-availability", authGuard, CardController.slugAvailabi
 apiRouter.get("/cards/by-slug/:slug", CardController.getBySlug); // Đọc thiệp công khai (Public)
 apiRouter.get("/cards/:id", authGuard, CardController.getOwner);
 apiRouter.put("/cards/:id", authGuard, CardController.update); // Cập nhật thiệp
+apiRouter.get("/cards/:cardId/elements/:elementId", authGuard, CardElementController.getElement); // Đọc 1 element
+apiRouter.patch("/cards/:cardId/elements/:elementId", authGuard, CardElementController.patchElement); // PATCH 1 element
 apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xuất bản thiệp
 apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP

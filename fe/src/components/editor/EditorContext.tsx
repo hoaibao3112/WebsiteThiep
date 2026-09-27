@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { ApiClient } from "@/lib/api";
 import { EditorField, getTemplateFields } from "@/lib/editor/template-registry";
 import { applyDraftPatch, readDraftPath } from "@/lib/editor/patch-draft";
 import type { CanvasElement, WidgetType, ShapeType } from "@/types/canvas.types";
@@ -326,6 +327,14 @@ export function EditorProvider<T extends object>({
   );
 
   const clipboardRef = useRef<CanvasElement | null>(null);
+  const patchDebounceTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  useEffect(() => {
+    return () => {
+      patchDebounceTimersRef.current.forEach((timer) => clearTimeout(timer));
+      patchDebounceTimersRef.current.clear();
+    };
+  }, []);
 
   const persistElements = useCallback(
     (nextElements: CanvasElement[]) => {
@@ -925,12 +934,12 @@ export function EditorProvider<T extends object>({
             title: "MỪNG CƯỚI",
             subtitle: "Thay cho những lời chúc tốt đẹp",
             message: "Sự hiện diện và lời chúc của bạn là món quà quý giá nhất với chúng mình. Nếu muốn gửi thêm chút yêu thương, bạn có thể mừng cưới qua số tài khoản bên dưới ạ.",
-            groomName: (draft as any)?.categoryData?.groom?.fullName || (draft as any)?.groom?.fullName || "Minh Khôi",
-            groomBank: (draft as any)?.bankingPrimary?.bankCode || "Vietcombank",
-            groomAccount: (draft as any)?.bankingPrimary?.accountNumber || "0123 456 789",
-            brideName: (draft as any)?.categoryData?.bride?.fullName || (draft as any)?.bride?.fullName || "Ngọc Hân",
-            brideBank: (draft as any)?.bankingSecondary?.bankCode || "Techcombank",
-            brideAccount: (draft as any)?.bankingSecondary?.accountNumber || "9876 543 210",
+            groomName: (draft as any)?.categoryData?.groom?.fullName || (draft as any)?.groom?.fullName || "",
+            groomBank: (draft as any)?.bankingPrimary?.bankCode || "",
+            groomAccount: (draft as any)?.bankingPrimary?.accountNumber || "",
+            brideName: (draft as any)?.categoryData?.bride?.fullName || (draft as any)?.bride?.fullName || "",
+            brideBank: (draft as any)?.bankingSecondary?.bankCode || "",
+            brideAccount: (draft as any)?.bankingSecondary?.accountNumber || "",
           },
           zIndex: maxZ + 1,
           isLocked: false,
@@ -1434,6 +1443,37 @@ export function EditorProvider<T extends object>({
             onDraftChange(next);
           } catch {}
         }
+      }
+
+      // Phương án C: Gửi PATCH trực tiếp cho từng element (< 1KB), auto-save realtime
+      const cardId = (draft as any)?.id;
+      if (cardId && typeof cardId === "string") {
+        const existingTimer = patchDebounceTimersRef.current.get(id);
+        if (existingTimer) clearTimeout(existingTimer);
+
+        const newTimer = setTimeout(() => {
+          patchDebounceTimersRef.current.delete(id);
+          const payload: Record<string, unknown> = {};
+          if (patch.customData !== undefined) payload.customData = patch.customData;
+          if (patch.content !== undefined) payload.content = patch.content;
+          if (patch.imageUrl !== undefined) payload.imageUrl = patch.imageUrl;
+          if (patch.title !== undefined) payload.title = patch.title;
+          if (patch.x !== undefined) payload.x = patch.x;
+          if (patch.y !== undefined) payload.y = patch.y;
+          if (patch.width !== undefined) payload.width = patch.width;
+          if (patch.height !== undefined) payload.height = patch.height;
+          if (patch.fontSize !== undefined) payload.fontSize = patch.fontSize;
+          if (patch.fontFamily !== undefined) payload.fontFamily = patch.fontFamily;
+          if (patch.color !== undefined) payload.color = patch.color;
+
+          if (Object.keys(payload).length > 0) {
+            ApiClient.patchCardElement(cardId, id, payload).catch((err) => {
+              console.warn("Element auto-save error:", err);
+            });
+          }
+        }, 600);
+
+        patchDebounceTimersRef.current.set(id, newTimer);
       }
     },
     [canvasElements, persistElements, draft, onDraftChange]

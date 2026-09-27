@@ -290,137 +290,140 @@ function CardBuilderContent() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [saveProfileSuccess, setSaveProfileSuccess] = useState(false);
 
-  const handleApplyProfileSections = (profile: any, selectedKeys: WeddingSectionKey[]) => {
+  const handleApplyProfileSections = useCallback((profile: any, selectedKeys: WeddingSectionKey[], skipConfetti = false) => {
     if (!profile) return;
 
-    if (selectedKeys.includes("couple")) {
-      setWeddingData((prev) => ({
-        ...prev,
-        groom: {
-          ...prev.groom,
-          fullName: profile.groomName || prev.groom.fullName,
-          shortName: profile.groomShort ?? prev.groom.shortName,
-          birthOrder: profile.groomBirthOrder ?? prev.groom.birthOrder,
-          phone: profile.groomPhone ?? prev.groom.phone,
-          address: profile.groomAddress ?? prev.groom.address,
-        },
-        bride: {
-          ...prev.bride,
-          fullName: profile.brideName || prev.bride.fullName,
-          shortName: profile.brideShort ?? prev.bride.shortName,
-          birthOrder: profile.brideBirthOrder ?? prev.bride.birthOrder,
-          phone: profile.bridePhone ?? prev.bride.phone,
-          address: profile.brideAddress ?? prev.bride.address,
-        },
-        isReverseOrder: profile.isReverseOrder !== undefined ? profile.isReverseOrder : prev.isReverseOrder,
-      }));
-    }
+    setWeddingData((prev) => {
+      let next: WeddingDataPayload = { ...prev };
 
-    if (selectedKeys.includes("parents")) {
-      setWeddingData((prev) => ({
-        ...prev,
-        groom: {
-          ...prev.groom,
-          parents: {
-            fatherName: profile.groomFather ?? prev.groom.parents?.fatherName,
-            motherName: profile.groomMother ?? prev.groom.parents?.motherName,
+      if (selectedKeys.includes("couple")) {
+        next = {
+          ...next,
+          groom: {
+            ...next.groom,
+            fullName: profile.groomName || next.groom.fullName,
+            shortName: profile.groomShort ?? next.groom.shortName,
+            birthOrder: profile.groomBirthOrder ?? next.groom.birthOrder,
+            phone: profile.groomPhone ?? next.groom.phone,
+            address: profile.groomAddress ?? next.groom.address,
           },
-        },
-        bride: {
-          ...prev.bride,
-          parents: {
-            fatherName: profile.brideFather ?? prev.bride.parents?.fatherName,
-            motherName: profile.brideMother ?? prev.bride.parents?.motherName,
+          bride: {
+            ...next.bride,
+            fullName: profile.brideName || next.bride.fullName,
+            shortName: profile.brideShort ?? next.bride.shortName,
+            birthOrder: profile.brideBirthOrder ?? next.bride.birthOrder,
+            phone: profile.bridePhone ?? next.bride.phone,
+            address: profile.brideAddress ?? next.bride.address,
           },
-        },
-      }));
-    }
+          isReverseOrder: profile.isReverseOrder !== undefined ? profile.isReverseOrder : next.isReverseOrder,
+        };
+      }
 
-    if (selectedKeys.includes("datetime_venue") || selectedKeys.includes("schedule")) {
-      if (profile.events && Array.isArray(profile.events) && profile.events.length > 0) {
-        setWeddingData((prev) => ({
-          ...prev,
-          events: profile.events.map((ev: any, idx: number) => ({
-            id: ev.id || `ev-${idx + 1}`,
-            eventName: ev.eventName || "Lễ cưới",
-            eventDate: ev.eventDate ? new Date(ev.eventDate) : new Date(),
-            venueName: ev.venueName || "Tư gia",
-            address: ev.address || "",
-          })),
-        }));
-      } else if (profile.eventDate) {
-        setWeddingData((prev) => ({
-          ...prev,
-          events: [
-            {
-              id: "ev-main",
-              eventName: "Lễ Thành Hôn",
-              eventDate: new Date(profile.eventDate),
-              venueName: "Trung tâm tiệc cưới",
-              address: profile.address || "Tư gia",
+      if (selectedKeys.includes("parents")) {
+        next = {
+          ...next,
+          groom: {
+            ...next.groom,
+            parents: {
+              fatherName: profile.groomFather ?? next.groom.parents?.fatherName,
+              motherName: profile.groomMother ?? next.groom.parents?.motherName,
             },
-          ],
-        }));
+          },
+          bride: {
+            ...next.bride,
+            parents: {
+              fatherName: profile.brideFather ?? next.bride.parents?.fatherName,
+              motherName: profile.brideMother ?? next.bride.parents?.motherName,
+            },
+          },
+        };
       }
+
+      if (selectedKeys.includes("datetime_venue") || selectedKeys.includes("schedule")) {
+        if (profile.events && Array.isArray(profile.events) && profile.events.length > 0) {
+          next = {
+            ...next,
+            events: profile.events.map((ev: any, idx: number) => ({
+              id: ev.id || `ev-${idx + 1}`,
+              eventName: ev.eventName || "Lễ cưới",
+              eventDate: ev.eventDate ? new Date(ev.eventDate) : new Date(),
+              venueName: ev.venueName || "Tư gia",
+              address: ev.address || "",
+            })),
+          };
+        } else if (profile.eventDate) {
+          next = {
+            ...next,
+            events: [
+              {
+                id: "ev-main",
+                eventName: "Lễ Thành Hôn",
+                eventDate: new Date(profile.eventDate),
+                venueName: "Trung tâm tiệc cưới",
+                address: profile.address || "Tư gia",
+              },
+            ],
+          };
+        }
+      }
+
+      if (selectedKeys.includes("loveStory")) {
+        if (profile.loveStory && Array.isArray(profile.loveStory)) {
+          next = { ...next, loveStory: profile.loveStory };
+        }
+      }
+
+      if (selectedKeys.includes("banking")) {
+        const gBank = profile.bankCodeGroom || profile.bankGroom?.bankCode;
+        const gNum = profile.accNumGroom || profile.bankGroom?.accountNumber;
+        const gName = profile.accNameGroom || profile.bankGroom?.accountName;
+        const bBank = profile.bankCodeBride || profile.bankBride?.bankCode;
+        const bNum = profile.accNumBride || profile.bankBride?.accountNumber;
+        const bName = profile.accNameBride || profile.bankBride?.accountName;
+
+        next = {
+          ...next,
+          bankCodeGroom: gBank ?? (next as any).bankCodeGroom,
+          accNumGroom: gNum ?? (next as any).accNumGroom,
+          accNameGroom: gName ?? (next as any).accNameGroom,
+          bankCodeBride: bBank ?? (next as any).bankCodeBride,
+          accNumBride: bNum ?? (next as any).accNumBride,
+          accNameBride: bName ?? (next as any).accNameBride,
+        } as any;
+      }
+
+      if (selectedKeys.includes("music") && profile.videoUrl !== undefined) {
+        next = { ...next, videoUrl: profile.videoUrl } as any;
+      }
+
+      // Rehydrate canvas scene with new profile data
+      setWeddingScene((curr) => {
+        if (!curr) return null;
+        const hydrated = hydrateWeddingScene(curr, next);
+        categoryDataRef.current = { ...categoryDataRef.current, canvasDocument: hydrated };
+        return hydrated;
+      });
+
+      return next;
+    });
+
+    if (selectedKeys.includes("greeting") && profile.greetingMessage) {
+      setGreetingMessage(profile.greetingMessage);
     }
 
-    if (selectedKeys.includes("greeting")) {
-      if (profile.greetingMessage) {
-        setGreetingMessage(profile.greetingMessage);
-      }
+    if (selectedKeys.includes("photos") && profile.photos && Array.isArray(profile.photos) && profile.photos.length > 0) {
+      setCustomPhotos(
+        profile.photos.map((p: any, idx: number) => ({
+          id: p.id || `ph-${idx}`,
+          url: p.url,
+          caption: p.caption,
+          isCover: p.isCover || idx === 0,
+        }))
+      );
     }
 
-    if (selectedKeys.includes("loveStory")) {
-      if (profile.loveStory && Array.isArray(profile.loveStory)) {
-        setWeddingData((prev) => ({
-          ...prev,
-          loveStory: profile.loveStory,
-        }));
-      }
-    }
-
-    if (selectedKeys.includes("photos")) {
-      if (profile.photos && Array.isArray(profile.photos) && profile.photos.length > 0) {
-        setCustomPhotos(
-          profile.photos.map((p: any, idx: number) => ({
-            id: p.id || `ph-${idx}`,
-            url: p.url,
-            caption: p.caption,
-            isCover: p.isCover || idx === 0,
-          }))
-        );
-      }
-    }
-
-    if (selectedKeys.includes("banking")) {
-      const gBank = profile.bankCodeGroom || profile.bankGroom?.bankCode;
-      const gNum = profile.accNumGroom || profile.bankGroom?.accountNumber;
-      const gName = profile.accNameGroom || profile.bankGroom?.accountName;
-      const bBank = profile.bankCodeBride || profile.bankBride?.bankCode;
-      const bNum = profile.accNumBride || profile.bankBride?.accountNumber;
-      const bName = profile.accNameBride || profile.bankBride?.accountName;
-
-      setWeddingData((prev) => ({
-        ...prev,
-        bankCodeGroom: gBank ?? (prev as any).bankCodeGroom,
-        accNumGroom: gNum ?? (prev as any).accNumGroom,
-        accNameGroom: gName ?? (prev as any).accNameGroom,
-        bankCodeBride: bBank ?? (prev as any).bankCodeBride,
-        accNumBride: bNum ?? (prev as any).accNumBride,
-        accNameBride: bName ?? (prev as any).accNameBride,
-      } as any));
-    }
-
-    if (selectedKeys.includes("music")) {
-      if (profile.selectedMusicSrc || profile.musicUrl) {
-        setMusicUrl(profile.selectedMusicSrc || profile.musicUrl);
-      }
-      if (profile.videoUrl !== undefined) {
-        setWeddingData((prev) => ({
-          ...prev,
-          videoUrl: profile.videoUrl,
-        } as any));
-      }
+    if (selectedKeys.includes("music") && (profile.selectedMusicSrc || profile.musicUrl)) {
+      setMusicUrl(profile.selectedMusicSrc || profile.musicUrl);
     }
 
     if (selectedKeys.includes("theme")) {
@@ -429,8 +432,27 @@ function CardBuilderContent() {
       if (profile.openingEffect) setOpeningEffect(profile.openingEffect);
     }
 
-    confetti({ particleCount: 45, spread: 60, origin: { y: 0.3 } });
-  };
+    if (!skipConfetti) {
+      confetti({ particleCount: 45, spread: 60, origin: { y: 0.3 } });
+    }
+  }, []);
+
+  // Tự động tải Wedding Profile của người dùng khi tạo thiệp mới (Phương án D)
+  useEffect(() => {
+    let cancelled = false;
+    ApiClient.request<{ weddingProfile?: any }>("/user/wedding-profile")
+      .then((res) => {
+        if (!cancelled && res.success && res.data) {
+          const profile = (res.data as any).weddingProfile || res.data;
+          if (profile && (profile.groomName || profile.brideName)) {
+            const allKeys: WeddingSectionKey[] = ["couple", "parents", "datetime_venue", "greeting", "loveStory", "photos", "banking", "music"];
+            handleApplyProfileSections(profile, allKeys, true);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [handleApplyProfileSections]);
 
   const handleSaveToProfile = async () => {
     setSavingProfile(true);
