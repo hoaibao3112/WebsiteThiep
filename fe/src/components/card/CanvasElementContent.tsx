@@ -3038,7 +3038,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1. Phong bì terracotta mở có thiệp & ảnh cưới
       if (el.presetId === "p-envelope-sweet" || el.presetId === "p-envelope-pink" || el.presetId === "p1") {
-        const photoUrl = el.customData?.photoUrl || el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
+        const photoUrl = el.customData?.photoUrl || el.imageUrl || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
         const groomShort = el.customData?.groomName || (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Quốc Huy";
         const brideShort = el.customData?.brideName || (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Mai Anh";
         const title = el.customData?.title || "THIỆP MỜI CƯỚI";
@@ -3137,7 +3137,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1b. Hero Cover Photo + Countdown + Lời ngỏ
       if (el.presetId === "p-hero-sweet") {
-        const coverPhoto = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
+        const coverPhoto = el.customData?.photoUrl || el.imageUrl || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
         const greeting = data.greeting || "Gửi đến gia đình và bạn bè thân mến\nCảm ơn bạn đã dành thời gian quý báu để cùng chúng mình chung vui trong ngày đặc biệt này. Chúng mình vô cùng biết ơn vì luôn có sự đồng hành và ủng hộ của bạn, và thật vinh hạnh khi được chia sẻ niềm hạnh phúc của chúng mình cùng bạn.\nTrân trọng kính mời bạn đến dự Lễ cưới của chúng mình";
         const events = Array.isArray(data.events) ? data.events : [];
         const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
@@ -3298,8 +3298,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1e. Sweet Wedding / Marry Me? / Yes! I Do
       if (el.presetId === "p-sweet-marry-me") {
-        const photoTop = "/images/demo/templates/t03-sweet-pink/gallery-1.jpg";
-        const photoBottom = "/images/demo/templates/t03-sweet-pink/bride.jpg";
+        const photoTop = el.customData?.photoTop || el.imageUrl || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/gallery-1.jpg";
+        const photoBottom = el.customData?.photoBottom || (typeof (data.photos[1] as { url?: string })?.url === "string" ? (data.photos[1] as { url?: string }).url : "") || (typeof data.bride.avatarUrl === "string" ? data.bride.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/bride.jpg";
 
         return (
           <div className="w-full h-full p-4 relative select-none overflow-hidden bg-transparent">
@@ -3348,9 +3348,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1f. About Us: Cô Dâu
       if (el.presetId === "p-about-bride") {
-        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Mai Anh";
-        const brideAvatar = (typeof data.bride.avatarUrl === "string" ? data.bride.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/bride.jpg";
-        const couplePhoto = "/images/demo/templates/t03-sweet-pink/gallery-7.jpg";
+        const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Mai Anh";
+        const brideAvatar = el.customData?.brideAvatar || el.customData?.bridePhoto || el.imageUrl || (typeof (data.photos[1] as { url?: string })?.url === "string" ? (data.photos[1] as { url?: string }).url : "") || (typeof data.bride.avatarUrl === "string" ? data.bride.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/bride.jpg";
+        const couplePhoto = el.customData?.couplePhoto || (typeof (data.photos[2] as { url?: string })?.url === "string" ? (data.photos[2] as { url?: string }).url : "") || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/gallery-7.jpg";
 
         return (
           <div className="w-full h-full p-4 flex flex-col justify-between select-none bg-transparent">
@@ -3384,9 +3384,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1g. About Us: Chú Rể
       if (el.presetId === "p-about-groom") {
-        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Phạm Quốc Huy";
-        const groomAvatar = (typeof data.groom.avatarUrl === "string" ? data.groom.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/groom.jpg";
-        const couplePhoto = "/images/demo/templates/t03-sweet-pink/gallery-8.jpg";
+        const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Phạm Quốc Huy";
+        const groomAvatar = el.customData?.groomAvatar || el.customData?.groomPhoto || el.imageUrl || (typeof (data.photos[5] as { url?: string })?.url === "string" ? (data.photos[5] as { url?: string }).url : "") || (typeof (data.photos[2] as { url?: string })?.url === "string" ? (data.photos[2] as { url?: string }).url : "") || (typeof data.groom.avatarUrl === "string" ? data.groom.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/groom.jpg";
+        const couplePhoto = el.customData?.couplePhoto || (typeof (data.photos[3] as { url?: string })?.url === "string" ? (data.photos[3] as { url?: string }).url : "") || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/gallery-8.jpg";
 
         return (
           <div className="w-full h-full p-4 flex flex-col justify-between select-none bg-transparent">
@@ -3420,7 +3420,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1h. Save the Date (Calendar Grid)
       if (el.presetId === "p-calendar-heart-photo") {
-        const photo = el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
+        const photo = el.customData?.photoUrl || el.imageUrl || (typeof (data.photos[4] as { url?: string })?.url === "string" ? (data.photos[4] as { url?: string }).url : "") || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || data.coverPhotoUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg";
         const events = Array.isArray(data.events) ? data.events : [];
         const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
         const targetDay = evDate ? evDate.getDate() : 24;
@@ -3516,10 +3516,11 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1j. Editorial 3-photo stacked gallery
       if (el.presetId === "p-gallery-editorial-stack") {
+        const customPhotos = Array.isArray(el.customData?.photos) ? el.customData.photos : [];
         const photos = [
-          "/images/demo/templates/t03-sweet-pink/gallery-1.jpg",
-          "/images/demo/templates/t03-sweet-pink/gallery-2.jpg",
-          "/images/demo/templates/t03-sweet-pink/gallery-3.jpg",
+          customPhotos[0] || (typeof (data.photos[3] as { url?: string })?.url === "string" ? (data.photos[3] as { url?: string }).url : "") || (typeof (data.photos[0] as { url?: string })?.url === "string" ? (data.photos[0] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/gallery-1.jpg",
+          customPhotos[1] || (typeof (data.photos[4] as { url?: string })?.url === "string" ? (data.photos[4] as { url?: string }).url : "") || (typeof (data.photos[1] as { url?: string })?.url === "string" ? (data.photos[1] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/gallery-2.jpg",
+          customPhotos[2] || (typeof (data.photos[5] as { url?: string })?.url === "string" ? (data.photos[5] as { url?: string }).url : "") || (typeof (data.photos[2] as { url?: string })?.url === "string" ? (data.photos[2] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/gallery-3.jpg",
         ];
 
         return (
@@ -3584,10 +3585,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       // 1l. Gửi Quà Mừng (2 Thẻ QR Cô Dâu & Chú Rể)
       if (el.presetId === "p-dual-gift-qr") {
-        const groom = (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Phạm Quốc Huy";
-        const bride = (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Mai Anh";
-        const groomAvatar = (typeof data.groom.avatarUrl === "string" ? data.groom.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/groom.jpg";
-        const brideAvatar = (typeof data.bride.avatarUrl === "string" ? data.bride.avatarUrl : "") || "/images/demo/templates/t03-sweet-pink/bride.jpg";
+        const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Phạm Quốc Huy";
+        const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Mai Anh";
+        const groomAvatar = el.customData?.groomAvatar || (typeof data.groom.avatarUrl === "string" ? data.groom.avatarUrl : "") || (typeof (data.photos[5] as { url?: string })?.url === "string" ? (data.photos[5] as { url?: string }).url : "") || (typeof (data.photos[2] as { url?: string })?.url === "string" ? (data.photos[2] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/groom.jpg";
+        const brideAvatar = el.customData?.brideAvatar || (typeof data.bride.avatarUrl === "string" ? data.bride.avatarUrl : "") || (typeof (data.photos[1] as { url?: string })?.url === "string" ? (data.photos[1] as { url?: string }).url : "") || "/images/demo/templates/t03-sweet-pink/bride.jpg";
 
         return (
           <div className="w-full h-full p-4 flex flex-col justify-between select-none text-center bg-transparent">

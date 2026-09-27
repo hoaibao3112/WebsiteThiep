@@ -106,6 +106,7 @@ export type CategoryDataPayload =
   | NewbornDataPayload;
 
 export interface CanvasCategoryData {
+  photos?: PhotoItem[];
   canvasDocument?: import("./wedding-scene.types").WeddingSceneDocument;
   canvasElements?: import("./canvas.types").CanvasElement[];
   fieldPositions?: Record<string, { x: number; y: number }>;

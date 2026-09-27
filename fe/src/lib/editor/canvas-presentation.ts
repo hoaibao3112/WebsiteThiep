@@ -37,12 +37,26 @@ export function readRecord(value: unknown): Record<string, unknown> {
 export function readCanvasData(value: unknown) {
   const root = readRecord(value);
   const data = { ...root, ...readRecord(root.categoryData) };
+  const rawPhotos = Array.isArray(data.photos) && data.photos.length > 0
+    ? data.photos
+    : Array.isArray(root.photos) && root.photos.length > 0
+    ? (root.photos as unknown[])
+    : Array.isArray(data.photos)
+    ? data.photos
+    : [];
+
+  const photos = rawPhotos.map(readRecord);
+  const coverPhotoUrl =
+    (typeof data.coverPhotoUrl === "string" && data.coverPhotoUrl) ||
+    (typeof root.coverPhotoUrl === "string" && root.coverPhotoUrl) ||
+    (photos[0] && typeof photos[0].url === "string" ? (photos[0].url as string) : undefined);
+
   return {
     groom: readRecord(data.groom),
     bride: readRecord(data.bride),
-    coverPhotoUrl: typeof data.coverPhotoUrl === "string" ? data.coverPhotoUrl : undefined,
+    coverPhotoUrl,
     events: Array.isArray(data.events) ? data.events.map(readRecord) : [],
-    photos: Array.isArray(data.photos) ? data.photos.map(readRecord) : [],
+    photos,
     greeting: typeof data.greeting === "string" ? data.greeting : (typeof data.greetingMessage === "string" ? data.greetingMessage : undefined),
     heroSubtitle: typeof data.heroSubtitle === "string" ? data.heroSubtitle : undefined,
     loveStory: Array.isArray(data.loveStory) ? data.loveStory.map(readRecord) : [],

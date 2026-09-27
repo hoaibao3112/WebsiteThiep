@@ -1656,6 +1656,13 @@ export function EditorProvider<T extends object>({
         if ((draft as any)?.categoryData) {
           next = applyDraftPatch(next, "categoryData.photos", newPhotos);
         }
+        const cover = newPhotos.find((p) => p.isCover)?.url || newPhotos[0]?.url;
+        if (cover) {
+          next = applyDraftPatch(next, "coverPhotoUrl", cover);
+          if ((draft as any)?.categoryData) {
+            next = applyDraftPatch(next, "categoryData.coverPhotoUrl", cover);
+          }
+        }
         if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
         setFuture([]);
         onDraftChange(next);
@@ -1722,10 +1729,34 @@ export function EditorProvider<T extends object>({
   const replaceSelectedImage = useCallback(
     (imageUrl: string): boolean => {
       if (selectedCanvasElement) {
-        updateCanvasElement(selectedCanvasElement.id, {
+        const patch: Partial<CanvasElement> = {
           imageUrl,
           content: selectedCanvasElement.type === "image" ? imageUrl : selectedCanvasElement.content,
-        });
+        };
+        const custom = { ...(selectedCanvasElement.customData || {}) };
+        const pid = selectedCanvasElement.presetId;
+        if (pid === "p-about-bride") {
+          custom.brideAvatar = imageUrl;
+          custom.bridePhoto = imageUrl;
+        } else if (pid === "p-about-groom") {
+          custom.groomAvatar = imageUrl;
+          custom.groomPhoto = imageUrl;
+        } else if (pid === "p-sweet-marry-me") {
+          custom.photoTop = imageUrl;
+        } else if (pid === "p-calendar-heart-photo" || pid === "p-forest-polaroid-calendar") {
+          custom.photoUrl = imageUrl;
+        } else if (pid === "p-gallery-editorial-stack" || pid === "p-forest-gallery-grid") {
+          const list = Array.isArray(custom.photos) ? [...custom.photos] : [];
+          if (list.length >= 3) list[0] = imageUrl;
+          else list.push(imageUrl);
+          custom.photos = list;
+        } else if (pid === "p-dual-gift-qr") {
+          custom.brideAvatar = imageUrl;
+        } else {
+          custom.photoUrl = imageUrl;
+        }
+        patch.customData = custom;
+        updateCanvasElement(selectedCanvasElement.id, patch);
         return true;
       }
       if (selectedField && selectedField.type === "image") {

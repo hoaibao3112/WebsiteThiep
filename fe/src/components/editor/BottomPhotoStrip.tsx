@@ -23,7 +23,13 @@ export function BottomPhotoStrip() {
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Extract photos list with fallback to coverPhotoUrl if list is empty
-  const rawPhotos = ((draft as any).photos as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>) || [];
+  const rawPhotos = useMemo(() => {
+    const p1 = (draft as any)?.photos;
+    if (Array.isArray(p1) && p1.length > 0) return p1 as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>;
+    const p2 = (draft as any)?.categoryData?.photos;
+    if (Array.isArray(p2) && p2.length > 0) return p2 as Array<{ id: string; url: string; caption?: string; isCover?: boolean }>;
+    return [];
+  }, [draft]);
   const coverUrl = (draft as any)?.categoryData?.coverPhotoUrl || (draft as any)?.coverPhotoUrl;
 
   const photos = useMemo(() => {

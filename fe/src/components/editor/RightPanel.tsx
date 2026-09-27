@@ -1153,6 +1153,137 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
           </div>
         )}
 
+        {/* ── BỘ CHỈNH SỬA CHO ABOUT US: CÔ DÂU (p-about-bride) ── */}
+        {element.presetId === "p-about-bride" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              👰 Thông tin & Ảnh Cô Dâu
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <PresetImageUploader
+                label="Ảnh Chân Dung Cô Dâu"
+                currentUrl={element.customData?.brideAvatar || element.customData?.bridePhoto || element.imageUrl || "/images/demo/templates/t03-sweet-pink/bride.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ brideAvatar: url, bridePhoto: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <PresetImageUploader
+                label="Ảnh Đôi Ngang (Phía Dưới)"
+                currentUrl={element.customData?.couplePhoto || "/images/demo/templates/t03-sweet-pink/gallery-7.jpg"}
+                onImageChange={(url) => updateCustomData({ couplePhoto: url })}
+              />
+              <input
+                type="text"
+                placeholder="Họ tên cô dâu (Nguyễn Mai Anh)"
+                value={element.customData?.brideName ?? ""}
+                onChange={(e) => updateCustomData({ brideName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-semibold"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO ABOUT US: CHÚ RỂ (p-about-groom) ── */}
+        {element.presetId === "p-about-groom" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🤵 Thông tin & Ảnh Chú Rể
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <PresetImageUploader
+                label="Ảnh Chân Dung Chú Rể"
+                currentUrl={element.customData?.groomAvatar || element.customData?.groomPhoto || element.imageUrl || "/images/demo/templates/t03-sweet-pink/groom.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ groomAvatar: url, groomPhoto: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+              <PresetImageUploader
+                label="Ảnh Đôi Ngang (Phía Dưới)"
+                currentUrl={element.customData?.couplePhoto || "/images/demo/templates/t03-sweet-pink/gallery-8.jpg"}
+                onImageChange={(url) => updateCustomData({ couplePhoto: url })}
+              />
+              <input
+                type="text"
+                placeholder="Họ tên chú rể (Phạm Quốc Huy)"
+                value={element.customData?.groomName ?? ""}
+                onChange={(e) => updateCustomData({ groomName: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 font-semibold"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO SWEET MARRY ME (p-sweet-marry-me) ── */}
+        {element.presetId === "p-sweet-marry-me" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              💍 Ảnh Khoảnh Khắc Cầu Hôn
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <PresetImageUploader
+                label="Ảnh Đôi Phía Trên"
+                currentUrl={element.customData?.photoTop || element.imageUrl || "/images/demo/templates/t03-sweet-pink/gallery-1.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoTop: url });
+                  updateCanvasElement(element.id, { imageUrl: url });
+                }}
+              />
+              <PresetImageUploader
+                label="Ảnh Cô Dâu Phía Dưới"
+                currentUrl={element.customData?.photoBottom || "/images/demo/templates/t03-sweet-pink/bride.jpg"}
+                onImageChange={(url) => updateCustomData({ photoBottom: url })}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO LỊCH CƯỚI TRÁI TIM (p-calendar-heart-photo) ── */}
+        {element.presetId === "p-calendar-heart-photo" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              📅 Ảnh Nền Lịch Cưới
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              <PresetImageUploader
+                label="Ảnh Nền Lịch Cưới"
+                currentUrl={element.customData?.photoUrl || element.imageUrl || "/images/demo/templates/t03-sweet-pink/cover.jpg"}
+                onImageChange={(url) => {
+                  updateCustomData({ photoUrl: url });
+                  updateCanvasElement(element.id, { imageUrl: url, content: url });
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ── BỘ CHỈNH SỬA CHO ALBUM ẢNH STACK (p-gallery-editorial-stack) ── */}
+        {element.presetId === "p-gallery-editorial-stack" && (
+          <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">
+            <span className="text-xs font-bold text-stone-800 uppercase tracking-wide block pb-1 border-b border-stone-200">
+              🖼️ Bộ 3 Ảnh Album Xếp Lớp
+            </span>
+            <div className="space-y-2 p-2.5 bg-white rounded-xl border border-stone-200 shadow-2xs">
+              {[0, 1, 2].map((idx) => {
+                const photos = Array.isArray(element.customData?.photos) ? element.customData.photos : [];
+                return (
+                  <PresetImageUploader
+                    key={idx}
+                    label={`Ảnh ${idx + 1}`}
+                    currentUrl={photos[idx] || `/images/demo/templates/t03-sweet-pink/gallery-${idx + 1}.jpg`}
+                    onImageChange={(url) => {
+                      const next = [...photos];
+                      next[idx] = url;
+                      updateCustomData({ photos: next });
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ── BỘ CHỈNH SỬA THÔNG TIN CHO PHONG BÌ SÁP SONG HỶ (p-envelope-songhy) ── */}
         {element.presetId === "p-envelope-songhy" && (
           <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200/80 space-y-3">

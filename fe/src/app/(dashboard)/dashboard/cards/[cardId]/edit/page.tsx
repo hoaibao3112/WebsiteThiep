@@ -895,6 +895,7 @@ function EditCardContent() {
               parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother },
             },
             loveStory,
+            photos,
             events: [],
           }
         : category === "BIRTHDAY"

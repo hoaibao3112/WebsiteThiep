@@ -580,6 +580,8 @@ function CardBuilderContent() {
     categoryData: {
       ...categoryDataRef.current,
       ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
+      photos: customPhotos,
+      coverPhotoUrl: (customPhotos.find((p) => p.isCover)?.url || customPhotos[0]?.url) || categoryDataRef.current?.coverPhotoUrl || (category === "WEDDING" ? weddingData.coverPhotoUrl : undefined),
       ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
       canvasWidth: 390,
       canvasHeight: categoryDataRef.current?.canvasHeight ?? (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
