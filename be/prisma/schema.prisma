@@ -43,6 +43,7 @@ model Account {
   guests              Guest[]
   rsvpResponses       RsvpResponse[]
   wishes              Wish[]
+  memories            WeddingMemory[]
   orders              Order[]
   orderRequests       OrderRequest[]
   paymentTransactions PaymentTransaction[]
@@ -227,6 +228,7 @@ model Card {
   guests        Guest[]
   rsvpResponses RsvpResponse[]
   wishes        Wish[]
+  memories      WeddingMemory[]
   orders        Order[]
 
   @@index([userId])
@@ -313,6 +315,7 @@ model Guest {
   sentAt DateTime?
 
   rsvpResponses RsvpResponse[]
+  memories      WeddingMemory[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -492,5 +495,35 @@ model OrderRequest {
   @@unique([accountId, idempotencyKey])
   @@index([orderId])
   @@map("order_requests")
+}
+
+// ---------------------------------------------------------
+// 12. WEDDING MEMORIES & LIVE PHOTOBOOTH
+// ---------------------------------------------------------
+model WeddingMemory {
+  id           String   @id @default(cuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId       String
+  card         Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  guestId      String?
+  guest        Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  senderName   String
+  relationship String?
+  message      String?  @db.Text
+  photoUrl     String
+  thumbUrl     String?
+  frameType    String   @default("polaroid") // "polaroid" | "golden-monogram" | "floral" | "classic" | "none"
+  isApproved   Boolean  @default(true)
+  isPinned     Boolean  @default(false)
+  ipAddress    String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([cardId, createdAt(sort: Desc)])
+  @@index([accountId, cardId, isApproved])
+  @@map("wedding_memories")
 }
 

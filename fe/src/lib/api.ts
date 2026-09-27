@@ -138,5 +138,70 @@ export class ApiClient {
       body: JSON.stringify(config),
     });
   }
+
+  /**
+   * Gửi ảnh kỷ niệm & lời chúc Photobooth từ khách
+   */
+  static async createWeddingMemory<T = import("@/types/wedding-memory.types").WeddingMemory>(
+    slug: string,
+    payload: import("@/types/wedding-memory.types").CreateMemoryPayload
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(slug)}/memories`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  /**
+   * Lấy danh sách ảnh kỷ niệm công khai đã duyệt
+   */
+  static async getWeddingMemories<T = import("@/types/wedding-memory.types").WeddingMemory[]>(
+    slug: string,
+    limit = 50
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(slug)}/memories?limit=${limit}`);
+  }
+
+  /**
+   * Lấy danh sách ảnh kỷ niệm cho Host quản lý
+   */
+  static async getAdminWeddingMemories<T = import("@/types/wedding-memory.types").WeddingMemory[]>(
+    cardId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/memories/admin`);
+  }
+
+  /**
+   * Ẩn/hiện hoặc ghim ảnh (Host)
+   */
+  static async toggleWeddingMemory<T = import("@/types/wedding-memory.types").WeddingMemory>(
+    cardId: string,
+    memoryId: string,
+    patch: { isApproved?: boolean; isPinned?: boolean }
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/memories/${encodeURIComponent(memoryId)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  }
+
+  /**
+   * Xóa ảnh kỷ niệm (Host)
+   */
+  static async deleteWeddingMemory<T = { success: boolean }>(
+    cardId: string,
+    memoryId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/cards/${encodeURIComponent(cardId)}/memories/${encodeURIComponent(memoryId)}`, {
+      method: "DELETE",
+    });
+  }
+
+  /**
+   * URL endpoint Server-Sent Events (SSE) cho Màn hình LED
+   */
+  static getMemoryStreamUrl(slug: string): string {
+    return `${API_BASE_URL}/cards/${encodeURIComponent(slug)}/memories/stream`;
+  }
 }
 

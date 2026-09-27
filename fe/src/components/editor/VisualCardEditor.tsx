@@ -21,6 +21,7 @@ import {
   Eye,
   Loader2,
   SlidersHorizontal,
+  Tv,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TextTool } from "./tools/TextTool";
@@ -109,8 +110,9 @@ function CanvasTopBar({
   isSaving = false,
   onSwitchToForm,
 }: CanvasTopBarProps) {
-  const { undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
+  const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
+  const cardId = (draft as any)?.id || (draft as any)?._id;
 
   const handleSaveClick = async () => {
     setInternalSaving(true);
@@ -188,6 +190,17 @@ function CanvasTopBar({
 
       {/* RIGHT: VIEW CARD + SOLID BLACK PILL BUTTON "Lưu thiệp" */}
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {cardId && (
+          <Link
+            href={`/dashboard/cards/${cardId}/memories`}
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-200 bg-amber-50/70 text-amber-900 text-xs font-semibold hover:bg-amber-100 transition shadow-2xs"
+            title="Quản lý ảnh kỷ niệm & Màn hình LED tiệc cưới"
+          >
+            <Tv className="size-3.5 text-amber-600" />
+            <span>Màn Hình LED</span>
+          </Link>
+        )}
+
         {previewUrl && (
           <Link
             href={previewUrl}

@@ -13,6 +13,7 @@ import { MediaController } from "../controllers/media.controller";
 import { ConciergeController } from "../controllers/concierge.controller";
 import { CardElementController } from "../controllers/card-element.controller";
 import { EnvelopeController } from "../controllers/envelope.controller";
+import { WeddingMemoryController } from "../controllers/wedding-memory.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -87,6 +88,14 @@ apiRouter.get("/rsvp/:cardId/stats", authGuard, RsvpController.getStats);
 // --- WISHES ROUTES ---
 apiRouter.post("/wishes", validate(WishSchema), WishController.submit);
 apiRouter.get("/wishes/:cardId", WishController.list);
+
+// --- WEDDING MEMORIES & LIVE PHOTOBOOTH ROUTES ---
+apiRouter.post("/cards/:slug/memories", WeddingMemoryController.create); // Khách gửi ảnh + lời chúc
+apiRouter.get("/cards/:slug/memories", WeddingMemoryController.list); // Danh sách ảnh đã duyệt
+apiRouter.get("/cards/:slug/memories/stream", WeddingMemoryController.stream); // SSE Stream cho Màn hình LED
+apiRouter.get("/cards/:cardId/memories/admin", authGuard, WeddingMemoryController.adminList); // Quản lý ảnh (Host)
+apiRouter.patch("/cards/:cardId/memories/:memoryId", authGuard, WeddingMemoryController.toggle); // Ẩn/Hiện ảnh (Host)
+apiRouter.delete("/cards/:cardId/memories/:memoryId", authGuard, WeddingMemoryController.remove); // Xóa ảnh (Host)
 
 // --- GUEST MANAGEMENT ---
 apiRouter.post("/cards/:cardId/guests/import", authGuard, GuestController.import); // Nhập danh sách khách

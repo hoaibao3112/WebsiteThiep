@@ -15,6 +15,7 @@ import { getTemplateConfig } from "@/lib/editor/template-config";
 import { X } from "lucide-react";
 import { getWeddingScene } from "@/lib/editor/wedding-scene";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
+import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 
 interface WeddingViewProps {
   card: CardDetail;
@@ -151,6 +152,18 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
             onOpenGift={() => setShowGift(true)}
             onSelectPhoto={(url) => setSelectedPhoto(url)}
             isPreview={isPreview}
+          />
+        )}
+
+        {/* 4.1 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI */}
+        {!isPreview && (
+          <PhotoWallSection
+            slug={card.slug}
+            coupleName={`${groomShortName} & ${brideShortName}`}
+            weddingDate={card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).toLocaleDateString("vi-VN") : undefined}
+            monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
+            defaultGuestName={activeGuestName}
+            primaryColor={primaryColor}
           />
         )}
       </div>
