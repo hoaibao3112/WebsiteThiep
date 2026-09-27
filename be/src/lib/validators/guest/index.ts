@@ -21,6 +21,7 @@ export const ListGuestsQuerySchema = z.object({
   search: optionalText(100),
   group: optionalText(80),
   deliveryStatus: z.enum(["NOT_SENT", "OPENED_ZALO", "CONFIRMED_SENT", "FAILED"]).optional(),
+  statusFilter: z.enum(["all", "not_sent", "sent_unopened", "viewed", "responded"]).optional(),
 });
 export const DeliveryStatusSchema = z.object({
   status: z.enum(["NOT_SENT", "OPENED_ZALO", "CONFIRMED_SENT", "FAILED"]),

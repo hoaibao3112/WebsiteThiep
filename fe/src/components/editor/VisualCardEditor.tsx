@@ -22,7 +22,9 @@ import {
   Loader2,
   SlidersHorizontal,
   Tv,
+  BookOpen,
 } from "lucide-react";
+import { Album3DManagerModal } from "../card/Album3DManagerModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { TextTool } from "./tools/TextTool";
 import { ImageTool } from "./tools/ImageTool";
@@ -112,6 +114,7 @@ function CanvasTopBar({
 }: CanvasTopBarProps) {
   const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
+  const [showAlbum3DModal, setShowAlbum3DModal] = useState(false);
   const cardId = (draft as any)?.id || (draft as any)?._id;
 
   const handleSaveClick = async () => {
@@ -201,6 +204,18 @@ function CanvasTopBar({
           </Link>
         )}
 
+        {cardId && (
+          <button
+            type="button"
+            onClick={() => setShowAlbum3DModal(true)}
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/60 text-amber-900 text-xs font-semibold hover:bg-amber-200/70 transition shadow-2xs cursor-pointer"
+            title="Quản lý Album Ảnh Cưới 3D & Nhập Google Drive"
+          >
+            <BookOpen className="size-3.5 text-amber-700" />
+            <span>Album 3D</span>
+          </button>
+        )}
+
         {previewUrl && (
           <Link
             href={previewUrl}
@@ -237,6 +252,18 @@ function CanvasTopBar({
           <span>{isSavingActive ? "Đang lưu..." : "Lưu thiệp"}</span>
         </motion.button>
       </div>
+
+      {/* MODAL QUẢN LÝ ALBUM ẢNH CƯỚI 3D & NHẬP GOOGLE DRIVE */}
+      {cardId && (
+        <Album3DManagerModal
+          isOpen={showAlbum3DModal}
+          onClose={() => setShowAlbum3DModal(false)}
+          cardId={cardId}
+          onSaved={() => {
+            // refresh hoặc trigger state
+          }}
+        />
+      )}
     </header>
   );
 }

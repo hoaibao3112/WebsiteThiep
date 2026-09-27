@@ -40,16 +40,54 @@ export class GuestService {
 
   static async list(accountId: string, cardId: string, query: ListGuestsQuery) {
     const card = await this.requireVipCard(accountId, cardId);
-    const where = { accountId, cardId, ...(query.deliveryStatus ? { deliveryStatus: query.deliveryStatus } : {}),
+
+    const statusWhere = (() => {
+      if (query.statusFilter === "not_sent") return { deliveryStatus: "NOT_SENT" as const };
+      if (query.statusFilter === "sent_unopened") return { deliveryStatus: { not: "NOT_SENT" as const }, openedAt: null };
+      if (query.statusFilter === "viewed") return { openedAt: { not: null } };
+      if (query.statusFilter === "responded") return { rsvpResponses: { some: {} } };
+      return {};
+    })();
+
+    const where = {
+      accountId,
+      cardId,
+      ...statusWhere,
+      ...(query.deliveryStatus ? { deliveryStatus: query.deliveryStatus } : {}),
       ...(query.group ? { group: query.group } : {}),
-      ...(query.search ? { OR: [{ fullName: { contains: query.search, mode: "insensitive" as const } }, { phone: { contains: query.search } }] } : {}) };
-    const [items, total, confirmedSent, responded, attending] = await Promise.all([
-      prisma.guest.findMany({ where, skip: (query.page - 1) * query.pageSize, take: query.pageSize, orderBy: { createdAt: "desc" }, include: { rsvpResponses: { take: 1, orderBy: { createdAt: "desc" } } } }),
-      prisma.guest.count({ where }), prisma.guest.count({ where: { accountId, cardId, deliveryStatus: "CONFIRMED_SENT" } }),
+      ...(query.search ? { OR: [{ fullName: { contains: query.search, mode: "insensitive" as const } }, { phone: { contains: query.search } }] } : {}),
+    };
+
+    const [items, total, notSent, sentUnopened, viewed, confirmedSent, responded, attending] = await Promise.all([
+      prisma.guest.findMany({
+        where,
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+        orderBy: [{ openedAt: "desc" }, { createdAt: "desc" }],
+        include: { rsvpResponses: { take: 1, orderBy: { createdAt: "desc" } } },
+      }),
+      prisma.guest.count({ where }),
+      prisma.guest.count({ where: { accountId, cardId, deliveryStatus: "NOT_SENT" } }),
+      prisma.guest.count({ where: { accountId, cardId, deliveryStatus: { not: "NOT_SENT" }, openedAt: null } }),
+      prisma.guest.count({ where: { accountId, cardId, openedAt: { not: null } } }),
+      prisma.guest.count({ where: { accountId, cardId, deliveryStatus: "CONFIRMED_SENT" } }),
       prisma.rsvpResponse.count({ where: { accountId, cardId, guestId: { not: null } } }),
       prisma.rsvpResponse.aggregate({ where: { accountId, cardId, guestId: { not: null }, status: "ATTENDING" }, _sum: { guestCount: true } }),
     ]);
-    return { items: items.map((item) => ({ ...item, customUrl: `/thiep/${card.slug}?g=${item.guestToken}` })), pagination: { page: query.page, pageSize: query.pageSize, total }, metrics: { total, confirmedSent, responded, attendingPeople: attending._sum.guestCount || 0 } };
+
+    return {
+      items: items.map((item) => ({ ...item, customUrl: `/thiep/${card.slug}?g=${item.guestToken}` })),
+      pagination: { page: query.page, pageSize: query.pageSize, total },
+      metrics: {
+        total,
+        notSent,
+        sentUnopened,
+        viewed,
+        confirmedSent,
+        responded,
+        attendingPeople: attending._sum.guestCount || 0,
+      },
+    };
   }
 
   static async update(accountId: string, cardId: string, guestId: string, input: UpdateGuestInput) {

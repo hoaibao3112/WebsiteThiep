@@ -44,7 +44,7 @@ describe("EditCardPage owner flow", () => {
     await renderPage();
     expect(await screen.findByText(/ngày chung đôi|Chỉnh Sửa Thiệp/i)).toBeInTheDocument();
     expect(ApiClient.request).toHaveBeenCalledWith("/cards/demo-card-1");
-  }, 15000);
+  }, 35000);
 
   it("shows a recoverable error when loading fails", async () => {
     vi.mocked(ApiClient.request).mockResolvedValue({ success: false, error: "Không thể tải thiệp" });

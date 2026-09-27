@@ -314,6 +314,11 @@ model Guest {
   shareOpenedAt DateTime?
   sentAt DateTime?
 
+  // Tracking ai đã mở xem thiệp
+  openedAt DateTime?     // Lần đầu tiên khách mở xem thiệp
+  lastViewedAt DateTime? // Lần gần nhất khách mở lại thiệp
+  viewCount Int @default(0) // Số lượt khách mở xem thiệp
+
   rsvpResponses RsvpResponse[]
   memories      WeddingMemory[]
   createdAt     DateTime       @default(now())
@@ -321,6 +326,7 @@ model Guest {
 
   @@unique([cardId, guestCode])
   @@index([cardId])
+  @@index([cardId, openedAt])
   @@index([accountId, cardId])
   @@index([accountId, cardId, deliveryStatus])
   @@index([accountId, cardId, normalizedPhone])

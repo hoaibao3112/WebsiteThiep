@@ -201,7 +201,16 @@ export class CardService {
         logger.warn({ cardId: card.id, err: err?.message || err }, "Không thể tăng viewCount");
       });
 
-    let guestInfo = null;
+    let guestInfo: {
+      id: string;
+      fullName: string;
+      salutation: string;
+      phone: string | null;
+      guestToken: string;
+      openedAt: Date | null;
+      lastViewedAt: Date | null;
+      viewCount: number;
+    } | null = null;
     if (guestCode) {
       guestInfo = await prisma.guest.findFirst({
         where: {
@@ -209,8 +218,35 @@ export class CardService {
           cardId: card.id,
           OR: [{ guestToken: guestCode }, { guestCode }],
         },
-        select: { id: true, fullName: true, salutation: true, phone: true, guestToken: true },
+        select: {
+          id: true,
+          fullName: true,
+          salutation: true,
+          phone: true,
+          guestToken: true,
+          openedAt: true,
+          lastViewedAt: true,
+          viewCount: true,
+        },
       });
+
+      if (guestInfo) {
+        const now = new Date();
+        const guestId = guestInfo.id;
+        const isFirstOpen = !guestInfo.openedAt;
+        prisma.guest
+          .update({
+            where: { id: guestId },
+            data: {
+              openedAt: isFirstOpen ? now : undefined,
+              lastViewedAt: now,
+              viewCount: { increment: 1 },
+            },
+          })
+          .catch((err) => {
+            logger.warn({ guestId, err: err?.message || err }, "Không thể cập nhật tracking cho khách");
+          });
+      }
     }
 
     const effectivePlan = await AccountEntitlementService.getEffectivePlan(card.accountId);

@@ -16,6 +16,8 @@ import { X } from "lucide-react";
 import { getWeddingScene } from "@/lib/editor/wedding-scene";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
+import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
+import { Album3DConfig } from "@/types/album-3d.types";
 
 interface WeddingViewProps {
   card: CardDetail;
@@ -155,7 +157,39 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           />
         )}
 
-        {/* 4.1 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI */}
+        {/* 4.1 ALBUM ẢNH CƯỚI LẬT TRANG 3D CHÂN THỰC */}
+        {(() => {
+          const rawAlbum = (card.categoryData as any)?.album3d as Album3DConfig | undefined;
+          const fallbackPages = (card.photos || []).map((p, idx) => ({
+            id: p.id || `p-${idx}`,
+            url: p.url,
+            caption: p.caption || undefined,
+            sortOrder: idx,
+          }));
+
+          const albumConfig: Album3DConfig = {
+            enabled: rawAlbum?.enabled ?? true,
+            title: rawAlbum?.title || "Album Kỷ Niệm Ngày Chung Đôi",
+            coverTitle: rawAlbum?.coverTitle || `${groomShortName.toUpperCase()} & ${brideShortName.toUpperCase()}`,
+            coverSubtitle: rawAlbum?.coverSubtitle || `Our Wedding Photobook • ${card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).getFullYear() : "2026"}`,
+            coverTheme: rawAlbum?.coverTheme || "leather-burgundy",
+            soundEnabled: rawAlbum?.soundEnabled ?? true,
+            pages: rawAlbum?.pages && rawAlbum.pages.length > 0 ? rawAlbum.pages : fallbackPages,
+          };
+
+          if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;
+
+          return (
+            <Wedding3DFlipbook
+              config={albumConfig}
+              groomName={groomShortName}
+              brideName={brideShortName}
+              weddingDate={card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).toLocaleDateString("vi-VN") : "2026"}
+            />
+          );
+        })()}
+
+        {/* 4.2 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI */}
         {!isPreview && (
           <PhotoWallSection
             slug={card.slug}

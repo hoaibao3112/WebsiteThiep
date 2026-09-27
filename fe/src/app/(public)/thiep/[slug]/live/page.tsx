@@ -28,16 +28,24 @@ export default function WeddingLiveLedPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+  const [origin, setOrigin] = useState("");
+
   const slideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const highlightTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Link mã QR để khách tại bàn tiệc quét
-  const publicCardUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/thiep/${slug}`
-    : `https://thiep.vip/thiep/${slug}`;
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(
-    publicCardUrl
-  )}&bgcolor=FFFFFF&color=1A120B&margin=10`;
+  useEffect(() => {
+    setMounted(true);
+    setOrigin(window.location.origin);
+  }, []);
+
+  // Link mã QR để khách tại bàn tiệc quét (chỉ render sau khi client mount để tránh hydration mismatch)
+  const publicCardUrl = origin ? `${origin}/thiep/${slug}` : "";
+  const qrCodeUrl = mounted && publicCardUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(
+        publicCardUrl
+      )}&bgcolor=FFFFFF&color=1A120B&margin=10`
+    : "";
 
   // 1. Tải thông tin thiệp & danh sách ảnh ban đầu
   useEffect(() => {
@@ -342,12 +350,16 @@ export default function WeddingLiveLedPage() {
       <footer className="relative z-10 px-8 py-4 bg-[#140D07]/90 border-t border-amber-900/40 backdrop-blur-md flex items-center justify-between gap-4">
         {/* HƯỚNG DẪN QUÉT QR */}
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white p-1 rounded-xl shadow-lg shrink-0">
-            <img
-              src={qrCodeUrl}
-              alt="QR Code"
-              className="w-full h-full object-contain"
-            />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white p-1 rounded-xl shadow-lg shrink-0 flex items-center justify-center">
+            {mounted && qrCodeUrl ? (
+              <img
+                src={qrCodeUrl}
+                alt="QR Code"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <QrCode className="w-8 h-8 text-stone-400 animate-pulse" />
+            )}
           </div>
           <div>
             <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs sm:text-sm uppercase tracking-wider">
@@ -357,8 +369,8 @@ export default function WeddingLiveLedPage() {
             <p className="text-xs sm:text-sm text-white/90 mt-0.5">
               Chụp ảnh selfie &amp; gửi lời chúc xuất hiện trực tiếp lên sân khấu
             </p>
-            <p className="text-[11px] text-amber-300/60 font-mono mt-0.5">
-              {publicCardUrl}
+            <p className="text-[11px] text-amber-300/60 font-mono mt-0.5" suppressHydrationWarning>
+              {mounted ? publicCardUrl : ""}
             </p>
           </div>
         </div>

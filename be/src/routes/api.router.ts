@@ -14,6 +14,7 @@ import { ConciergeController } from "../controllers/concierge.controller";
 import { CardElementController } from "../controllers/card-element.controller";
 import { EnvelopeController } from "../controllers/envelope.controller";
 import { WeddingMemoryController } from "../controllers/wedding-memory.controller";
+import { Album3DController } from "../controllers/album-3d.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -77,6 +78,9 @@ apiRouter.patch("/cards/:cardId/elements/:elementId", authGuard, CardElementCont
 apiRouter.get("/envelope-styles", EnvelopeController.getStyles); // Danh mục mẫu phong bì từ Backend
 apiRouter.get("/cards/:cardId/envelope-config", authGuard, EnvelopeController.getCardConfig); // Đọc cấu hình phong bì
 apiRouter.patch("/cards/:cardId/envelope-config", authGuard, EnvelopeController.updateCardConfig); // Cập nhật cấu hình phong bì mở đầu
+apiRouter.get("/cards/:cardId/album-3d", authGuard, Album3DController.getConfig); // Đọc cấu hình Album 3D
+apiRouter.put("/cards/:cardId/album-3d", authGuard, Album3DController.updateConfig); // Cập nhật cấu hình Album 3D
+apiRouter.post("/cards/:cardId/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive
 apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xuất bản thiệp
 apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP
