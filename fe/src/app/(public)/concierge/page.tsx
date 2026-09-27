@@ -125,7 +125,7 @@ export default function ConciergePage() {
           <div className="lg:col-span-5 space-y-4">
             {/* CARD 1: ZALO */}
             <a
-              href="https://zalo.me/0373170367"
+              href="https://zalo.me/0374170367"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition group block"
@@ -138,14 +138,14 @@ export default function ConciergePage() {
                   {t("zaloSupport")}
                 </span>
                 <span className="text-sm font-bold text-stone-900 group-hover:text-[#BE944E] mt-0.5 block transition">
-                  0373 170 367
+                  0374 170 367
                 </span>
               </div>
             </a>
 
             {/* CARD 2: HOTLINE */}
             <a
-              href="tel:0373170367"
+              href="tel:0374170367"
               className="bg-white rounded-3xl p-5 border border-[#EFE9E1] shadow-2xs flex items-center gap-4 hover:shadow-md transition group block"
             >
               <div className="w-11 h-11 rounded-2xl bg-stone-100 group-hover:bg-[#FAF5EE] flex items-center justify-center text-stone-700 group-hover:text-[#BE944E] shrink-0 transition">
@@ -156,7 +156,7 @@ export default function ConciergePage() {
                   {t("hotlineSupport")}
                 </span>
                 <span className="text-sm font-bold text-stone-900 group-hover:text-[#BE944E] mt-0.5 block transition">
-                  0373 170 367
+                  0374 170 367
                 </span>
               </div>
             </a>
