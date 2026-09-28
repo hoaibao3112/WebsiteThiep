@@ -85,3 +85,6 @@ export type {
   SubmitTransferParams,
 } from "../lib/validators/order.schema";
 
+export * from "./ai.schema";
+
+

@@ -68,3 +68,8 @@ npm run dev                     # Chạy Frontend dev server (Port 3000)
    - Live Mobile Preview Builder (`/dashboard/cards/new`).
    - RSVP Analytics Dashboard (`/dashboard/cards/[cardId]/rsvp`).
    - Billing VietQR Auto Activation (`/dashboard/billing`).
+6. **Hệ Thống AI RAG Tư Vấn Khách Hàng Tự Động (Google Gemini + Hybrid Vector Search):**
+   - Đã đồng bộ 4 bảng Supabase: `ai_knowledge_articles`, `ai_chat_sessions`, `ai_chat_messages`, `ai_leads`.
+   - Engine Gemini (`gemini-embedding-001` + `gemini-flash-latest`) + Hybrid Keyword Search.
+   - Cơ chế bắt Lead thông minh: Trích xuất SĐT/Zalo khách hàng tự động lưu vào DB và dispatch thông báo về Telegram Admin.
+   - Frontend Chatbot Widget nổi chuẩn Liquid Glass (`fe/src/components/ai/AiConsultantWidget.tsx`) với quick suggestion pills, responsive trên mobile/desktop.

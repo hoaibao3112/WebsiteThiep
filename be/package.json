@@ -14,6 +14,7 @@
     "db:preflight": "tsx scripts/payment-db-preflight.ts",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:seed:cards": "tsx prisma/seed_wedding_cards.ts",
+    "prisma:seed:ai": "tsx prisma/seed_ai_knowledge.ts",
     "worker:rsvp": "tsx src/worker.ts",
     "worker:start": "node dist/worker.js",
     "test": "vitest run",
@@ -21,6 +22,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.10",

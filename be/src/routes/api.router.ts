@@ -15,6 +15,7 @@ import { CardElementController } from "../controllers/card-element.controller";
 import { EnvelopeController } from "../controllers/envelope.controller";
 import { WeddingMemoryController } from "../controllers/wedding-memory.controller";
 import { Album3DController } from "../controllers/album-3d.controller";
+import { AiController } from "../controllers/ai.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -29,6 +30,7 @@ import {
   WishSchema,
   CreateOrderSchema,
   ConciergeSchema,
+  AiChatSchema,
 } from "../schemas";
 
 const upload = multer({
@@ -126,3 +128,10 @@ apiRouter.get("/admin/payment-orders", adminGuard, AdminPaymentController.listQu
 apiRouter.get("/admin/payment-orders/:orderId", adminGuard, AdminPaymentController.getDetail);
 apiRouter.post("/admin/payment-orders/:orderId/approve", adminGuard, AdminPaymentController.approve);
 apiRouter.post("/admin/payment-orders/:orderId/reject", adminGuard, AdminPaymentController.reject);
+
+// --- AI RAG CONSULTANT ROUTES ---
+apiRouter.post("/ai/chat", validate(AiChatSchema), AiController.chat);
+apiRouter.get("/ai/leads", authGuard, adminGuard, AiController.getLeads);
+apiRouter.post("/ai/seed", AiController.seedKnowledge);
+apiRouter.get("/ai/knowledge", AiController.getKnowledge);
+

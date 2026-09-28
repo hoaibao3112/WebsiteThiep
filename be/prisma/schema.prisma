@@ -533,3 +533,61 @@ model WeddingMemory {
   @@map("wedding_memories")
 }
 
+// ---------------------------------------------------------
+// 13. AI RAG KNOWLEDGE BASE & LEAD CAPTURE
+// ---------------------------------------------------------
+model AiKnowledgeArticle {
+  id        String   @id @default(cuid())
+  category  String   // "pricing" | "features" | "templates" | "faq" | "payment" | "general"
+  title     String
+  content   String   @db.Text
+  tags      String[]
+  embedding Float[]
+  metadata  Json?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("ai_knowledge_articles")
+}
+
+model AiChatSession {
+  id        String          @id @default(cuid())
+  sessionId String          @unique
+  messages  AiChatMessage[]
+  lead      AiLead?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@map("ai_chat_sessions")
+}
+
+model AiChatMessage {
+  id        String        @id @default(cuid())
+  sessionId String
+  role      String        // "user" | "assistant" | "system"
+  content   String        @db.Text
+  createdAt DateTime      @default(now())
+  session   AiChatSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("ai_chat_messages")
+}
+
+model AiLead {
+  id            String        @id @default(cuid())
+  sessionId     String        @unique
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+  demandNote    String?       @db.Text
+  status        String        @default("NEW") // "NEW" | "CONTACTED" | "CONVERTED"
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  session       AiChatSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+
+  @@index([customerPhone])
+  @@map("ai_leads")
+}
+
+

@@ -77,3 +77,61 @@ export async function dispatchTelegramNotification(
     return false;
   }
 }
+
+export interface LeadNotificationData {
+  customerName?: string;
+  phone: string;
+  demand?: string;
+  sessionId: string;
+}
+
+export async function dispatchLeadNotification(
+  data: LeadNotificationData
+): Promise<boolean> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
+
+  if (!botToken || !adminChatId) {
+    logger.info("[Notification] Telegram lead notification skipped: Missing BOT_TOKEN or ADMIN_CHAT_ID");
+    return false;
+  }
+
+  const message = `
+🔥 <b>CÓ KHÁCH HÀNG TIỀM NĂNG MỚI (TỪ AI CHATBOT)!</b>
+----------------------------------
+👤 <b>Họ tên:</b> ${data.customerName || "Khách truy cập website"}
+📞 <b>SĐT / Zalo:</b> <code>${data.phone}</code>
+💬 <b>Nhu cầu:</b> ${data.demand || "Tư vấn làm thiệp cưới / gói dịch vụ"}
+🆔 <b>Phiên chat:</b> ${data.sessionId}
+⏰ <b>Thời gian:</b> ${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}
+----------------------------------
+👉 <i>Hãy gọi điện hoặc nhắn tin Zalo ngay để hỗ trợ khách chốt đơn nhé!</i>
+  `.trim();
+
+  try {
+    return await telegramCircuit.execute(async () => {
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: adminChatId,
+          text: message,
+          parse_mode: "HTML",
+        }),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`Telegram API error: ${errBody}`);
+      }
+
+      logger.info({ adminChatId }, "[Notification] Telegram lead sent successfully");
+      return true;
+    });
+  } catch (error) {
+    logger.error({ error }, "[Notification] Telegram lead send failed");
+    return false;
+  }
+}
+
