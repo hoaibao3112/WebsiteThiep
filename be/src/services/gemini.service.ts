@@ -107,10 +107,11 @@ Mục tiêu của bạn:
       parts: [{ text: h.content }],
     }));
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite'];
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
     let rawAnswer = '';
 
-    for (const modelName of modelsToTry) {
+    for (let attempt = 0; attempt < modelsToTry.length; attempt++) {
+      const modelName = modelsToTry[attempt];
       try {
         const model = ai.getGenerativeModel({
           model: modelName,
@@ -137,7 +138,11 @@ CÂU HỎI / TIN NHẮN TỪ KHÁCH HÀNG:
         rawAnswer = response.response.text();
         if (rawAnswer) break;
       } catch (err: any) {
-        logger.warn({ modelName, err: err?.message }, 'Gemini model attempt failed, trying next model');
+        logger.warn({ modelName, attempt, err: err?.message }, 'Gemini model attempt failed');
+        if (attempt < modelsToTry.length - 1) {
+          // Nghỉ 800ms để tránh spike demand rate-limit từ Google Free Tier
+          await new Promise((res) => setTimeout(res, 800));
+        }
       }
     }
 
