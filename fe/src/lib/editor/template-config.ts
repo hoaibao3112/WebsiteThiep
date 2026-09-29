@@ -13,6 +13,7 @@ export type TemplateVariant =
   | "wedding-cinematic-editorial"
   | "wedding-alpine-lake-romance"
   | "wedding-imperial-dragon-crimson"
+  | "wedding-crimson-arch-editorial"
   | "glow-party"
   | "little-prince"
   | "sweet-angel";
@@ -120,6 +121,16 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     defaultPrimaryColor: "#6E1719",
     defaultFontFamily: "Playfair Display",
     sections: ["hero-dragon", "chibi-songhy", "date-circle", "map", "gift-dual-cards", "seal-farewell"],
+  },
+  "wedding-crimson-arch-editorial": {
+    slug: "wedding-crimson-arch-editorial",
+    category: "WEDDING",
+    variant: "wedding-crimson-arch-editorial",
+    label: "Tình Yêu Hà Nội (Arch Editorial)",
+    defaultPrimaryColor: "#7A121D",
+    defaultFontFamily: "Playfair Display",
+    sections: ["hero", "invitation", "story-collage", "countdown-arch", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
+    vipOnly: true,
   },
 
   // ── MẪU CŨ ĐỂ TƯƠNG THÍCH NGƯỢC (BACKWARD COMPATIBILITY) ──

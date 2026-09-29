@@ -26,6 +26,8 @@ export interface PhotoItem {
 export interface WeddingDataPayload extends CanvasCategoryData {
   cardCategory: "WEDDING";
   heroSubtitle?: string;
+  headerSubtitle?: string;
+  headerDate?: string;
   invitationTitle?: string;
   coverPhotoUrl?: string;
   isReverseOrder?: boolean;
@@ -39,6 +41,7 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     parents?: {
       fatherName?: string;
       motherName?: string;
+      address?: string;
       isPassedAwayFather?: boolean;
       isPassedAwayMother?: boolean;
     };
@@ -54,6 +57,7 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     parents?: {
       fatherName?: string;
       motherName?: string;
+      address?: string;
       isPassedAwayFather?: boolean;
       isPassedAwayMother?: boolean;
     };

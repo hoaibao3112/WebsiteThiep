@@ -18,6 +18,8 @@ export const WEDDING_SCENE_SECTION_TYPES = [
   "gift",
   "guestbook",
   "farewell",
+  "story-collage",
+  "countdown-arch",
 
   // Template-generated section types
   "envelope",

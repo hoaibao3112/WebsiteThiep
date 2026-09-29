@@ -195,6 +195,14 @@ async function main() {
       isPremium: true,
       configJson: { themeColor: "#6E1719", fontFamily: "Playfair Display", style: "Imperial Dragon Crimson" },
     },
+    {
+      slug: "wedding-crimson-arch-editorial",
+      name: "Tình Yêu Hà Nội - Burgundy Arch Editorial",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/demo/templates/t10-arch/cover.jpg",
+      isPremium: true,
+      configJson: { themeColor: "#7A121D", fontFamily: "Playfair Display", style: "Burgundy Arch Editorial" },
+    },
 
     // ── MẪU CŨ ──
     {

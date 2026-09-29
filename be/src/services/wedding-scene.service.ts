@@ -34,7 +34,8 @@ const TEMPLATE_SECTIONS: Record<string, WeddingSceneSectionType[]> = {
   "wedding-pure-lotus-heritage": ["hero", "announcement", "invitation-header", "ceremonies", "venue", "calendar", "rsvp", "gift", "album", "farewell"],
   "wedding-cinematic-editorial": ["hero", "couple", "story", "calendar", "map", "gallery", "rsvp"],
   "wedding-alpine-lake-romance": ["hero", "couple", "calendar", "story", "gallery", "rsvp", "gift"],
-  "wedding-imperial-dragon-crimson": ["hero", "couple", "calendar", "map", "gift", "farewell"],
+  "wedding-imperial-dragon-crimson": ["hero", "invitation", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
+  "wedding-crimson-arch-editorial": ["hero", "invitation", "story-collage", "countdown-arch", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
 };
 
 const TOKENS: Record<string, JsonRecord> = {
@@ -47,7 +48,8 @@ const TOKENS: Record<string, JsonRecord> = {
   "wedding-pure-lotus-heritage": { primary: "#2E5136", secondary: "#E6EFE5", accent: "#C9A45C", surface: "#FCFDFB", text: "#1F3524", headingFont: "Playfair Display", bodyFont: "Outfit", radius: "md", density: "airy" },
   "wedding-cinematic-editorial": { primary: "#1C1C1C", secondary: "#D6C9B8", accent: "#B99768", surface: "#F3F1ED", text: "#171717", headingFont: "Cinzel", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-alpine-lake-romance": { primary: "#2B6B6D", secondary: "#D8ECE8", accent: "#D0A983", surface: "#F8FCFB", text: "#1C3C3D", headingFont: "Playfair Display", bodyFont: "Quicksand", radius: "lg", density: "airy" },
-  "wedding-imperial-dragon-crimson": { primary: "#6E1719", secondary: "#F2D7B5", accent: "#D9A441", surface: "#FFF8EC", text: "#351616", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
+  "wedding-imperial-dragon-crimson": { primary: "#6E1719", secondary: "#FAF5EE", accent: "#B88E4C", surface: "#FAF6F0", text: "#3A1215", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
+  "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
 };
 
 const TEMPLATE_MOTIFS: Record<string, string> = {
@@ -60,7 +62,8 @@ const TEMPLATE_MOTIFS: Record<string, string> = {
   "wedding-pure-lotus-heritage": "❀",
   "wedding-cinematic-editorial": "✶",
   "wedding-alpine-lake-romance": "≈",
-  "wedding-imperial-dragon-crimson": "龍",
+  "wedding-imperial-dragon-crimson": "囍",
+  "wedding-crimson-arch-editorial": "❧",
 };
 
 type WidgetType = "calendar" | "countdown" | "map" | "contact" | "rsvp" | "album" | "guest-name" | "gift" | "envelope";
@@ -89,6 +92,7 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
   const event = Array.isArray(data.events) ? readRecord(data.events[0]) ?? {} : {};
   const primary = String(tokens.primary);
   const accent = String(tokens.accent);
+  const textColor = String(tokens.text || "#1F1B1C");
   const headingFont = String(tokens.headingFont);
   const bodyFont = String(tokens.bodyFont);
   const motif = TEMPLATE_MOTIFS[slug];
@@ -99,6 +103,8 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
   const isMarsalaSlug = slug === "wedding-crimson-wine-marsala";
   const isForestSlug = slug === "wedding-forest-green-botanical";
   const isLotusSlug = slug === "wedding-pure-lotus-heritage";
+  const isDragonSlug = slug === "wedding-imperial-dragon-crimson";
+  const isArchSlug = slug === "wedding-crimson-arch-editorial";
 
   if (slug === "wedding-blank") {
     const blankSection = sections[0];
@@ -289,6 +295,91 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
         sectionHeight = 200;
         add(makeText(`${section.id}-misc`, "", 0, top, 390, sectionHeight, primary, bodyFont, 14));
       }
+    } else if (isDragonSlug) {
+      if (section.type === "hero") {
+        sectionHeight = 660;
+        add(makePreset(`${section.id}-hero`, "p-dragon-hero", 0, top, 390, sectionHeight));
+        add(makeText(`${section.id}-top`, "THE WEDDING OF", 32, top + 18, 326, 24, accent, headingFont, 11, { isUppercase: true, letterSpacing: 3 }));
+        addBoundText("scene-dragon-groom", "groom.shortName", groom.shortName || groom.fullName, "QUỐC BẢO", top + 46, 26, { isBold: true });
+        addBoundText("scene-dragon-bride", "bride.shortName", bride.shortName || bride.fullName, "NGỌC MAI", top + 76, 26, { isBold: true });
+        add(makeText(`${section.id}-quote`, readString(data.greeting, "Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường."), 32, top + 420, 326, 60, primary, headingFont, 12, { isItalic: true }));
+      } else if (section.type === "invitation") {
+        sectionHeight = 380;
+        add(makePreset(`${section.id}-invitation`, "p-dragon-invitation", 0, top, 390, sectionHeight));
+        add(makeText(`${section.id}-invite-head`, "TRÂN TRỌNG KÍNH MỜI", 32, top + 20, 326, 26, primary, headingFont, 13, { isBold: true }));
+        add(makeText(`${section.id}-invite-guest`, "Bạn cùng người thương", 32, top + 48, 326, 30, primary, headingFont, 16, { isItalic: true }));
+      } else if (section.type === "ceremony") {
+        sectionHeight = 420;
+        add(makePreset(`${section.id}-ceremony`, "p-dragon-ceremony", 0, top, 390, sectionHeight));
+        addBoundText("scene-ceremony-couple-g", "groom.fullName", groom.fullName, "Trịnh Quốc Bảo", top + 16, 20, { isBold: true });
+        addBoundText("scene-ceremony-couple-b", "bride.fullName", bride.fullName, "Nguyễn Ngọc Mai", top + 52, 20, { isBold: true });
+      } else if (section.type === "venue") {
+        sectionHeight = 220;
+        add(makeWidget(`${section.id}-widget`, "map", 24, top + 10, 342, 200, "Địa chỉ dự tiệc", primary, {
+          url: readString(event.mapUrl, "https://maps.google.com"),
+          description: [readString(event.venueName, "Tư Gia & Trung Tâm Tiệc Cưới"), readString(event.address, "10 Lê Lợi - Phường Đề Thám - TP. Thái Bình")].filter(Boolean).join("\n"),
+          buttonLabel: "Xem chỉ đường",
+        }));
+        bindings[`${section.id}-widget`] = "events[0].mapUrl";
+      } else if (section.type === "gallery") {
+        sectionHeight = 740;
+        add(makePreset(`${section.id}-gallery`, "p-dragon-gallery", 0, top, 390, sectionHeight));
+      } else if (section.type === "gift") {
+        sectionHeight = 400;
+        add(makePreset(`${section.id}-gift`, "p-dragon-gift", 0, top, 390, sectionHeight));
+      } else if (section.type === "rsvp") {
+        sectionHeight = 320;
+        add(makePreset(`${section.id}-rsvp`, "p-dragon-rsvp", 0, top, 390, sectionHeight));
+      } else if (section.type === "farewell") {
+        sectionHeight = 140;
+        add(makePreset(`${section.id}-farewell`, "p-dragon-farewell", 0, top, 390, sectionHeight));
+      } else {
+        sectionHeight = 200;
+        add(makeText(`${section.id}-misc`, "", 0, top, 390, sectionHeight, primary, bodyFont, 14));
+      }
+    } else if (isArchSlug) {
+      if (section.type === "hero") {
+        sectionHeight = 720;
+        add(makePreset(`${section.id}-hero`, "p-arch-hero", 0, top, 390, sectionHeight));
+        add(makeText(`${section.id}-head`, "OUR WEDDING | Thiệp Cưới Của Nam & Anh", 16, top + 16, 358, 20, textColor, headingFont, 11, { isUppercase: true, letterSpacing: 2 }));
+        addBoundText("scene-arch-groom", "groom.shortName", groom.shortName || groom.fullName, "Hoàng Nam", top + 640, 24, { isBold: true });
+        addBoundText("scene-arch-bride", "bride.shortName", bride.shortName || bride.fullName, "Minh Anh", top + 670, 24, { isBold: true });
+      } else if (section.type === "invitation") {
+        sectionHeight = 760;
+        add(makePreset(`${section.id}-invitation`, "p-arch-invitation", 0, top, 390, sectionHeight));
+      } else if (section.type === "story-collage") {
+        sectionHeight = 680;
+        add(makePreset(`${section.id}-story`, "p-arch-story", 0, top, 390, sectionHeight));
+      } else if (section.type === "countdown-arch") {
+        sectionHeight = 780;
+        add(makePreset(`${section.id}-countdown`, "p-arch-countdown", 0, top, 390, sectionHeight));
+      } else if (section.type === "ceremony") {
+        sectionHeight = 360;
+        add(makePreset(`${section.id}-ceremony`, "p-arch-ceremony", 0, top, 390, sectionHeight));
+      } else if (section.type === "venue") {
+        sectionHeight = 220;
+        add(makeWidget(`${section.id}-widget`, "map", 24, top + 10, 342, 200, "Địa chỉ dự tiệc", primary, {
+          url: readString(event.mapUrl, "https://maps.google.com"),
+          description: [readString(event.venueName, "Grand Palace Hà Nội"), readString(event.address, "Số 99 Lê Duẩn, Hoàn Kiếm, Hà Nội")].filter(Boolean).join("\n"),
+          buttonLabel: "Xem chỉ đường",
+        }));
+        bindings[`${section.id}-widget`] = "events[0].mapUrl";
+      } else if (section.type === "gallery") {
+        sectionHeight = 740;
+        add(makePreset(`${section.id}-gallery`, "p-arch-gallery", 0, top, 390, sectionHeight));
+      } else if (section.type === "gift") {
+        sectionHeight = 380;
+        add(makePreset(`${section.id}-gift`, "p-arch-gift", 0, top, 390, sectionHeight));
+      } else if (section.type === "rsvp") {
+        sectionHeight = 320;
+        add(makePreset(`${section.id}-rsvp`, "p-arch-rsvp", 0, top, 390, sectionHeight));
+      } else if (section.type === "farewell") {
+        sectionHeight = 280;
+        add(makePreset(`${section.id}-farewell`, "p-arch-farewell", 0, top, 390, sectionHeight));
+      } else {
+        sectionHeight = 200;
+        add(makeText(`${section.id}-misc`, "", 0, top, 390, sectionHeight, primary, bodyFont, 14));
+      }
     } else if (section.type === "envelope") {
       sectionHeight = 400;
       add(makePreset(`${section.id}-envelope`, "p-envelope-sweet", 0, top, 390, sectionHeight));
@@ -418,9 +509,9 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
     currentTop += sectionHeight + 16;
   });
 
-  if (isMagSlug || isMarsalaSlug || isForestSlug || isLotusSlug) {
-    const hiddenGroom = makeText("scene-groom", readString(groom.fullName, isLotusSlug ? "Trần Đức Hiển" : isForestSlug ? "Tuấn Minh" : isMarsalaSlug ? "Nguyễn Minh" : "Công Vinh"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
-    const hiddenBride = makeText("scene-bride", readString(bride.fullName, isLotusSlug ? "Nguyễn Minh Hằng" : isForestSlug ? "Mai Lan" : isMarsalaSlug ? "Bùi Phương" : "Hải Yến"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
+  if (isMagSlug || isMarsalaSlug || isForestSlug || isLotusSlug || isDragonSlug) {
+    const hiddenGroom = makeText("scene-groom", readString(groom.fullName, isDragonSlug ? "Trịnh Quốc Bảo" : isLotusSlug ? "Trần Đức Hiển" : isForestSlug ? "Tuấn Minh" : isMarsalaSlug ? "Nguyễn Minh" : "Công Vinh"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
+    const hiddenBride = makeText("scene-bride", readString(bride.fullName, isDragonSlug ? "Nguyễn Ngọc Mai" : isLotusSlug ? "Nguyễn Minh Hằng" : isForestSlug ? "Mai Lan" : isMarsalaSlug ? "Bùi Phương" : "Hải Yến"), 0, 0, 0, 0, "#000000", bodyFont, 1, { opacity: 0 });
     elements.push(hiddenGroom, hiddenBride);
     bindings["scene-groom"] = "groom.fullName";
     bindings["scene-bride"] = "bride.fullName";

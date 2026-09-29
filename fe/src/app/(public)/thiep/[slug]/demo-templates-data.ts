@@ -587,7 +587,7 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 09. LONG PHỤNG SUM VẦY ĐỎ ĐÔ (ANH TUẤN & THU TRANG)
+  // 09. LONG PHỤNG SUM VẦY ĐỎ ĐÔ (QUỐC BẢO & NGỌC MAI)
   // ─────────────────────────────────────────────────────────────────────────────
   "wedding-imperial-dragon-crimson": {
     id: "demo-imperial-dragon-crimson",
@@ -600,61 +600,134 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     isAutoPlay: true,
     primaryColor: "#6E1719",
     fontFamily: "Playfair Display",
-    greetingMessage: "“TRÂN TRỌNG THÔNG BÁO LỄ THÀNH HÔN CỦA CON CHÚNG TÔI — Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi!”",
+    greetingMessage: "“Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường.” Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!",
     template: { slug: "wedding-imperial-dragon-crimson" },
     categoryData: {
       cardCategory: "WEDDING",
-      heroSubtitle: "LONG PHỤNG SUM VẦY",
-      invitationTitle: "LỄ THÀNH HÔN & VU QUY",
+      heroSubtitle: "THE WEDDING OF",
+      invitationTitle: "LỄ THÀNH HÔN",
       coverPhotoUrl: "/images/demo/templates/t09-dragon/cover.jpg",
-      greeting: "“Cảm ơn tất cả tình cảm của cô dì chú bác, bạn bè và anh chị em đã dành cho Anh Tuấn & Thu Trang!”",
+      greeting: "“Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường.”",
       groom: {
-        fullName: "Nguyễn Anh Tuấn",
-        shortName: "Anh Tuấn",
+        fullName: "Trịnh Quốc Bảo",
+        shortName: "Quốc Bảo",
         birthOrder: "Trưởng nam",
         avatarUrl: "/images/demo/templates/t09-dragon/groom.jpg",
-        parents: { fatherName: "Nguyễn Văn Quản", motherName: "Nguyễn Thị Oanh" },
-        story: "Doanh nhân trẻ năng động, luôn hiếu thuận và trọn chữ nghĩa tình.",
+        parents: { fatherName: "Bố chú rể", motherName: "Mẹ chú rể", address: "10 Lê Lợi - Đề Thám - TP. Thái Bình" },
+        story: "Chàng trai đĩnh đạc, luôn là chỗ dựa vững chãi cho tình yêu đôi mình.",
       },
       bride: {
-        fullName: "Huỳnh Thu Trang",
-        shortName: "Thu Trang",
-        birthOrder: "Út nữ",
+        fullName: "Nguyễn Ngọc Mai",
+        shortName: "Ngọc Mai",
+        birthOrder: "Trưởng nữ",
         avatarUrl: "/images/demo/templates/t09-dragon/bride.jpg",
-        parents: { fatherName: "Huỳnh Đăng Khoa", motherName: "Lê Vân Anh" },
-        story: "Cô gái duyên dáng, thông minh, đảm đang tề gia nội trợ.",
+        parents: { fatherName: "Bố cô dâu", motherName: "Mẹ cô dâu", address: "Vĩnh An Nam - Tam Xuân - Đà Nẵng" },
+        story: "Cô gái dịu dàng, nết na và luôn rạng ngời nụ cười hạnh phúc.",
       },
       loveStory: [
-        { title: "Duyên Thắm Tình Nồng", date: "2019", description: "Mối tình thanh xuân đẹp đẽ thời đại học." },
-        { title: "Trưởng Thành Cùng Nhau", date: "2023", description: "Cùng gầy dựng sự nghiệp và vun vén tương lai." },
-        { title: "Long Phụng Sum Vầy", date: "2025", description: "Trọn vẹn câu thề non hẹn biển dưới một mái nhà." },
+        { title: "Duyên Thắm Tình Nồng", date: "2021", description: "Lần đầu gặp gỡ tại một buổi chiều thu bình yên." },
+        { title: "Trưởng Thành Cùng Nhau", date: "2024", description: "Bên nhau chia sẻ từng buồn vui trong cuộc sống." },
+        { title: "Long Phụng Sum Vầy", date: "2026", description: "Chính thức về chung một mái nhà ấm áp." },
       ],
     },
     events: [
       {
         id: "ev-91",
-        eventName: "Hôn Lễ Được Cử Hành Tại Tư Gia",
-        eventDate: new Date("2025-12-19T09:00:00Z"),
-        lunarDate: "Ngày 30 Tháng 10 Năm Ất Tỵ",
-        venueName: "PROMEX CENTER",
-        address: "Số 114 Mai Hắc Đế, Phường Lê Đại Hành, Quận Hai Bà Trưng, Hà Nội",
+        eventName: "Lễ Thành Hôn & Tiệc Cưới",
+        eventDate: new Date("2026-11-29T14:00:00Z"),
+        lunarDate: "Ngày 10 Tháng 10 Năm Bính Ngọ",
+        venueName: "Tư Gia & Trung Tâm Tiệc Cưới",
+        address: "10 Lê Lợi - Phường Đề Thám - TP. Thái Bình",
         mapUrl: "https://maps.google.com",
       },
     ],
     photos: [
-      { id: "p-9-1", url: "/images/demo/templates/t09-dragon/gallery-1.jpg", caption: "Sải bước kiêu hãnh giữa kiến trúc hoàng gia", isCover: true },
-      { id: "p-9-2", url: "/images/demo/templates/t09-dragon/gallery-2.jpg", caption: "Ánh nắng ban mai rọi sáng đường đôi" },
-      { id: "p-9-3", url: "/images/demo/templates/t09-dragon/gallery-3.jpg", caption: "Thần thái quý phái ngày đại lễ" },
-      { id: "p-9-4", url: "/images/demo/templates/t09-dragon/gallery-4.jpg", caption: "Những khoảnh khắc tự nhiên đầy quyến rũ" },
-      { id: "p-9-5", url: "/images/demo/templates/t09-dragon/gallery-5.jpg", caption: "Tình yêu vững bền như thành trì kiên cố" },
+      { id: "p-9-1", url: "/images/demo/templates/t09-dragon/gallery-1.jpg", caption: "Khoảnh khắc sánh bước kiêu hãnh", isCover: true },
+      { id: "p-9-2", url: "/images/demo/templates/t09-dragon/gallery-2.jpg", caption: "Ánh nhìn trao nhau trọn lời ước nguyện" },
+      { id: "p-9-3", url: "/images/demo/templates/t09-dragon/gallery-3.jpg", caption: "Nụ cười rạng rỡ ngày đại lễ" },
+      { id: "p-9-4", url: "/images/demo/templates/t09-dragon/gallery-4.jpg", caption: "Cô dâu thanh tú trong tà váy trắng" },
+      { id: "p-9-5", url: "/images/demo/templates/t09-dragon/gallery-5.jpg", caption: "Nắm tay nhau đi qua ngàn giông bão" },
       { id: "p-9-6", url: "/images/demo/templates/t09-dragon/gallery-6.jpg", caption: "Long Phượng sum vầy trọn vẹn trăm năm" },
     ],
-    bankingPrimary: { bankCode: "MB", accountNumber: "0345678910", accountName: "NGUYEN ANH TUAN" },
-    bankingSecondary: { bankCode: "VCB", accountNumber: "0998877661", accountName: "HUYNH THU TRANG" },
+    bankingPrimary: { bankCode: "MB", accountNumber: "6666888899", accountName: "TRINH QUOC BAO" },
+    bankingSecondary: { bankCode: "VCB", accountNumber: "9999888877", accountName: "NGUYEN NGOC MAI" },
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // 10. CYBER NEON GLOW PARTY (SINH NHẬT KHÁNH LINH)
+  // 10. TÌNH YÊU HÀ NỘI - BURGUNDY ARCH EDITORIAL (HOÀNG NAM & MINH ANH)
+  // ─────────────────────────────────────────────────────────────────────────────
+  "wedding-crimson-arch-editorial": {
+    id: "demo-crimson-arch-editorial",
+    slug: "wedding-crimson-arch-editorial",
+    cardCategory: "WEDDING",
+    status: "ACTIVE",
+    openingEffect: "NONE",
+    fallingEffect: "PETAL",
+    musicUrl: "/music/le-duong.mp3",
+    isAutoPlay: true,
+    primaryColor: "#7A121D",
+    fontFamily: "Playfair Display",
+    greetingMessage: "“Với xác suất gặp nhau chỉ 0.00487, chúng mình đã vượt qua mọi rào cản, cùng nhau bước vào hành trình phiêu lưu kéo dài trọn đời.” Trân trọng kính mời quý khách đến chung vui!",
+    template: { slug: "wedding-crimson-arch-editorial" },
+    categoryData: {
+      cardCategory: "WEDDING",
+      heroSubtitle: "OUR WEDDING | Thiệp Cưới Của Nam & Anh",
+      invitationTitle: "WEDDING INVITATION",
+      coverPhotoUrl: "/images/demo/templates/t10-arch/cover.jpg",
+      headerSubtitle: "From Hanoi with love 💖",
+      headerDate: "20.12.2026, 12:00",
+      greeting: "“Với xác suất gặp nhau chỉ 0.00487, chúng mình đã vượt qua mọi rào cản, cùng nhau bước vào hành trình phiêu lưu kéo dài trọn đời.”",
+      groom: {
+        fullName: "Vũ Hoàng Nam",
+        shortName: "Hoàng Nam",
+        birthOrder: "Trưởng Nam",
+        phone: "0912345678",
+        avatarUrl: "/images/demo/templates/t10-arch/groom.jpg",
+        parents: { fatherName: "Vũ Minh Anh", motherName: "Lê Tuyết Như", address: "Bãi Cháy - Quảng Ninh" },
+        story: "Chàng trai ấm áp, luôn là điểm tựa vững chãi và yêu thương hết mực.",
+      },
+      bride: {
+        fullName: "Nguyễn Minh Anh",
+        shortName: "Minh Anh",
+        birthOrder: "Út Nữ",
+        phone: "0987654321",
+        avatarUrl: "/images/demo/templates/t10-arch/bride.jpg",
+        parents: { fatherName: "Nguyễn Văn Tuấn", motherName: "Nguyễn Thị Mai", address: "Hoàng Mai - Hà Nội" },
+        story: "Cô gái dịu dàng, nụ cười tỏa nắng và luôn tràn đầy năng lượng tích cực.",
+      },
+      loveStory: [
+        {
+          title: "Trọn vẹn",
+          date: "2021",
+          description: "Tên của anh chỉ vỏn vẹn vài chữ,\ndù có rời rạc, chẳng thành câu,\nnhưng trong tim em luôn ấp ủ,\nchỉ nguyện bên nhau mãi một đời.",
+        },
+      ],
+    },
+    events: [
+      {
+        id: "ev-10-1",
+        eventName: "Lễ Thành Hôn & Tiệc Cưới",
+        eventDate: new Date("2026-12-20T12:00:00Z"),
+        lunarDate: "Ngày 12 Tháng 11 Năm Bính Ngọ",
+        venueName: "Grand Palace Hà Nội",
+        address: "Số 99 Lê Duẩn, Phường Cửa Nam, Quận Hoàn Kiếm, Hà Nội",
+        mapUrl: "https://maps.google.com",
+      },
+    ],
+    photos: [
+      { id: "p-10-1", url: "/images/demo/templates/t10-arch/cover.jpg", caption: "Our Wedding - From Hanoi with love", isCover: true },
+      { id: "p-10-2", url: "/images/demo/templates/t10-arch/groom.jpg", caption: "Chú rể Hoàng Nam" },
+      { id: "p-10-3", url: "/images/demo/templates/t10-arch/bride.jpg", caption: "Cô dâu Minh Anh" },
+      { id: "p-10-4", url: "/images/demo/templates/t10-arch/gallery-1.jpg", caption: "Trọn vẹn từng khoảnh khắc" },
+      { id: "p-10-5", url: "/images/demo/templates/t10-arch/gallery-2.jpg", caption: "Vừa yêu và vừa được yêu" },
+      { id: "p-10-6", url: "/images/demo/templates/t10-arch/gallery-3.jpg", caption: "Sau tất cả, chúng mình là của nhau" },
+    ],
+    bankingPrimary: { bankCode: "MB", accountNumber: "1234567899", accountName: "VU HOANG NAM" },
+    bankingSecondary: { bankCode: "VCB", accountNumber: "9876543211", accountName: "NGUYEN MINH ANH" },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 11. CYBER NEON GLOW PARTY (SINH NHẬT KHÁNH LINH)
   // ─────────────────────────────────────────────────────────────────────────────
   "birthday-glow-party": {
     id: "demo-birthday-glow-party",

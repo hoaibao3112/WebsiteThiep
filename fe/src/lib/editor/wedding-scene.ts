@@ -45,6 +45,7 @@ const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
   "wedding-cinematic-editorial": { primary: "#1C1C1C", secondary: "#D6C9B8", accent: "#B99768", surface: "#F3F1ED", text: "#171717", headingFont: "Cinzel", bodyFont: "Inter", radius: "none", density: "compact" },
   "wedding-alpine-lake-romance": { primary: "#2B6B6D", secondary: "#D8ECE8", accent: "#D0A983", surface: "#F8FCFB", text: "#1C3C3D", headingFont: "Playfair Display", bodyFont: "Quicksand", radius: "lg", density: "airy" },
   "wedding-imperial-dragon-crimson": { primary: "#6E1719", secondary: "#F2D7B5", accent: "#D9A441", surface: "#FFF8EC", text: "#351616", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
+  "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
 };
 
 function asWeddingData(card: CardDetail): WeddingDataPayload {
@@ -177,6 +178,60 @@ function createElements(data: WeddingDataPayload, slug: string, tokens: WeddingS
     elements.push(
       sceneElement("scene-groom", data.groom?.fullName || "Trần Đức Hiển", 0, 0, 0, 0, { opacity: 0 }),
       sceneElement("scene-bride", data.bride?.fullName || "Nguyễn Minh Hằng", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
+
+  if (slug === "wedding-imperial-dragon-crimson") {
+    let top = 16;
+    const elements: CanvasElement[] = [];
+    elements.push({ id: "scene-hero", type: "preset", presetId: "p-dragon-hero", content: "", x: 0, y: top, width: 390, height: 660, zIndex: 2 });
+    top += 676;
+    elements.push({ id: "scene-invitation", type: "preset", presetId: "p-dragon-invitation", content: "", x: 0, y: top, width: 390, height: 380, zIndex: 2 });
+    top += 396;
+    elements.push({ id: "scene-ceremony", type: "preset", presetId: "p-dragon-ceremony", content: "", x: 0, y: top, width: 390, height: 420, zIndex: 2 });
+    top += 436;
+    elements.push({ id: "scene-venue", type: "widget", widgetType: "map", content: "", x: 24, y: top + 10, width: 342, height: 200, zIndex: 2, widgetConfig: { title: "Địa chỉ dự tiệc", description: "Tư Gia & Trung Tâm Tiệc Cưới\n10 Lê Lợi - Phường Đề Thám - TP. Thái Bình", buttonLabel: "Xem chỉ đường" } });
+    top += 236;
+    elements.push({ id: "scene-gallery", type: "preset", presetId: "p-dragon-gallery", content: "", x: 0, y: top, width: 390, height: 740, zIndex: 2 });
+    top += 756;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-dragon-gift", content: "", x: 0, y: top, width: 390, height: 400, zIndex: 2 });
+    top += 416;
+    elements.push({ id: "scene-rsvp", type: "preset", presetId: "p-dragon-rsvp", content: "", x: 0, y: top, width: 390, height: 320, zIndex: 2 });
+    top += 336;
+    elements.push({ id: "scene-farewell", type: "preset", presetId: "p-dragon-farewell", content: "", x: 0, y: top, width: 390, height: 140, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Trịnh Quốc Bảo", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Nguyễn Ngọc Mai", 0, 0, 0, 0, { opacity: 0 })
+    );
+    return elements;
+  }
+
+  if (slug === "wedding-crimson-arch-editorial") {
+    let top = 16;
+    const elements: CanvasElement[] = [];
+    elements.push({ id: "scene-hero", type: "preset", presetId: "p-arch-hero", content: "", x: 0, y: top, width: 390, height: 720, zIndex: 2 });
+    top += 736;
+    elements.push({ id: "scene-invitation", type: "preset", presetId: "p-arch-invitation", content: "", x: 0, y: top, width: 390, height: 760, zIndex: 2 });
+    top += 776;
+    elements.push({ id: "scene-story", type: "preset", presetId: "p-arch-story", content: "", x: 0, y: top, width: 390, height: 680, zIndex: 2 });
+    top += 696;
+    elements.push({ id: "scene-countdown", type: "preset", presetId: "p-arch-countdown", content: "", x: 0, y: top, width: 390, height: 780, zIndex: 2 });
+    top += 796;
+    elements.push({ id: "scene-ceremony", type: "preset", presetId: "p-arch-ceremony", content: "", x: 0, y: top, width: 390, height: 360, zIndex: 2 });
+    top += 376;
+    elements.push({ id: "scene-venue", type: "widget", widgetType: "map", content: "", x: 24, y: top + 10, width: 342, height: 200, zIndex: 2, widgetConfig: { title: "Địa chỉ dự tiệc", description: "Grand Palace Hà Nội\nSố 99 Lê Duẩn, Hoàn Kiếm, Hà Nội", buttonLabel: "Xem chỉ đường" } });
+    top += 236;
+    elements.push({ id: "scene-gallery", type: "preset", presetId: "p-arch-gallery", content: "", x: 0, y: top, width: 390, height: 740, zIndex: 2 });
+    top += 756;
+    elements.push({ id: "scene-gift", type: "preset", presetId: "p-arch-gift", content: "", x: 0, y: top, width: 390, height: 380, zIndex: 2 });
+    top += 396;
+    elements.push({ id: "scene-rsvp", type: "preset", presetId: "p-arch-rsvp", content: "", x: 0, y: top, width: 390, height: 320, zIndex: 2 });
+    top += 336;
+    elements.push({ id: "scene-farewell", type: "preset", presetId: "p-arch-farewell", content: "", x: 0, y: top, width: 390, height: 280, zIndex: 2 });
+    elements.push(
+      sceneElement("scene-groom", data.groom?.fullName || "Vũ Hoàng Nam", 0, 0, 0, 0, { opacity: 0 }),
+      sceneElement("scene-bride", data.bride?.fullName || "Nguyễn Minh Anh", 0, 0, 0, 0, { opacity: 0 })
     );
     return elements;
   }

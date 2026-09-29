@@ -22,6 +22,7 @@ const ALL_10_TEMPLATES = [
   "wedding-cinematic-editorial",
   "wedding-alpine-lake-romance",
   "wedding-imperial-dragon-crimson",
+  "wedding-crimson-arch-editorial",
 ] as const;
 
 function makeDraftInput(templateSlug: string) {

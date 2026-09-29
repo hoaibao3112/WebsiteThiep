@@ -1,6 +1,6 @@
 import { PrismaClient, CardCategory, CardStatus, OpeningEffect, FallingEffect } from "@prisma/client";
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 
 const prisma = new PrismaClient();
 
@@ -14,6 +14,7 @@ const TEMPLATE_DIR_MAP: Record<string, string> = {
   "wedding-cinematic-editorial": "t07-cinematic",
   "wedding-alpine-lake-romance": "t08-alpine",
   "wedding-imperial-dragon-crimson": "t09-dragon",
+  "wedding-crimson-arch-editorial": "t10-arch",
 };
 
 let expandedAlbums: Record<string, any> = {};
@@ -549,55 +550,132 @@ const WEDDING_CARDS_DATA = [
     isAutoPlay: true,
     primaryColor: "#6E1719",
     fontFamily: "Playfair Display",
-    greetingMessage: "“Long Phụng sum vầy — Trăm năm kết tóc — Loan phụng hòa minh. Hân hạnh đón tiếp quý khách đến chúc phúc cho lễ cưới của chúng tôi.”",
+    greetingMessage: "“Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường.” Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!",
     categoryData: {
       cardCategory: "WEDDING",
-      heroSubtitle: "ĐẠI LỄ TÂN HÔN",
-      invitationTitle: "LỄ THÀNH HÔN HOÀNG TRIỀU",
+      heroSubtitle: "THE WEDDING OF",
+      invitationTitle: "LỄ THÀNH HÔN",
       coverPhotoUrl: "/images/demo/templates/t09-dragon/cover.jpg",
-      greeting: "“Long Phụng Hòa Minh — Trăm Năm Hạnh Phúc”",
+      greeting: "“Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường.”",
       groom: {
-        fullName: "Nguyễn Anh Tuấn",
-        shortName: "Anh Tuấn",
+        fullName: "Trịnh Quốc Bảo",
+        shortName: "Quốc Bảo",
         birthOrder: "Trưởng nam",
         avatarUrl: "/images/demo/templates/t09-dragon/groom.jpg",
-        parents: { fatherName: "Nguyễn Thế Hùng", motherName: "Hoàng Thị Lan" },
-        story: "Chàng trai chí khí, đĩnh đạc, luôn là niềm tự hào của dòng tộc.",
+        parents: { fatherName: "Bố chú rể", motherName: "Mẹ chú rể", address: "10 Lê Lợi - Đề Thám - TP. Thái Bình" },
+        story: "Chàng trai đĩnh đạc, luôn là chỗ dựa vững chãi cho tình yêu đôi mình.",
       },
       bride: {
-        fullName: "Huỳnh Thu Trang",
-        shortName: "Thu Trang",
+        fullName: "Nguyễn Ngọc Mai",
+        shortName: "Ngọc Mai",
         birthOrder: "Trưởng nữ",
         avatarUrl: "/images/demo/templates/t09-dragon/bride.jpg",
-        parents: { fatherName: "Huỳnh Văn Bảy", motherName: "Lê Thị Thảo" },
-        story: "Người con gái đức hạnh, thông tuệ và chu đáo mọi việc.",
+        parents: { fatherName: "Bố cô dâu", motherName: "Mẹ cô dâu", address: "Vĩnh An Nam - Tam Xuân - Đà Nẵng" },
+        story: "Cô gái dịu dàng, nết na và luôn rạng ngời nụ cười hạnh phúc.",
       },
       loveStory: [
-        { title: "Định Mệnh Giao Thoa", date: "2020", description: "Mối lương duyên được hai bên gia đình vun đắp và đồng thuận." },
-        { title: "Tâm Đầu Ý Hợp", date: "2023", description: "Càng gắn bó càng nhận ra sự đồng điệu sâu sắc trong từng suy nghĩ." },
-        { title: "Đại Lễ Giao Bôi", date: "2026", description: "Lễ cưới hoành tráng rạng rỡ gia phong hai họ." },
+        { title: "Chạm Ánh Mắt", date: "2021", description: "Lần đầu gặp gỡ tại một buổi chiều thu bình yên." },
+        { title: "Nên Duyên", date: "2024", description: "Bên nhau chia sẻ từng buồn vui trong cuộc sống." },
+        { title: "Chung Đôi", date: "2026", description: "Chính thức về chung một mái nhà ấm áp." },
       ],
     },
     events: [
       {
-        eventName: "Đại Lễ Tân Hôn & Tiệc Mừng Gia Tộc",
-        eventDate: new Date("2026-11-08T18:00:00Z"),
-        lunarDate: "Ngày 29 Tháng 9 Năm Bính Ngọ",
-        venueName: "Trung Tâm Hội Nghị White Palace",
-        address: "194 Hoàng Văn Thụ, Phường 9, Phú Nhuận, TP. HCM",
+        eventName: "Lễ Thành Hôn & Tiệc Mừng Gia Tộc",
+        eventDate: new Date("2026-11-29T14:00:00Z"),
+        lunarDate: "Ngày 10 Tháng 10 Năm Bính Ngọ",
+        venueName: "Tư Gia & Trung Tâm Tiệc Cưới",
+        address: "10 Lê Lợi - Phường Đề Thám - TP. Thái Bình",
         mapUrl: "https://maps.google.com",
       },
     ],
     photos: [
-      { url: "/images/demo/templates/t09-dragon/gallery-1.jpg", caption: "Sải bước kiêu hãnh giữa kiến trúc hoàng gia", isCover: true },
-      { url: "/images/demo/templates/t09-dragon/gallery-2.jpg", caption: "Ánh nắng ban mai rọi sáng đường đôi" },
-      { url: "/images/demo/templates/t09-dragon/gallery-3.jpg", caption: "Thần thái quý phái ngày đại lễ" },
-      { url: "/images/demo/templates/t09-dragon/gallery-4.jpg", caption: "Những khoảnh khắc tự nhiên đầy quyến rũ" },
-      { url: "/images/demo/templates/t09-dragon/gallery-5.jpg", caption: "Tình yêu vững bền như thành trì kiên cố" },
-      { url: "/images/demo/templates/t09-dragon/gallery-6.jpg", caption: "Long Phượng sum vầy trọn vẹn trăm năm" },
+      { url: "/images/demo/templates/t09-dragon/gallery-1.jpg", caption: "Khoảnh khắc sánh bước kiêu hãnh", isCover: true },
+      { url: "/images/demo/templates/t09-dragon/gallery-2.jpg", caption: "Ánh nhìn trao nhau trọn lời ước nguyện" },
+      { url: "/images/demo/templates/t09-dragon/gallery-3.jpg", caption: "Nụ cười rạng rỡ ngày đại lễ" },
+      { url: "/images/demo/templates/t09-dragon/gallery-4.jpg", caption: "Cô dâu thanh tú trong tà váy trắng" },
+      { url: "/images/demo/templates/t09-dragon/gallery-5.jpg", caption: "Nắm tay nhau đi qua ngàn giông bão" },
+      { url: "/images/demo/templates/t09-dragon/gallery-6.jpg", caption: "Long Phụng sum vầy trọn vẹn trăm năm" },
     ],
-    bankingPrimary: { bankCode: "MB", accountNumber: "6666888899", accountName: "NGUYEN ANH TUAN" },
-    bankingSecondary: { bankCode: "ACB", accountNumber: "9999888877", accountName: "HUYNH THU TRANG" },
+    bankingPrimary: { bankCode: "MB", accountNumber: "6666888899", accountName: "TRINH QUOC BAO" },
+    bankingSecondary: { bankCode: "VCB", accountNumber: "9999888877", accountName: "NGUYEN NGOC MAI" },
+  },
+
+  // 10. TÌNH YÊU HÀ NỘI - BURGUNDY ARCH EDITORIAL
+  {
+    slug: "wedding-crimson-arch-editorial",
+    templateSlug: "wedding-crimson-arch-editorial",
+    openingEffect: "WAX_SEAL" as OpeningEffect,
+    fallingEffect: "PETAL" as FallingEffect,
+    musicUrl: "/music/le-duong.mp3",
+    isAutoPlay: true,
+    primaryColor: "#7A121D",
+    fontFamily: "Playfair Display",
+    greetingMessage: "“Với xác suất gặp nhau chỉ 0.00487, chúng mình đã vượt qua mọi rào cản, cùng nhau bước vào hành trình phiêu lưu kéo dài trọn đời.” Trân trọng kính mời quý khách đến chung vui!",
+    categoryData: {
+      cardCategory: "WEDDING",
+      heroSubtitle: "OUR WEDDING | Thiệp Cưới Của Nam & Anh",
+      invitationTitle: "WEDDING INVITATION",
+      coverPhotoUrl: "/images/demo/templates/t10-arch/cover.jpg",
+      headerSubtitle: "From Hanoi with love 💖",
+      headerDate: "20.12.2026, 12:00",
+      greeting: "“Với xác suất gặp nhau chỉ 0.00487, chúng mình đã vượt qua mọi rào cản, cùng nhau bước vào hành trình phiêu lưu kéo dài trọn đời.”",
+      groom: {
+        fullName: "Vũ Hoàng Nam",
+        shortName: "Hoàng Nam",
+        birthOrder: "Trưởng Nam",
+        phone: "0912345678",
+        avatarUrl: "/images/demo/templates/t10-arch/groom.jpg",
+        parents: { fatherName: "Vũ Minh Anh", motherName: "Lê Tuyết Như", address: "Bãi Cháy - Quảng Ninh" },
+        story: "Chàng trai ấm áp, luôn là điểm tựa vững chãi và yêu thương hết mực.",
+      },
+      bride: {
+        fullName: "Nguyễn Minh Anh",
+        shortName: "Minh Anh",
+        birthOrder: "Út Nữ",
+        phone: "0987654321",
+        avatarUrl: "/images/demo/templates/t10-arch/bride.jpg",
+        parents: { fatherName: "Nguyễn Văn Tuấn", motherName: "Nguyễn Thị Mai", address: "Hoàng Mai - Hà Nội" },
+        story: "Cô gái dịu dàng, nụ cười tỏa nắng và luôn tràn đầy năng lượng tích cực.",
+      },
+      loveStory: [
+        {
+          badge: "Trọn vẹn",
+          poem: "Tên của anh chỉ vỏn vẹn vài chữ,\ndù có rời rạc, chẳng thành câu,\nnhưng trong tim em luôn ấp ủ,\nchỉ nguyện bên nhau mãi một đời.",
+          quoteEn: "At this moment, love and being loved happen at the same time.",
+          quoteVi: "Ngay giây phút này, chúng ta vừa yêu, và vừa được yêu.",
+          photo1: "/images/demo/templates/t10-arch/gallery-1.jpg",
+          photo2: "/images/demo/templates/t10-arch/gallery-2.jpg",
+        },
+      ],
+      countdownSection: {
+        quote: "Ngay giây phút này, chúng ta vừa yêu, và vừa được yêu. 💕",
+        badge: "Sau tất cả",
+        bottomQuote: "Không cần một ngày đặc biệt nào cả, chỉ cần mỗi ngày bên nhau đều là ngày hạnh phúc nhất.",
+        photo: "/images/demo/templates/t10-arch/gallery-3.jpg",
+        targetDate: "2026-12-20T12:00:00Z",
+      },
+    },
+    events: [
+      {
+        eventName: "Lễ Thành Hôn & Tiệc Cưới",
+        eventDate: new Date("2026-12-20T12:00:00Z"),
+        lunarDate: "Ngày 12 Tháng 11 Năm Bính Ngọ",
+        venueName: "Grand Palace Hà Nội",
+        address: "Số 99 Lê Duẩn, Phường Cửa Nam, Quận Hoàn Kiếm, Hà Nội",
+        mapUrl: "https://maps.google.com",
+      },
+    ],
+    photos: [
+      { url: "/images/demo/templates/t10-arch/cover.jpg", caption: "Our Wedding - From Hanoi with love", isCover: true },
+      { url: "/images/demo/templates/t10-arch/groom.jpg", caption: "Chú rể Hoàng Nam" },
+      { url: "/images/demo/templates/t10-arch/bride.jpg", caption: "Cô dâu Minh Anh" },
+      { url: "/images/demo/templates/t10-arch/gallery-1.jpg", caption: "Trọn vẹn từng khoảnh khắc" },
+      { url: "/images/demo/templates/t10-arch/gallery-2.jpg", caption: "Vừa yêu và vừa được yêu" },
+      { url: "/images/demo/templates/t10-arch/gallery-3.jpg", caption: "Sau tất cả, chúng mình là của nhau" },
+    ],
+    bankingPrimary: { bankCode: "MB", accountNumber: "1234567899", accountName: "VU HOANG NAM" },
+    bankingSecondary: { bankCode: "VCB", accountNumber: "9876543211", accountName: "NGUYEN MINH ANH" },
   },
 ];
 

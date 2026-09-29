@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { CanvasElement } from "@/types/canvas.types";
 import { readCanvasData } from "@/lib/editor/canvas-presentation";
 import { CanvasWidget } from "./CanvasWidget";
@@ -38,6 +38,44 @@ export function ScaledPresetWrapper({
       >
         {children}
       </div>
+    </div>
+  );
+}
+
+function ArchCountdownBoxes({ targetDate }: { targetDate: string }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 89, hours: 11, minutes: 51, seconds: 21 });
+  useEffect(() => {
+    const calculate = () => {
+      const target = new Date(targetDate || "2026-12-20T12:00:00Z").getTime();
+      const diff = Math.max(0, target - Date.now());
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    calculate();
+    const interval = setInterval(calculate, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
+  return (
+    <div className="flex items-center justify-center gap-2.5">
+      {[
+        { val: timeLeft.days, label: "NGÀY" },
+        { val: timeLeft.hours, label: "GIỜ" },
+        { val: timeLeft.minutes, label: "PHÚT" },
+        { val: timeLeft.seconds, label: "GIÂY" },
+      ].map((item, i) => (
+        <div key={i} className="bg-[#111111] text-white rounded-md py-2 px-2.5 min-w-[55px] text-center shadow-md">
+          <div className="text-xl font-bold font-mono tracking-tight leading-none">
+            {String(item.val).padStart(2, "0")}
+          </div>
+          <div className="text-[9px] uppercase tracking-widest text-stone-300 mt-1 font-sans">
+            {item.label}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -4581,30 +4619,1032 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         );
       }
 
-      // 23. Lễ Thành Hôn / Vu Quy (p-le-thanh-hon)
-      if (el.presetId === "p-le-thanh-hon" || el.content === "le-thanh-hon") {
+      // 24. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - HERO COVER (p-dragon-hero)
+      if (el.presetId === "p-dragon-hero") {
+        const custom = el.customData || {};
+        const groomShort = custom.groomShort || (typeof data.groom?.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "QUỐC BẢO";
+        const brideShort = custom.brideShort || (typeof data.bride?.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "NGỌC MAI";
+        const topTitle = custom.topTitle || "THE WEDDING OF";
+        const quoteText = custom.quoteText || "Hạnh phúc không nằm ở nơi ta đến, mà ở từng bước ta sánh vai bên nhau trên suốt chặng đường.";
+        const inviteHeader = custom.inviteHeader || "TRÂN TRỌNG KÍNH MỜI";
+        const inviteGuest = custom.inviteGuest || (guestName ? guestName : "Bạn cùng người thương");
+        const showPhoenix = custom.showPhoenix !== false;
+        const phoenixColor = custom.phoenixColor || "#6E1719";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={660} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col justify-between items-center text-center p-4 select-none">
+              {/* Background watermark floral subtle pattern */}
+              <div
+                className="absolute inset-0 opacity-[0.035] pointer-events-none"
+                style={{
+                  backgroundImage: "radial-gradient(#6E1719 1.5px, transparent 1.5px)",
+                  backgroundSize: "20px 20px",
+                }}
+              />
+
+              {/* Hoa văn cành hoa line-art góc trên và dưới */}
+              <svg className="absolute -top-6 -right-6 w-32 h-32 text-[#6E1719]/15 pointer-events-none" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 0 C60 25 75 40 100 50 C75 60 60 75 50 100 C40 75 25 60 0 50 C25 40 40 25 50 0 Z" />
+              </svg>
+              <svg className="absolute -bottom-8 -left-8 w-36 h-36 text-[#6E1719]/15 pointer-events-none rotate-45" viewBox="0 0 100 100" fill="currentColor">
+                <path d="M50 0 C60 25 75 40 100 50 C75 60 60 75 50 100 C40 75 25 60 0 50 C25 40 40 25 50 0 Z" />
+              </svg>
+
+              {/* 1. TOP TITLE */}
+              <div className="pt-3 z-10">
+                <span className="font-serif text-[11px] uppercase tracking-[0.35em] text-[#8C3B2D] font-medium block">
+                  {topTitle}
+                </span>
+                <div className="mt-2 space-y-0.5">
+                  <h1 className="font-serif text-[30px] font-bold text-[#6E1719] tracking-wider leading-tight drop-shadow-[0_1px_1px_rgba(110,23,25,0.15)] uppercase">
+                    {groomShort}
+                  </h1>
+                  <h1 className="font-serif text-[30px] font-bold text-[#6E1719] tracking-wider leading-tight drop-shadow-[0_1px_1px_rgba(110,23,25,0.15)] uppercase">
+                    {brideShort}
+                  </h1>
+                </div>
+              </div>
+
+              {/* 2. CHIM PHƯỢNG HOÀNG BÊN PHẢI (Right Phoenix) */}
+              {showPhoenix && (
+                <div className="absolute right-0 top-12 w-44 h-72 pointer-events-none z-10 opacity-95">
+                  <svg viewBox="0 0 200 320" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M170 30 C155 35 140 45 135 60 C130 75 138 90 148 100 C160 112 175 125 180 145 C185 170 170 200 145 220 C125 235 105 240 85 245 C65 250 45 260 30 280 C25 287 35 292 42 288 C65 272 90 268 115 260 C140 252 165 235 180 205 C195 175 198 140 190 110 C182 80 185 50 170 30 Z"
+                      fill={phoenixColor}
+                    />
+                    <path
+                      d="M135 60 C128 55 120 52 110 52 C100 52 90 58 85 68 C80 78 82 90 88 100 C96 112 108 122 120 130 C110 130 98 126 90 120 C80 112 75 100 72 88 C70 75 75 60 85 50 C95 40 110 35 125 35 C132 35 140 38 145 42 Z"
+                      fill={phoenixColor}
+                    />
+                    {/* Head, beak, crown */}
+                    <circle cx="120" cy="45" r="8" fill={phoenixColor} />
+                    <path d="M112 45 L95 42 L112 48 Z" fill={phoenixColor} />
+                    <path d="M124 38 Q130 20 142 22 Q134 28 126 36 Z" fill={phoenixColor} />
+                    <path d="M120 37 Q124 15 132 18 Q126 26 122 35 Z" fill={phoenixColor} />
+                    {/* Wing Feathers */}
+                    <path d="M130 95 C145 80 165 75 185 80 C180 95 170 110 155 120 C145 110 138 102 130 95 Z" fill={phoenixColor} opacity="0.9" />
+                    <path d="M140 120 C158 110 178 110 195 120 C185 135 170 148 150 152 C145 140 142 130 140 120 Z" fill={phoenixColor} opacity="0.85" />
+                    <path d="M135 150 C155 145 175 150 190 165 C175 178 158 185 140 182 Z" fill={phoenixColor} opacity="0.8" />
+                    {/* Flowing Tail Feathers */}
+                    <path d="M145 220 Q170 250 185 290 Q172 285 160 270 Q145 250 140 230 Z" fill={phoenixColor} />
+                    <path d="M130 240 Q150 275 160 315 Q148 305 138 285 Q128 265 125 245 Z" fill={phoenixColor} />
+                  </svg>
+                </div>
+              )}
+
+              {/* 3. DẢI BĂNG NGANG ĐỎ ĐÔ VỚI CHỮ SONG HỶ TRẮNG */}
+              <div className="w-full relative my-auto py-2 flex items-center justify-center z-20">
+                {/* Dải băng đỏ đô */}
+                <div className="w-full h-18 bg-[#6E1719] shadow-md flex items-center justify-center relative">
+                  {/* Đường chỉ vàng kim mép trên & mép dưới */}
+                  <div className="absolute top-0.5 left-0 right-0 h-[1.5px] bg-[#E8C882]/70" />
+                  <div className="absolute bottom-0.5 left-0 right-0 h-[1.5px] bg-[#E8C882]/70" />
+
+                  {/* CHỮ SONG HỶ (囍) TRẮNG TINH KHÔI NỔI BẬT */}
+                  <span className="font-serif text-[42px] font-bold text-white tracking-[0.1em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] select-none">
+                    囍
+                  </span>
+                </div>
+              </div>
+
+              {/* 4. CHIM PHƯỢNG HOÀNG BÊN TRÁI (Left Phoenix lớn phía dưới) */}
+              {showPhoenix && (
+                <div className="absolute -left-2 bottom-12 w-48 h-80 pointer-events-none z-10 opacity-95">
+                  <svg viewBox="0 0 220 340" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M30 180 C45 150 70 130 100 120 C125 112 145 115 160 125 C145 140 120 155 95 170 C70 185 50 210 40 240 C35 255 38 275 50 288 C65 305 90 310 115 305 C85 315 55 310 35 290 C15 270 12 240 18 215 C20 200 24 190 30 180 Z"
+                      fill={phoenixColor}
+                    />
+                    {/* Head & Neck */}
+                    <path d="M70 110 C65 95 68 80 78 70 C88 60 102 58 115 62 C105 72 95 85 92 100 C90 112 92 125 96 138 C85 132 75 122 70 110 Z" fill={phoenixColor} />
+                    <circle cx="85" cy="75" r="7" fill={phoenixColor} />
+                    <path d="M78 74 L60 70 L78 78 Z" fill={phoenixColor} />
+                    <path d="M88 68 Q95 50 108 52 Q98 58 92 66 Z" fill={phoenixColor} />
+                    {/* Big Wing Feathers */}
+                    <path d="M90 140 C110 120 140 110 170 115 C155 135 135 150 110 160 Z" fill={phoenixColor} opacity="0.9" />
+                    <path d="M75 170 C100 155 130 150 160 160 C140 180 115 195 85 200 Z" fill={phoenixColor} opacity="0.85" />
+                    {/* Elaborate Tail Feathers */}
+                    <path d="M40 240 Q15 280 20 330 Q28 305 45 285 Q55 265 52 245 Z" fill={phoenixColor} />
+                    <path d="M50 270 Q35 305 48 345 Q52 320 68 300 Q78 285 70 268 Z" fill={phoenixColor} />
+                  </svg>
+                </div>
+              )}
+
+              {/* 5. CÂU TRÍCH DẪN TÌNH YÊU */}
+              <div className="max-w-[290px] mx-auto z-20 my-2">
+                <p className="font-serif italic text-xs leading-relaxed text-[#6E1719] font-medium">
+                  {quoteText}
+                </p>
+              </div>
+
+              {/* 6. PHẦN DƯỚI: TRÂN TRỌNG KÍNH MỜI */}
+              <div className="w-full pb-3 z-20 space-y-1">
+                <span className="font-serif font-bold text-sm text-[#6E1719] uppercase tracking-wider block">
+                  {inviteHeader}
+                </span>
+                <span className="font-serif italic font-bold text-lg text-[#6E1719] block tracking-wide">
+                  {inviteGuest}
+                </span>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 25. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - THÔNG TIN LỄ CƯỚI & NHÀ TRAI NHÀ GÁI (p-dragon-invitation)
+      if (el.presetId === "p-dragon-invitation") {
+        const custom = el.customData || {};
+        const groomParents = (data.groom?.parents as any) || {};
+        const brideParents = (data.bride?.parents as any) || {};
+
+        const inviteTitle = custom.inviteTitle || "TRÂN TRỌNG KÍNH MỜI";
+        const guestText = custom.guestText || (guestName ? guestName : "Bạn cùng người thương");
+        const infoTitle = custom.infoTitle || "THÔNG TIN LỄ CƯỚI";
+
+        const groomFather = custom.groomFather || groomParents.fatherName || "Bố chú rể";
+        const groomMother = custom.groomMother || groomParents.motherName || "Mẹ chú rể";
+        const groomAddress = custom.groomAddress || groomParents.address || (typeof data.events?.[0]?.address === "string" ? data.events[0].address : "10 Lê Lợi - Đề Thám - TP.Thái Bình");
+
+        const brideFather = custom.brideFather || brideParents.fatherName || "Bố cô dâu";
+        const brideMother = custom.brideMother || brideParents.motherName || "Mẹ cô dâu";
+        const brideAddress = custom.brideAddress || brideParents.address || "Vĩnh An Nam - Tam Xuân - Đà Nẵng";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={380} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col justify-between items-center text-center p-4 py-5 select-none">
+              {/* Background watermark phoenix */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none">
+                <span className="font-serif text-[180px] font-bold text-[#6E1719]">囍</span>
+              </div>
+
+              {/* Header: Kính mời */}
+              <div className="space-y-1 z-10">
+                <span className="font-serif font-bold text-sm uppercase tracking-wider text-[#6E1719] block">
+                  {inviteTitle}
+                </span>
+                <span className="font-serif italic font-bold text-lg text-[#6E1719] block">
+                  {guestText}
+                </span>
+              </div>
+
+              {/* Title: Thông Tin Lễ Cưới */}
+              <div className="z-10 py-1">
+                <span className="font-serif font-bold text-base uppercase tracking-widest text-[#6E1719] pb-1 border-b border-[#6E1719]/30">
+                  {infoTitle}
+                </span>
+              </div>
+
+              {/* 2 Cột Nhà Trai & Nhà Gái với 2 ly rượu mừng ở giữa */}
+              <div className="w-full grid grid-cols-2 gap-3 relative z-10 pt-2 px-1">
+                {/* Cột ngăn cách & Icon 2 ly rượu mừng */}
+                <div className="absolute left-1/2 top-1 bottom-1 -translate-x-1/2 flex flex-col items-center justify-between pointer-events-none">
+                  <div className="w-[1px] flex-1 bg-[#6E1719]/25" />
+                  <div className="my-1 size-7 rounded-full bg-[#FAF6F0] border border-[#6E1719]/30 flex items-center justify-center shadow-xs">
+                    {/* SVG 2 ly rượu vang chạm nhau chạm khắc */}
+                    <svg viewBox="0 0 24 24" className="size-4 text-[#8C3B2D]" fill="currentColor">
+                      <path d="M7 2 L11 9 C11.5 10 11.5 11 10.5 12 L10.5 18 L12.5 18 L12.5 20 L5.5 20 L5.5 18 L7.5 18 L7.5 12 C6.5 11 6.5 10 7 9 Z M17 2 L13 9 C12.5 10 12.5 11 13.5 12 L13.5 18 L11.5 18 L11.5 20 L18.5 20 L18.5 18 L16.5 18 L16.5 12 C17.5 11 17.5 10 17 9 Z" opacity="0.85" />
+                    </svg>
+                  </div>
+                  <div className="w-[1px] flex-1 bg-[#6E1719]/25" />
+                </div>
+
+                {/* Nhà Trai */}
+                <div className="text-right pr-4 space-y-1">
+                  <h3 className="font-serif font-bold text-sm text-[#6E1719]">Nhà Trai</h3>
+                  <div className="text-[11px] text-[#4A181C] space-y-0.5 font-serif">
+                    <p>Ông : <span className="font-semibold">{groomFather}</span></p>
+                    <p>Mẹ : <span className="font-semibold">{groomMother}</span></p>
+                    <p className="text-[9.5px] text-[#7A3A3E] leading-tight pt-1">{groomAddress}</p>
+                  </div>
+                </div>
+
+                {/* Nhà Gái */}
+                <div className="text-left pl-4 space-y-1">
+                  <h3 className="font-serif font-bold text-sm text-[#6E1719]">Nhà Gái</h3>
+                  <div className="text-[11px] text-[#4A181C] space-y-0.5 font-serif">
+                    <p>Ông : <span className="font-semibold">{brideFather}</span></p>
+                    <p>Mẹ : <span className="font-semibold">{brideMother}</span></p>
+                    <p className="text-[9.5px] text-[#7A3A3E] leading-tight pt-1">{brideAddress}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 26. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - TÊN CẶP ĐÔI, LỄ THÀNH HÔN & LỊCH ÂM DƯƠNG (p-dragon-ceremony)
+      if (el.presetId === "p-dragon-ceremony") {
+        const custom = el.customData || {};
+        const groomFull = custom.groomFull || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Trịnh Quốc Bảo";
+        const brideFull = custom.brideFull || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Nguyễn Ngọc Mai";
+        const ceremonyType = custom.ceremonyType || "LỄ THÀNH HÔN";
+        const ceremonyTime = custom.ceremonyTime || "Vào Chủ Nhật - 14h00";
+
         const events = Array.isArray(data.events) ? data.events : [];
         const firstEvent = (events[0] as Record<string, unknown>) || null;
         const evDate = parseEventDate(firstEvent);
-        const title = el.customData?.title || "LỄ THÀNH HÔN & NHẬP TIỆC";
-        const timeStr = el.customData?.timeStr || (evDate ? `${fmtTime(evDate)} • ${evDate.getDate()} Tháng ${evDate.getMonth() + 1}, ${evDate.getFullYear()}` : "11:00 • 18 Tháng 12, 2026");
-        const lunarStr = el.customData?.lunarStr || (typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? `(Nhằm ${firstEvent.lunarDate})` : "(Nhằm ngày 10 tháng 11 năm Bính Ngọ)");
-        const venueStr = el.customData?.venueStr || (typeof firstEvent?.venueName === "string" && firstEvent.venueName ? `Tại: ${firstEvent.venueName}` : "Tại: Tư Gia Nhà Trai / Khách Sạn Melia");
-        const footerNote = el.customData?.footerNote || "Hân hạnh được đón tiếp quý khách!";
+
+        const monthStr = custom.monthStr || (evDate ? `Tháng ${evDate.getMonth() + 1}` : "Tháng 11");
+        const dayStr = custom.dayStr || (evDate ? `${evDate.getDate()}` : "29");
+        const yearStr = custom.yearStr || (evDate ? `Năm ${evDate.getFullYear()}` : "Năm 2026");
+        const lunarDateStr = custom.lunarDateStr || (typeof firstEvent?.lunarDate === "string" && firstEvent.lunarDate ? firstEvent.lunarDate : "Tức Ngày 10 tháng 10 năm Bính Ngọ");
 
         return (
-          <ScaledPresetWrapper baseW={310} baseH={180} w={el.width} h={el.height}>
-            <div className="w-full h-full p-4 bg-[#FAF6F4] rounded-2xl border border-rose-200 shadow-md flex flex-col items-center justify-between text-center pointer-events-none select-none">
-              <div className="inline-block bg-rose-100/90 text-rose-800 text-[10px] font-serif font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
-                {title}
+          <ScaledPresetWrapper baseW={390} baseH={420} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col justify-between items-center text-center p-4 py-4 select-none">
+              {/* Tên cặp đôi: Trịnh Quốc Bảo & Nguyễn Ngọc Mai */}
+              <div className="space-y-1 pt-1 z-10">
+                <h2 className="font-serif text-[24px] font-bold text-[#6E1719] tracking-wide">
+                  {groomFull}
+                </h2>
+                <span className="font-serif italic text-xl text-[#8C3B2D] block leading-none">
+                  &
+                </span>
+                <h2 className="font-serif text-[24px] font-bold text-[#6E1719] tracking-wide">
+                  {brideFull}
+                </h2>
               </div>
-              <div className="my-auto space-y-0.5">
-                <span className="text-base font-serif font-bold text-stone-900 block">{timeStr}</span>
-                <span className="text-[9.5px] text-stone-600 block">{lunarStr}</span>
-                <span className="text-[9px] text-rose-800 font-medium block mt-1">{venueStr}</span>
+
+              {/* Lễ Thành Hôn */}
+              <div className="space-y-1 z-10 py-1">
+                <h3 className="font-serif font-bold text-[20px] uppercase tracking-widest text-[#6E1719]">
+                  {ceremonyType}
+                </h3>
+                <p className="font-serif text-xs text-[#5C2024] font-medium">
+                  {ceremonyTime}
+                </p>
               </div>
-              <div className="w-full pt-1 border-t border-rose-100 text-[8.5px] font-serif italic text-stone-500">
-                {footerNote}
+
+              {/* Khối lịch ngày tháng đặc trưng: Tháng 11 | 29 | Năm 2026 */}
+              <div className="w-full max-w-[310px] mx-auto z-10 pt-1 pb-2">
+                <div className="flex items-center justify-center gap-3">
+                  <span className="font-serif text-base font-semibold text-[#6E1719]">
+                    {monthStr}
+                  </span>
+                  <div className="w-[1.5px] h-10 bg-[#6E1719]/40" />
+                  <span className="font-serif text-4xl font-bold text-[#6E1719] leading-none px-1">
+                    {dayStr}
+                  </span>
+                  <div className="w-[1.5px] h-10 bg-[#6E1719]/40" />
+                  <span className="font-serif text-base font-semibold text-[#6E1719]">
+                    {yearStr}
+                  </span>
+                </div>
+
+                {/* Âm lịch */}
+                <p className="font-serif text-xs text-[#5C2024] font-medium pt-2 italic">
+                  {lunarDateStr.startsWith("Tức") ? lunarDateStr : `Tức ${lunarDateStr}`}
+                </p>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 27. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - ALBUM ẢNH CƯỚI NGHỆ THUẬT (p-dragon-gallery)
+      if (el.presetId === "p-dragon-gallery") {
+        const custom = el.customData || {};
+        const albumTitleScript = custom.albumTitleScript || "Album";
+        const albumSubtitle = custom.albumSubtitle || "Ảnh cưới";
+
+        const photos = Array.isArray(data.photos) ? data.photos : [];
+        const p1 = custom.photo1 || (photos[0] as any)?.url || "/images/demo/templates/t09-dragon/gallery-1.jpg";
+        const p2 = custom.photo2 || (photos[1] as any)?.url || "/images/demo/templates/t09-dragon/gallery-2.jpg";
+        const p3 = custom.photo3 || (photos[2] as any)?.url || "/images/demo/templates/t09-dragon/gallery-3.jpg";
+        const p4 = custom.photo4 || (photos[3] as any)?.url || "/images/demo/templates/t09-dragon/gallery-4.jpg";
+        const p5 = custom.photo5 || (photos[4] as any)?.url || "/images/demo/templates/t09-dragon/gallery-5.jpg";
+        const p6 = custom.photo6 || (photos[5] as any)?.url || "/images/demo/templates/t09-dragon/gallery-6.jpg";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={740} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col justify-between p-3 select-none">
+              {/* Header Album Ảnh Cưới */}
+              <div className="text-center pt-2 pb-3">
+                <span className="font-cursive text-3xl text-[#6E1719] block leading-none drop-shadow-xs">
+                  {albumTitleScript}
+                </span>
+                <span className="font-serif text-lg font-bold text-[#6E1719] uppercase tracking-wider block mt-0.5">
+                  {albumSubtitle}
+                </span>
+              </div>
+
+              {/* Artistic Photo Mosaic Grid */}
+              <div className="w-full flex-1 flex flex-col gap-2">
+                {/* Phần trên: Cụm ảnh đa khung */}
+                <div className="w-full grid grid-cols-12 gap-2 h-[460px]">
+                  {/* Cột trái: 2 ảnh nhỏ xếp dọc (4 cols) */}
+                  <div className="col-span-4 flex flex-col gap-2 h-full">
+                    <div className="h-1/2 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
+                      <img src={p2} alt="Wedding Photo 2" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="h-1/2 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
+                      <img src={p3} alt="Wedding Photo 3" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+
+                  {/* Cột giữa: 1 ảnh lớn dọc nổi bật (5 cols) */}
+                  <div className="col-span-5 h-full rounded-md overflow-hidden shadow-md bg-stone-100 border border-[#6E1719]/10">
+                    <img src={p1} alt="Main Wedding Photo" className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Cột phải: 1 ảnh nhỏ góc phải (3 cols) */}
+                  <div className="col-span-3 flex flex-col justify-center h-full">
+                    <div className="h-44 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
+                      <img src={p4} alt="Wedding Photo 4" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phần dưới: 2 ảnh chữ nhật nằm ngang đối xứng */}
+                <div className="w-full grid grid-cols-2 gap-2 h-[170px]">
+                  <div className="w-full h-full rounded-md overflow-hidden shadow-xs bg-stone-100">
+                    <img src={p5} alt="Wedding Photo 5" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-full h-full rounded-md overflow-hidden shadow-xs bg-stone-100">
+                    <img src={p6} alt="Wedding Photo 6" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 28. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - GỬI QUÀ MỪNG & SỔ ĐỎ KẾT HÔN 结婚证 (p-dragon-gift)
+      if (el.presetId === "p-dragon-gift") {
+        const custom = el.customData || {};
+        const titleScript = custom.titleScript || "Gửi quà mừng";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={400} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col items-center justify-between p-4 py-5 select-none text-center">
+              {/* Tiêu đề chữ viết tay: Gửi quà mừng */}
+              <div className="z-10 pt-1">
+                <span className="font-cursive text-4xl text-[#6E1719] block drop-shadow-xs">
+                  {titleScript}
+                </span>
+              </div>
+
+              {/* 2 Cuốn sổ kết hôn đỏ chữ vàng: 结婚证 (Hoặc phong bì mừng cưới đỏ) */}
+              <div
+                className="relative my-auto flex items-center justify-center cursor-pointer group"
+                onClick={onGift}
+                role="button"
+                tabIndex={0}
+              >
+                {/* Sổ đỏ bên trái */}
+                <div className="w-24 h-36 bg-[#B51E28] rounded-md shadow-xl -rotate-12 transform group-hover:-rotate-16 transition-transform border border-amber-300/30 flex flex-col items-center justify-center p-2 text-amber-300 select-none">
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">结</span>
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">婚</span>
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">证</span>
+                  <span className="text-[8px] uppercase tracking-wider text-amber-200/80 mt-1 block">Hỷ Sự</span>
+                </div>
+
+                {/* Sổ đỏ bên phải đè lên nhẹ */}
+                <div className="w-24 h-36 bg-[#A11721] rounded-md shadow-2xl rotate-6 -ml-8 transform group-hover:rotate-12 transition-transform border border-amber-300/30 flex flex-col items-center justify-center p-2 text-amber-300 select-none">
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">结</span>
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">婚</span>
+                  <span className="font-serif text-lg font-bold tracking-widest block leading-tight">证</span>
+                  <span className="text-[8px] uppercase tracking-wider text-amber-200/80 mt-1 block">Trăm Năm</span>
+                </div>
+              </div>
+
+              {/* Nút bấm mừng cưới mở modal QR */}
+              <div className="z-10 pb-2">
+                <button
+                  type="button"
+                  onClick={onGift}
+                  className="px-6 py-2 rounded-full bg-[#6E1719] hover:bg-[#521113] text-[#FAF6F0] font-serif text-xs font-semibold uppercase tracking-wider shadow-md hover:shadow-lg transition cursor-pointer flex items-center gap-1.5 mx-auto"
+                >
+                  <QrCode className="size-3.5 text-amber-300" />
+                  <span>Mừng Cưới / Quét Mã QR</span>
+                </button>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 29. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - XÁC NHẬN THAM DỰ RSVP (p-dragon-rsvp)
+      if (el.presetId === "p-dragon-rsvp") {
+        const custom = el.customData || {};
+        const rsvpTitleScript = custom.rsvpTitleScript || "Xác nhận tham dự";
+        const rsvpSubtitle = custom.rsvpSubtitle || "R.S.V.P.";
+        const rsvpHeading = custom.rsvpHeading || "Xác nhận tham dự";
+        const rsvpMessage = custom.rsvpMessage || "Vui lòng xác nhận tham dự để chúng mình chuẩn bị lễ cưới được thuận lợi và trọn vẹn nhất.";
+        const buttonLabel = custom.buttonLabel || "Gửi xác nhận";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={320} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FAF6F0] flex flex-col items-center justify-between p-4 py-4 select-none text-center">
+              {/* Tiêu đề viết tay */}
+              <div className="space-y-0.5 z-10 pt-1">
+                <span className="font-cursive text-3xl text-[#6E1719] block leading-none">
+                  {rsvpTitleScript}
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#8C3B2D] block mt-1">
+                  {rsvpSubtitle}
+                </span>
+              </div>
+
+              {/* Lời nhắn gửi */}
+              <div className="space-y-1.5 max-w-[280px] z-10 my-auto">
+                <h4 className="font-serif font-bold text-sm text-[#6E1719]">
+                  {rsvpHeading}
+                </h4>
+                <p className="font-serif text-xs text-[#522023] leading-relaxed">
+                  {rsvpMessage}
+                </p>
+              </div>
+
+              {/* Nút bấm xác nhận */}
+              <div className="z-10 pb-2">
+                <button
+                  type="button"
+                  onClick={onRsvp}
+                  className="px-8 py-2.5 rounded-full bg-[#6E1719] hover:bg-[#521113] text-[#FAF6F0] font-serif text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg transition cursor-pointer flex items-center gap-2 mx-auto active:scale-95"
+                >
+                  <span className="text-amber-300">✦</span>
+                  <span>{buttonLabel}</span>
+                </button>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // 30. LONG PHỤNG SUM VẦY ĐỎ ĐÔ - CHÂN TRANG ĐỎ ĐÔ (p-dragon-farewell)
+      if (el.presetId === "p-dragon-farewell") {
+        const custom = el.customData || {};
+        const thankText = custom.thankText || "Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi!";
+        const bgColor = custom.bgColor || "#6E1719";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={140} w={el.width} h={el.height}>
+            <div
+              className="w-full h-full relative overflow-hidden flex items-center justify-center p-6 text-center select-none shadow-inner"
+              style={{ backgroundColor: bgColor }}
+            >
+              {/* Họa tiết hoa văn viền cổ điển */}
+              <div className="absolute inset-2 border border-[#E8C882]/30 rounded-xs pointer-events-none" />
+              <p className="font-serif font-bold text-[15px] sm:text-base text-white tracking-wide leading-relaxed max-w-[320px] drop-shadow-xs">
+                {thankText}
+              </p>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 31. TÌNH YÊU HÀ NỘI - BURGUNDY ARCH EDITORIAL (p-arch-hero)
+      // =========================================================================
+      if (el.presetId === "p-arch-hero") {
+        const custom = el.customData || {};
+        const title = custom.title || "OUR WEDDING | Thiệp Cưới Của Nam & Anh";
+        const subtitle = custom.subtitle || "From Hanoi with love 💖";
+        const dateStr = custom.dateStr || "20.12.2026, 12:00";
+        const coverImg = custom.coverUrl || el.imageUrl || data.coverPhotoUrl || "/images/demo/templates/t10-arch/cover.jpg";
+        const groomShort = custom.groomShort || (typeof data.groom?.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Hoàng Nam";
+        const brideShort = custom.brideShort || (typeof data.bride?.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Minh Anh";
+        const inviteLabel = custom.inviteLabel || "WEDDING INVITATION";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={720} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-4 py-5 select-none">
+              {/* Header Top Bar */}
+              <div className="w-full flex items-start justify-between text-left px-2 z-10">
+                <div className="max-w-[190px]">
+                  <p className="font-sans text-[11px] font-semibold tracking-wider text-[#1F1B1C] uppercase leading-tight">
+                    {title}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-sans text-[11px] font-medium text-[#1F1B1C] flex items-center justify-end gap-1">
+                    {subtitle}
+                  </p>
+                  <p className="font-sans text-[10px] text-[#666666] tracking-tight mt-0.5">
+                    {dateStr}
+                  </p>
+                </div>
+              </div>
+
+              {/* Main Visual: Center Photo with Floating Crimson Cards */}
+              <div className="relative my-auto flex items-center justify-center py-4">
+                {/* Floating Red Cards / Slabs behind the photo */}
+                <div className="absolute -top-3 -right-4 w-7 h-20 bg-[#7A121D] rotate-[15deg] shadow-xs z-0" />
+                <div className="absolute top-8 -right-6 w-6 h-24 bg-[#7A121D] rotate-[-8deg] shadow-xs z-0" />
+                <div className="absolute bottom-12 -right-5 w-7 h-16 bg-[#7A121D] rotate-[12deg] shadow-xs z-0" />
+                <div className="absolute -top-4 -left-3 w-10 h-7 bg-[#7A121D] rotate-[-12deg] shadow-xs z-0" />
+                <div className="absolute top-16 -left-6 w-6 h-20 bg-[#7A121D] rotate-[18deg] shadow-xs z-0" />
+                <div className="absolute bottom-8 -left-7 w-12 h-16 bg-[#7A121D] rotate-[-22deg] shadow-xs z-0" />
+
+                {/* Main Photo Frame */}
+                <div className="relative z-10 w-[240px] h-[330px] shadow-lg bg-white overflow-hidden">
+                  <img
+                    src={coverImg}
+                    alt="Couple Cover"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Bottom Invitation Label & Couple Names */}
+              <div className="z-10 pb-16 space-y-1">
+                <h3 className="font-serif italic text-base uppercase tracking-widest text-[#1F1B1C]">
+                  {inviteLabel}
+                </h3>
+                <p className="font-serif text-sm font-medium text-[#1F1B1C] tracking-wide">
+                  {brideShort} & {groomShort}
+                </p>
+              </div>
+
+              {/* Simulated Floating Music Bar */}
+              <div className="absolute bottom-4 left-4 right-4 bg-white/85 backdrop-blur-md rounded-2xl p-2.5 px-3.5 shadow-md border border-stone-200/60 flex items-center justify-between z-20">
+                <div className="text-left">
+                  <p className="font-serif text-xs font-bold text-[#1F1B1C] tracking-tight">Autumn Leaf - replus</p>
+                  <p className="text-[10px] text-stone-500 font-sans">Playing...</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden border border-stone-300">
+                    <img src={coverImg} alt="Music thumb" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-[10px]">
+                    ✕
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 32. TÌNH YÊU HÀ NỘI - THÔNG TIN GIA ĐÌNH & CẶP ĐÔI (p-arch-invitation)
+      // =========================================================================
+      if (el.presetId === "p-arch-invitation") {
+        const custom = el.customData || {};
+        const gParents = (data.groom && typeof data.groom === "object" && "parents" in data.groom && data.groom.parents && typeof data.groom.parents === "object" ? data.groom.parents : {}) as Record<string, unknown>;
+        const bParents = (data.bride && typeof data.bride === "object" && "parents" in data.bride && data.bride.parents && typeof data.bride.parents === "object" ? data.bride.parents : {}) as Record<string, unknown>;
+
+        const groomParents = custom.groomParents || {
+          father: typeof gParents.fatherName === "string" ? gParents.fatherName : "Vũ Minh Anh",
+          mother: typeof gParents.motherName === "string" ? gParents.motherName : "Lê Tuyết Như",
+          address: typeof gParents.address === "string" ? gParents.address : "Bãi Cháy - Quảng Ninh",
+        };
+        const brideParents = custom.brideParents || {
+          father: typeof bParents.fatherName === "string" ? bParents.fatherName : "Nguyễn Văn Tuấn",
+          mother: typeof bParents.motherName === "string" ? bParents.motherName : "Nguyễn Thị Mai",
+          address: typeof bParents.address === "string" ? bParents.address : "Hoàng Mai - Hà Nội",
+        };
+        const groomName = custom.groomName || (typeof data.groom?.shortName === "string" ? data.groom.shortName : "") || "Hoàng Nam";
+        const brideName = custom.brideName || (typeof data.bride?.shortName === "string" ? data.bride.shortName : "") || "Minh Anh";
+        const groomRole = custom.groomRole || "Trưởng Nam";
+        const brideRole = custom.brideRole || "Út Nữ";
+        const groomImg = custom.groomUrl || data.groom?.avatarUrl || "/images/demo/templates/t10-arch/groom.jpg";
+        const brideImg = custom.brideUrl || data.bride?.avatarUrl || "/images/demo/templates/t10-arch/bride.jpg";
+        const groomPhone = custom.groomPhone || data.groom?.phone || "0912345678";
+        const bridePhone = custom.bridePhone || data.bride?.phone || "0987654321";
+        const quoteText = custom.quote || "Với xác suất gặp nhau chỉ 0.00487, chúng mình đã vượt qua mọi rào cản, cùng nhau bước vào hành trình phiêu lưu kéo dài trọn đời.";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={760} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-3 select-none">
+              {/* Framed Card with top-left hanging red bookmark ribbon tab */}
+              <div className="relative w-full h-[620px] border border-[#1F1B1C]/70 rounded-xs p-4 flex flex-col justify-between items-center">
+                {/* Hanging Crimson Ribbon Tab */}
+                <div className="absolute -top-3.5 left-5 w-8 h-16 bg-[#7A121D] shadow-md z-20" />
+
+                {/* Parents 2-Column Info */}
+                <div className="w-full grid grid-cols-2 gap-2 text-center pt-3 pb-2 z-10">
+                  {/* Nhà Trai */}
+                  <div className="space-y-0.5">
+                    <h4 className="font-serif text-[11px] font-bold tracking-widest text-[#1F1B1C] uppercase">
+                      NHÀ TRAI
+                    </h4>
+                    <p className="font-serif text-[10px] text-[#2A2A2A] leading-tight">
+                      Ông : {groomParents.father}
+                    </p>
+                    <p className="font-serif text-[10px] text-[#2A2A2A] leading-tight">
+                      Bà {groomParents.mother}
+                    </p>
+                    <p className="font-serif italic text-[9px] text-[#666666] leading-tight pt-0.5">
+                      {groomParents.address}
+                    </p>
+                  </div>
+
+                  {/* Nhà Gái */}
+                  <div className="space-y-0.5">
+                    <h4 className="font-serif text-[11px] font-bold tracking-widest text-[#1F1B1C] uppercase">
+                      NHÀ GÁI
+                    </h4>
+                    <p className="font-serif text-[10px] text-[#2A2A2A] leading-tight">
+                      Ông {brideParents.father}
+                    </p>
+                    <p className="font-serif text-[10px] text-[#2A2A2A] leading-tight">
+                      Bà {brideParents.mother}
+                    </p>
+                    <p className="font-serif italic text-[9px] text-[#666666] leading-tight pt-0.5">
+                      {brideParents.address}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Couple Names in Cursive Script */}
+                <div className="w-full relative py-1 z-10">
+                  <div className="text-left pl-6">
+                    <h2 className="font-script text-3xl text-[#7A121D] leading-none drop-shadow-xs">
+                      {groomName}
+                    </h2>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 my-0.5">
+                    <span className="font-serif font-bold text-xs text-[#1F1B1C]">{groomRole}</span>
+                    <span className="text-sm">💕</span>
+                    <span className="font-serif font-bold text-xs text-[#1F1B1C]">{brideRole}</span>
+                  </div>
+
+                  <div className="text-right pr-6">
+                    <h2 className="font-script text-3xl text-[#7A121D] leading-none drop-shadow-xs">
+                      {brideName}
+                    </h2>
+                  </div>
+                </div>
+
+                {/* Dual Arch Portraits Side-by-Side */}
+                <div className="w-full grid grid-cols-2 gap-3 px-1 pt-1 pb-1 z-10">
+                  {/* Groom Arch */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-[135px] h-[175px] rounded-t-full overflow-hidden shadow-sm border border-stone-200/80 bg-stone-100">
+                      <img src={groomImg} alt={groomName} className="w-full h-full object-cover" />
+                    </div>
+                    <a
+                      href={`tel:${groomPhone}`}
+                      className="mt-2.5 px-3 py-1.5 rounded-full bg-[#7A121D] text-white font-sans text-[10px] font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition pointer-events-auto"
+                    >
+                      <span>📞</span>
+                      <span>SĐT chú rể</span>
+                    </a>
+                  </div>
+
+                  {/* Bride Arch */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-[135px] h-[175px] rounded-t-full overflow-hidden shadow-sm border border-stone-200/80 bg-stone-100">
+                      <img src={brideImg} alt={brideName} className="w-full h-full object-cover" />
+                    </div>
+                    <a
+                      href={`tel:${bridePhone}`}
+                      className="mt-2.5 px-3 py-1.5 rounded-full bg-[#7A121D] text-white font-sans text-[10px] font-semibold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition pointer-events-auto"
+                    >
+                      <span>📞</span>
+                      <span>SĐT cô dâu</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Quote under Card */}
+              <div className="w-full max-w-[340px] pt-3 text-left pl-3 space-y-1">
+                <span className="font-serif text-2xl text-[#1F1B1C] leading-none block">“</span>
+                <p className="font-script text-base text-[#2E2E2E] leading-relaxed pl-2">
+                  {quoteText} 💕
+                </p>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 33. TÌNH YÊU HÀ NỘI - THƠ & CẶP ẢNH SO LEO (p-arch-story)
+      // =========================================================================
+      if (el.presetId === "p-arch-story") {
+        const custom = el.customData || {};
+        const badge = custom.badge || "Trọn vẹn";
+        const poem = custom.poem || "Tên của anh chỉ vỏn vẹn vài chữ,\ndù có rời rạc, chẳng thành câu,\nnhưng trong tim em luôn ấp ủ,\nchỉ nguyện bên nhau mãi một đời.";
+        const photo1 = custom.photo1 || "/images/demo/templates/t10-arch/gallery-1.jpg";
+        const photo2 = custom.photo2 || "/images/demo/templates/t10-arch/gallery-2.jpg";
+        const quoteEn = custom.quoteEn || "At this moment, love and being loved happen at the same time.";
+        const quoteVi = custom.quoteVi || "Ngay giây phút này, chúng ta vừa yêu, và vừa được yêu.";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={680} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-4 py-4 select-none">
+              {/* Minimalist continuous line doodle curve with loop */}
+              <div className="w-full flex justify-center pt-2">
+                <svg width="240" height="40" viewBox="0 0 240 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M10 20 C 50 35, 80 5, 120 18 C 140 25, 150 5, 160 20 C 168 32, 180 32, 178 18 C 176 6, 160 10, 166 22 C 172 32, 200 15, 230 25"
+                    stroke="#1F1B1C"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Solid Red Badge */}
+              <div className="my-1">
+                <span className="bg-[#7A121D] text-white font-serif text-xs px-5 py-1 tracking-widest font-semibold inline-block shadow-xs">
+                  【{badge}】
+                </span>
+              </div>
+
+              {/* Handwritten Poem */}
+              <div className="max-w-[310px] mx-auto py-1">
+                <p className="font-script text-base text-[#2A2A2A] leading-relaxed whitespace-pre-line">
+                  {poem}
+                </p>
+              </div>
+
+              {/* Staggered 2-Photo Collage */}
+              <div className="relative w-full max-w-[340px] h-[260px] mx-auto my-2">
+                {/* Left photo (lift) */}
+                <div className="absolute left-2 top-0 w-[155px] h-[230px] shadow-md bg-white p-1 border border-stone-200/60 z-10">
+                  <img src={photo1} alt="Staggered 1" className="w-full h-full object-cover" />
+                </div>
+                {/* Right photo (back hug) */}
+                <div className="absolute right-2 top-6 w-[165px] h-[230px] shadow-lg bg-white p-1 border border-stone-200/60 z-20">
+                  <img src={photo2} alt="Staggered 2" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              {/* Bilingual Typography */}
+              <div className="space-y-1 pb-2">
+                <p className="font-serif italic text-xs text-[#2A2A2A] tracking-wide">
+                  {quoteEn}
+                </p>
+                <p className="font-serif italic text-xs text-[#2A2A2A] tracking-wide">
+                  "{quoteVi}"
+                </p>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 34. TÌNH YÊU HÀ NỘI - ĐẾM NGƯỢC & ẢNH VÒM LỚN (p-arch-countdown)
+      // =========================================================================
+      if (el.presetId === "p-arch-countdown") {
+        const custom = el.customData || {};
+        const topQuote = custom.topQuote || "“Ngay giây phút này, chúng ta vừa yêu, và vừa được yêu. 💕”";
+        const grandPhoto = custom.photo || "/images/demo/templates/t10-arch/gallery-3.jpg";
+        const badge = custom.badge || "Sau tất cả";
+        const bottomQuote = custom.bottomQuote || "Không cần một ngày đặc biệt nào cả, chỉ cần mỗi ngày bên nhau đều là ngày hạnh phúc nhất. 💖";
+        const targetDate = custom.targetDate || "2026-12-20T12:00:00Z";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={780} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-4 py-4 select-none">
+              {/* Top Quote */}
+              <div className="w-full text-right pr-3 pt-1">
+                <p className="font-serif italic text-xs text-[#2A2A2A] tracking-wide">
+                  {topQuote}
+                </p>
+              </div>
+
+              {/* Grand Arch Portrait */}
+              <div className="w-[280px] h-[390px] rounded-t-full overflow-hidden shadow-lg border border-stone-200/80 bg-stone-100 my-2">
+                <img src={grandPhoto} alt="Grand Arch" className="w-full h-full object-cover" />
+              </div>
+
+              {/* 4 Modern Dark Countdown Boxes */}
+              <div className="my-2">
+                <ArchCountdownBoxes targetDate={targetDate} />
+              </div>
+
+              {/* Solid Red Badge */}
+              <div className="my-1">
+                <span className="bg-[#7A121D] text-white font-serif text-xs px-5 py-1 tracking-widest font-semibold inline-block shadow-xs">
+                  【{badge}】
+                </span>
+              </div>
+
+              {/* Bottom Cursive Quote */}
+              <div className="max-w-[320px] mx-auto pb-2">
+                <p className="font-script text-base text-[#2A2A2A] leading-relaxed">
+                  {bottomQuote}
+                </p>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 35. TÌNH YÊU HÀ NỘI - LỄ THÀNH HÔN & TIỆC CƯỚI (p-arch-ceremony)
+      // =========================================================================
+      if (el.presetId === "p-arch-ceremony") {
+        const custom = el.customData || {};
+        const ceremonyTitle = custom.title || "LỄ THÀNH HÔN & TIỆC CƯỚI";
+        const timeStr = custom.timeStr || "Vào lúc 12:00 - Chủ Nhật";
+        const dateBlock = custom.dateBlock || "Tháng 12 | 20 | Năm 2026";
+        const lunarDate = custom.lunarDate || "Tức ngày 12 tháng 11 năm Bính Ngọ";
+        const venueGroom = custom.venueGroom || "Tư gia Nhà Trai: Bãi Cháy - Quảng Ninh";
+        const venueMain = custom.venueMain || "Trung tâm tiệc cưới Grand Palace Hà Nội (Số 99 Lê Duẩn, Hoàn Kiếm)";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={360} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-5 select-none border-y border-[#7A121D]/20">
+              <div className="space-y-1 pt-1">
+                <span className="text-[#7A121D] text-sm block">❧</span>
+                <h3 className="font-serif font-bold text-xl uppercase tracking-widest text-[#7A121D]">
+                  {ceremonyTitle}
+                </h3>
+                <p className="font-serif text-xs text-[#1F1B1C] font-medium">
+                  {timeStr}
+                </p>
+              </div>
+
+              {/* Khối Ngày Tháng Nổi Bật */}
+              <div className="w-full max-w-[280px] py-2 px-3 bg-[#7A121D]/5 rounded-lg border border-[#7A121D]/20 my-1">
+                <p className="font-serif font-bold text-lg text-[#7A121D] tracking-wide">
+                  {dateBlock}
+                </p>
+                <p className="font-serif italic text-xs text-[#555] mt-0.5">
+                  {lunarDate}
+                </p>
+              </div>
+
+              {/* Địa điểm */}
+              <div className="space-y-1 pb-2 text-xs font-serif text-[#2A2A2A]">
+                <p className="font-medium text-[#7A121D]">{venueGroom}</p>
+                <p className="font-semibold text-[#1F1B1C]">{venueMain}</p>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 36. TÌNH YÊU HÀ NỘI - ALBUM ẢNH CƯỚI NGHỆ THUẬT (p-arch-gallery)
+      // =========================================================================
+      if (el.presetId === "p-arch-gallery") {
+        const custom = el.customData || {};
+        const title = custom.title || "Album Ảnh Cưới";
+        const subtitle = custom.subtitle || "From Hanoi with love";
+        const photos = Array.isArray(custom.photos) && custom.photos.length > 0
+          ? custom.photos
+          : [
+              "/images/demo/templates/t10-arch/cover.jpg",
+              "/images/demo/templates/t10-arch/groom.jpg",
+              "/images/demo/templates/t10-arch/bride.jpg",
+              "/images/demo/templates/t10-arch/gallery-1.jpg",
+              "/images/demo/templates/t10-arch/gallery-2.jpg",
+              "/images/demo/templates/t10-arch/gallery-3.jpg",
+            ];
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={740} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-4 py-5 select-none">
+              <div className="space-y-0.5 pt-1">
+                <span className="text-[#7A121D] text-xs block">❧</span>
+                <h3 className="font-serif font-bold text-xl uppercase tracking-widest text-[#7A121D]">
+                  {title}
+                </h3>
+                <p className="font-script text-base text-[#666]">
+                  {subtitle}
+                </p>
+              </div>
+
+              {/* Grid 6 ảnh nghệ thuật */}
+              <div className="w-full grid grid-cols-2 gap-2.5 my-auto px-1">
+                {photos.slice(0, 6).map((imgUrl: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className={`relative rounded-sm overflow-hidden shadow-md bg-stone-100 border border-stone-200/60 ${
+                      idx === 0 || idx === 3 ? "h-[190px]" : "h-[170px]"
+                    }`}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`Gallery ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <p className="font-serif italic text-xs text-[#777] pb-1">
+                Chạm vào ảnh để xem trọn bộ khoảnh khắc
+              </p>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 37. TÌNH YÊU HÀ NỘI - HỘP MỪNG CƯỚI (p-arch-gift)
+      // =========================================================================
+      if (el.presetId === "p-arch-gift") {
+        const custom = el.customData || {};
+        const title = custom.title || "Hộp Mừng Cưới";
+        const message = custom.message || "Sự hiện diện của quý khách là niềm vui to lớn nhất đối với gia đình chúng tôi!";
+        const groomBank = custom.groomBank || (typeof data.bankingPrimary?.bankCode === "string" ? data.bankingPrimary.bankCode : "MB");
+        const groomAcc = custom.groomAccount || (typeof data.bankingPrimary?.accountNumber === "string" ? data.bankingPrimary.accountNumber : "1234567899");
+        const groomHolder = custom.groomHolder || (typeof data.bankingPrimary?.accountName === "string" ? data.bankingPrimary.accountName : "VU HOANG NAM");
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={380} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-5 select-none">
+              <div className="space-y-1 pt-1">
+                <span className="text-[#7A121D] text-base block">🎁</span>
+                <h3 className="font-serif font-bold text-xl uppercase tracking-widest text-[#7A121D]">
+                  {title}
+                </h3>
+                <p className="font-serif text-xs text-[#555] max-w-[280px] mx-auto leading-relaxed">
+                  {message}
+                </p>
+              </div>
+
+              {/* Card mừng cưới */}
+              <div className="w-full max-w-[310px] bg-white rounded-xl p-4 shadow-md border border-stone-200 text-center space-y-2">
+                <p className="font-serif text-xs font-semibold text-[#1F1B1C]">Tài khoản mừng cưới (Chú rể)</p>
+                <div className="flex items-center justify-center gap-2 text-sm font-mono font-bold text-[#7A121D]">
+                  <span>{groomBank}:</span>
+                  <span>{groomAcc}</span>
+                </div>
+                <p className="text-[11px] font-sans text-stone-600 uppercase font-medium">{groomHolder}</p>
+
+                <button
+                  type="button"
+                  onClick={onGift}
+                  className="mt-2 w-full py-2 rounded-full bg-[#7A121D] hover:bg-[#5E0E16] text-white font-serif text-xs font-bold uppercase tracking-wider shadow-sm transition active:scale-95 cursor-pointer pointer-events-auto"
+                >
+                  Gửi mừng cưới & QR Code
+                </button>
+              </div>
+
+              <p className="text-[10px] font-serif text-stone-400">Trân trọng cảm ơn quý khách</p>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 38. TÌNH YÊU HÀ NỘI - XÁC NHẬN THAM DỰ (p-arch-rsvp)
+      // =========================================================================
+      if (el.presetId === "p-arch-rsvp") {
+        const custom = el.customData || {};
+        const title = custom.title || "Xác Nhận Tham Dự";
+        const desc = custom.desc || "Để công tác đón tiếp được chu đáo nhất, xin vui lòng gửi phản hồi cho gia đình nhé!";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={320} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#FCFAF7] flex flex-col justify-between items-center text-center p-5 select-none border-t border-[#7A121D]/20">
+              <div className="space-y-1 pt-2">
+                <span className="text-[#7A121D] text-sm block">💌</span>
+                <h3 className="font-serif font-bold text-xl uppercase tracking-widest text-[#7A121D]">
+                  {title}
+                </h3>
+                <p className="font-serif text-xs text-[#555] max-w-[290px] mx-auto leading-relaxed">
+                  {desc}
+                </p>
+              </div>
+
+              <div className="w-full max-w-[280px] pb-4">
+                <button
+                  type="button"
+                  onClick={onRsvp}
+                  className="w-full py-3 rounded-full bg-[#7A121D] hover:bg-[#5E0E16] text-white font-serif text-xs font-bold uppercase tracking-widest shadow-md transition active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center gap-2"
+                >
+                  <span>✦</span>
+                  <span>Gửi xác nhận tham dự</span>
+                  <span>✦</span>
+                </button>
+              </div>
+            </div>
+          </ScaledPresetWrapper>
+        );
+      }
+
+      // =========================================================================
+      // 39. TÌNH YÊU HÀ NỘI - LỜI CẢM ƠN CHÂN TRANG (p-arch-farewell)
+      // =========================================================================
+      if (el.presetId === "p-arch-farewell") {
+        const custom = el.customData || {};
+        const thankText = custom.thankText || "Sự hiện diện của quý khách là niềm vinh hạnh to lớn cho gia đình chúng tôi!";
+        const groomName = custom.groomName || "Hoàng Nam";
+        const brideName = custom.brideName || "Minh Anh";
+
+        return (
+          <ScaledPresetWrapper baseW={390} baseH={280} w={el.width} h={el.height}>
+            <div className="w-full h-full relative overflow-hidden bg-[#7A121D] text-white flex flex-col justify-between items-center text-center p-6 select-none shadow-inner">
+              <div className="w-full max-w-[320px] mx-auto pt-3 space-y-2">
+                <span className="text-[#E8C882] text-xl block leading-none">❧</span>
+                <p className="font-serif font-bold text-base leading-relaxed tracking-wide text-white drop-shadow-xs">
+                  {thankText}
+                </p>
+              </div>
+
+              <div className="space-y-1 pb-4">
+                <p className="font-sans text-[10px] uppercase tracking-widest text-[#E8C882]">Trân trọng cảm ơn</p>
+                <p className="font-script text-3xl text-white drop-shadow-xs">
+                  {groomName} & {brideName}
+                </p>
               </div>
             </div>
           </ScaledPresetWrapper>
