@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { DEMO_TEMPLATES_MAP } from '@/app/(public)/thiep/[slug]/demo-templates-data';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -32,6 +35,18 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 export function AiConsultantWidget() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Kiểm tra đăng nhập an toàn
+  let isAuthenticated = false;
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+  } catch {
+    isAuthenticated = false;
+  }
+
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [inputMessage, setInputMessage] = useState('');
@@ -39,6 +54,31 @@ export function AiConsultantWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasNewBadge, setHasNewBadge] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // 1. Ẩn trên các trang dashboard quản trị
+  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin');
+
+  // 2. Trên trang thiệp /thiep/[slug]
+  const isCardPage = pathname?.startsWith('/thiep/');
+  const isInviteMode = Boolean(
+    searchParams?.get('g') ||
+    searchParams?.get('invite') === '1' ||
+    searchParams?.get('invite') === 'true' ||
+    searchParams?.get('share') === '1' ||
+    searchParams?.get('share') === 'true' ||
+    searchParams?.get('mode') === 'invite'
+  );
+  const isSocialInApp = typeof window !== 'undefined' &&
+    /zalo|fbav|fban|messenger/i.test(window.navigator.userAgent);
+  const pathSlug = pathname ? pathname.replace(/^\/thiep\//, '').split('/')[0] : '';
+  const isDemoSlug = Boolean(pathSlug && DEMO_TEMPLATES_MAP[pathSlug]);
+
+  // Nếu trên trang thiệp: chỉ hiện khi là demo template VÀ người dùng chưa đăng nhập VÀ không phải gửi cho khách
+  const shouldHideOnCard = isCardPage && (isInviteMode || isSocialInApp || !isDemoSlug || isAuthenticated);
+
+  if (isDashboard || shouldHideOnCard) {
+    return null;
+  }
 
   // Khởi tạo sessionId từ localStorage hoặc tạo mới
   useEffect(() => {

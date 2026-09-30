@@ -26,7 +26,7 @@ export class RsvpService {
       );
     }
 
-    // 2. Kiểm tra thiệp tồn tại & đang hoạt động
+    // 2. Kiểm tra thiệp tồn tại & đang hoạt động (public endpoint — không cần filter accountId)
     const card = await prisma.card.findUnique({
       where: { id: cardId },
       select: {
@@ -47,34 +47,60 @@ export class RsvpService {
       throw new HttpError(400, "Thiệp đã hết hạn hoặc tạm dừng nhận phản hồi", "CARD_INACTIVE_OR_EXPIRED");
     }
 
-    // 3. Tìm Guest ID nếu có guestCode
+    // 3. Tìm Guest ID nếu có guestCode/guestToken
     let guestId: string | null = null;
     let resolvedName = fullName;
     let resolvedPhone = phone;
     if (guestCode || guestToken) {
+      const orConditions = [
+        ...(guestToken ? [{ guestToken }] : []),
+        ...(guestCode ? [{ guestCode }] : []),
+      ];
       const guest = await prisma.guest.findFirst({
-        where: { accountId: card.accountId, cardId, OR: [...(guestToken ? [{ guestToken }] : []), ...(guestCode ? [{ guestCode }] : [])] },
+        where: { accountId: card.accountId, cardId, OR: orConditions },
       });
-      if (guest) { guestId = guest.id; resolvedName = guest.fullName; resolvedPhone = guest.phone || undefined; }
+      if (guest) {
+        guestId = guest.id;
+        resolvedName = guest.fullName;
+        resolvedPhone = guest.phone || undefined;
+      }
     }
 
     // 4. Lưu bản ghi RSVP vào Database
-    const rsvp = guestId ? await prisma.rsvpResponse.upsert({
-      where: { cardId_guestId: { cardId, guestId } },
-      create: {
-        accountId: card.accountId,
-        cardId,
-        guestId,
-        fullName: resolvedName,
-        phone: resolvedPhone,
-        status,
-        guestCount,
-        side,
-        note,
-        ipAddress: meta?.ipAddress,
-        userAgent: meta?.userAgent,
-      }, update: { fullName: resolvedName, phone: resolvedPhone, status, guestCount, side, note, ipAddress: meta?.ipAddress, userAgent: meta?.userAgent },
-    }) : await prisma.rsvpResponse.create({ data: { accountId: card.accountId, cardId, fullName, phone, status, guestCount, side, note, ipAddress: meta?.ipAddress, userAgent: meta?.userAgent } });
+    const commonData = {
+      fullName: guestId ? resolvedName : fullName,
+      phone: guestId ? resolvedPhone : phone,
+      status,
+      guestCount,
+      side,
+      note,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    };
+
+    let rsvp;
+    if (guestId) {
+      // Khách có danh sách → upsert theo guestId (cho phép cập nhật phản hồi)
+      rsvp = await prisma.rsvpResponse.upsert({
+        where: { cardId_guestId: { cardId, guestId } },
+        create: {
+          accountId: card.accountId,
+          cardId,
+          guestId,
+          ...commonData,
+        },
+        update: commonData,
+      });
+    } else {
+      // Khách vãng lai → tạo mới
+      rsvp = await prisma.rsvpResponse.create({
+        data: {
+          accountId: card.accountId,
+          cardId,
+          ...commonData,
+        },
+      });
+    }
 
     // 5. Đẩy Job vào hàng đợi BullMQ để bắn thông báo ngầm (Telegram/Zalo)
     if (card.telegramChatId) {

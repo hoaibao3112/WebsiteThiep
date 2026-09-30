@@ -376,7 +376,15 @@ export class OrderService {
       },
     });
 
-    if (!order || order.pollingTokenHash !== pollingTokenHash) return null;
+    if (!order) return null;
+
+    // Timing-safe comparison — chống timing attack (tương tự CSRF middleware)
+    const storedBuf = Buffer.from(order.pollingTokenHash);
+    const givenBuf = Buffer.from(pollingTokenHash);
+    if (storedBuf.length !== givenBuf.length || !crypto.timingSafeEqual(storedBuf, givenBuf)) {
+      return null;
+    }
+
     const { pollingTokenHash: _hash, ...safeOrder } = order;
     return safeOrder;
   }

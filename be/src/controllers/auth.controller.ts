@@ -1,23 +1,15 @@
-import { Request, Response, NextFunction, CookieOptions } from "express";
-import { ZodError } from "zod";
+import { Request, Response, NextFunction } from "express";
 import { AuthService } from "../services/auth.service";
 import { OtpService } from "../services/otp.service";
-import {
-  RegisterSchema,
-  LoginSchema,
-  UpdateProfileSchema,
-  SendOtpSchema,
-  VerifyOtpRegisterSchema,
-  GoogleLoginSchema,
-} from "../lib/validators/auth.schema";
+import { WeddingProfileSchema } from "../lib/validators/wedding-profile.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import crypto from "node:crypto";
+
+import { COOKIE_OPTIONS, CSRF_COOKIE_OPTIONS } from "../config/security";
 
 function getClientIp(req: Request): string {
   return req.ip || req.socket.remoteAddress || "127.0.0.1";
 }
-
-import { COOKIE_OPTIONS, CSRF_COOKIE_OPTIONS } from "../config/security";
 
 function setAuthCookies(res: Response, token: string): string {
   const csrf = crypto.randomBytes(32).toString("base64url");
@@ -33,24 +25,17 @@ export class AuthController {
    */
   static async sendOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = SendOtpSchema.parse(req.body);
+      // req.body đã được validate bởi middleware validate(SendOtpSchema)
       const clientIp = getClientIp(req);
 
-      const result = await OtpService.sendRegisterOtp(validated.email, clientIp);
+      const result = await OtpService.sendRegisterOtp(req.body.email, clientIp);
 
       res.status(200).json({
         success: true,
         message: "Mã xác thực OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư!",
         data: result,
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -60,12 +45,11 @@ export class AuthController {
    */
   static async registerWithOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = VerifyOtpRegisterSchema.parse(req.body);
-      const result = await AuthService.registerWithOtp(validated);
+      // req.body đã được validate bởi middleware validate(RegisterWithOtpSchema)
+      const result = await AuthService.registerWithOtp(req.body);
 
-      let csrfToken: string | undefined;
       if (result.token) {
-        csrfToken = setAuthCookies(res, result.token);
+        setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
@@ -73,14 +57,7 @@ export class AuthController {
         message: "Đăng ký và xác thực tài khoản thành công!",
         data: { user: result.user },
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -90,12 +67,11 @@ export class AuthController {
    */
   static async googleLogin(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = GoogleLoginSchema.parse(req.body);
-      const result = await AuthService.googleLogin(validated.idToken);
+      // req.body đã được validate bởi middleware validate(GoogleLoginSchema)
+      const result = await AuthService.googleLogin(req.body.idToken);
 
-      let csrfToken: string | undefined;
       if (result.token) {
-        csrfToken = setAuthCookies(res, result.token);
+        setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
@@ -103,27 +79,19 @@ export class AuthController {
         message: "Đăng nhập với Google thành công!",
         data: { user: result.user },
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   static async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = RegisterSchema.parse(req.body);
+      // req.body đã được validate bởi middleware validate(RegisterSchema)
       const clientIp = getClientIp(req);
-      const result = await AuthService.register(validated, clientIp);
+      const result = await AuthService.register(req.body, clientIp);
 
-      let csrfToken: string | undefined;
       if (result.token) {
-        csrfToken = setAuthCookies(res, result.token);
+        setAuthCookies(res, result.token);
       }
 
       res.status(201).json({
@@ -131,27 +99,19 @@ export class AuthController {
         message: "Đăng ký tài khoản thành công!",
         data: { user: result.user },
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
 
   static async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = LoginSchema.parse(req.body);
+      // req.body đã được validate bởi middleware validate(LoginSchema)
       const clientIp = getClientIp(req);
-      const result = await AuthService.login(validated, clientIp);
+      const result = await AuthService.login(req.body, clientIp);
 
-      let csrfToken: string | undefined;
       if (result.token) {
-        csrfToken = setAuthCookies(res, result.token);
+        setAuthCookies(res, result.token);
       }
 
       res.status(200).json({
@@ -159,14 +119,7 @@ export class AuthController {
         message: "Đăng nhập thành công!",
         data: { user: result.user },
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -176,7 +129,7 @@ export class AuthController {
       res.clearCookie("auth_token", COOKIE_OPTIONS);
       res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
       res.status(200).json({ success: true, message: "Đăng xuất thành công" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -186,9 +139,7 @@ export class AuthController {
       const userId = req.user?.userId;
       const accountId = req.user?.accountId;
       if (!userId || !accountId) {
-        const error: any = new Error("Chưa đăng nhập");
-        error.status = 401;
-        throw error;
+        return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
       }
 
       const user = await AuthService.getMe(userId, accountId);
@@ -199,7 +150,7 @@ export class AuthController {
       }
       res.setHeader("X-CSRF-Token", csrfToken);
       res.status(200).json({ success: true, data: user });
-    } catch (error: any) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -212,26 +163,17 @@ export class AuthController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        const error: any = new Error("Chưa đăng nhập");
-        error.status = 401;
-        throw error;
+        return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
       }
 
-      const validated = UpdateProfileSchema.parse(req.body);
-      const user = await AuthService.updateProfile(userId, validated);
+      // req.body đã được validate bởi middleware validate(UpdateProfileSchema)
+      const user = await AuthService.updateProfile(userId, req.body);
       res.status(200).json({
         success: true,
         message: "Cập nhật thông tin thành công!",
         data: user,
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -244,13 +186,11 @@ export class AuthController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        const error: any = new Error("Chưa đăng nhập");
-        error.status = 401;
-        throw error;
+        return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
       }
       const profile = await AuthService.getWeddingProfile(userId);
       res.status(200).json({ success: true, data: profile });
-    } catch (error: any) {
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -263,17 +203,17 @@ export class AuthController {
     try {
       const userId = req.user?.userId;
       if (!userId) {
-        const error: any = new Error("Chưa đăng nhập");
-        error.status = 401;
-        throw error;
+        return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
       }
-      const updated = await AuthService.updateWeddingProfile(userId, req.body);
+      // [CRITICAL FIX] Validate body qua Zod schema thay vì nhận raw JSON
+      const validated = WeddingProfileSchema.parse(req.body);
+      const updated = await AuthService.updateWeddingProfile(userId, validated);
       res.status(200).json({
         success: true,
         message: "Cập nhật hồ sơ cưới thành công!",
         data: updated,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       next(error);
     }
   }

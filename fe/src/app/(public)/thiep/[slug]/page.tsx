@@ -11,7 +11,13 @@ import { MASTER_TEMPLATES } from "@/lib/templates-data";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ g?: string }>;
+  searchParams: Promise<{
+    g?: string;
+    invite?: string;
+    share?: string;
+    mode?: string;
+    preview?: string;
+  }>;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -26,7 +32,7 @@ async function getCardData(slug: string, guestCode?: string) {
     if (res.ok) {
       const json = await res.json();
       if (json.success && json.data?.card) {
-        return json.data;
+        return { ...json.data, isDatabaseCard: true };
       }
     }
   } catch (error) {
@@ -35,14 +41,14 @@ async function getCardData(slug: string, guestCode?: string) {
 
   // 2. Dự phòng dữ liệu mẫu nếu Backend chưa phản hồi
   if (DEMO_TEMPLATES_MAP[slug]) {
-    return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null };
+    return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null, isDatabaseCard: false };
   }
 
   if (slug === "demo-wedding" || slug.startsWith("demo-")) {
-    return { card: DEMO_WEDDING_CARD, guestInfo: null };
+    return { card: DEMO_WEDDING_CARD, guestInfo: null, isDatabaseCard: false };
   }
 
-  return { card: DEMO_WEDDING_CARD, guestInfo: null };
+  return { card: DEMO_WEDDING_CARD, guestInfo: null, isDatabaseCard: false };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -114,7 +120,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CardPublicPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const { g: guestCode } = await searchParams;
+  const searchParamsResolved = await searchParams;
+  const guestCode = searchParamsResolved.g;
+  const isInviteMode = Boolean(
+    guestCode ||
+    searchParamsResolved.invite === "1" ||
+    searchParamsResolved.invite === "true" ||
+    searchParamsResolved.share === "1" ||
+    searchParamsResolved.share === "true" ||
+    searchParamsResolved.mode === "invite"
+  );
 
   const result = await getCardData(slug, guestCode);
 
@@ -139,8 +154,10 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   const effectiveTemplateSlug = card.template?.slug || slug;
 
   // Xác định có phải thiệp mẫu demo hay không (để hiện Floating CTA)
-  const isDemoTemplate = Boolean(DEMO_TEMPLATES_MAP[slug]);
-  const demoTemplateName = isDemoTemplate
+  // Chỉ hiện khi: là demo template, KHÔNG PHẢI thiệp thật từ database, và KHÔNG PHẢI chế độ gửi người thân/khách mời
+  const isDemoTemplate = !result.isDatabaseCard && Boolean(DEMO_TEMPLATES_MAP[slug]);
+  const shouldShowDemoBar = isDemoTemplate && !isInviteMode;
+  const demoTemplateName = shouldShowDemoBar
     ? MASTER_TEMPLATES.find((t) => t.slug === slug)?.name
     : undefined;
 
@@ -177,7 +194,7 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
           guestCode={guestCode}
           isVipExperience={result.features?.vipOpeningExperience}
         />
-        {isDemoTemplate && (
+        {shouldShowDemoBar && (
           <DemoActionBarWrapper
             templateSlug={effectiveTemplateSlug}
             templateName={demoTemplateName}
@@ -199,7 +216,7 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
           guestCode={guestCode}
           isVipExperience={result.features?.vipOpeningExperience}
         />
-        {isDemoTemplate && (
+        {shouldShowDemoBar && (
           <DemoActionBarWrapper
             templateSlug={effectiveTemplateSlug}
             templateName={demoTemplateName}
@@ -221,7 +238,7 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
           guestCode={guestCode}
           isVipExperience={result.features?.vipOpeningExperience}
         />
-        {isDemoTemplate && (
+        {shouldShowDemoBar && (
           <DemoActionBarWrapper
             templateSlug={effectiveTemplateSlug}
             templateName={demoTemplateName}

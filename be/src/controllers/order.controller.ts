@@ -1,9 +1,7 @@
 import { Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import { OrderService } from "../services/order.service";
 import { CreateOrderSchema, SubmitTransferParamsSchema } from "../lib/validators/order.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
-import { HttpError } from "../lib/http-error";
 
 export class OrderController {
   /**
@@ -20,22 +18,15 @@ export class OrderController {
         });
       }
 
-      const validated = CreateOrderSchema.parse(req.body);
+      // req.body đã được validate bởi middleware validate(CreateOrderSchema)
       const idempotencyKey = req.header("Idempotency-Key");
       if (!idempotencyKey || idempotencyKey.length < 16 || idempotencyKey.length > 128) {
         return res.status(400).json({ success: false, error: "Idempotency-Key không hợp lệ" });
       }
 
-      const result = await OrderService.createOrder(userId, accountId, validated, idempotencyKey);
+      const result = await OrderService.createOrder(userId, accountId, req.body, idempotencyKey);
       res.status(result.replayed ? 200 : 201).json({ success: true, data: result });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
       next(error);
     }
   }
@@ -54,12 +45,6 @@ export class OrderController {
       const order = await OrderService.submitTransfer(accountId, orderId);
       res.status(200).json({ success: true, data: order });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-        });
-      }
       next(error);
     }
   }

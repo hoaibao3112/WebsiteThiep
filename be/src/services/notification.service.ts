@@ -52,25 +52,32 @@ export async function dispatchTelegramNotification(
   try {
     return await telegramCircuit.execute(async () => {
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: message,
-          parse_mode: "HTML",
-        }),
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: "HTML",
+          }),
+          signal: controller.signal,
+        });
 
-      if (!res.ok) {
-        const errBody = await res.text();
-        const err = new Error(`Telegram API error: ${errBody}`);
-        logger.error({ chatId, errBody }, "[Notification] Telegram send failed");
-        throw err; // Để circuit breaker đếm failure
+        if (!res.ok) {
+          const errBody = await res.text();
+          const err = new Error(`Telegram API error: ${errBody}`);
+          logger.error({ chatId, errBody }, "[Notification] Telegram send failed");
+          throw err; // Để circuit breaker đếm failure
+        }
+
+        logger.info({ chatId }, "[Notification] Telegram sent successfully");
+        return true;
+      } finally {
+        clearTimeout(timeout);
       }
-
-      logger.info({ chatId }, "[Notification] Telegram sent successfully");
-      return true;
     });
   } catch (error) {
     logger.error({ error }, "[Notification] Telegram send error (circuit may be OPEN)");
@@ -111,23 +118,30 @@ export async function dispatchLeadNotification(
   try {
     return await telegramCircuit.execute(async () => {
       const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: adminChatId,
-          text: message,
-          parse_mode: "HTML",
-        }),
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: adminChatId,
+            text: message,
+            parse_mode: "HTML",
+          }),
+          signal: controller.signal,
+        });
 
-      if (!res.ok) {
-        const errBody = await res.text();
-        throw new Error(`Telegram API error: ${errBody}`);
+        if (!res.ok) {
+          const errBody = await res.text();
+          throw new Error(`Telegram API error: ${errBody}`);
+        }
+
+        logger.info({ adminChatId }, "[Notification] Telegram lead sent successfully");
+        return true;
+      } finally {
+        clearTimeout(timeout);
       }
-
-      logger.info({ adminChatId }, "[Notification] Telegram lead sent successfully");
-      return true;
     });
   } catch (error) {
     logger.error({ error }, "[Notification] Telegram lead send failed");

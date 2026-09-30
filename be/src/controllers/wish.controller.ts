@@ -1,28 +1,19 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import { WishService } from "../services/wish.service";
-import { WishSubmitSchema } from "../lib/validators/wish.schema";
 
 export class WishController {
   static async submit(req: Request, res: Response, next: NextFunction) {
     try {
-      const validated = WishSubmitSchema.parse(req.body);
+      // req.body đã được validate bởi middleware validate(WishSchema)
       const ipAddress = req.ip || req.socket.remoteAddress;
 
-      const wish = await WishService.submitWish(validated, { ipAddress });
+      const wish = await WishService.submitWish(req.body, { ipAddress });
       res.status(201).json({
         success: true,
         message: "Gửi lời chúc thành công!",
         data: wish,
       });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }
@@ -35,14 +26,7 @@ export class WishController {
 
       const data = await WishService.listWishes(cardId, limit, cursor);
       res.status(200).json({ success: true, data });
-    } catch (error: any) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
+    } catch (error: unknown) {
       next(error);
     }
   }

@@ -1,5 +1,4 @@
 import { Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import { ManualPaymentReviewService } from "../services/manual-payment-review.service";
 import {
   AdminListQuerySchema,
@@ -15,16 +14,11 @@ export class AdminPaymentController {
    */
   static async listQueue(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
+      // Inline parse cho query params (không dùng validate middleware cho query)
       const query = AdminListQuerySchema.parse(req.query);
       const result = await ManualPaymentReviewService.listReviewQueue(query);
       res.status(200).json({ success: true, data: result });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Tham số không hợp lệ",
-        });
-      }
       next(error);
     }
   }
@@ -56,6 +50,7 @@ export class AdminPaymentController {
       }
 
       const orderId = req.params.orderId as string;
+      // Inline parse — ZodError sẽ được global error handler bắt
       const validated = ApproveOrderSchema.parse(req.body);
 
       const detail = await ManualPaymentReviewService.approveOrder(orderId, adminUserId, validated);
@@ -67,13 +62,6 @@ export class AdminPaymentController {
 
       res.status(200).json({ success: true, data: detail });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
       next(error);
     }
   }
@@ -100,13 +88,6 @@ export class AdminPaymentController {
 
       res.status(200).json({ success: true, data: detail });
     } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        return res.status(400).json({
-          success: false,
-          error: error.errors[0]?.message || "Dữ liệu không hợp lệ",
-          fieldErrors: error.flatten().fieldErrors,
-        });
-      }
       next(error);
     }
   }

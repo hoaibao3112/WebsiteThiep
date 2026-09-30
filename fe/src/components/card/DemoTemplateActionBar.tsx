@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Sparkles, LayoutGrid } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Sparkles, LayoutGrid, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface DemoTemplateActionBarProps {
   templateSlug: string;
@@ -17,8 +18,12 @@ interface DemoTemplateActionBarProps {
  * - "Tùy Chỉnh Mẫu Này" → chuyển sang Visual Studio Editor
  * - "Xem Mẫu Khác" → chuyển sang trang /collections
  *
- * Nếu chưa đăng nhập, vẫn cho phép vào editor trải nghiệm trước (Zero-friction).
- * Auth gate chỉ kích hoạt khi bấm "Xuất bản" trong editor.
+ * Chỉ hiển thị cho khách vãng lai / người dùng chưa đăng nhập đang khám phá mẫu.
+ * TỰ ĐỘNG ẨN KHI:
+ * 1. Thiệp được gửi cho người thân / khách mời (?g=, ?invite=1, ?share=1, ?mode=invite).
+ * 2. Mở trong ứng dụng nhắn tin (Zalo, Messenger, Facebook in-app browser).
+ * 3. Người dùng đã đăng nhập tài khoản.
+ * 4. Người dùng bấm nút tắt "X".
  */
 export function DemoTemplateActionBar({
   templateSlug,
@@ -26,13 +31,46 @@ export function DemoTemplateActionBar({
   category = "WEDDING",
 }: DemoTemplateActionBarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  // Kiểm tra trạng thái đăng nhập một cách an toàn
+  let isAuthenticated = false;
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+  } catch {
+    isAuthenticated = false;
+  }
+
+  // 1. Kiểm tra query params: nếu là chế độ gửi cho khách / người thân thì ẩn hoàn toàn
+  const isInviteMode = Boolean(
+    searchParams?.get("g") ||
+    searchParams?.get("invite") === "1" ||
+    searchParams?.get("invite") === "true" ||
+    searchParams?.get("share") === "1" ||
+    searchParams?.get("share") === "true" ||
+    searchParams?.get("mode") === "invite"
+  );
+
+  // 2. Kiểm tra nếu đang mở trong Zalo / Facebook Messenger in-app browser (thường là người thân click từ tin nhắn)
+  const isSocialInApp = typeof window !== "undefined" &&
+    /zalo|fbav|fban|messenger/i.test(window.navigator.userAgent);
 
   // Slide-up animation: hiện sau 1.5s delay để không phân tán khi đang xem thiệp
   useEffect(() => {
+    if (isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+      return;
+    }
     const timer = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [isInviteMode, isSocialInApp, isAuthenticated, dismissed]);
+
+  // Không hiển thị nếu là lời mời người thân, mở qua Zalo, đã đăng nhập, hoặc người dùng đã đóng
+  if (isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+    return null;
+  }
 
   const handleCustomize = () => {
     // Zero-friction: Cho phép vào editor trực tiếp, không yêu cầu đăng nhập.
@@ -52,7 +90,18 @@ export function DemoTemplateActionBar({
       }}
     >
       {/* ─── GLASSMORPHISM CONTAINER ─── */}
-      <div className="pointer-events-auto mx-auto w-full max-w-lg mb-4 sm:mb-6 px-4 py-3 sm:px-6 sm:py-4 rounded-2xl bg-white/80 backdrop-blur-xl border border-[#BE944E]/30 shadow-[0_8px_40px_rgba(190,148,78,0.18),0_2px_12px_rgba(0,0,0,0.06)] flex items-center gap-3 sm:gap-4">
+      <div className="pointer-events-auto relative mx-auto w-full max-w-lg mb-4 sm:mb-6 px-4 py-3 sm:px-6 sm:py-4 rounded-2xl bg-white/85 backdrop-blur-xl border border-[#BE944E]/30 shadow-[0_8px_40px_rgba(190,148,78,0.18),0_2px_12px_rgba(0,0,0,0.06)] flex items-center gap-2.5 sm:gap-4">
+        {/* Nút đóng thanh action bar */}
+        <button
+          type="button"
+          onClick={() => setDismissed(true)}
+          className="absolute -top-2.5 -right-2.5 w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 border border-stone-300 text-stone-600 flex items-center justify-center shadow-xs text-xs cursor-pointer transition"
+          title="Ẩn thanh này"
+          aria-label="Đóng thanh điều hướng"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+
         {/* ── Mô tả ngắn ── */}
         <div className="hidden sm:flex flex-col min-w-0 flex-1">
           <p className="text-[11px] text-stone-500 font-medium leading-tight truncate">

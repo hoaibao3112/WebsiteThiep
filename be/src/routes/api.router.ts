@@ -132,6 +132,6 @@ apiRouter.post("/admin/payment-orders/:orderId/reject", adminGuard, AdminPayment
 // --- AI RAG CONSULTANT ROUTES ---
 apiRouter.post("/ai/chat", validate(AiChatSchema), AiController.chat);
 apiRouter.get("/ai/leads", authGuard, adminGuard, AiController.getLeads);
-apiRouter.post("/ai/seed", AiController.seedKnowledge);
-apiRouter.get("/ai/knowledge", AiController.getKnowledge);
+apiRouter.post("/ai/seed", authGuard, adminGuard, AiController.seedKnowledge);
+apiRouter.get("/ai/knowledge", authGuard, adminGuard, AiController.getKnowledge);
 

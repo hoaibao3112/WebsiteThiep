@@ -111,12 +111,12 @@ export default function MyCardsPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Copy link
+  // Copy link gửi người thân / khách mời
   const handleCopyLink = (slug: string, id: string) => {
-    const fullUrl = `${window.location.origin}/thiep/${slug}`;
+    const fullUrl = `${window.location.origin}/thiep/${slug}?invite=1`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(id);
-    setToastMessage("Đã sao chép link thiệp vào bộ nhớ tạm!");
+    setToastMessage("Đã sao chép link thiệp gửi người thân!");
     setTimeout(() => {
       setCopiedId(null);
       setToastMessage(null);

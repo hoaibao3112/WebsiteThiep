@@ -11,6 +11,7 @@ import {
   UpdateProfileInput,
   VerifyOtpRegisterInput,
 } from "../lib/validators/auth.schema";
+import { WeddingProfileInput } from "../lib/validators/wedding-profile.schema";
 import { OtpService } from "./otp.service";
 import { HttpError } from "../lib/http-error";
 
@@ -332,7 +333,8 @@ export class AuthService {
    * Lấy thông tin user hiện tại (Me) + Account entitlement summary
    */
   static async getMe(userId: string, accountId: string) {
-    const [user, membership] = await Promise.all([
+    // Không select password hash vào memory — chỉ check boolean tồn tại
+    const [user, membership, hasPassword] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -344,7 +346,6 @@ export class AuthService {
           role: true,
           googleId: true,
           emailVerified: true,
-          password: true,
           telegramId: true,
           createdAt: true,
         },
@@ -353,6 +354,9 @@ export class AuthService {
         where: { accountId_userId: { accountId, userId } },
         select: { role: true },
       }),
+      prisma.user.count({
+        where: { id: userId, password: { not: null } },
+      }).then((count) => count > 0),
     ]);
 
     if (!user) throw new HttpError(404, "Người dùng không tồn tại", "USER_NOT_FOUND");
@@ -375,7 +379,7 @@ export class AuthService {
       role: user.role,
       googleId: user.googleId,
       emailVerified: user.emailVerified,
-      hasPassword: !!user.password,
+      hasPassword,
       telegramId: user.telegramId,
       createdAt: user.createdAt,
       accountId,
@@ -393,25 +397,28 @@ export class AuthService {
    * Cập nhật thông tin profile
    */
   static async updateProfile(userId: string, input: UpdateProfileInput) {
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: input,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        avatar: true,
-        emailVerified: true,
-        password: true,
-        telegramId: true,
-      },
-    });
+    const [updated, hasPassword] = await Promise.all([
+      prisma.user.update({
+        where: { id: userId },
+        data: input,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          phone: true,
+          avatar: true,
+          emailVerified: true,
+          telegramId: true,
+        },
+      }),
+      prisma.user.count({
+        where: { id: userId, password: { not: null } },
+      }).then((count) => count > 0),
+    ]);
 
-    const { password, ...safeUser } = updated;
     return {
-      ...safeUser,
-      hasPassword: !!password,
+      ...updated,
+      hasPassword,
     };
   }
 
@@ -466,7 +473,7 @@ export class AuthService {
   /**
    * Lưu hoặc cập nhật hồ sơ cưới mặc định của tài khoản
    */
-  static async updateWeddingProfile(userId: string, data: any) {
+  static async updateWeddingProfile(userId: string, data: WeddingProfileInput) {
     const user = await prisma.user.update({
       where: { id: userId },
       data: { weddingProfile: data },

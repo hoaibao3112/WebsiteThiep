@@ -59,7 +59,9 @@ export default function RootLayout({
               <Suspense fallback={null}>
                 <AuthModal />
               </Suspense>
-              <AiConsultantWidget />
+              <Suspense fallback={null}>
+                <AiConsultantWidget />
+              </Suspense>
             </ErrorBoundary>
           </LanguageProvider>
         </AuthProvider>
