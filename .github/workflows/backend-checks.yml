@@ -3,21 +3,23 @@ name: Backend CI & Quality Gate
 on:
   push:
     branches:
-      - main
-      - "fix/**"
-      - "feat/**"
-    paths:
-      - "be/**"
-      - ".github/workflows/backend-checks.yml"
+      - "**"
   pull_request:
-    paths:
-      - "be/**"
-      - ".github/workflows/backend-checks.yml"
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   backend-checks:
-    name: Backend Lint, Test & Build
+    name: Backend Test & Build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -47,11 +49,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: be/package-lock.json
 
