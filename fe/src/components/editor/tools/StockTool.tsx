@@ -44,6 +44,7 @@ export function StockTool() {
       id: item.id,
       title: item.title,
       icon: item.icon,
+      imageUrl: item.imageUrl,
       color: item.color,
       svgContent: item.svgContent,
       svgType: item.svgType,
@@ -57,6 +58,15 @@ export function StockTool() {
   };
 
   const renderStockThumbnail = (item: StockItem) => {
+    // 0. Ảnh tách nền PNG trang trí (Khung ren nghệ thuật, thiên nga, xe hoa)
+    if (item.imageUrl) {
+      return (
+        <div className="w-full h-full flex items-center justify-center p-1.5 transition-transform duration-200 group-hover:scale-105">
+          <img src={item.imageUrl} alt={item.title} className="max-h-full max-w-full object-contain drop-shadow-xs" />
+        </div>
+      );
+    }
+
     // 1. Vector SVG (Khung viền, Đường phân cách)
     if (item.svgContent) {
       return (

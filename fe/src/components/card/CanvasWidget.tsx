@@ -154,6 +154,191 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
         </div>
       );
     }
+    case "procession-route": {
+      const bTitle = config.brideTitle || "LỄ VU QUY";
+      const bDate = config.brideDate || "Vào Thứ Hai - 09h00";
+      const bLunar = config.brideLunarDate || "Tức Ngày 16 tháng 12 năm Ất Tỵ";
+      const bVenue = config.brideVenue || "tại tư gia nhà gái";
+      const bMap = safeCanvasLink(config.brideMapUrl || "https://maps.google.com");
+
+      const gTitle = config.groomTitle || "LỄ THÀNH HÔN";
+      const gDate = config.groomDate || "Vào Thứ Hai - 14h00";
+      const gLunar = config.groomLunarDate || "Tức Ngày 16 tháng 12 năm Ất Tỵ";
+      const gVenue = config.groomVenue || "TẠI TƯ GIA NHÀ TRAI";
+      const gMap = safeCanvasLink(config.groomMapUrl || "https://maps.google.com");
+
+      return (
+        <div className="flex size-full flex-col justify-between p-4 bg-[#FCFAF7]/95 rounded-2xl border border-amber-900/10 shadow-sm text-stone-800 select-none overflow-hidden text-center">
+          {/* ── NHÀ GÁI / LỄ VU QUY ── */}
+          <div className="space-y-1">
+            <h4 className="font-serif font-bold text-base tracking-wider text-[#7A121D] uppercase">{bTitle}</h4>
+            <p className="font-serif text-xs text-stone-600">{bDate}</p>
+            <div className="flex items-center justify-center gap-2 font-serif text-[#7A121D] py-0.5">
+              <span className="text-xs uppercase tracking-wider">Tháng 02</span>
+              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">21</span>
+              <span className="text-xs uppercase tracking-wider">2026</span>
+            </div>
+            <p className="text-[10px] italic text-stone-500">{bLunar}</p>
+            <div className="flex items-center justify-end gap-1.5 pr-2 pt-0.5">
+              <div className="text-right">
+                <span className="text-[10px] font-serif font-bold text-[#A26D38] block leading-tight">{bVenue}</span>
+                {bMap && (
+                  <a href={bMap} target="_blank" rel="noopener noreferrer" className="inline-block mt-0.5 px-2.5 py-0.5 rounded bg-[#4A151B] text-white text-[9px] font-bold uppercase tracking-wider hover:opacity-90">
+                    Chỉ đường
+                  </a>
+                )}
+              </div>
+              <span className="text-base text-amber-700">🏡</span>
+            </div>
+          </div>
+
+          {/* ── CON ĐƯỜNG UỐN LƯỢN & XE HOA ── */}
+          <div className="relative w-full h-24 my-1 flex items-center justify-center">
+            {/* SVG Con đường uốn lượn */}
+            <svg viewBox="0 0 300 80" className="w-full h-full absolute inset-0" fill="none">
+              <path d="M 30 75 C 60 75, 70 35, 140 35 C 210 35, 230 15, 270 15" stroke="#EAD7B7" strokeWidth="18" strokeLinecap="round" />
+              <path d="M 30 75 C 60 75, 70 35, 140 35 C 210 35, 230 15, 270 15" stroke="#C49A58" strokeWidth="1" strokeDasharray="4 3" opacity="0.7" />
+            </svg>
+            {/* Xe hoa pastel rước dâu */}
+            <div className="relative z-10 w-20 h-20 -mt-2">
+              <img src="/images/decor/vintage-wedding-car.png" alt="Xe hoa" className="w-full h-full object-contain drop-shadow-md" />
+            </div>
+            {/* Trái tim hoa decor nhỏ */}
+            <span className="absolute top-2 left-16 text-rose-300 text-xs">♡</span>
+            <span className="absolute bottom-2 right-16 text-rose-300 text-xs">🌸</span>
+          </div>
+
+          {/* ── NHÀ TRAI / LỄ THÀNH HÔN ── */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-start gap-1.5 pl-2 pb-0.5">
+              <span className="text-base text-amber-700">🏰</span>
+              <div className="text-left">
+                <span className="text-[10px] font-serif font-bold text-[#A26D38] block leading-tight">{gVenue}</span>
+                {gMap && (
+                  <a href={gMap} target="_blank" rel="noopener noreferrer" className="inline-block mt-0.5 px-2.5 py-0.5 rounded bg-[#4A151B] text-white text-[9px] font-bold uppercase tracking-wider hover:opacity-90">
+                    Chỉ đường
+                  </a>
+                )}
+              </div>
+            </div>
+            <h4 className="font-serif font-bold text-base tracking-wider text-[#7A121D] uppercase">{gTitle}</h4>
+            <p className="font-serif text-xs text-stone-600">{gDate}</p>
+            <div className="flex items-center justify-center gap-2 font-serif text-[#7A121D] py-0.5">
+              <span className="text-xs uppercase tracking-wider">Tháng 02</span>
+              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">21</span>
+              <span className="text-xs uppercase tracking-wider">2026</span>
+            </div>
+            <p className="text-[10px] italic text-stone-500">{gLunar}</p>
+          </div>
+        </div>
+      );
+    }
+    case "lace-vow-card": {
+      const couple = config.title || "Mạnh Đức & Lan Nhi";
+      const wDate = config.eventDate || "29.12.2026";
+      const vows = (config.vowQuote || "Một lời hẹn ước\nMột hành trình mới\nMột mái nhà chung\nMột đời bên nhau").split("\n");
+      const frameImg = config.frameStyle === "gold-arch" 
+        ? "/images/decor/lace-frame-gold-arch.png"
+        : config.frameStyle === "scalloped"
+        ? "/images/decor/scalloped-paper-frame.png"
+        : config.frameStyle === "lotus"
+        ? "/images/decor/lotus-heritage-frame.png"
+        : config.frameStyle === "rose-cottage"
+        ? "/images/decor/rose-cottage-frame.png"
+        : "/images/decor/lace-frame-royal.png";
+
+      return (
+        <div className="relative size-full flex items-center justify-center p-3 select-none overflow-hidden">
+          {/* Nền khung ren mỹ thuật */}
+          <img src={frameImg} alt="Khung ren" className="absolute inset-0 size-full object-contain drop-shadow-md pointer-events-none" />
+
+          {/* Nội dung chữ trên nền giấy */}
+          <div className="relative z-10 max-w-[70%] text-center px-2 py-4 flex flex-col items-center justify-center space-y-2">
+            <h3 className="font-script text-2xl sm:text-3xl text-[#7A121D] leading-tight drop-shadow-2xs">
+              {couple}
+            </h3>
+            <p className="font-serif text-sm tracking-widest text-[#7A121D] font-medium">
+              {wDate}
+            </p>
+            <div className="pt-2 space-y-1 font-serif text-xs italic text-[#4A3225] leading-relaxed">
+              {vows.map((line, idx) => (
+                <p key={idx} className="line-clamp-1">{line}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    case "swan-ceremony": {
+      const mainTitle = config.title || "LỄ THÀNH HÔN";
+      const timeDesc = config.description || "ĐƯỢC TỔ CHỨC VÀO LÚC 09:30, THỨ BẢY";
+      const venue = config.groomVenue || "TẠI TƯ GIA NHÀ TRAI";
+      const addr = config.groomAddress || "174 Đường Trần Văn Kiểu, Phường 10, TP Hồ Chí Minh";
+      const lunar = config.groomLunarDate || "(Tức ngày 18 tháng 10 năm Bính Ngọ)";
+      const mapLink = safeCanvasLink(config.url || "https://maps.google.com");
+      const btnText = config.buttonLabel || "XEM CHỈ ĐƯỜNG";
+
+      const decorImg = config.decorIcon === "car"
+        ? "/images/decor/vintage-wedding-car.png"
+        : config.decorIcon === "cake"
+        ? "/images/decor/wedding-cake-3tier.png"
+        : config.decorIcon === "wreath"
+        ? "/images/decor/baby-breath-wreath.png"
+        : config.decorIcon === "none"
+        ? null
+        : "/images/decor/twin-swans-heart.png";
+
+      return (
+        <div className="flex size-full flex-col items-center justify-between p-4 bg-[#FCFAF7]/95 rounded-2xl border border-amber-900/10 shadow-sm text-stone-800 select-none overflow-hidden text-center">
+          {/* Biểu tượng trang trí trên đầu */}
+          {decorImg && (
+            <div className="w-20 h-16 shrink-0 pt-1">
+              <img src={decorImg} alt="Biểu tượng trang trí" className="size-full object-contain drop-shadow-xs" />
+            </div>
+          )}
+
+          {/* Tiêu đề & Giờ tổ chức */}
+          <div className="space-y-1 w-full pt-1">
+            <h3 className="font-serif font-bold text-base sm:text-lg tracking-wider text-[#7A121D] uppercase">
+              {mainTitle}
+            </h3>
+            <p className="font-serif text-[11px] text-[#7A121D] tracking-wide uppercase">
+              {timeDesc}
+            </p>
+          </div>
+
+          {/* Ô số ngày tháng kiểu khung ngang */}
+          <div className="flex items-center justify-center gap-3 font-serif py-1 w-full max-w-[260px] border-y border-stone-200">
+            <div className="border-b-2 border-[#7A121D] pb-0.5">
+              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">THÁNG 12</span>
+            </div>
+            <span className="text-3xl font-bold text-[#7A121D] leading-none">29</span>
+            <div className="border-b-2 border-[#7A121D] pb-0.5">
+              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">NĂM 2026</span>
+            </div>
+          </div>
+          <p className="text-[10px] italic text-stone-500">{lunar}</p>
+
+          {/* Địa điểm & nút chỉ đường */}
+          <div className="space-y-1.5 w-full pt-1">
+            <h5 className="font-serif font-bold text-xs uppercase text-[#7A121D] tracking-wider">{venue}</h5>
+            <p className="text-[10px] text-stone-600 max-w-[260px] mx-auto leading-relaxed">{addr}</p>
+            {mapLink && (
+              <div className="pt-1">
+                <a
+                  href={mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block px-5 py-1.5 rounded-full bg-[#7A121D] hover:bg-[#5E0E16] text-white text-[10px] font-bold uppercase tracking-widest shadow-sm transition active:scale-95 cursor-pointer"
+                >
+                  {btnText}
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
     default:
       return <p className="text-sm">{title || "Tiện ích"}</p>;
   }

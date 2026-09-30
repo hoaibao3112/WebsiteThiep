@@ -4,6 +4,7 @@ export interface StockItem {
   cat: "frames" | "dividers" | "wedding" | "character" | "flower" | "hy" | "heart" | "vietnam";
   svgType?: "frame" | "divider" | "custom";
   icon?: string;
+  imageUrl?: string;
   svgContent?: string;
   color?: string;
   width: number;
@@ -26,7 +27,84 @@ export const STOCK_CATEGORIES = [
 export type StockCategoryId = (typeof STOCK_CATEGORIES)[number]["id"];
 
 export const STOCK_CATALOG: StockItem[] = [
-  // ── 1. KHUNG VIỀN (FRAMES) ──
+  // ── 1. KHUNG VIỀN MỸ THUẬT CAO CẤP (AI GENERATED LACE & DECKLE) ──
+  {
+    id: "fr-lace-royal",
+    title: "Khung ren hoàng gia cổ điển",
+    cat: "frames",
+    imageUrl: "/images/decor/lace-frame-royal.png",
+    width: 280,
+    height: 375,
+  },
+  {
+    id: "fr-lace-gold-arch",
+    title: "Khung ren vòm dát vàng & ô liu",
+    cat: "frames",
+    imageUrl: "/images/decor/lace-frame-gold-arch.png",
+    width: 280,
+    height: 375,
+  },
+  {
+    id: "fr-scalloped-paper",
+    title: "Khung giấy viền răng cưa handmade",
+    cat: "frames",
+    imageUrl: "/images/decor/scalloped-paper-frame.png",
+    width: 280,
+    height: 375,
+  },
+
+  {
+    id: "fr-lotus-heritage",
+    title: "Khung hoa sen trắng & chữ Hỷ dát vàng",
+    cat: "frames",
+    imageUrl: "/images/decor/lotus-heritage-frame.png",
+    width: 280,
+    height: 380,
+  },
+  {
+    id: "fr-rose-cottage",
+    title: "Khung hoa hồng & ngôi nhà hạnh phúc",
+    cat: "frames",
+    imageUrl: "/images/decor/rose-cottage-frame.png",
+    width: 280,
+    height: 380,
+  },
+  {
+    id: "fr-baby-breath-wreath",
+    title: "Vòng nguyệt quế hoa baby & cúc Tana",
+    cat: "flower",
+    imageUrl: "/images/decor/baby-breath-wreath.png",
+    width: 280,
+    height: 280,
+  },
+
+  // ── 2. BIỂU TƯỢNG ĐÁM CƯỚI SANG TRỌNG (SWANS, CAR, CAKE) ──
+  {
+    id: "wd-twin-swans",
+    title: "Đôi thiên nga sứ trái tim",
+    cat: "wedding",
+    imageUrl: "/images/decor/twin-swans-heart.png",
+    width: 240,
+    height: 240,
+  },
+  {
+    id: "wd-wedding-car",
+    title: "Xe hoa rước dâu pastel cổ điển",
+    cat: "wedding",
+    imageUrl: "/images/decor/vintage-wedding-car.png",
+    width: 250,
+    height: 250,
+  },
+  {
+    id: "wd-wedding-cake",
+    title: "Bánh cưới 3 tầng hoa tươi hoàng gia",
+    cat: "wedding",
+    imageUrl: "/images/decor/wedding-cake-3tier.png",
+    width: 250,
+    height: 300,
+  },
+
+  // ── 3. KHUNG VIỀN VECTOR (FRAMES) ──
   {
     id: "fr-scalloped-cloud",
     title: "Khung uốn lượn hoàng gia",

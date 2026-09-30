@@ -75,6 +75,9 @@ export const CanvasElementSchema = z
       "dress-code",
       "love-story",
       "menu",
+      "procession-route",
+      "lace-vow-card",
+      "swan-ceremony",
     ]).optional(),
     customData: z.record(z.any()).optional(),
     widgetConfig: z.object({

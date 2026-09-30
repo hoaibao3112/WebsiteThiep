@@ -14,6 +14,9 @@ import {
   Palette,
   Heart,
   UtensilsCrossed,
+  Compass,
+  ScrollText,
+  Sparkles,
 } from "lucide-react";
 import { useEditor } from "../EditorContext";
 import type { WidgetType } from "@/types/canvas.types";
@@ -26,6 +29,9 @@ interface WidgetItem {
 }
 
 const widgets: WidgetItem[] = [
+  { type: "procession-route", label: "Lộ trình rước dâu 2 nhà", desc: "Xe hoa uốn lượn, Lễ Vu Quy & Thành Hôn", icon: Compass },
+  { type: "lace-vow-card", label: "Thẻ lời ước viền ren", desc: "Khung ren hoàng gia, tên CD-CR & 4 câu thơ", icon: ScrollText },
+  { type: "swan-ceremony", label: "Lễ tiệc & Thiên nga", desc: "Đôi thiên nga sứ, song thân & xem chỉ đường", icon: Sparkles },
   { type: "timeline", label: "Lịch trình ngày cưới", desc: "Mốc giờ đón dâu, làm lễ, tiệc mừng", icon: Clock },
   { type: "dress-code", label: "Gợi ý trang phục", desc: "Bảng màu dress code gợi ý", icon: Palette },
   { type: "love-story", label: "Chuyện tình yêu", desc: "Cột mốc từ quen đến chung đôi", icon: Heart },

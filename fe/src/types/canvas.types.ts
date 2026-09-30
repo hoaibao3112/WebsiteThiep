@@ -11,7 +11,10 @@ export type WidgetType =
   | "timeline"
   | "dress-code"
   | "love-story"
-  | "menu";
+  | "menu"
+  | "procession-route"
+  | "lace-vow-card"
+  | "swan-ceremony";
 export type CanvasWidgetType = WidgetType;
 
 export interface WidgetConfig {
@@ -22,6 +25,24 @@ export interface WidgetConfig {
   url?: string;
   phone?: string;
   showTitle?: boolean;
+  // Extended custom properties for ceremony / route / lace card
+  groomTitle?: string;
+  brideTitle?: string;
+  groomDate?: string;
+  brideDate?: string;
+  groomLunarDate?: string;
+  brideLunarDate?: string;
+  groomVenue?: string;
+  brideVenue?: string;
+  groomMapUrl?: string;
+  brideMapUrl?: string;
+  groomAddress?: string;
+  brideAddress?: string;
+  groomParents?: string;
+  brideParents?: string;
+  vowQuote?: string;
+  frameStyle?: "royal" | "gold-arch" | "scalloped" | "lotus" | "rose-cottage";
+  decorIcon?: "swans" | "car" | "cake" | "wreath" | "rings" | "none";
 }
 export type CanvasWidgetConfig = WidgetConfig;
 

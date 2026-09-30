@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { AiConsultantWidget } from "@/components/ai/AiConsultantWidget";
+import { CookieConsent } from "@/components/shared/CookieConsent";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -61,6 +62,9 @@ export default function RootLayout({
               </Suspense>
               <Suspense fallback={null}>
                 <AiConsultantWidget />
+              </Suspense>
+              <Suspense fallback={null}>
+                <CookieConsent />
               </Suspense>
             </ErrorBoundary>
           </LanguageProvider>

@@ -75,6 +75,9 @@ export const WEDDING_SCENE_SECTION_TYPES = [
   "songhy-illustration",
   "lake-gallery",
   "unified-events",
+  "procession-route",
+  "lace-vow-card",
+  "swan-ceremony",
 ] as const;
 
 export type WeddingSceneSectionType = (typeof WEDDING_SCENE_SECTION_TYPES)[number];

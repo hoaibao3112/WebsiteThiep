@@ -1414,11 +1414,64 @@ export function EditorProvider<T extends object>({
 
   const addWidgetElement = useCallback((widgetType: WidgetType, pos?: { x?: number; y?: number }) => {
     const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+    let w = 300;
+    let h = 160;
+    let initialConfig: Record<string, unknown> = { showTitle: true };
+
+    if (widgetType === "procession-route") {
+      w = 340;
+      h = 490;
+      initialConfig = {
+        brideTitle: "LỄ VU QUY",
+        brideDate: "Vào Thứ Hai - 09h00 | 21.02.2026",
+        brideLunarDate: "Tức Ngày 16 tháng 12 năm Ất Tỵ",
+        brideVenue: "tại tư gia nhà gái",
+        brideMapUrl: "https://maps.google.com",
+        groomTitle: "LỄ THÀNH HÔN",
+        groomDate: "Vào Thứ Hai - 14h00 | 21.02.2026",
+        groomLunarDate: "Tức Ngày 16 tháng 12 năm Ất Tỵ",
+        groomVenue: "TẠI TƯ GIA NHÀ TRAI",
+        groomMapUrl: "https://maps.google.com",
+      };
+    } else if (widgetType === "lace-vow-card") {
+      w = 320;
+      h = 430;
+      initialConfig = {
+        title: "Mạnh Đức & Lan Nhi",
+        eventDate: "29.12.2026",
+        vowQuote: "Một lời hẹn ước\nMột hành trình mới\nMột mái nhà chung\nMột đời bên nhau",
+        frameStyle: "royal",
+      };
+    } else if (widgetType === "swan-ceremony") {
+      w = 340;
+      h = 500;
+      initialConfig = {
+        title: "LỄ THÀNH HÔN",
+        description: "BUỔI TIỆC CHUNG VUI ĐƯỢC TỔ CHỨC VÀO LÚC 17:30, CHỦ NHẬT",
+        eventDate: "29.12.2026",
+        groomLunarDate: "Tức ngày 18 tháng 10 năm Bính Ngọ",
+        groomVenue: "TẠI TƯ GIA NHÀ TRAI",
+        groomAddress: "174 Đường Trần Văn Kiểu, Phường 10, TP Hồ Chí Minh",
+        groomParents: "Ông. Lê Văn Anh - Bà. Lê Thị Nhung",
+        brideParents: "Ông. Vũ Văn Tài - Bà. Trần Thị Hoà",
+        url: "https://maps.google.com",
+        buttonLabel: "XEM CHỈ ĐƯỜNG",
+      };
+    }
+
     const newEl: CanvasElement = {
       id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      type: "widget", widgetType, widgetConfig: { showTitle: true }, content: widgetType,
-      x: pos?.x ?? 45, y: pos?.y ?? 280, width: 300, height: 160,
-      zIndex: maxZ + 1, isLocked: false, opacity: 1,
+      type: "widget",
+      widgetType,
+      widgetConfig: initialConfig,
+      content: widgetType,
+      x: pos?.x ?? Math.max(10, Math.round((390 - w) / 2)),
+      y: pos?.y ?? 200,
+      width: w,
+      height: h,
+      zIndex: maxZ + 1,
+      isLocked: false,
+      opacity: 1,
     };
     persistElements([...canvasElements, newEl]);
     setSelectedElementId(newEl.id);
