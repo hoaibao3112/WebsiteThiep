@@ -6,7 +6,7 @@ import type { CardDetail } from "@/types/card.types";
 import type { CanvasElement } from "@/types/canvas.types";
 import { CanvasElementContent } from "./CanvasElementContent";
 import { CanvasPatternOverlay, CanvasFallingEffect } from "./CanvasEffects";
-import { canvasElementStyle, readRecord, safeCanvasLink } from "@/lib/editor/canvas-presentation";
+import { canvasElementStyle, canvasElementAnimationClass, readRecord, safeCanvasLink } from "@/lib/editor/canvas-presentation";
 import { RsvpFormModal } from "@/components/shared/RsvpFormModal";
 import { GiftQrBoxModal } from "@/components/shared/GiftQrBoxModal";
 import { GuestbookSection } from "@/components/shared/GuestbookSection";
@@ -82,7 +82,8 @@ export function CanvasCardView({ card, guestName, guestPhone, guestCode }: Canva
         <CanvasFallingEffect effect={effect} />
         {elements.map(element => {
           const href = safeCanvasLink(element.linkUrl);
-          return <div key={element.id} data-canvas-element={element.id} style={canvasElementStyle(element)} className="flex items-center justify-center">
+          const animClass = canvasElementAnimationClass(element);
+          return <div key={element.id} data-canvas-element={element.id} style={canvasElementStyle(element)} className={`flex items-center justify-center ${animClass}`}>
             <CanvasElementContent element={element} draft={card} guestName={guestName} onRsvp={() => setRsvpOpen(true)} onGift={() => setGiftOpen(true)} />
             {href && element.type !== "widget" && <a href={href} target="_blank" rel="noopener noreferrer" aria-label={element.title || element.content || "Mở liên kết"} className="absolute inset-0 focus-visible:outline-2" />}
           </div>;

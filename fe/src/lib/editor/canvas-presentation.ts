@@ -27,7 +27,38 @@ export function canvasElementStyle(el: CanvasElement): CSSProperties {
     borderColor: el.borderColor, borderStyle: el.borderWidth ? "solid" : undefined,
     boxShadow: el.shadow,
     transform: [el.rotation ? `rotate(${el.rotation}deg)` : "", el.flipX ? "scaleX(-1)" : "", el.flipY ? "scaleY(-1)" : ""].filter(Boolean).join(" ") || undefined,
+    animationDelay: el.animationDelay !== undefined ? `${el.animationDelay}s` : undefined,
+    animationDuration: el.animationDuration !== undefined ? `${el.animationDuration}s` : undefined,
   };
+}
+
+export function canvasElementAnimationClass(el: CanvasElement): string {
+  const classes: string[] = [];
+
+  if (el.animation) {
+    switch (el.animation) {
+      case "fade-in": classes.push("anim-fade-in"); break;
+      case "slide-up": classes.push("anim-slide-up"); break;
+      case "slide-down": classes.push("anim-slide-down"); break;
+      case "slide-left": classes.push("anim-slide-left"); break;
+      case "slide-right": classes.push("anim-slide-right"); break;
+      case "zoom-in": classes.push("anim-zoom-in"); break;
+      case "bounce-in": classes.push("anim-bounce-in"); break;
+      case "flip-3d": classes.push("anim-flip-3d"); break;
+      case "shimmer": classes.push("animate-shimmer-text"); break;
+    }
+  }
+
+  if (el.loopAnimation) {
+    switch (el.loopAnimation) {
+      case "float": classes.push("anim-loop-float"); break;
+      case "pulse": classes.push("anim-loop-pulse"); break;
+      case "swing": classes.push("anim-loop-swing"); break;
+      case "glow": classes.push("anim-loop-glow"); break;
+    }
+  }
+
+  return classes.join(" ");
 }
 
 export function readRecord(value: unknown): Record<string, unknown> {

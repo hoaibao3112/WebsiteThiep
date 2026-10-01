@@ -4,7 +4,7 @@ import React from "react";
 import type { CardDetail, WeddingDataPayload } from "@/types/card.types";
 import type { CanvasElement } from "@/types/canvas.types";
 import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
-import { canvasElementStyle, readRecord } from "@/lib/editor/canvas-presentation";
+import { canvasElementStyle, canvasElementAnimationClass, readRecord } from "@/lib/editor/canvas-presentation";
 import { CanvasElementContent } from "@/components/card/CanvasElementContent";
 
 interface WeddingSceneRendererProps {
@@ -57,12 +57,30 @@ export function WeddingSceneRenderer({ card, data, scene, guestName, onOpenRsvp,
           const isVisible = !owner || owner.visible;
           if (!isVisible) return null;
           const canvasElement = element as CanvasElement;
+          const individualAnim = canvasElementAnimationClass(canvasElement);
+
+          // Card-level element animations
+          const elemAnimations = (card.categoryData as any)?.elementAnimations;
+          let globalAnimClass = "";
+          if (elemAnimations) {
+            const isNameOrTitle = element.id.includes("title") || element.id.includes("groom") || element.id.includes("bride") || element.id.includes("couple");
+            if (isNameOrTitle) {
+              if (elemAnimations.headerTitleMotion === "shimmer") globalAnimClass += " animate-shimmer-text";
+              else if (elemAnimations.headerTitleMotion === "fade-up") globalAnimClass += " anim-slide-up";
+              else if (elemAnimations.headerTitleMotion === "zoom-gentle") globalAnimClass += " anim-zoom-in";
+            }
+            if (element.type === "image") {
+              if (elemAnimations.photoMotion === "float-gentle") globalAnimClass += " animate-photo-float";
+              else if (elemAnimations.photoMotion === "gleam-shine") globalAnimClass += " gleam-overlay";
+            }
+          }
+
           return (
             <div
               key={element.id}
               data-scene-element={element.id}
               style={canvasElementStyle(canvasElement)}
-              className="flex items-center justify-center"
+              className={`flex items-center justify-center ${individualAnim} ${globalAnimClass}`}
               onClick={element.type === "image" && (element.imageUrl || element.content) ? () => onSelectPhoto(element.imageUrl || element.content) : undefined}
             >
               <CanvasElementContent

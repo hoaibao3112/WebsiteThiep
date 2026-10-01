@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense } from "react
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { CardCategory, CardDetail, EventItem, PhotoItem, WeddingDataPayload } from "@/types/card.types";
+import { CardCategory, CardDetail, EventItem, PhotoItem, WeddingDataPayload, CardElementAnimationsConfig } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
@@ -14,6 +14,7 @@ import { uploadSingleImage } from "@/lib/image-upload";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyProfileModal";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
+import { ElementAnimationsStudio } from "@/components/card/ElementAnimationsStudio";
 import {
   Heart,
   Cake,
@@ -197,6 +198,7 @@ const COLOR_PRESETS = [
 
 const EDIT_TABS = [
   { key: "theme", label: "Giao Diện", icon: Palette },
+  { key: "animations", label: "Hoạt Ảnh", icon: Sparkles },
   { key: "couple", label: "Cặp Đôi", icon: Heart },
   { key: "story", label: "Câu Chuyện", icon: BookOpen },
   { key: "events", label: "Lịch Trình", icon: Calendar },
@@ -308,9 +310,7 @@ function EditCardContent() {
   const [loadAttempt, setLoadAttempt] = useState(0);
 
   // Active tab & device preview
-  const [activeTab, setActiveTab] = useState<
-    "theme" | "couple" | "story" | "events" | "gallery" | "music" | "banking" | "rsvp"
-  >("theme");
+  const [activeTab, setActiveTab] = useState<(typeof EDIT_TABS)[number]["key"]>("theme");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
   const [mobileViewMode, setMobileViewMode] = useState<"edit" | "preview">("edit");
   const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
@@ -328,6 +328,13 @@ function EditCardContent() {
     "PETAL"
   );
   const [greetingMessage, setGreetingMessage] = useState("");
+  const [elementAnimations, setElementAnimations] = useState<CardElementAnimationsConfig>({
+    headerTitleMotion: "shimmer",
+    photoMotion: "living-kenburns",
+    scrollRevealStyle: "staggered-fade-up",
+    quoteBoxStyle: "floating-glow",
+    reduceMotionOnMobile: true,
+  });
 
   // ── Wedding couple ──
   const [groomName, setGroomName] = useState("");
@@ -426,6 +433,16 @@ function EditCardContent() {
       (card.fallingEffect as "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON" | "NONE") || "PETAL"
     );
     setGreetingMessage(card.greetingMessage || "");
+    const catDataRecord = (card.categoryData as any) || {};
+    if (catDataRecord.elementAnimations) {
+      setElementAnimations({
+        headerTitleMotion: catDataRecord.elementAnimations.headerTitleMotion || "shimmer",
+        photoMotion: catDataRecord.elementAnimations.photoMotion || "living-kenburns",
+        scrollRevealStyle: catDataRecord.elementAnimations.scrollRevealStyle || "staggered-fade-up",
+        quoteBoxStyle: catDataRecord.elementAnimations.quoteBoxStyle || "floating-glow",
+        reduceMotionOnMobile: catDataRecord.elementAnimations.reduceMotionOnMobile ?? true,
+      });
+    }
     setIsAutoPlay(card.isAutoPlay);
     setSelectedMusicSrc(card.musicUrl || MUSIC_OPTIONS[0].src);
     setEvents(
@@ -897,9 +914,10 @@ function EditCardContent() {
             loveStory,
             photos,
             events: [],
+            elementAnimations,
           }
         : category === "BIRTHDAY"
-        ? { ...categoryDataRef.current, canvasWidth: 390, canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200, cardCategory: "BIRTHDAY", celebrantName, age, events: [] }
+        ? { ...categoryDataRef.current, canvasWidth: 390, canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200, cardCategory: "BIRTHDAY", celebrantName, age, events: [], elementAnimations }
         : {
             ...categoryDataRef.current,
             canvasWidth: 390,
@@ -913,6 +931,7 @@ function EditCardContent() {
             height,
             ceremonyType,
             events: [],
+            elementAnimations,
           },
   };
 
@@ -1092,6 +1111,7 @@ function EditCardContent() {
       showGiftQR: catData.showGiftQR ?? true,
       showRSVP: catData.showRSVP ?? true,
       envelopeConfig: catData.envelopeConfig || (draftSnapshot as any)?.envelopeConfig || (draftSnapshot as any)?.categoryData?.envelopeConfig || undefined,
+      elementAnimations,
       ...(category === "WEDDING"
         ? {
             groom: {
@@ -1641,6 +1661,18 @@ function EditCardContent() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* ══ TAB: HOẠT ẢNH THÀNH PHẦN ══ */}
+            {activeTab === "animations" && (
+              <ElementAnimationsStudio
+                value={elementAnimations}
+                onChange={(val) => {
+                  setElementAnimations(val);
+                  setHasUnsavedChanges(true);
+                }}
+                primaryColor={primaryColor}
+              />
             )}
 
             {/* ══ TAB 2: CẶP ĐÔI ══ */}

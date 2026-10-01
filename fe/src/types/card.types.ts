@@ -125,6 +125,15 @@ export interface CanvasCategoryData {
   showGiftQR?: boolean;
   showRSVP?: boolean;
   envelopeConfig?: EnvelopeConfig;
+  elementAnimations?: CardElementAnimationsConfig;
+}
+
+export interface CardElementAnimationsConfig {
+  headerTitleMotion?: "shimmer" | "kinetic" | "fade-up" | "zoom-gentle" | "none";
+  photoMotion?: "living-kenburns" | "float-gentle" | "gleam-shine" | "zoom-hover" | "static";
+  scrollRevealStyle?: "staggered-fade-up" | "smooth-unfurl" | "scale-reveal" | "none";
+  quoteBoxStyle?: "floating-glow" | "scroll-unfurl" | "classic-fade";
+  reduceMotionOnMobile?: boolean;
 }
 
 export interface EnvelopeStyle {

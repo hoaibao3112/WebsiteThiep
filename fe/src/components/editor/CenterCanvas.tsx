@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { useEditor, CanvasElement } from "./EditorContext";
 import { CanvasElementContent } from "@/components/card/CanvasElementContent";
-import { canvasElementStyle } from "@/lib/editor/canvas-presentation";
+import { canvasElementStyle, canvasElementAnimationClass } from "@/lib/editor/canvas-presentation";
 import { CanvasBoundingBox } from "./CanvasBoundingBox";
 import {
   Check,
@@ -686,7 +686,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                     }
                   }}
                   style={canvasElementStyle(el)}
-                  className={`flex touch-none items-center justify-center select-none transition-shadow ${
+                  className={`flex touch-none items-center justify-center select-none transition-shadow ${canvasElementAnimationClass(el)} ${
                     isCurrentlyDragging
                       ? "cursor-grabbing shadow-xl ring-2 ring-blue-400"
                       : isSelected

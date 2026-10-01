@@ -101,7 +101,10 @@ export interface CanvasElement {
   title?: string;
   rotation?: number;
   animation?: string;
+  animationDelay?: number;
+  animationDuration?: number;
   loopAnimation?: string;
+  loopDuration?: number;
   linkUrl?: string;
   flipX?: boolean;
   flipY?: boolean;

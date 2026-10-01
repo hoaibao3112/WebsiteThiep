@@ -3496,25 +3496,68 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               <span className="text-stone-400 font-bold">{expandMotion ? "−" : "+"}</span>
             </button>
             {expandMotion && (
-              <div className="p-2.5 bg-white grid grid-cols-2 gap-1.5 text-[11px]">
-                {[
-                  { label: "Không", val: "none" },
-                  { label: "Mờ dần (Fade)", val: "fade-in" },
-                  { label: "Bay lên (Slide Up)", val: "slide-up" },
-                  { label: "Phóng to (Zoom)", val: "zoom-in" },
-                  { label: "Nhảy nhẹ (Bounce)", val: "bounce-in" },
-                ].map((m) => (
-                  <button
-                    key={m.label}
-                    type="button"
-                    onClick={() => updateCanvasElement(element.id, { animation: m.val })}
-                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer ${
-                      element.animation === m.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+              <div className="p-2.5 bg-white space-y-2.5">
+                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                  {[
+                    { label: "Không", val: "none" },
+                    { label: "Mờ dần (Fade)", val: "fade-in" },
+                    { label: "Bay lên (Slide Up)", val: "slide-up" },
+                    { label: "Hạ xuống (Slide Down)", val: "slide-down" },
+                    { label: "Bay từ phải (Slide L)", val: "slide-left" },
+                    { label: "Bay từ trái (Slide R)", val: "slide-right" },
+                    { label: "Phóng to (Zoom)", val: "zoom-in" },
+                    { label: "Nhảy nhẹ (Bounce)", val: "bounce-in" },
+                    { label: "Lật 3D (Flip)", val: "flip-3d" },
+                    { label: "Ánh kim (Shimmer)", val: "shimmer" },
+                  ].map((m) => (
+                    <button
+                      key={m.label}
+                      type="button"
+                      onClick={() => updateCanvasElement(element.id, { animation: m.val })}
+                      className={`p-1.5 rounded-lg border text-center transition cursor-pointer text-[10px] ${
+                        element.animation === m.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Timing sliders when an animation is selected */}
+                {element.animation && element.animation !== "none" && (
+                  <div className="pt-2 border-t border-stone-100 space-y-2">
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-stone-500 mb-1">
+                        <span>Độ trễ xuất hiện (Delay)</span>
+                        <span className="font-mono font-bold text-amber-800">{element.animationDelay ?? 0}s</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value={element.animationDelay ?? 0}
+                        onChange={(e) => updateCanvasElement(element.id, { animationDelay: parseFloat(e.target.value) })}
+                        className="w-full accent-amber-600 h-1.5 cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-stone-500 mb-1">
+                        <span>Thời lượng chạy (Duration)</span>
+                        <span className="font-mono font-bold text-amber-800">{element.animationDuration ?? 0.8}s</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0.3"
+                        max="3"
+                        step="0.1"
+                        value={element.animationDuration ?? 0.8}
+                        onChange={(e) => updateCanvasElement(element.id, { animationDuration: parseFloat(e.target.value) })}
+                        className="w-full accent-amber-600 h-1.5 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -3536,12 +3579,13 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   { label: "Nhấp nhô (Float)", val: "float" },
                   { label: "Nhịp đập (Pulse)", val: "pulse" },
                   { label: "Lắc lư (Swing)", val: "swing" },
+                  { label: "Tỏa sáng (Glow)", val: "glow" },
                 ].map((l) => (
                   <button
                     key={l.label}
                     type="button"
                     onClick={() => updateCanvasElement(element.id, { loopAnimation: l.val })}
-                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer ${
+                    className={`p-1.5 rounded-lg border text-center transition cursor-pointer text-[10px] ${
                       element.loopAnimation === l.val ? "border-amber-500 bg-amber-50 font-bold text-amber-900" : "border-stone-200 text-stone-600 hover:bg-stone-50"
                     }`}
                   >
