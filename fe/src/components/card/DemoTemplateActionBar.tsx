@@ -57,15 +57,15 @@ export function DemoTemplateActionBar({
 
   // Slide-up animation: hiện sau 1.5s delay để không phân tán khi đang xem thiệp
   useEffect(() => {
-    if (!mounted || isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+    if (!mounted || isInviteMode || dismissed) {
       return;
     }
     const timer = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [mounted, isInviteMode, isSocialInApp, isAuthenticated, dismissed]);
+  }, [mounted, isInviteMode, dismissed]);
 
-  // Không hiển thị trên server hoặc nếu là lời mời người thân, mở qua Zalo, đã đăng nhập, hoặc người dùng đã đóng
-  if (!mounted || isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+  // Không hiển thị trên server hoặc nếu là lời mời đích danh cho khách mời, hoặc người dùng đã đóng
+  if (!mounted || isInviteMode || dismissed) {
     return null;
   }
 

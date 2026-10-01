@@ -20,6 +20,7 @@ interface GiftQrBoxModalProps {
   labelPrimary?: string;
   labelSecondary?: string;
   primaryColor?: string;
+  isDemo?: boolean;
 }
 
 export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
@@ -30,6 +31,7 @@ export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
   labelPrimary,
   labelSecondary,
   primaryColor = "#D4AF37",
+  isDemo = false,
 }) => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<"primary" | "secondary">("primary");
@@ -110,6 +112,13 @@ export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
               {t("giftSubtitle") || "Gửi lời chúc phúc và quà mừng đến tân lang & tân nương qua mã QR"}
             </p>
           </div>
+
+          {/* Banner thông báo chế độ demo */}
+          {isDemo && (
+            <div className="mt-3.5 px-3.5 py-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 text-[11px] text-left leading-relaxed">
+              <span className="font-semibold">💡 Chế độ xem trước mẫu:</span> Khi bạn tạo thiệp của riêng mình, mã QR này sẽ hiển thị thông tin tài khoản ngân hàng chính chủ của bạn để nhận tiền mừng cưới trực tiếp từ khách mời.
+            </div>
+          )}
 
           {/* TAB CHUYỂN ĐỔI CHÚ RỂ / CÔ DÂU */}
           {bankingSecondary && (

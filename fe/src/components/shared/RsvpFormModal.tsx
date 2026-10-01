@@ -14,6 +14,7 @@ interface RsvpFormModalProps {
   defaultGuestPhone?: string;
   guestCode?: string;
   primaryColor?: string;
+  isDemo?: boolean;
 }
 
 export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
@@ -24,6 +25,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
   defaultGuestPhone = "",
   guestCode,
   primaryColor = "#D4AF37",
+  isDemo = false,
 }) => {
   const { t } = useLanguage();
   const [fullName, setFullName] = useState(defaultGuestName);
@@ -141,6 +143,12 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
                 <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5">
                   {t("rsvpSubtitle") || "Vui lòng cho chúng mình biết kế hoạch của bạn"}
                 </p>
+                {isDemo && (
+                  <div className="mt-3 px-3.5 py-2 rounded-xl bg-sky-50 border border-sky-200/80 text-sky-900 text-[11px] text-left leading-relaxed">
+                    <span className="font-semibold">💡 Xem trước tính năng RSVP:</span> Khách mời của bạn sẽ xác nhận tham dự qua biểu mẫu này. Phản hồi sẽ tự động tổng hợp vào danh sách khách mời trong Dashboard của bạn.
+                  </div>
+                )}
+
               </div>
 
               {errorMsg && (

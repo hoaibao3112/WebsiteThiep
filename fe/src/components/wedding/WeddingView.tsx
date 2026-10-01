@@ -98,6 +98,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
   const groomShortName = data.groom?.shortName || data.groom?.fullName || "Chú rể";
   const brideShortName = data.bride?.shortName || data.bride?.fullName || "Cô dâu";
+  const isDemoCard = isDemo || Boolean(card.id?.startsWith("demo-")) || Boolean(DEMO_TEMPLATES_MAP[card.slug]) || Boolean(templateSlug && DEMO_TEMPLATES_MAP[templateSlug]);
 
   return (
     <div
@@ -199,7 +200,6 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
         {/* 4.2 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI: Chỉ hiển thị cho thiệp cưới thật do tài khoản người dùng tạo, KHÔNG hiển thị trên thiệp mẫu demo hoặc preview */}
         {(() => {
-          const isDemoCard = isDemo || Boolean(card.id?.startsWith("demo-")) || Boolean(DEMO_TEMPLATES_MAP[card.slug]) || Boolean(templateSlug && DEMO_TEMPLATES_MAP[templateSlug]);
           if (isPreview || isDemoCard) return null;
 
           return (
@@ -224,6 +224,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         defaultGuestName={guestName}
         defaultGuestPhone={guestPhone}
         guestCode={guestCode}
+        isDemo={isDemoCard}
       />
 
       {/* 6. MODAL GỬI QUÀ MỪNG VIETQR */}
@@ -233,6 +234,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         bankingPrimary={card.bankingPrimary}
         bankingSecondary={card.bankingSecondary}
         primaryColor={primaryColor}
+        isDemo={isDemoCard}
       />
 
       {/* 7. LIGHTBOX XEM ẢNH FULLSCREEN */}
