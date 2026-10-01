@@ -1,8 +1,10 @@
 import { prisma } from "../lib/prisma";
+import { redis } from "../lib/redis";
 import { cleanProfanity, containsProfanity } from "../lib/profanity-filter";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { WishSubmitInput } from "../lib/validators/wish.schema";
 import { HttpError } from "../lib/http-error";
+import { logger } from "../lib/logger";
 
 export class WishService {
   private static async getPublicCard(cardId: string) {
@@ -73,6 +75,21 @@ export class WishService {
         createdAt: true,
       },
     });
+
+    // 4. Realtime Pub/Sub: Bắn event NEW_WISH lên channel SSE cho Màn hình LED
+    // Chỉ publish khi lời chúc đã qua profanity filter (isApproved = true)
+    // Tái sử dụng channel wedding:memories:${cardId} — SSE stream subscriber forward mọi event
+    if (isApproved) {
+      try {
+        const channel = `wedding:memories:${cardId}`;
+        await redis.publish(channel, JSON.stringify({
+          event: "NEW_WISH",
+          data: wish,
+        }));
+      } catch (err) {
+        logger.warn({ err }, "Không thể publish NEW_WISH event qua Redis");
+      }
+    }
 
     return wish;
   }

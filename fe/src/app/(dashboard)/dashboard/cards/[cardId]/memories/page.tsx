@@ -172,15 +172,31 @@ export default function CardMemoriesAdminPage() {
             </button>
 
             {cardSlug && (
-              <a
-                href={`/thiep/${cardSlug}/live`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
-              >
-                <Tv className="w-4 h-4" />
-                <span>Mở Màn Hình LED Chiếu Sân Khấu</span>
-              </a>
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ledUrl = `${window.location.origin}/thiep/${cardSlug}/live-display`;
+                    navigator.clipboard.writeText(ledUrl).then(() => {
+                      alert("Đã sao chép link Màn Hình LED!\nGửi cho kỹ thuật viên nhà hàng để mở trên máy tính kết nối LED.");
+                    }).catch(() => {});
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-white border border-stone-300 hover:bg-stone-50 text-stone-800 text-xs font-bold transition flex items-center gap-2 shadow-2xs cursor-pointer"
+                >
+                  <QrCode className="w-4 h-4 text-stone-600" />
+                  <span>Sao Chép Link LED</span>
+                </button>
+
+                <a
+                  href={`/thiep/${cardSlug}/live-display`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white text-xs font-bold transition flex items-center gap-2 shadow-md cursor-pointer"
+                >
+                  <Tv className="w-4 h-4" />
+                  <span>Mở Màn Hình LED Sảnh Tiệc</span>
+                </a>
+              </>
             )}
           </div>
         </div>
