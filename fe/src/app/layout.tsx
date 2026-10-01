@@ -57,16 +57,16 @@ export default function RootLayout({
           <LanguageProvider>
             <ErrorBoundary>
               {children}
-              <Suspense fallback={null}>
-                <AuthModal />
-              </Suspense>
-              <Suspense fallback={null}>
-                <AiConsultantWidget />
-              </Suspense>
-              <Suspense fallback={null}>
-                <CookieConsent />
-              </Suspense>
             </ErrorBoundary>
+            <Suspense fallback={null}>
+              <AuthModal />
+            </Suspense>
+            <Suspense fallback={null}>
+              <AiConsultantWidget />
+            </Suspense>
+            <Suspense fallback={null}>
+              <CookieConsent />
+            </Suspense>
           </LanguageProvider>
         </AuthProvider>
       </body>

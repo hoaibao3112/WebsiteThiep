@@ -37,16 +37,10 @@ const DEFAULT_SUGGESTIONS = [
 export function AiConsultantWidget() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuth();
 
-  // Kiểm tra đăng nhập an toàn
-  let isAuthenticated = false;
-  try {
-    const auth = useAuth();
-    isAuthenticated = auth.isAuthenticated;
-  } catch {
-    isAuthenticated = false;
-  }
-
+  const [mounted, setMounted] = useState(false);
+  const [isSocialInApp, setIsSocialInApp] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [sessionId, setSessionId] = useState<string>('');
   const [inputMessage, setInputMessage] = useState('');
@@ -55,34 +49,14 @@ export function AiConsultantWidget() {
   const [hasNewBadge, setHasNewBadge] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. Ẩn trên các trang dashboard quản trị
-  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin');
-
-  // 2. Trên trang thiệp /thiep/[slug]
-  const isCardPage = pathname?.startsWith('/thiep/');
-  const isInviteMode = Boolean(
-    searchParams?.get('g') ||
-    searchParams?.get('invite') === '1' ||
-    searchParams?.get('invite') === 'true' ||
-    searchParams?.get('share') === '1' ||
-    searchParams?.get('share') === 'true' ||
-    searchParams?.get('mode') === 'invite'
-  );
-  const isSocialInApp = typeof window !== 'undefined' &&
-    /zalo|fbav|fban|messenger/i.test(window.navigator.userAgent);
-  const pathSlug = pathname ? pathname.replace(/^\/thiep\//, '').split('/')[0] : '';
-  const isDemoSlug = Boolean(pathSlug && DEMO_TEMPLATES_MAP[pathSlug]);
-
-  // Nếu trên trang thiệp: chỉ hiện khi là demo template VÀ người dùng chưa đăng nhập VÀ không phải gửi cho khách
-  const shouldHideOnCard = isCardPage && (isInviteMode || isSocialInApp || !isDemoSlug || isAuthenticated);
-
-  if (isDashboard || shouldHideOnCard) {
-    return null;
-  }
-
-  // Khởi tạo sessionId từ localStorage hoặc tạo mới
+  // Khởi tạo client mount và kiểm tra in-app browser
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
+      if (/zalo|fbav|fban|messenger/i.test(window.navigator.userAgent)) {
+        setIsSocialInApp(true);
+      }
+
       let stored = localStorage.getItem('website_thiep_ai_session');
       if (!stored) {
         stored = `ses_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -109,6 +83,29 @@ export function AiConsultantWidget() {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen, isLoading]);
+
+  // 1. Ẩn trên các trang dashboard quản trị
+  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin');
+
+  // 2. Trên trang thiệp /thiep/[slug]
+  const isCardPage = pathname?.startsWith('/thiep/');
+  const isInviteMode = Boolean(
+    searchParams?.get('g') ||
+    searchParams?.get('invite') === '1' ||
+    searchParams?.get('invite') === 'true' ||
+    searchParams?.get('share') === '1' ||
+    searchParams?.get('share') === 'true' ||
+    searchParams?.get('mode') === 'invite'
+  );
+  const pathSlug = pathname ? pathname.replace(/^\/thiep\//, '').split('/')[0] : '';
+  const isDemoSlug = Boolean(pathSlug && DEMO_TEMPLATES_MAP[pathSlug]);
+
+  // Nếu trên trang thiệp: chỉ hiện khi là demo template VÀ người dùng chưa đăng nhập VÀ không phải gửi cho khách
+  const shouldHideOnCard = isCardPage && (isInviteMode || isSocialInApp || !isDemoSlug || isAuthenticated);
+
+  if (!mounted || isDashboard || shouldHideOnCard) {
+    return null;
+  }
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputMessage).trim();
