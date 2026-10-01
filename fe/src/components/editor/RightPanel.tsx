@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useEditor, CanvasElement } from "./EditorContext";
 import {
   X,
@@ -3723,8 +3724,8 @@ function CanvasCropModal({
     };
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-stone-200 animate-in fade-in zoom-in-95 duration-150">
         <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
           <h4 className="text-sm font-bold text-stone-800">Cắt & Điều chỉnh ảnh</h4>
@@ -3800,7 +3801,8 @@ function CanvasCropModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

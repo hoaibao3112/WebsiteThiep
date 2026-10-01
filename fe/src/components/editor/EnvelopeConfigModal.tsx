@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { X, Check, Loader2, Sparkles } from "lucide-react";
 import { ApiClient } from "@/lib/api";
 import { EnvelopeStyle, EnvelopeConfig } from "@/types/card.types";
@@ -135,6 +136,11 @@ export function EnvelopeConfigModal({
     initialConfig?.buttonText || "CHẠM ĐỂ MỞ"
   );
   const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // 1. Fetch danh sách kiểu phong bì từ Backend API (Không hardcode FE)
   useEffect(() => {
@@ -232,10 +238,10 @@ export function EnvelopeConfigModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
       <div
         className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
         onClick={(e) => {
@@ -696,6 +702,7 @@ export function EnvelopeConfigModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

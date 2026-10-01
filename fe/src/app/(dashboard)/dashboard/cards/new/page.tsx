@@ -731,7 +731,7 @@ function CardBuilderContent() {
   );
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col">
+    <div className="h-screen w-full bg-stone-100 text-stone-900 flex flex-col overflow-hidden">
       {/* ───────────────────────────────────────────────────────────── */}
       {/* TOP COMPACT HEADER BAR                                        */}
       {/* ───────────────────────────────────────────────────────────── */}
@@ -908,7 +908,7 @@ function CardBuilderContent() {
       {/* ───────────────────────────────────────────────────────────── */}
       {/* MAIN VISUAL CANVAS WORKSPACE (DRAG & DROP, MOVEABLE ELEMENTS) */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+      <main className="flex-1 w-full overflow-hidden">
         <VisualCardEditor
           templateSlug={templateSlug}
           draft={previewCard}

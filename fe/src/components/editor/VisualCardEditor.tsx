@@ -68,7 +68,7 @@ export function VisualCardEditor<T extends object>({
       onDraftChange={onDraftChange}
       onSave={onSave}
     >
-      <div className="flex flex-col h-screen w-full overflow-hidden bg-white select-none">
+      <div className={`flex flex-col ${showTopBar ? "h-screen" : "h-full"} w-full overflow-hidden bg-white select-none`}>
         {/* 0. TOP BAR - MATCHING NGAYCHUNGDOI.COM/CARD/CREATE/CANVAS */}
         {showTopBar && (
           <CanvasTopBar
