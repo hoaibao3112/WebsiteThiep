@@ -190,7 +190,7 @@ const DEFAULT_AUTH_CONTEXT: AuthContextType = {
   registerWithOtp: async () => ({ success: false, error: "No AuthProvider" }),
   login: async () => ({ success: false, error: "No AuthProvider" }),
   googleLogin: async () => ({ success: false, error: "No AuthProvider" }),
-  logout: () => {},
+  logout: async () => {},
   refreshUser: async () => {},
 };
 
