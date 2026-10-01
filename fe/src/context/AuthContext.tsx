@@ -178,10 +178,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const DEFAULT_AUTH_CONTEXT: AuthContextType = {
+  user: null,
+  isLoading: false,
+  isAuthenticated: false,
+  isAuthModalOpen: false,
+  authModalTab: "login",
+  openAuthModal: () => {},
+  closeAuthModal: () => {},
+  sendRegisterOtp: async () => ({ success: false, error: "No AuthProvider" }),
+  registerWithOtp: async () => ({ success: false, error: "No AuthProvider" }),
+  login: async () => ({ success: false, error: "No AuthProvider" }),
+  googleLogin: async () => ({ success: false, error: "No AuthProvider" }),
+  logout: () => {},
+  refreshUser: async () => {},
+};
+
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return context || DEFAULT_AUTH_CONTEXT;
 }
