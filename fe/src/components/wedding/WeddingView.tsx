@@ -18,6 +18,7 @@ import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
 import { Album3DConfig } from "@/types/album-3d.types";
+import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 
 interface WeddingViewProps {
   card: CardDetail;
@@ -27,6 +28,7 @@ interface WeddingViewProps {
   guestCode?: string;
   templateSlug?: string;
   isPreview?: boolean;
+  isDemo?: boolean;
 }
 
 export const WeddingView: React.FC<WeddingViewProps> = ({
@@ -37,6 +39,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   guestCode,
   templateSlug,
   isPreview = false,
+  isDemo = false,
 }) => {
   const [opened, setOpened] = useState(isPreview);
   const [audioStarted, setAudioStarted] = useState(false);
@@ -194,17 +197,22 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           );
         })()}
 
-        {/* 4.2 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI */}
-        {!isPreview && (
-          <PhotoWallSection
-            slug={card.slug}
-            coupleName={`${groomShortName} & ${brideShortName}`}
-            weddingDate={card.events?.[0]?.eventDate ? (typeof card.events[0].eventDate === "string" ? card.events[0].eventDate.slice(0, 10).split("-").reverse().join("/") : new Date(card.events[0].eventDate).toISOString().slice(0, 10).split("-").reverse().join("/")) : undefined}
-            monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
-            defaultGuestName={activeGuestName}
-            primaryColor={primaryColor}
-          />
-        )}
+        {/* 4.2 BỨC TƯỜNG ẢNH KỶ NIỆM & PHOTOBOOTH KHÁCH MỜI: Chỉ hiển thị cho thiệp cưới thật do tài khoản người dùng tạo, KHÔNG hiển thị trên thiệp mẫu demo hoặc preview */}
+        {(() => {
+          const isDemoCard = isDemo || Boolean(card.id?.startsWith("demo-")) || Boolean(DEMO_TEMPLATES_MAP[card.slug]) || Boolean(templateSlug && DEMO_TEMPLATES_MAP[templateSlug]);
+          if (isPreview || isDemoCard) return null;
+
+          return (
+            <PhotoWallSection
+              slug={card.slug}
+              coupleName={`${groomShortName} & ${brideShortName}`}
+              weddingDate={card.events?.[0]?.eventDate ? (typeof card.events[0].eventDate === "string" ? card.events[0].eventDate.slice(0, 10).split("-").reverse().join("/") : new Date(card.events[0].eventDate).toISOString().slice(0, 10).split("-").reverse().join("/")) : undefined}
+              monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
+              defaultGuestName={activeGuestName}
+              primaryColor={primaryColor}
+            />
+          );
+        })()}
       </div>
 
       {/* 5. MODAL FORM RSVP XÁC NHẬN THAM DỰ */}

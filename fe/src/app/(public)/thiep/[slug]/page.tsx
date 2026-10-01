@@ -153,10 +153,9 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   // Truyền templateSlug ưu tiên từ card.template?.slug hoặc chính slug URL
   const effectiveTemplateSlug = card.template?.slug || slug;
 
-  // Xác định có phải thiệp mẫu demo hay không (để hiện Floating CTA)
-  // Chỉ hiện khi: là demo template, KHÔNG PHẢI thiệp thật từ database, và KHÔNG PHẢI chế độ gửi người thân/khách mời
-  const isDemoTemplate = !result.isDatabaseCard && Boolean(DEMO_TEMPLATES_MAP[slug]);
-  const shouldShowDemoBar = isDemoTemplate && !isInviteMode;
+  // Xác định có phải thiệp mẫu demo hay không (để hiện Floating CTA và ẩn các tính năng nội bộ như Photobooth)
+  const isDemo = !result.isDatabaseCard || Boolean(DEMO_TEMPLATES_MAP[slug]) || Boolean(card.id?.startsWith("demo-"));
+  const shouldShowDemoBar = isDemo && !isInviteMode;
   const demoTemplateName = shouldShowDemoBar
     ? MASTER_TEMPLATES.find((t) => t.slug === slug)?.name
     : undefined;
@@ -193,6 +192,7 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
           guestPhone={guestPhone}
           guestCode={guestCode}
           isVipExperience={result.features?.vipOpeningExperience}
+          isDemo={isDemo}
         />
         {shouldShowDemoBar && (
           <DemoActionBarWrapper

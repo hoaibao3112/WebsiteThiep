@@ -5,6 +5,18 @@ import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { prisma } from "../lib/prisma";
 import { z } from "zod";
 
+const DEMO_SLUGS = new Set([
+  "wedding-heritage-crimson-gold",
+  "wedding-modern-editorial-magazine",
+  "wedding-minimalist-pure-monochrome",
+  "wedding-glassmorphic-blush-rose",
+  "wedding-royal-luxury-regal-navy",
+  "wedding-traditional-red-lantern",
+  "wedding-botanical-boho-terracotta",
+  "wedding-indochine-vintage-elegance",
+  "wedding-modern-luxury-pearl",
+]);
+
 export class WeddingMemoryController {
   /**
    * POST /api/cards/:slug/memories
@@ -13,6 +25,14 @@ export class WeddingMemoryController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
       const slug = req.params.slug as string;
+
+      if (DEMO_SLUGS.has(slug) || slug.startsWith("demo-")) {
+        return res.status(400).json({
+          success: false,
+          error: "Thiệp mẫu demo chỉ dùng để xem trước, không hỗ trợ nhận ảnh kỷ niệm. Vui lòng tạo thiệp cưới riêng từ tài khoản của bạn để kích hoạt tính năng này.",
+        });
+      }
+
       const parsed = CreateWeddingMemorySchema.parse(req.body);
       const ipAddress = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || undefined;
 
@@ -41,6 +61,14 @@ export class WeddingMemoryController {
   static async list(req: Request, res: Response, next: NextFunction) {
     try {
       const slug = req.params.slug as string;
+
+      if (DEMO_SLUGS.has(slug) || slug.startsWith("demo-")) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+        });
+      }
+
       const limit = Number(req.query.limit) || 50;
       const memories = await WeddingMemoryService.getPublicMemories(slug, limit);
 
