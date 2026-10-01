@@ -179,12 +179,17 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
           if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;
 
+          const firstEventDate = card.events?.[0]?.eventDate;
+          const displayWeddingDate = firstEventDate
+            ? (typeof firstEventDate === "string" ? firstEventDate.slice(0, 10).split("-").reverse().join("/") : new Date(firstEventDate).toISOString().slice(0, 10).split("-").reverse().join("/"))
+            : "2026";
+
           return (
             <Wedding3DFlipbook
               config={albumConfig}
               groomName={groomShortName}
               brideName={brideShortName}
-              weddingDate={card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).toLocaleDateString("vi-VN") : "2026"}
+              weddingDate={displayWeddingDate}
             />
           );
         })()}
@@ -194,7 +199,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           <PhotoWallSection
             slug={card.slug}
             coupleName={`${groomShortName} & ${brideShortName}`}
-            weddingDate={card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).toLocaleDateString("vi-VN") : undefined}
+            weddingDate={card.events?.[0]?.eventDate ? (typeof card.events[0].eventDate === "string" ? card.events[0].eventDate.slice(0, 10).split("-").reverse().join("/") : new Date(card.events[0].eventDate).toISOString().slice(0, 10).split("-").reverse().join("/")) : undefined}
             monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
             defaultGuestName={activeGuestName}
             primaryColor={primaryColor}

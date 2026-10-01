@@ -1,5 +1,4 @@
-"use client";
-
+import { Suspense } from "react";
 import { DemoTemplateActionBar } from "@/components/card/DemoTemplateActionBar";
 
 interface DemoActionBarWrapperProps {
@@ -19,10 +18,12 @@ export function DemoActionBarWrapper({
   category,
 }: DemoActionBarWrapperProps) {
   return (
-    <DemoTemplateActionBar
-      templateSlug={templateSlug}
-      templateName={templateName}
-      category={category}
-    />
+    <Suspense fallback={null}>
+      <DemoTemplateActionBar
+        templateSlug={templateSlug}
+        templateName={templateName}
+        category={category}
+      />
+    </Suspense>
   );
 }

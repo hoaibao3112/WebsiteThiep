@@ -32,17 +32,18 @@ export function DemoTemplateActionBar({
 }: DemoTemplateActionBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { isAuthenticated } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [isSocialInApp, setIsSocialInApp] = useState(false);
 
-  // Kiểm tra trạng thái đăng nhập một cách an toàn
-  let isAuthenticated = false;
-  try {
-    const auth = useAuth();
-    isAuthenticated = auth.isAuthenticated;
-  } catch {
-    isAuthenticated = false;
-  }
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined" && /zalo|fbav|fban|messenger/i.test(window.navigator.userAgent)) {
+      setIsSocialInApp(true);
+    }
+  }, []);
 
   // 1. Kiểm tra query params: nếu là chế độ gửi cho khách / người thân thì ẩn hoàn toàn
   const isInviteMode = Boolean(
@@ -54,21 +55,17 @@ export function DemoTemplateActionBar({
     searchParams?.get("mode") === "invite"
   );
 
-  // 2. Kiểm tra nếu đang mở trong Zalo / Facebook Messenger in-app browser (thường là người thân click từ tin nhắn)
-  const isSocialInApp = typeof window !== "undefined" &&
-    /zalo|fbav|fban|messenger/i.test(window.navigator.userAgent);
-
   // Slide-up animation: hiện sau 1.5s delay để không phân tán khi đang xem thiệp
   useEffect(() => {
-    if (isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+    if (!mounted || isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
       return;
     }
     const timer = setTimeout(() => setVisible(true), 1500);
     return () => clearTimeout(timer);
-  }, [isInviteMode, isSocialInApp, isAuthenticated, dismissed]);
+  }, [mounted, isInviteMode, isSocialInApp, isAuthenticated, dismissed]);
 
-  // Không hiển thị nếu là lời mời người thân, mở qua Zalo, đã đăng nhập, hoặc người dùng đã đóng
-  if (isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
+  // Không hiển thị trên server hoặc nếu là lời mời người thân, mở qua Zalo, đã đăng nhập, hoặc người dùng đã đóng
+  if (!mounted || isInviteMode || isSocialInApp || isAuthenticated || dismissed) {
     return null;
   }
 
