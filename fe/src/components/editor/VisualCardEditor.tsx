@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { EditorProvider, useEditor, ToolCategory } from "./EditorContext";
 import { LeftSidebar } from "./LeftSidebar";
@@ -60,6 +60,16 @@ export function VisualCardEditor<T extends object>({
   showTopBar = true,
   onSwitchToForm,
 }: VisualCardEditorProps<T>) {
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
   return (
     <EditorProvider
       templateSlug={templateSlug}
@@ -80,16 +90,20 @@ export function VisualCardEditor<T extends object>({
         )}
 
         {/* 1. DESKTOP STUDIO (3-Column Layout: Left Dock + Artboard Center + Properties Right) */}
-        <div className="hidden lg:flex flex-1 w-full overflow-hidden">
-          <LeftSidebar />
-          <CenterCanvas>{children}</CenterCanvas>
-          <RightPanel />
-        </div>
+        {isDesktop !== false && (
+          <div className="hidden lg:flex flex-1 w-full overflow-hidden">
+            <LeftSidebar />
+            <CenterCanvas>{children}</CenterCanvas>
+            <RightPanel />
+          </div>
+        )}
 
         {/* 2. MOBILE CANVAS WITH BOTTOM DOCK */}
-        <div className="flex lg:hidden flex-1 w-full flex-col relative overflow-hidden">
-          <MobileEditorLayout>{children}</MobileEditorLayout>
-        </div>
+        {isDesktop === false && (
+          <div className="flex lg:hidden flex-1 w-full flex-col relative overflow-hidden">
+            <MobileEditorLayout>{children}</MobileEditorLayout>
+          </div>
+        )}
       </div>
     </EditorProvider>
   );

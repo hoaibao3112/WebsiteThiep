@@ -16,6 +16,8 @@ import {
   Sparkles,
   Layers,
   MessageCircle,
+  ArrowDownUp,
+  Maximize2,
 } from "lucide-react";
 import { BottomPhotoStrip } from "./BottomPhotoStrip";
 import { CanvasPatternOverlay, CanvasFallingEffect } from "@/components/card/CanvasEffects";
@@ -280,17 +282,102 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     canvasBackgroundPattern,
     canvasFallingEffect,
     canvasHeight,
+    setCanvasHeight,
+    fitCanvasToContent,
+    registerViewportCenterGetter,
     beginInteraction,
     endInteraction,
   } = useEditor();
 
+  const viewportRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
   const [activeDraggingId, setActiveDraggingId] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isResizingHeight, setIsResizingHeight] = useState(false);
+  const [liveResizeHeight, setLiveResizeHeight] = useState<number | null>(null);
   const isInteractingRef = useRef(false);
   const lastInteractionTimeRef = useRef(0);
+
+  // Đăng ký hàm tính tâm viewport hiện tại để khi thêm mục mới, mục đó rơi trúng vị trí người dùng đang nhìn
+  useEffect(() => {
+    return registerViewportCenterGetter(() => {
+      const vp = viewportRef.current;
+      const artboard = containerRef.current || scrollContainerRef.current;
+      if (!vp || !artboard) return null;
+
+      // Nếu viewport đang bị ẩn (display: none do responsive css), trả về null
+      if (vp.offsetParent === null && vp.clientHeight === 0) {
+        return null;
+      }
+
+      const vpRect = vp.getBoundingClientRect();
+      const artRect = artboard.getBoundingClientRect();
+
+      // Tâm mắt người dùng nhìn thấy trên màn hình:
+      const screenCenterY = vpRect.top + vpRect.height / 2;
+      // Tỷ lệ zoom chuẩn xác thực tế từ DOM:
+      const zoomFactor = Math.max(0.1, artRect.width / 390);
+
+      // Toạ độ Y bên trong thiệp cưới tương ứng với tâm màn hình:
+      const visualCenterY = (screenCenterY - artRect.top) / zoomFactor;
+
+      return {
+        x: 195,
+        y: Math.max(20, Math.round(visualCenterY)),
+      };
+    });
+  }, [registerViewportCenterGetter, zoomLevel]);
+
+  // Kéo dài chiều cao canvas bằng chuột trực tiếp ở mép dưới đáy thiệp
+  const handleResizeBottomPointerDown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizingHeight(true);
+    beginInteraction();
+
+    const startY = e.clientY;
+    const startH = canvasHeight;
+    const zoomFactor = Math.max(0.5, zoomLevel / 100);
+
+    const handlePointerMove = (moveEvt: PointerEvent) => {
+      const deltaY = (moveEvt.clientY - startY) / zoomFactor;
+      const nextH = Math.max(600, Math.min(15000, Math.round(startH + deltaY)));
+      setLiveResizeHeight(nextH);
+      setCanvasHeight(nextH);
+    };
+
+    const handlePointerUp = () => {
+      setIsResizingHeight(false);
+      setLiveResizeHeight(null);
+      endInteraction();
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+  };
+
+  // Tự động cuộn mượt tới phần tử vừa thêm nếu nó vượt ra khỏi tầm nhìn hiện tại
+  useEffect(() => {
+    if (!selectedElementId) return;
+    const timer = setTimeout(() => {
+      const artboard = containerRef.current || scrollContainerRef.current;
+      const el = artboard?.querySelector(`[data-element-id="${selectedElementId}"]`) as HTMLElement | null;
+      const vp = viewportRef.current;
+      if (!el || !vp) return;
+      const elRect = el.getBoundingClientRect();
+      const vpRect = vp.getBoundingClientRect();
+      if (elRect.top < vpRect.top + 20 || elRect.bottom > vpRect.bottom - 20) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [selectedElementId]);
 
   // Capture click events inside preview container to detect [data-editable-field] or deselect
   useEffect(() => {
@@ -559,6 +646,8 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
       {/* ── CANVAS VIEWPORT WITH ZOOM TRANSFORM ── */}
       <div
+        ref={viewportRef}
+        data-center-canvas-viewport="true"
         className="relative w-full min-h-0 flex-1 overflow-auto"
         onClick={(e) => {
           if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
@@ -570,9 +659,10 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           }
         }}
       >
-        <div className="relative mx-auto my-8" style={{ width: 390 * zoomLevel / 100, height: canvasHeight * zoomLevel / 100 }}>
+        <div className="relative mx-auto my-8 pb-16" style={{ width: 390 * zoomLevel / 100, height: (canvasHeight + 110) * zoomLevel / 100 }}>
         <div
           ref={containerRef}
+          data-center-canvas-artboard="true"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -667,6 +757,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                 <div
                   key={el.id}
                   data-canvas-element
+                  data-element-id={el.id}
                   onPointerDown={(e) => handleElementPointerDown(el, e)}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -732,6 +823,96 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                 onDeselect={() => selectElement(null)}
               />
             )}
+          </div>
+
+          {/* ── BOTTOM RESIZE HANDLE (KÉO DÀI KHUNG THIỆP TRỰC TIẾP) ── */}
+          <div
+            data-canvas-control
+            onPointerDown={handleResizeBottomPointerDown}
+            className="absolute left-0 w-full flex items-center justify-center cursor-ns-resize group z-40 select-none py-2"
+            style={{ top: canvasHeight - 12 }}
+            title="Nhấn giữ và kéo xuống để kéo dài khung thiệp"
+          >
+            {/* Thanh line ngang đáy */}
+            <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-1 bg-amber-400/70 group-hover:bg-amber-500 rounded-full transition-colors shadow-xs" />
+
+            {/* Tay cầm điều khiển nổi */}
+            <div
+              className={`relative px-3 py-1 rounded-full bg-white border border-amber-400 shadow-md flex items-center gap-1.5 transition-all text-xs ${
+                isResizingHeight
+                  ? "scale-110 ring-2 ring-amber-400 bg-amber-50 shadow-lg"
+                  : "group-hover:scale-105 group-hover:shadow-lg group-hover:bg-amber-50/70"
+              }`}
+            >
+              <ArrowDownUp className="size-3 text-amber-700 animate-pulse" />
+              <span className="text-[11px] font-bold text-amber-900 font-sans whitespace-nowrap">
+                {isResizingHeight ? `Độ dài: ${liveResizeHeight ?? canvasHeight}px` : "Kéo dài khung thiệp"}
+              </span>
+            </div>
+          </div>
+
+          {/* ── QUICK EXPAND TOOLBAR (TÁC VỤ KÉO DÀI NHANH DƯỚI ĐÁY THIỆP) ── */}
+          <div
+            data-canvas-control
+            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-2xl shadow-lg border border-stone-200/90 z-30 whitespace-nowrap select-none"
+            style={{ top: canvasHeight + 20 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCanvasHeight(canvasHeight + 300);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white text-[11px] font-bold shadow-xs flex items-center gap-1 cursor-pointer transition active:scale-95"
+              title="Tăng thêm 300px chiều dài thiệp"
+            >
+              <Plus className="size-3" />
+              <span>+300px</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCanvasHeight(canvasHeight + 500);
+              }}
+              className="px-2 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold cursor-pointer transition active:scale-95"
+              title="Tăng thêm 500px chiều dài thiệp"
+            >
+              +500px
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCanvasHeight(canvasHeight + 1000);
+              }}
+              className="px-2 py-1 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold cursor-pointer transition active:scale-95"
+              title="Tăng thêm 1000px chiều dài thiệp"
+            >
+              +1000px
+            </button>
+
+            <div className="h-3.5 w-px bg-stone-200" />
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                fitCanvasToContent();
+              }}
+              className="px-2 py-1 rounded-xl hover:bg-stone-100 text-stone-600 hover:text-stone-900 text-[11px] font-medium cursor-pointer transition flex items-center gap-1"
+              title="Thu gọn vừa vặn với nội dung hiện có"
+            >
+              <Maximize2 className="size-3 text-stone-500" />
+              <span>Vừa vặn</span>
+            </button>
+
+            <span className="text-[10px] font-mono text-stone-400 font-bold pl-0.5">
+              {canvasHeight}px
+            </span>
           </div>
         </div>
         </div>

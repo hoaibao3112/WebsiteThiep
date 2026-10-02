@@ -33,6 +33,7 @@ import {
   Plus,
   Minus,
   QrCode,
+  ArrowDownUp,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -148,6 +149,9 @@ function DefaultInspector() {
     saveState,
     draft,
     updateFieldById,
+    canvasHeight,
+    setCanvasHeight,
+    fitCanvasToContent,
   } = useEditor();
 
   const [wishTab, setWishTab] = useState<"content" | "public" | "private">("content");
@@ -167,6 +171,114 @@ function DefaultInspector() {
           <p className="text-xs text-stone-500 mt-0.5">
             Kích đúp vào văn bản hoặc ảnh trên thiệp để chỉnh sửa nhanh.
           </p>
+        </div>
+
+        {/* ── KÍCH THƯỚC & ĐỘ DÀI KHUNG THIỆP (CANVAS HEIGHT) ── */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/80 to-white border border-amber-200/90 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-600/10 text-amber-700">
+                <ArrowDownUp className="size-4" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-stone-800 block">Độ dài thiệp</span>
+                <span className="text-[10px] text-stone-500">Tăng chiều dài để thiết kế thêm</span>
+              </div>
+            </div>
+            <span className="text-xs font-mono font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-md">
+              {canvasHeight}px
+            </span>
+          </div>
+
+          {/* Height Input & Step Buttons */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCanvasHeight(Math.max(600, canvasHeight - 200))}
+              className="px-2.5 py-1.5 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 text-stone-700 text-xs font-bold transition cursor-pointer"
+              title="Giảm 200px"
+            >
+              -200
+            </button>
+            <div className="relative flex-1">
+              <input
+                type="number"
+                min={600}
+                max={15000}
+                step={100}
+                value={canvasHeight}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v)) setCanvasHeight(v);
+                }}
+                className="w-full text-center text-xs font-mono font-bold py-1.5 px-2 bg-white border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-stone-400 font-sans pointer-events-none">px</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setCanvasHeight(canvasHeight + 200)}
+              className="px-2.5 py-1.5 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 text-stone-700 text-xs font-bold transition cursor-pointer"
+              title="Tăng 200px"
+            >
+              +200
+            </button>
+          </div>
+
+          {/* Quick Add Presets */}
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              type="button"
+              onClick={() => setCanvasHeight(canvasHeight + 300)}
+              className="py-1.5 px-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white text-[11px] font-bold transition flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-95"
+            >
+              <Plus className="size-3" />
+              +300px
+            </button>
+            <button
+              type="button"
+              onClick={() => setCanvasHeight(canvasHeight + 500)}
+              className="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 border border-amber-200 text-amber-900 text-[11px] font-bold transition flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            >
+              +500px
+            </button>
+            <button
+              type="button"
+              onClick={() => setCanvasHeight(canvasHeight + 1000)}
+              className="py-1.5 px-2 rounded-xl bg-white hover:bg-amber-100/70 border border-amber-200 text-amber-900 text-[11px] font-bold transition flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            >
+              +1000px
+            </button>
+          </div>
+
+          {/* Size Presets */}
+          <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-amber-200/60 text-[10px]">
+            <span className="text-stone-500 font-medium">Mức mẫu:</span>
+            <div className="flex items-center gap-1">
+              {[1200, 1800, 2500, 3500].map((h) => (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() => setCanvasHeight(h)}
+                  className={`px-1.5 py-0.5 rounded cursor-pointer transition ${
+                    canvasHeight === h ? "bg-amber-600 text-white font-bold" : "text-stone-600 hover:bg-amber-100/70"
+                  }`}
+                >
+                  {h}px
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Fit Content Button */}
+          <button
+            type="button"
+            onClick={fitCanvasToContent}
+            className="w-full py-1.5 px-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-600 hover:text-stone-900 text-[11px] font-medium transition flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Maximize2 className="size-3 text-stone-500" />
+            <span>Thu gọn vừa vặn nội dung</span>
+          </button>
         </div>
 
         {/* Share Link */}

@@ -30,6 +30,9 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   canvasElements: CanvasElement[];
   canvasHeight: number;
   setCanvasHeight: (height: number) => void;
+  fitCanvasToContent: () => void;
+  registerViewportCenterGetter: (getter: () => { x: number; y: number } | null) => () => void;
+  getViewportCenter: () => { x: number; y: number };
   selectedCanvasElement: CanvasElement | null;
   fieldOffsets: Record<string, { x: number; y: number }>;
   fieldScales: Record<string, number>;
@@ -268,17 +271,19 @@ export function EditorProvider<T extends object>({
   const canvasHeight = Number(categoryData.canvasDocument?.height ?? categoryData.canvasHeight ?? categoryData.canvas?.height ?? 1200);
   const setCanvasHeight = useCallback((height: number) => {
     if (!Number.isFinite(height)) return;
-    const bounded = Math.max(390, Math.round(height));
+    const bounded = Math.max(500, Math.min(15000, Math.round(height)));
     const currentCategory = (draftRef.current as { categoryData?: { cardCategory?: string; canvasDocument?: object; canvas?: object } }).categoryData;
     const hasWeddingScene = currentCategory?.cardCategory === "WEDDING" && Boolean(currentCategory.canvasDocument);
-    let next = applyDraftPatch(draftRef.current, hasWeddingScene ? "categoryData.canvasDocument.height" : "categoryData.canvasHeight", bounded);
-    if (!hasWeddingScene) {
-      next = applyDraftPatch(next, "categoryData.canvas", {
-        ...((next as { categoryData?: { canvas?: object } }).categoryData?.canvas ?? {}),
-        width: 390,
-        height: bounded,
-      });
+    let next = draftRef.current;
+    if (hasWeddingScene) {
+      next = applyDraftPatch(next, "categoryData.canvasDocument.height", bounded);
     }
+    next = applyDraftPatch(next, "categoryData.canvasHeight", bounded);
+    next = applyDraftPatch(next, "categoryData.canvas", {
+      ...((next as { categoryData?: { canvas?: object } }).categoryData?.canvas ?? {}),
+      width: 390,
+      height: bounded,
+    });
     if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draftRef.current]);
     setFuture([]);
     onDraftChange(next);
@@ -339,11 +344,18 @@ export function EditorProvider<T extends object>({
   const persistElements = useCallback(
     (nextElements: CanvasElement[]) => {
       try {
-        const category = (draft as { categoryData?: { cardCategory?: string; canvasDocument?: object } }).categoryData;
+        const currentDraft = draftRef.current;
+        const category = (currentDraft as { categoryData?: { cardCategory?: string; canvasDocument?: object } }).categoryData;
         const isWedding = category?.cardCategory === "WEDDING";
-        const next = applyDraftPatch(draft, isWedding ? "categoryData.canvasDocument.elements" : "categoryData.canvasElements", nextElements);
-        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        const hasWeddingScene = isWedding && Boolean(category?.canvasDocument);
+        const next = applyDraftPatch(
+          currentDraft,
+          hasWeddingScene ? "categoryData.canvasDocument.elements" : "categoryData.canvasElements",
+          nextElements
+        );
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), currentDraft]);
         setFuture([]);
+        draftRef.current = next;
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -351,15 +363,56 @@ export function EditorProvider<T extends object>({
         console.error("Lỗi lưu scene elements:", err);
       }
     },
-    [draft, onDraftChange]
+    [onDraftChange]
+  );
+
+  const persistElementsAndHeight = useCallback(
+    (nextElements: CanvasElement[], nextHeight?: number) => {
+      try {
+        const currentDraft = draftRef.current;
+        const category = (currentDraft as { categoryData?: { cardCategory?: string; canvasDocument?: any; canvas?: any; canvasHeight?: number } }).categoryData;
+        const isWedding = category?.cardCategory === "WEDDING";
+        const hasWeddingScene = isWedding && Boolean(category?.canvasDocument);
+
+        let next = applyDraftPatch(
+          currentDraft,
+          hasWeddingScene ? "categoryData.canvasDocument.elements" : "categoryData.canvasElements",
+          nextElements
+        );
+
+        if (nextHeight && Number.isFinite(nextHeight)) {
+          const boundedHeight = Math.max(600, Math.min(15000, Math.round(nextHeight)));
+          if (hasWeddingScene) {
+            next = applyDraftPatch(next, "categoryData.canvasDocument.height", boundedHeight);
+          }
+          next = applyDraftPatch(next, "categoryData.canvasHeight", boundedHeight);
+          next = applyDraftPatch(next, "categoryData.canvas", {
+            ...((next as any)?.categoryData?.canvas ?? {}),
+            width: 390,
+            height: boundedHeight,
+          });
+        }
+
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), currentDraft]);
+        setFuture([]);
+        draftRef.current = next;
+        onDraftChange(next);
+        setDirtyTick((t) => t + 1);
+        setSaveState("dirty");
+      } catch (err) {
+        console.error("Lỗi lưu scene elements & height:", err);
+      }
+    },
+    [onDraftChange]
   );
 
   const persistOffsets = useCallback(
     (nextOffsets: Record<string, { x: number; y: number }>) => {
       try {
-        const next = applyDraftPatch(draft, "categoryData.fieldPositions", nextOffsets);
-        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        const next = applyDraftPatch(draftRef.current, "categoryData.fieldPositions", nextOffsets);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draftRef.current]);
         setFuture([]);
+        draftRef.current = next;
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -367,15 +420,16 @@ export function EditorProvider<T extends object>({
         console.error("Lỗi lưu fieldPositions:", err);
       }
     },
-    [draft, onDraftChange]
+    [onDraftChange]
   );
 
   const persistScales = useCallback(
     (nextScales: Record<string, number>) => {
       try {
-        const next = applyDraftPatch(draft, "categoryData.fieldScales", nextScales);
-        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+        const next = applyDraftPatch(draftRef.current, "categoryData.fieldScales", nextScales);
+        if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draftRef.current]);
         setFuture([]);
+        draftRef.current = next;
         onDraftChange(next);
         setDirtyTick((t) => t + 1);
         setSaveState("dirty");
@@ -383,7 +437,7 @@ export function EditorProvider<T extends object>({
         console.error("Lỗi lưu fieldScales:", err);
       }
     },
-    [draft, onDraftChange]
+    [onDraftChange]
   );
 
   const updateFieldScale = useCallback(
@@ -406,20 +460,102 @@ export function EditorProvider<T extends object>({
     [fieldScales, persistScales]
   );
 
+  const fitCanvasToContent = useCallback(() => {
+    const bottom = canvasElements.reduce((acc, el) => Math.max(acc, el.y + el.height), 0);
+    const newHeight = Math.max(800, bottom + 120);
+    setCanvasHeight(newHeight);
+  }, [canvasElements, setCanvasHeight]);
+
+  const viewportCenterGetterRef = useRef<(() => { x: number; y: number } | null) | null>(null);
+  const registerViewportCenterGetter = useCallback((getter: () => { x: number; y: number } | null) => {
+    viewportCenterGetterRef.current = getter;
+    return () => {
+      if (viewportCenterGetterRef.current === getter) {
+        viewportCenterGetterRef.current = null;
+      }
+    };
+  }, []);
+
+  const getViewportCenter = useCallback(() => {
+    // 1. Thử gọi getter đã đăng ký từ CenterCanvas đang hiển thị
+    if (viewportCenterGetterRef.current) {
+      try {
+        const res = viewportCenterGetterRef.current();
+        if (res && typeof res.y === "number" && !isNaN(res.y)) {
+          return res;
+        }
+      } catch (err) {
+        console.error("Lỗi getViewportCenter:", err);
+      }
+    }
+
+    // 2. Dự phòng trực tiếp: Quét DOM tìm viewport và artboard thực tế đang hiển thị trên màn hình
+    if (typeof document !== "undefined") {
+      try {
+        const viewports = document.querySelectorAll<HTMLElement>("[data-center-canvas-viewport]");
+        for (const vp of Array.from(viewports)) {
+          if (vp.clientHeight > 0 && vp.offsetParent !== null) {
+            const artboard = vp.querySelector<HTMLElement>("[data-center-canvas-artboard]");
+            if (artboard) {
+              const vpRect = vp.getBoundingClientRect();
+              const artRect = artboard.getBoundingClientRect();
+              const screenCenterY = vpRect.top + vpRect.height / 2;
+              const zoomFactor = Math.max(0.1, artRect.width / 390);
+              const visualY = (screenCenterY - artRect.top) / zoomFactor;
+              return {
+                x: 195,
+                y: Math.max(20, Math.round(visualY)),
+              };
+            }
+          }
+        }
+      } catch (err) {
+        console.error("DOM fallback getViewportCenter error:", err);
+      }
+    }
+
+    return { x: 195, y: 280 };
+  }, []);
+
+  const getDefaultPosition = useCallback(
+    (elemW: number, elemH: number, pos?: { x?: number; y?: number }) => {
+      let x = pos?.x;
+      let y = pos?.y;
+
+      if (x === undefined) {
+        x = Math.max(10, Math.round((390 - elemW) / 2));
+      }
+
+      if (y === undefined) {
+        const center = getViewportCenter();
+        y = Math.round(center.y - elemH / 2);
+        y = Math.max(20, y);
+      }
+
+      const neededHeight = y + elemH > canvasHeight - 40 ? Math.max(canvasHeight, y + elemH + 160) : undefined;
+
+      return { x, y, neededHeight };
+    },
+    [getViewportCenter, canvasHeight]
+  );
+
   const addTextElement = useCallback(
     (preset?: { text?: string; fontSize?: number; isBold?: boolean; fontFamily?: string; color?: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const w = 300;
+      const h = 54;
+      const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);
       const newEl: CanvasElement = {
         id: `elem-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "text",
         content: preset?.text || "Văn bản mới",
-        x: pos?.x ?? 45,
-        y: pos?.y ?? 280,
-        width: 300,
-        height: 54,
+        x: defaultX,
+        y: defaultY,
+        width: w,
+        height: h,
         fontSize: preset?.fontSize || 28,
-        fontFamily: preset?.fontFamily || (draft as any)?.fontFamily || "Playfair Display",
-        color: preset?.color || (draft as any)?.primaryColor || "#333333",
+        fontFamily: preset?.fontFamily || (draftRef.current as any)?.fontFamily || "Playfair Display",
+        color: preset?.color || (draftRef.current as any)?.primaryColor || "#333333",
         opacity: 1,
         textAlign: "center",
         isBold: preset?.isBold || false,
@@ -427,13 +563,13 @@ export function EditorProvider<T extends object>({
         isLocked: false,
       };
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, draft, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const canvasBackgroundColor = useMemo(
@@ -534,6 +670,7 @@ export function EditorProvider<T extends object>({
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
       const defaultW = item.width || 160;
       const defaultH = item.height || 180;
+      const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(defaultW, defaultH, pos);
       const newEl: CanvasElement = {
         id: `stock-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "stock",
@@ -544,8 +681,8 @@ export function EditorProvider<T extends object>({
         svgType: item.svgType,
         title: item.title,
         color: item.color,
-        x: pos?.x ?? Math.max(10, Math.round((390 - defaultW) / 2)),
-        y: pos?.y ?? 180,
+        x: defaultX,
+        y: defaultY,
         width: defaultW,
         height: defaultH,
         zIndex: maxZ + 1,
@@ -555,18 +692,21 @@ export function EditorProvider<T extends object>({
         flipY: false,
       };
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const addStickerElement = useCallback(
     (item: { icon: string; title: string; imageUrl?: string; width?: number; height?: number; color?: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const w = item.width || 100;
+      const h = item.height || 100;
+      const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);
       const newEl: CanvasElement = {
         id: `sticker-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "sticker",
@@ -574,28 +714,49 @@ export function EditorProvider<T extends object>({
         imageUrl: item.imageUrl,
         title: item.title,
         color: item.color,
-        x: pos?.x ?? 140,
-        y: pos?.y ?? 280,
-        width: item.width || 100,
-        height: item.height || 100,
+        x: defaultX,
+        y: defaultY,
+        width: w,
+        height: h,
         fontSize: item.width ? Math.round(item.width * 0.5) : 60,
         zIndex: maxZ + 1,
         isLocked: false,
         opacity: 1,
       };
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const addShapeElement = useCallback(
     (item: { shapeType: ShapeType; title: string }, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      let w = 160;
+      let h = 160;
+
+      if (item.shapeType === "line") { w = 300; h = 14; }
+      else if (item.shapeType === "square") { w = 150; h = 150; }
+      else if (item.shapeType === "rect") { w = 280; h = 180; }
+      else if (item.shapeType === "circle") { w = 160; h = 160; }
+      else if (item.shapeType === "triangle") { w = 160; h = 160; }
+      else if (item.shapeType === "arch") { w = 200; h = 260; }
+      else if (item.shapeType === "heart") { w = 160; h = 160; }
+      else if (item.shapeType === "star") { w = 140; h = 140; }
+      else if (item.shapeType === "diamond") { w = 160; h = 160; }
+      else if (item.shapeType === "hexagon") { w = 170; h = 170; }
+      else if (item.shapeType === "oval") { w = 200; h = 250; }
+      else if (item.shapeType === "ribbon") { w = 260; h = 70; }
+      else if (item.shapeType === "wavy-line") { w = 280; h = 24; }
+      else if (item.shapeType === "dashed-line") { w = 280; h = 14; }
+      else if (item.shapeType === "flourish-line") { w = 280; h = 30; }
+      else if (item.shapeType === "corner") { w = 80; h = 80; }
+
+      const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);
       let newEl: CanvasElement;
 
       if (item.shapeType === "line") {
@@ -605,10 +766,10 @@ export function EditorProvider<T extends object>({
           shapeType: "line",
           content: "—",
           title: item.title,
-          x: pos?.x ?? 45,
-          y: pos?.y ?? 300,
-          width: 300,
-          height: 14,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           backgroundColor: "#BE944E",
           color: "#BE944E",
           borderRadius: 4,
@@ -623,10 +784,10 @@ export function EditorProvider<T extends object>({
           shapeType: "square",
           content: "",
           title: item.title,
-          x: pos?.x ?? 120,
-          y: pos?.y ?? 250,
-          width: 150,
-          height: 150,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -641,10 +802,10 @@ export function EditorProvider<T extends object>({
           shapeType: "rect",
           content: "",
           title: item.title,
-          x: pos?.x ?? 55,
-          y: pos?.y ?? 240,
-          width: 280,
-          height: 180,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -660,10 +821,10 @@ export function EditorProvider<T extends object>({
           shapeType: "circle",
           content: "",
           title: item.title,
-          x: pos?.x ?? 115,
-          y: pos?.y ?? 240,
-          width: 160,
-          height: 160,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -679,10 +840,10 @@ export function EditorProvider<T extends object>({
           shapeType: "triangle",
           content: "",
           title: item.title,
-          x: pos?.x ?? 115,
-          y: pos?.y ?? 240,
-          width: 160,
-          height: 160,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -697,10 +858,10 @@ export function EditorProvider<T extends object>({
           shapeType: "arch",
           content: "",
           title: item.title,
-          x: pos?.x ?? 95,
-          y: pos?.y ?? 200,
-          width: 200,
-          height: 260,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -715,10 +876,10 @@ export function EditorProvider<T extends object>({
           shapeType: "heart",
           content: "",
           title: item.title,
-          x: pos?.x ?? 115,
-          y: pos?.y ?? 240,
-          width: 160,
-          height: 160,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#E11D48",
           backgroundColor: "transparent",
@@ -733,10 +894,10 @@ export function EditorProvider<T extends object>({
           shapeType: "star",
           content: "",
           title: item.title,
-          x: pos?.x ?? 125,
-          y: pos?.y ?? 240,
-          width: 140,
-          height: 140,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#D4AF37",
           backgroundColor: "transparent",
@@ -751,10 +912,10 @@ export function EditorProvider<T extends object>({
           shapeType: "diamond",
           content: "",
           title: item.title,
-          x: pos?.x ?? 115,
-          y: pos?.y ?? 240,
-          width: 160,
-          height: 160,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -769,10 +930,10 @@ export function EditorProvider<T extends object>({
           shapeType: "hexagon",
           content: "",
           title: item.title,
-          x: pos?.x ?? 110,
-          y: pos?.y ?? 240,
-          width: 170,
-          height: 170,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -787,10 +948,10 @@ export function EditorProvider<T extends object>({
           shapeType: "oval",
           content: "",
           title: item.title,
-          x: pos?.x ?? 95,
-          y: pos?.y ?? 210,
-          width: 200,
-          height: 250,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -805,10 +966,10 @@ export function EditorProvider<T extends object>({
           shapeType: "ribbon",
           content: "",
           title: item.title,
-          x: pos?.x ?? 65,
-          y: pos?.y ?? 270,
-          width: 260,
-          height: 70,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -823,10 +984,10 @@ export function EditorProvider<T extends object>({
           shapeType: "wavy-line",
           content: "",
           title: item.title,
-          x: pos?.x ?? 55,
-          y: pos?.y ?? 300,
-          width: 280,
-          height: 24,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -841,10 +1002,10 @@ export function EditorProvider<T extends object>({
           shapeType: "dashed-line",
           content: "",
           title: item.title,
-          x: pos?.x ?? 55,
-          y: pos?.y ?? 300,
-          width: 280,
-          height: 14,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -859,10 +1020,10 @@ export function EditorProvider<T extends object>({
           shapeType: "flourish-line",
           content: "",
           title: item.title,
-          x: pos?.x ?? 55,
-          y: pos?.y ?? 300,
-          width: 280,
-          height: 30,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           borderWidth: 2,
           borderColor: "#BE944E",
           backgroundColor: "transparent",
@@ -877,10 +1038,10 @@ export function EditorProvider<T extends object>({
           shapeType: "corner",
           content: "⚜️",
           title: item.title,
-          x: pos?.x ?? 150,
-          y: pos?.y ?? 280,
-          width: 80,
-          height: 80,
+          x: defaultX,
+          y: defaultY,
+          width: w,
+          height: h,
           fontSize: 48,
           zIndex: maxZ + 1,
           isLocked: false,
@@ -889,13 +1050,13 @@ export function EditorProvider<T extends object>({
       }
 
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const addPresetElement = useCallback(
@@ -1371,29 +1532,40 @@ export function EditorProvider<T extends object>({
       }
 
 
+      let neededHeight: number | undefined;
+      if (pos?.y === undefined) {
+        const def = getDefaultPosition(newEl.width, newEl.height, pos);
+        newEl.x = pos?.x ?? def.x;
+        newEl.y = def.y;
+        neededHeight = def.neededHeight;
+      }
+
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const addImageElement = useCallback(
     (url: string, caption?: string, pos?: { x?: number; y?: number }) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
+      const w = 260;
+      const h = 200;
+      const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);
       const newEl: CanvasElement = {
         id: `img-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "image",
         imageUrl: url,
         content: url,
         title: caption || "Ảnh mới",
-        x: pos?.x ?? 65,
-        y: pos?.y ?? 220,
-        width: 260,
-        height: 200,
+        x: defaultX,
+        y: defaultY,
+        width: w,
+        height: h,
         borderRadius: 16,
         borderWidth: 2,
         borderColor: "#FFFFFF",
@@ -1403,13 +1575,13 @@ export function EditorProvider<T extends object>({
         opacity: 1,
       };
       const updated = [...canvasElements, newEl];
-      persistElements(updated);
+      persistElementsAndHeight(updated, neededHeight);
       setSelectedElementId(newEl.id);
       setSelectedElementType("canvas-element");
       setSelectedField(null);
       return newEl.id;
     },
-    [canvasElements, persistElements]
+    [canvasElements, persistElementsAndHeight, getDefaultPosition]
   );
 
   const addWidgetElement = useCallback((widgetType: WidgetType, pos?: { x?: number; y?: number }) => {
@@ -1459,26 +1631,27 @@ export function EditorProvider<T extends object>({
       };
     }
 
+    const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);
     const newEl: CanvasElement = {
       id: `widget-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       type: "widget",
       widgetType,
       widgetConfig: initialConfig,
       content: widgetType,
-      x: pos?.x ?? Math.max(10, Math.round((390 - w) / 2)),
-      y: pos?.y ?? 200,
+      x: defaultX,
+      y: defaultY,
       width: w,
       height: h,
       zIndex: maxZ + 1,
       isLocked: false,
       opacity: 1,
     };
-    persistElements([...canvasElements, newEl]);
+    persistElementsAndHeight([...canvasElements, newEl], neededHeight);
     setSelectedElementId(newEl.id);
     setSelectedElementType("canvas-element");
     setSelectedField(null);
     return newEl.id;
-  }, [canvasElements, persistElements]);
+  }, [canvasElements, persistElementsAndHeight, getDefaultPosition]);
 
   const updateCanvasElement = useCallback(
     (id: string, patch: Partial<CanvasElement>) => {
@@ -1912,6 +2085,9 @@ export function EditorProvider<T extends object>({
     canvasElements,
     canvasHeight,
     setCanvasHeight,
+    fitCanvasToContent,
+    registerViewportCenterGetter,
+    getViewportCenter,
     selectedCanvasElement,
     fieldOffsets,
     fieldScales,
