@@ -1,4 +1,8 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window === "undefined"
+    ? `${process.env.BACKEND_INTERNAL_URL || process.env.BACKEND_ORIGIN || "http://localhost:5000"}/api`
+    : "/api");
 
 let memoryCsrfToken: string | null = null;
 
@@ -144,11 +148,12 @@ export class ApiClient {
    */
   static async createWeddingMemory<T = import("@/types/wedding-memory.types").WeddingMemory>(
     slug: string,
-    payload: import("@/types/wedding-memory.types").CreateMemoryPayload
+    data: FormData | import("@/types/wedding-memory.types").CreateMemoryPayload
   ): Promise<ApiResult<T>> {
+    const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
     return ApiClient.request<T>(`/cards/${encodeURIComponent(slug)}/memories`, {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: isFormData ? data : JSON.stringify(data),
     });
   }
 
@@ -198,10 +203,13 @@ export class ApiClient {
   }
 
   /**
-   * URL endpoint Server-Sent Events (SSE) cho Màn hình LED
+   * URL endpoint Server-Sent Events (SSE) cho Màn hình LED (gọi thẳng backend tránh đệm proxy)
    */
   static getMemoryStreamUrl(slug: string): string {
-    return `${API_BASE_URL}/cards/${encodeURIComponent(slug)}/memories/stream`;
+    const backendOrigin =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      (API_BASE_URL.startsWith("http") ? API_BASE_URL : "http://localhost:5000/api");
+    return `${backendOrigin}/cards/${encodeURIComponent(slug)}/memories/stream`;
   }
 }
 

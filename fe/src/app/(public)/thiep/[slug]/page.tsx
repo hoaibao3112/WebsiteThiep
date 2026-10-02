@@ -1,5 +1,6 @@
-import React from "react";
+import React, { cache } from "react";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
@@ -24,36 +25,66 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/a
 
 const DEMO_WEDDING_CARD: CardDetail = DEMO_TEMPLATES_MAP["wedding-heritage-crimson-gold"];
 
-async function getCardData(slug: string, guestCode?: string) {
-  // 1. Luôn ưu tiên fetch trực tiếp từ Backend Database API
-  try {
-    const url = `${API_BASE_URL}/cards/by-slug/${slug}${guestCode ? `?g=${guestCode}` : ""}`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.data?.card) {
-        return { ...json.data, isDatabaseCard: true };
-      }
+/**
+ * Deduplicate fetch giữa generateMetadata và Page component trong cùng render pass
+ */
+const getCardData = cache(async (slug: string, guestCode?: string) => {
+  const isExplicitDemo = Boolean(
+    DEMO_TEMPLATES_MAP[slug] || slug === "demo-wedding" || slug.startsWith("demo-")
+  );
+
+  // 1. Chỉ fallback demo khi slug thuộc DEMO_TEMPLATES_MAP hoặc bắt đầu bằng "demo-"
+  if (isExplicitDemo) {
+    if (DEMO_TEMPLATES_MAP[slug]) {
+      return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null, isDatabaseCard: false };
     }
-  } catch (error) {
-    console.warn("[getCardData] Backend API fetch error, falling back:", error);
-  }
-
-  // 2. Dự phòng dữ liệu mẫu nếu Backend chưa phản hồi
-  if (DEMO_TEMPLATES_MAP[slug]) {
-    return { card: DEMO_TEMPLATES_MAP[slug], guestInfo: null, isDatabaseCard: false };
-  }
-
-  if (slug === "demo-wedding" || slug.startsWith("demo-")) {
     return { card: DEMO_WEDDING_CARD, guestInfo: null, isDatabaseCard: false };
   }
 
-  return { card: DEMO_WEDDING_CARD, guestInfo: null, isDatabaseCard: false };
-}
+  // 2. Fetch dữ liệu thật từ Backend Database API với timeout 8s
+  const url = `${API_BASE_URL}/cards/by-slug/${encodeURIComponent(slug)}${
+    guestCode ? `?g=${encodeURIComponent(guestCode)}` : ""
+  }`;
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const fetchOptions: RequestInit = {
+    signal: AbortSignal.timeout(8000),
+    ...(guestCode ? { cache: "no-store" } : { next: { revalidate: 30 } }),
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(url, fetchOptions);
+  } catch (error) {
+    console.error("[getCardData] Fetch error:", error);
+    // Timeout hoặc 5xx: throw error để Next.js error.tsx bắt và hiện nút Thử lại (không hiện demo card người khác)
+    throw new Error(`Không thể kết nối đến máy chủ để tải thiệp cưới (${slug}). Vui lòng thử lại!`);
+  }
+
+  // Backend trả 404 -> notFound()
+  if (res.status === 404) {
+    notFound();
+  }
+
+  if (!res.ok) {
+    throw new Error(`Máy chủ phản hồi lỗi (${res.status}) khi tải dữ liệu thiệp cưới.`);
+  }
+
+  const json = await res.json();
+  if (json.success && json.data?.card) {
+    return { ...json.data, isDatabaseCard: true };
+  }
+
+  notFound();
+});
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getCardData(slug);
+  const resolvedSearchParams = await searchParams;
+  const guestCode = resolvedSearchParams?.g;
+  const isLiveDisplay = resolvedSearchParams?.mode === "live-display";
+  const hasGuest = Boolean(guestCode);
+
+  const data = await getCardData(slug, guestCode);
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cardvite.vn";
 
   if (!data || !data.card) {
@@ -61,6 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       metadataBase: new URL(appUrl),
       title: "Thiệp Điện Tử Online | CardVite",
       description: "Nền tảng thiệp cưới, sinh nhật, thôi nôi điện tử cao cấp.",
+      robots: { index: false, follow: false },
     };
   }
 
@@ -90,13 +122,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description = `Bạn được mời đến buổi tiệc thôi nôi của bé ${babyName}. ${description}`;
   }
 
-  const ogImage = card.photos?.[0]?.url;
+  // Fallback OG image mặc định khi card.photos rỗng (thiệp canvas thường rỗng photos)
+  const defaultOgImage = `${appUrl}/images/wedding_card_sample.jpg`;
+  const ogImage = card.photos?.[0]?.url || defaultOgImage;
+
+  // Trang có ?g= hoặc live-display: robots noindex để tránh lộ thông tin khách mời
+  const shouldNoIndex = hasGuest || isLiveDisplay;
 
   return {
     referrer: "no-referrer",
     metadataBase: new URL(appUrl),
     title,
     description,
+    robots: shouldNoIndex
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
     openGraph: {
       title,
       description,
@@ -104,13 +144,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: "CardVite",
       locale: "vi_VN",
       type: "website",
-      ...(ogImage ? { images: [{ url: ogImage, width: 1200, height: 630, alt: title }] } : {}),
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      ...(ogImage ? { images: [ogImage] } : {}),
+      images: [ogImage],
     },
     alternates: {
       canonical: `${appUrl}/thiep/${slug}`,
@@ -134,16 +174,7 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
   const result = await getCardData(slug, guestCode);
 
   if (!result || !result.card) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-stone-100 p-6 text-center">
-        <h1 className="text-2xl font-bold text-stone-800 mb-2">
-          Không tìm thấy thiệp mời
-        </h1>
-        <p className="text-sm text-stone-500 max-w-sm">
-          Đường dẫn thiệp không tồn tại hoặc đã hết hạn sử dụng. Vui lòng kiểm tra lại đường dẫn!
-        </p>
-      </div>
-    );
+    notFound();
   }
 
   const card: CardDetail = result.card;
@@ -160,17 +191,13 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
     ? MASTER_TEMPLATES.find((t) => t.slug === slug)?.name
     : undefined;
 
-  const categoryData = card.categoryData as unknown as Record<string, unknown>;
-  const legacyCanvas = categoryData.canvas && typeof categoryData.canvas === "object" && !Array.isArray(categoryData.canvas)
-    ? categoryData.canvas as Record<string, unknown>
-    : null;
-  const hasCanvasElements = (Array.isArray(categoryData.canvasElements) && categoryData.canvasElements.length > 0) ||
-    (Array.isArray(legacyCanvas?.elements) && legacyCanvas.elements.length > 0);
+  // XỬ LÝ GIAO DIỆN CANVA FREE-FORM BUILDER (NẾU CÓ DỮ LIỆU CANVAS)
+  const hasCanvasData =
+    card.categoryData &&
+    typeof card.categoryData === "object" &&
+    "elements" in (card.categoryData as unknown as Record<string, unknown>);
 
-  // Wedding cards are rendered through the shared 9-template scene renderer;
-  // it also overlays legacy editor elements inside WeddingView. Keep the
-  // generic canvas route for non-wedding categories only.
-  if (hasCanvasElements && card.cardCategory !== "WEDDING") {
+  if (hasCanvasData) {
     return (
       <CanvasCardView
         card={card}

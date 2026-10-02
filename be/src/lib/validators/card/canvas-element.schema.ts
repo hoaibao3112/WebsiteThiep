@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { sanitizeSvg } from "../../sanitize-svg";
 
 export const StoredImageUrlSchema = z.string().refine(
   (value) =>
     /^https?:\/\//i.test(value) ||
+    value.startsWith("data:image/") ||
     value.startsWith("/uploads/") ||
     value.startsWith("/images/") ||
     (value.startsWith("/") && !value.startsWith("//")),
@@ -62,19 +64,15 @@ export const CanvasElementSchema = z
     ]).optional(),
     presetId: z.string().optional(),
     stockId: z.string().optional(),
-    svgContent: z.string().refine((svg) => {
-      if (!svg) return true;
-      const lower = svg.toLowerCase();
-      if (lower.includes("<script") || /on[a-z]+\s*=/i.test(svg)) {
-        return false;
-      }
-      return true;
-    }, "svgContent không được chứa thẻ script hoặc sự kiện nguy hiểm").optional(),
+    svgContent: z.string().transform((svg) => (svg ? sanitizeSvg(svg) : svg)).optional(),
     svgType: z.enum(["frame", "divider", "custom"]).optional(),
     imageUrl: z.union([StoredImageUrlSchema, z.literal("")]).optional(),
     title: z.string().max(500).optional(),
     animation: z.string().optional(),
+    animationDelay: z.number().min(0).max(60000).optional(),
+    animationDuration: z.number().min(0).max(60000).optional(),
     loopAnimation: z.string().optional(),
+    loopDuration: z.number().min(0).max(60000).optional(),
     linkUrl: z.string().refine((url) => {
       if (!url) return true;
       return /^(https?:\/\/|tel:|mailto:)/i.test(url);
@@ -100,7 +98,7 @@ export const CanvasElementSchema = z
       "lace-vow-card",
       "swan-ceremony",
     ]).optional(),
-    customData: z.record(z.any()).optional(),
+    customData: z.record(z.string().max(2000)).optional(),
     widgetConfig: z.object({
       title: z.string().max(160).optional(),
       description: z.string().max(1_000).optional(),
@@ -115,6 +113,13 @@ export const CanvasElementSchema = z
 
 export type CanvasElement = z.infer<typeof CanvasElementSchema>;
 
+export const PatchElementBodySchema = CanvasElementSchema.partial().extend({
+  expectedUpdatedAt: z.union([z.string(), z.date()]).optional(),
+  version: z.number().int().optional(),
+});
+
+export type PatchElementBody = z.infer<typeof PatchElementBodySchema>;
+
 export const CanvasDocumentSchema = z
   .object({
     width: z.number().default(420),
@@ -122,9 +127,10 @@ export const CanvasDocumentSchema = z
     backgroundColor: z.string().default("#FFFFFF"),
     backgroundPattern: z.string().default("none"),
     fallingEffect: z.string().default("none"),
-    elements: z.array(CanvasElementSchema).default([]),
+    elements: z.array(CanvasElementSchema).max(300).default([]),
   })
   .passthrough();
 
 export type CanvasDocument = z.infer<typeof CanvasDocumentSchema>;
+
 

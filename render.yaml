@@ -6,6 +6,7 @@ services:
     buildCommand: npm install --include=dev && npm run build
     preDeployCommand: npm run db:deploy
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production

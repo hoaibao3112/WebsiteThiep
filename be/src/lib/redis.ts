@@ -10,9 +10,18 @@ const commonOpts: RedisOptions = {
   maxRetriesPerRequest: 1,
   connectTimeout: 3000,
   lazyConnect: true,
+  keepAlive: 10000,
+  enableReadyCheck: true,
   retryStrategy(times) {
-    if (times > 3) return null;
-    return Math.min(times * 1000, 3000);
+    // Luôn trả delay số milli-giây để ioredis tự động reconnect vĩnh viễn, không bao giờ return null
+    return Math.min(times * 200, 5000);
+  },
+  reconnectOnError(err) {
+    const targetError = "READONLY";
+    if (err.message.includes(targetError)) {
+      return true; // Reconnect khi Redis cluster chuyển node master
+    }
+    return false;
   },
 };
 
@@ -31,6 +40,10 @@ redis.on("error", (err) => {
 
 redis.on("connect", () => {
   logger.info("Connected to Redis successfully");
+});
+
+redis.on("reconnecting", (time: number) => {
+  logger.info({ retryInMs: time }, "Redis reconnecting...");
 });
 
 redis.connect().catch((err: unknown) => {

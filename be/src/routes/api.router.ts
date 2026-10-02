@@ -38,6 +38,11 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
 });
 
+const memoryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // Max 5MB cho ảnh kỷ niệm
+});
+
 export const apiRouter = Router();
 apiRouter.use(csrfGuard);
 
@@ -96,7 +101,7 @@ apiRouter.post("/wishes", validate(WishSchema), WishController.submit);
 apiRouter.get("/wishes/:cardId", WishController.list);
 
 // --- WEDDING MEMORIES & LIVE PHOTOBOOTH ROUTES ---
-apiRouter.post("/cards/:slug/memories", WeddingMemoryController.create); // Khách gửi ảnh + lời chúc
+apiRouter.post("/cards/:slug/memories", memoryUpload.single("photo"), WeddingMemoryController.create); // Khách gửi ảnh + lời chúc
 apiRouter.get("/cards/:slug/memories", WeddingMemoryController.list); // Danh sách ảnh đã duyệt
 apiRouter.get("/cards/:slug/memories/stream", WeddingMemoryController.stream); // SSE Stream cho Màn hình LED
 apiRouter.get("/cards/:cardId/memories/admin", authGuard, WeddingMemoryController.adminList); // Quản lý ảnh (Host)

@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
  * Next.js Middleware
  *
  * Lưu ý: Việc xác thực và bảo vệ route /dashboard/* được thực hiện chuyên sâu
- * bởi DashboardAuthGuard trong (dashboard)/layout.tsx (tương thích cross-domain
- * giữa Vercel FE và Render BE, hỗ trợ cả sessionStorage Bearer token và HTTPS credentials cookie).
+ * bởi DashboardAuthGuard trong (dashboard)/layout.tsx qua first-party auth cookie
+ * được proxy trực tiếp từ /api sang Backend Render.
  */
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();

@@ -9,6 +9,7 @@ import {
   StockItem,
   StockCategoryId,
 } from "@/config/stock-catalog";
+import { SafeSvg } from "@/components/shared/SafeSvg";
 
 const PRIMARY_CATEGORY_IDS: StockCategoryId[] = [
   "all",
@@ -70,10 +71,10 @@ export function StockTool() {
     // 1. Vector SVG (Khung viền, Đường phân cách)
     if (item.svgContent) {
       return (
-        <div
+        <SafeSvg
           className="w-full h-full flex items-center justify-center p-2 text-stone-700 transition-transform duration-200 group-hover:scale-105"
           style={{ color: item.color || "#E11D48" }}
-          dangerouslySetInnerHTML={{ __html: item.svgContent }}
+          svg={item.svgContent}
         />
       );
     }

@@ -17,10 +17,13 @@ const DEMO_SLUGS = new Set([
   "wedding-modern-luxury-pearl",
 ]);
 
+// Giới hạn số kết nối SSE đồng thời từ cùng 1 IP cho mỗi thiệp (tránh cạn kiệt tài nguyên)
+const activeSseConnections = new Map<string, number>();
+
 export class WeddingMemoryController {
   /**
    * POST /api/cards/:slug/memories
-   * Khách tại bàn tiệc tải ảnh + lời chúc lên
+   * Khách tại bàn tiệc tải ảnh + lời chúc lên qua multipart/form-data
    */
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -33,10 +36,17 @@ export class WeddingMemoryController {
         });
       }
 
-      const parsed = CreateWeddingMemorySchema.parse(req.body);
-      const ipAddress = (req.headers["x-forwarded-for"] as string) || req.socket.remoteAddress || undefined;
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: "Vui lòng chọn ảnh kỷ niệm để tải lên",
+        });
+      }
 
-      const memory = await WeddingMemoryService.createMemory(slug, parsed, ipAddress);
+      const parsed = CreateWeddingMemorySchema.parse(req.body);
+      const ipAddress = req.ip || "127.0.0.1";
+
+      const memory = await WeddingMemoryService.createMemory(slug, parsed, req.file, ipAddress);
       return res.status(201).json({
         success: true,
         message: "Gửi ảnh kỷ niệm thành công",
@@ -90,12 +100,25 @@ export class WeddingMemoryController {
       const slug = req.params.slug as string;
       const card = await prisma.card.findFirst({
         where: { slug },
-        select: { id: true, accountId: true },
+        select: { id: true, accountId: true, status: true, expiredAt: true },
       });
 
-      if (!card) {
-        return res.status(404).json({ success: false, error: "Không tìm thấy thiệp cưới" });
+      const now = new Date();
+      if (!card || card.status !== "ACTIVE" || (card.expiredAt && card.expiredAt <= now)) {
+        return res.status(404).json({ success: false, error: "Thiệp cưới không tồn tại hoặc đã hết hạn" });
       }
+
+      // Giới hạn trần 10 kết nối SSE / IP / slug
+      const ip = req.ip || "127.0.0.1";
+      const connKey = `${ip}:${slug}`;
+      const activeCount = activeSseConnections.get(connKey) || 0;
+      if (activeCount >= 10) {
+        return res.status(429).json({
+          success: false,
+          error: "Đã vượt quá giới hạn 10 kết nối SSE từ địa chỉ IP này cho thiệp hiện tại",
+        });
+      }
+      activeSseConnections.set(connKey, activeCount + 1);
 
       // Thiết lập header SSE chuẩn Nginx/Cloudflare
       res.setHeader("Content-Type", "text/event-stream");
@@ -112,7 +135,7 @@ export class WeddingMemoryController {
         res.write(`: ping\n\n`);
       }, 25000);
 
-      // Đăng ký nhận message từ Redis Pub/Sub
+      // Đăng ký nhận message từ Redis Pub/Sub (dùng chung subscriber)
       const unsubscribe = WeddingMemoryService.subscribeCardMemories(card.id, (payload) => {
         res.write(`event: ${payload.event}\ndata: ${JSON.stringify(payload.data)}\n\n`);
       });
@@ -121,6 +144,12 @@ export class WeddingMemoryController {
       req.on("close", () => {
         clearInterval(heartbeat);
         unsubscribe();
+        const current = activeSseConnections.get(connKey) || 1;
+        if (current <= 1) {
+          activeSseConnections.delete(connKey);
+        } else {
+          activeSseConnections.set(connKey, current - 1);
+        }
         res.end();
       });
     } catch (error) {

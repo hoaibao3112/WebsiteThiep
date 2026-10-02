@@ -19,6 +19,8 @@ function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
   return false;
 }
 
+export { validateMagicBytes, ALLOWED_MIME_MAP };
+
 export class MediaService {
   static async handleFileUpload(file: Express.Multer.File, accountId: string): Promise<string> {
     if (!file?.buffer) throw new Error("Không có file nào được tải lên hoặc file rỗng");
@@ -62,4 +64,55 @@ export class MediaService {
     }
     return result.secure_url;
   }
+
+  static async uploadMemoryPhoto(
+    file: Express.Multer.File,
+    accountId: string
+  ): Promise<{ photoUrl: string; thumbUrl: string }> {
+    if (!file?.buffer) throw new Error("Không có file ảnh nào được tải lên hoặc file rỗng");
+    const mimetype = file.mimetype.toLowerCase();
+    const extensions = ALLOWED_MIME_MAP[mimetype];
+    if (!extensions || !mimetype.startsWith("image/")) {
+      throw new Error("Định dạng ảnh không hợp lệ (chỉ hỗ trợ JPG, PNG, WEBP)");
+    }
+    const extension = file.originalname.slice(file.originalname.lastIndexOf(".")).toLowerCase();
+    if (!extensions.includes(extension) || !validateMagicBytes(file.buffer, mimetype)) {
+      throw new Error("Nội dung file không khớp định dạng ảnh khai báo");
+    }
+
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error("Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.");
+    }
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const folder = `cardvite/${accountId}/memories`;
+    const signature = crypto
+      .createHash("sha1")
+      .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+      .digest("hex");
+    const form = new FormData();
+    form.append("file", new Blob([file.buffer], { type: mimetype }), file.originalname);
+    form.append("api_key", apiKey);
+    form.append("timestamp", String(timestamp));
+    form.append("folder", folder);
+    form.append("signature", signature);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
+    if (!response.ok || !result.secure_url) {
+      throw new Error(`Cloudinary upload thất bại: ${result.error?.message || response.statusText}`);
+    }
+    const photoUrl = result.secure_url;
+    const thumbUrl = photoUrl.replace("/upload/", "/upload/c_thumb,w_400,h_400,g_auto,q_auto,f_auto/");
+    return { photoUrl, thumbUrl };
+  }
 }
+

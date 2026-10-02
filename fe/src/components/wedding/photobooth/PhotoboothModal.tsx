@@ -80,8 +80,8 @@ export function PhotoboothModal({
     reader.readAsDataURL(file);
   };
 
-  // Render ảnh lồng khung nghệ thuật lên Canvas để xuất ra Data URL WebP
-  const renderFramedImageToCanvas = (): Promise<string> => {
+  // Render ảnh lồng khung nghệ thuật lên Canvas để xuất ra Blob WebP đã nén
+  const renderFramedImageToBlob = (): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       if (!selectedImage) return reject(new Error("Chưa chọn ảnh"));
 
@@ -200,9 +200,18 @@ export function PhotoboothModal({
           ctx.strokeRect(28, 28, targetW - 56, targetH - 56);
         }
 
-        // Xuất ra Data URL chuẩn WebP nén chất lượng cao 85%
-        const dataUrl = canvas.toDataURL("image/webp", 0.85);
-        resolve(dataUrl);
+        // Xuất ra Blob WebP nén chất lượng cao (~300KB)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error("Lỗi nén ảnh"));
+            }
+          },
+          "image/webp",
+          0.85
+        );
       };
       img.onerror = () => reject(new Error("Lỗi tải ảnh để xử lý khung"));
       img.src = selectedImage;
@@ -252,20 +261,23 @@ export function PhotoboothModal({
     setErrorMessage(null);
 
     try {
-      // 1. Tạo ảnh lồng khung chất lượng cao
-      const framedDataUrl = await renderFramedImageToCanvas();
+      // 1. Tạo ảnh lồng khung chất lượng cao dạng Blob đã nén (~1600px, ~300KB)
+      const photoBlob = await renderFramedImageToBlob();
 
-      // 2. Gửi lên Backend API
-      const res = await ApiClient.createWeddingMemory(slug, {
-        senderName: senderName.trim(),
-        relationship: relationship.trim() || undefined,
-        message: message.trim() || undefined,
-        photoUrl: framedDataUrl,
-        thumbUrl: framedDataUrl,
-        frameType,
-      });
+      // 2. Gửi multipart FormData lên Backend API
+      const formData = new FormData();
+      formData.append("photo", photoBlob, "memory.webp");
+      formData.append("senderName", senderName.trim());
+      if (relationship.trim()) formData.append("relationship", relationship.trim());
+      if (message.trim()) formData.append("message", message.trim());
+      formData.append("frameType", frameType);
+
+      const res = await ApiClient.createWeddingMemory(slug, formData);
 
       if (!res.success || !res.data) {
+        if (res.status === 429) {
+          throw new Error("Bạn đã gửi quá nhiều ảnh. Vui lòng đợi 5 phút trước khi gửi tiếp!");
+        }
         throw new Error(res.error || "Không thể gửi ảnh lúc này. Vui lòng thử lại!");
       }
 

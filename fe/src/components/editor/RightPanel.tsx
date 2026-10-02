@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useEditor, CanvasElement } from "./EditorContext";
+import { SafeSvg } from "@/components/shared/SafeSvg";
 import {
   X,
   Bold,
@@ -1087,10 +1088,10 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   </svg>
                 </div>
               ) : (element.svgContent || catalogStockItem?.svgContent) ? (
-                <div
+                <SafeSvg
                   className="w-full h-full flex items-center justify-center p-2"
                   style={{ color: element.color || catalogStockItem?.color || "#BE944E" }}
-                  dangerouslySetInnerHTML={{ __html: element.svgContent || catalogStockItem?.svgContent || "" }}
+                  svg={element.svgContent || catalogStockItem?.svgContent || ""}
                 />
               ) : previewThumbnail && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? (
                 <img

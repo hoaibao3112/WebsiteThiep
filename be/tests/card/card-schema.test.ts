@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DraftCardSchema, PublishCardDataSchema } from "../../src/lib/validators/card";
+import { CanvasElementSchema } from "../../src/lib/validators/card/canvas-element.schema";
 
 const draftInput = {
   slug: "  Minh Va Lan  ",
@@ -75,3 +76,28 @@ describe("PublishCardDataSchema", () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe("CanvasElementSchema", () => {
+  it("parses elements with animationDelay, animationDuration, loopDuration and retains them", () => {
+    const rawElement = {
+      id: "elem-anim-1",
+      type: "text",
+      content: "Hello",
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 50,
+      zIndex: 1,
+      animation: "fade-in",
+      animationDelay: 500,
+      animationDuration: 1200,
+      loopAnimation: "pulse",
+      loopDuration: 2000,
+    };
+    const parsed = CanvasElementSchema.parse(rawElement);
+    expect(parsed.animationDelay).toBe(500);
+    expect(parsed.animationDuration).toBe(1200);
+    expect(parsed.loopDuration).toBe(2000);
+  });
+});
+

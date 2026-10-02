@@ -55,10 +55,10 @@ app.use(
 // -----------------------------------------------------------------------
 
 const isPublicCardRoute = (req: Request) =>
-  req.method === "GET" && req.path.startsWith("/api/cards/by-slug");
+  req.method === "GET" && (req.originalUrl || req.path).split("?")[0].startsWith("/api/cards/by-slug");
 
 const isEditorRoute = (req: Request) =>
-  (req.method === "PUT" || req.method === "PATCH") && req.path.startsWith("/api/cards");
+  (req.method === "PUT" || req.method === "PATCH") && (req.originalUrl || req.path).split("?")[0].startsWith("/api/cards");
 
 // Trích xuất userId từ JWT (Bearer token hoặc cookie) cho editor limiter
 export const extractUserIdFromReq = (req: Request): string | null => {
@@ -100,7 +100,8 @@ const publicCardLimiter = rateLimit({
   legacyHeaders: false,
   validate: { keyGeneratorIpFallback: false },
   keyGenerator: (req: Request) => {
-    const slug = req.path.replace(/^\/api\/cards\/by-slug\/?/, "").split("/")[0] || "";
+    const rawPath = (req.originalUrl || req.url || req.path).split("?")[0];
+    const slug = rawPath.replace(/^\/api\/cards\/by-slug\/?/, "").split("/")[0] || "";
     return `${req.ip || "unknown"}_${slug}`;
   },
   message: { success: false, error: "Quá nhiều yêu cầu xem thiệp, vui lòng thử lại sau." },
@@ -146,10 +147,41 @@ app.use(globalLimiter);
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
 
-app.get("/health", (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: "ok",
+app.get("/health", async (_req: Request, res: Response) => {
+  const checks: { db: "ok" | "error"; redis: "ok" | "error" } = {
+    db: "ok",
+    redis: "ok",
+  };
+
+  try {
+    const dbPromise = prisma.$queryRaw`SELECT 1`;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Database ping timeout")), 1000)
+    );
+    await Promise.race([dbPromise, timeoutPromise]);
+  } catch (err) {
+    logger.warn({ err }, "Health check database failed");
+    checks.db = "error";
+  }
+
+  try {
+    const redisPromise = redis.ping();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Redis ping timeout")), 1000)
+    );
+    await Promise.race([redisPromise, timeoutPromise]);
+  } catch (err) {
+    logger.warn({ err }, "Health check redis failed");
+    checks.redis = "error";
+  }
+
+  const isHealthy = checks.db === "ok" && checks.redis === "ok";
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    status: isHealthy ? "ok" : "degraded",
     service: "Digital Card Platform API",
+    checks,
     timestamp: new Date().toISOString(),
   });
 });

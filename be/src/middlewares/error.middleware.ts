@@ -29,11 +29,14 @@ export function errorHandler(
 
   // 2. Lỗi HTTP có mã trạng thái rõ ràng (throw từ services)
   if (err instanceof HttpError) {
+    const details = err.details as Record<string, any> | undefined;
+    const currentVersion = details?.currentVersion ?? undefined;
     return res.status(err.status).json({
       success: false,
       error: err.message,
       code: err.code,
-      ...(err.details ? { fieldErrors: err.details } : {}),
+      ...(currentVersion !== undefined ? { currentVersion } : {}),
+      ...(err.details !== undefined ? { details: err.details } : {}),
     });
   }
 
@@ -51,6 +54,14 @@ export function errorHandler(
 
   // 3. Lỗi Prisma đã biết — map sang HTTP status phù hợp
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    // P2028: Transaction timeout / expired
+    if (err.code === "P2028") {
+      return res.status(503).json({
+        success: false,
+        error: "Thời gian xử lý giao dịch quá hạn, vui lòng thử lại",
+        code: "TX_TIMEOUT",
+      });
+    }
     // P2025: Record not found (findUniqueOrThrow, update on non-existent)
     if (err.code === "P2025") {
       return res.status(404).json({

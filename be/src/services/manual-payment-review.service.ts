@@ -217,7 +217,6 @@ export class ManualPaymentReviewService {
               where: {
                 id: orderId,
                 status: "AWAITING_REVIEW",
-                expiredAt: { gt: new Date() },
               },
               data: {
                 status: "PAID",

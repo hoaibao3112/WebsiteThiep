@@ -218,6 +218,7 @@ model Card {
   telegramChatId String? // ID Telegram nhận thông báo RSVP của thiệp này
 
   viewCount Int @default(0) // Số lượt xem thiệp
+  version   Int @default(0) // Optimistic concurrency version
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -110,11 +110,11 @@ export class OrderService {
       throw new HttpError(503, "Hệ thống thanh toán chưa được cấu hình", "PAYMENT_NOT_CONFIGURED");
     }
 
-    // 6. Expire stale orders for this account (both PENDING and AWAITING_REVIEW past expiredAt)
+    // 6. Expire stale orders for this account (chỉ đơn PENDING chưa xác nhận chuyển khoản)
     await prisma.order.updateMany({
       where: {
         accountId,
-        status: { in: ["PENDING", "AWAITING_REVIEW"] },
+        status: "PENDING",
         expiredAt: { lte: new Date() },
       },
       data: { status: "EXPIRED" },
@@ -311,13 +311,10 @@ export class OrderService {
 
     if (!order) return null;
 
-    // Opportunistically expire
-    if (
-      (order.status === "PENDING" || order.status === "AWAITING_REVIEW") &&
-      order.expiredAt <= new Date()
-    ) {
+    // Opportunistically expire: chỉ đơn PENDING chưa xác nhận chuyển khoản
+    if (order.status === "PENDING" && order.expiredAt <= new Date()) {
       await prisma.order.updateMany({
-        where: { id: order.id, accountId, status: { in: ["PENDING", "AWAITING_REVIEW"] } },
+        where: { id: order.id, accountId, status: "PENDING" },
         data: { status: "EXPIRED" },
       });
       return { ...this.toSafeDTO(order), status: "EXPIRED" };

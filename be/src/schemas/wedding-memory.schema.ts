@@ -4,8 +4,6 @@ export const CreateWeddingMemorySchema = z.object({
   senderName: z.string().trim().min(1, "Vui lòng nhập tên của bạn").max(80, "Tên không được quá 80 ký tự"),
   relationship: z.string().trim().max(80).optional(),
   message: z.string().trim().max(500, "Lời chúc không được quá 500 ký tự").optional(),
-  photoUrl: z.string().min(1, "Ảnh kỷ niệm không được để trống"),
-  thumbUrl: z.string().optional(),
   frameType: z.enum(["polaroid", "golden-monogram", "floral", "classic", "none"]).default("polaroid"),
   guestId: z.string().optional(),
 });
@@ -18,3 +16,17 @@ export const ToggleMemorySchema = z.object({
 });
 
 export type ToggleMemoryInput = z.infer<typeof ToggleMemorySchema>;
+
+export const MemorySafeDTOSchema = z.object({
+  id: z.string(),
+  senderName: z.string(),
+  relationship: z.string().nullable(),
+  message: z.string().nullable(),
+  photoUrl: z.string(),
+  thumbUrl: z.string().nullable(),
+  frameType: z.string(),
+  isPinned: z.boolean(),
+  createdAt: z.date(),
+});
+
+export type MemorySafeDTO = z.infer<typeof MemorySafeDTOSchema>;

@@ -7,6 +7,7 @@ import { CanvasWidget } from "./CanvasWidget";
 
 import { Heart, Copy, Check, QrCode } from "lucide-react";
 import { STOCK_CATALOG } from "@/config/stock-catalog";
+import { SafeSvg } from "@/components/shared/SafeSvg";
 
 export function ScaledPresetWrapper({
   baseW,
@@ -351,10 +352,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           }
         );
         return (
-          <div
+          <SafeSvg
             className="w-full h-full flex items-center justify-center select-none pointer-events-none drop-shadow-xs [&>svg]:w-full [&>svg]:h-full [&>svg]:block [&>svg]:max-w-full [&>svg]:max-h-full"
             style={{ color: itemColor }}
-            dangerouslySetInnerHTML={{ __html: processedSvg }}
+            svg={processedSvg}
           />
         );
       }
