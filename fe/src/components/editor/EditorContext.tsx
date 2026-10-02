@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useMemo,
 import { ApiClient } from "@/lib/api";
 import { EditorField, getTemplateFields } from "@/lib/editor/template-registry";
 import { applyDraftPatch, readDraftPath } from "@/lib/editor/patch-draft";
+import { STOCK_CATALOG } from "@/config/stock-catalog";
 import type { CanvasElement, WidgetType, ShapeType } from "@/types/canvas.types";
 export type { CanvasElement, WidgetType, WidgetConfig, ShapeType } from "@/types/canvas.types";
 
@@ -332,14 +333,6 @@ export function EditorProvider<T extends object>({
   );
 
   const clipboardRef = useRef<CanvasElement | null>(null);
-  const patchDebounceTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-
-  useEffect(() => {
-    return () => {
-      patchDebounceTimersRef.current.forEach((timer) => clearTimeout(timer));
-      patchDebounceTimersRef.current.clear();
-    };
-  }, []);
 
   const persistElements = useCallback(
     (nextElements: CanvasElement[]) => {
@@ -668,19 +661,26 @@ export function EditorProvider<T extends object>({
       pos?: { x?: number; y?: number }
     ) => {
       const maxZ = canvasElements.reduce((acc, el) => Math.max(acc, el.zIndex || 1), 1);
-      const defaultW = item.width || 160;
-      const defaultH = item.height || 180;
+      const catalogItem = STOCK_CATALOG.find((c) => c.id === item.id);
+      const finalImageUrl = item.imageUrl || catalogItem?.imageUrl;
+      const finalSvgContent = item.svgContent || catalogItem?.svgContent;
+      const finalSvgType = item.svgType || catalogItem?.svgType;
+      const finalColor = item.color || catalogItem?.color;
+      const finalIcon = item.icon || catalogItem?.icon;
+      const defaultW = item.width || catalogItem?.width || 160;
+      const defaultH = item.height || catalogItem?.height || 180;
       const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(defaultW, defaultH, pos);
+
       const newEl: CanvasElement = {
         id: `stock-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: "stock",
         stockId: item.id,
-        content: item.imageUrl || item.icon || item.title || "Khung viền",
-        imageUrl: item.imageUrl,
-        svgContent: item.svgContent,
-        svgType: item.svgType,
-        title: item.title,
-        color: item.color,
+        content: finalImageUrl || finalSvgContent || finalIcon || item.title || "Khung viền",
+        imageUrl: finalImageUrl,
+        svgContent: finalSvgContent,
+        svgType: finalSvgType,
+        title: item.title || catalogItem?.title || "Khung viền",
+        color: finalColor,
         x: defaultX,
         y: defaultY,
         width: defaultW,
@@ -1671,36 +1671,6 @@ export function EditorProvider<T extends object>({
         }
       }
 
-      // Phương án C: Gửi PATCH trực tiếp cho từng element (< 1KB), auto-save realtime
-      const cardId = (draft as any)?.id;
-      if (cardId && typeof cardId === "string") {
-        const existingTimer = patchDebounceTimersRef.current.get(id);
-        if (existingTimer) clearTimeout(existingTimer);
-
-        const newTimer = setTimeout(() => {
-          patchDebounceTimersRef.current.delete(id);
-          const payload: Record<string, unknown> = {};
-          if (patch.customData !== undefined) payload.customData = patch.customData;
-          if (patch.content !== undefined) payload.content = patch.content;
-          if (patch.imageUrl !== undefined) payload.imageUrl = patch.imageUrl;
-          if (patch.title !== undefined) payload.title = patch.title;
-          if (patch.x !== undefined) payload.x = patch.x;
-          if (patch.y !== undefined) payload.y = patch.y;
-          if (patch.width !== undefined) payload.width = patch.width;
-          if (patch.height !== undefined) payload.height = patch.height;
-          if (patch.fontSize !== undefined) payload.fontSize = patch.fontSize;
-          if (patch.fontFamily !== undefined) payload.fontFamily = patch.fontFamily;
-          if (patch.color !== undefined) payload.color = patch.color;
-
-          if (Object.keys(payload).length > 0) {
-            ApiClient.patchCardElement(cardId, id, payload).catch((err) => {
-              console.warn("Element auto-save error:", err);
-            });
-          }
-        }, 600);
-
-        patchDebounceTimersRef.current.set(id, newTimer);
-      }
     },
     [canvasElements, persistElements, draft, onDraftChange]
   );

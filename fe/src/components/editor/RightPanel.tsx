@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
+import { STOCK_CATALOG } from "@/config/stock-catalog";
 import { WidgetInspector } from "./WidgetInspector";
 
 export function RightPanel() {
@@ -1025,10 +1026,14 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
     { label: "Be Vietnam Pro", value: "Be Vietnam Pro" },
   ];
 
+  const catalogStockItem = element.stockId
+    ? STOCK_CATALOG.find((i) => i.id === element.stockId)
+    : undefined;
+
   const previewThumbnail =
     element.presetId === "p-envelope-pink" || element.presetId === "p1"
       ? "/images/demo/envelope-pink-thumb.png"
-      : element.imageUrl || element.content;
+      : element.imageUrl || catalogStockItem?.imageUrl || element.content;
 
   const isTextElement = element.type === "text";
   const isStockElement = element.type === "stock" || element.type === "sticker";
@@ -1081,11 +1086,11 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                     <ellipse cx="75" cy="38" rx="3" ry="6" fill="#F59E0B" />
                   </svg>
                 </div>
-              ) : element.svgContent ? (
+              ) : (element.svgContent || catalogStockItem?.svgContent) ? (
                 <div
                   className="w-full h-full flex items-center justify-center p-2"
-                  style={{ color: element.color || "#BE944E" }}
-                  dangerouslySetInnerHTML={{ __html: element.svgContent }}
+                  style={{ color: element.color || catalogStockItem?.color || "#BE944E" }}
+                  dangerouslySetInnerHTML={{ __html: element.svgContent || catalogStockItem?.svgContent || "" }}
                 />
               ) : previewThumbnail && (previewThumbnail.startsWith("http") || previewThumbnail.startsWith("/")) ? (
                 <img

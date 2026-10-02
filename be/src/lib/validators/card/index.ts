@@ -8,7 +8,8 @@ export * from "./wedding.schema";
 export * from "./birthday.schema";
 export * from "./newborn.schema";
 export * from "./canvas-element.schema";
-import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
+import { CanvasElementSchema, CanvasDocumentSchema, StoredImageUrlSchema } from "./canvas-element.schema";
+export { StoredImageUrlSchema };
 import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 export { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 import { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
@@ -31,15 +32,6 @@ const normalizeSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const StoredImageUrlSchema = z.string().refine(
-  (value) =>
-    /^https?:\/\//i.test(value) ||
-    value.startsWith("/uploads/") ||
-    value.startsWith("/images/") ||
-    value.startsWith("data:image/") ||
-    (value.startsWith("/") && !value.startsWith("//")),
-  "Ảnh không hợp lệ hoặc chưa được tải lên máy chủ"
-);
 
 export const PhotoSchema = z.object({
   id: z.string().nullable().optional(),
@@ -52,7 +44,10 @@ export const PhotoSchema = z.object({
 const DraftEventSchema = z.object({
   id: z.string().nullable().optional(),
   eventName: z.string().trim().max(120).default(""),
-  eventDate: z.coerce.date(),
+  eventDate: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? null : val),
+    z.coerce.date().nullable().optional()
+  ),
   lunarDate: z.string().trim().max(100).nullable().optional(),
   venueName: z.string().trim().max(200).default(""),
   address: z.string().trim().max(500).default(""),
@@ -161,6 +156,8 @@ const CommonDraftFields = {
   photos: z.array(PhotoSchema).max(50).default([]),
   events: z.array(DraftEventSchema).max(10).default([]),
   data: DraftCategoryDataSchema,
+  expectedUpdatedAt: z.union([z.string(), z.date()]).optional(),
+  version: z.number().int().optional(),
 };
 
 export const DraftCardSchema = z.object(CommonDraftFields);

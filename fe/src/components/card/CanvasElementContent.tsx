@@ -359,8 +359,9 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         );
       }
 
+      const itemImageUrl = el.imageUrl || catalogItem?.imageUrl;
       const isImg = Boolean(
-        el.imageUrl ||
+        itemImageUrl ||
           (typeof el.content === "string" &&
             (el.content.startsWith("http") ||
               el.content.startsWith("/images") ||
@@ -370,8 +371,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         return (
           <div className="w-full h-full flex items-center justify-center select-none pointer-events-none">
             <img
-              src={el.imageUrl || el.content}
-              alt={el.title || "Sticker"}
+              src={itemImageUrl || el.content}
+              alt={el.title || "Khung viền trang trí"}
               className="w-full h-full object-contain filter drop-shadow-md select-none pointer-events-none"
             />
           </div>

@@ -15,10 +15,24 @@ const db = vi.hoisted(() => ({
     count: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
+    findFirstOrThrow: vi.fn(),
     delete: vi.fn(),
   },
-  cardEvent: { createMany: vi.fn(), deleteMany: vi.fn() },
-  cardPhoto: { createMany: vi.fn(), deleteMany: vi.fn() },
+  cardEvent: {
+    findMany: vi.fn().mockResolvedValue([]),
+    createMany: vi.fn(),
+    deleteMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+  cardPhoto: {
+    findMany: vi.fn().mockResolvedValue([]),
+    createMany: vi.fn(),
+    deleteMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
 }));
 
 const prismaMock = vi.hoisted(() => ({
@@ -388,6 +402,33 @@ describe("CardService lifecycle reads and publish", () => {
 });
 
 describe("CardService.updateDraft template premium & plan permissions", () => {
+  const mockCard = (overrides: Record<string, any> = {}) => {
+    db.card.findFirst.mockImplementation(async (args: any) => {
+      // isSlugAvailable check queries where: { slug, id: { not: cardId } }
+      if (args?.where?.id?.not !== undefined) {
+        return null;
+      }
+      return {
+        id: "card-1",
+        accountId: "account-1",
+        status: "DRAFT",
+        updatedAt: new Date("2026-10-01T10:00:00.000Z"),
+        slug: "minh-va-lan",
+        musicUrl: "https://example.com/old-music.mp3",
+        telegramChatId: "old-telegram-id",
+        plan: {
+          code: "FREE",
+          name: "Gói Dùng Thử",
+          maxPhotos: 5,
+          allowMusicUpload: false,
+          allowTelegramNoti: false,
+          allowPremiumTemplates: false,
+        },
+        ...overrides,
+      };
+    });
+  };
+
   beforeEach(() => {
     vi.resetAllMocks();
     prismaMock.$transaction.mockImplementation(
@@ -410,13 +451,13 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
         allowPremiumTemplates: false,
       },
     });
+    db.cardEvent.findMany.mockResolvedValue([]);
+    db.cardPhoto.findMany.mockResolvedValue([]);
+    mockCard();
   });
 
   it("rejects updating to a premium template when the card is on a FREE plan", async () => {
-    db.card.findFirst.mockResolvedValue({
-      id: "card-1",
-      accountId: "account-1",
-      status: "DRAFT",
+    mockCard({
       plan: {
         code: "FREE",
         name: "Gói Dùng Thử",
@@ -466,10 +507,7 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       },
     });
 
-    db.card.findFirst.mockResolvedValue({
-      id: "card-1",
-      accountId: "account-1",
-      status: "DRAFT",
+    mockCard({
       plan: {
         code: "VIP",
         name: "Gói Cao Cấp (VIP)",
@@ -488,10 +526,12 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       isPremium: true,
     });
 
-    db.card.update.mockResolvedValue({
+    db.card.updateMany.mockResolvedValue({ count: 1 });
+    db.card.findFirstOrThrow.mockResolvedValue({
       id: "card-1",
       templateId: "premium-template-id",
       slug: input.slug,
+      version: 1,
     });
 
     const updateInput: DraftCardInput = {
@@ -505,8 +545,8 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       id: "card-1",
       templateId: "premium-template-id",
     });
-    expect(db.card.update).toHaveBeenCalledWith(expect.objectContaining({
-      where: { id: "card-1", accountId: "account-1" },
+    expect(db.card.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "card-1", accountId: "account-1" }),
       data: expect.objectContaining({
         templateId: "premium-template-id",
       }),
@@ -532,10 +572,7 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       },
     });
 
-    db.card.findFirst.mockResolvedValue({
-      id: "card-1",
-      accountId: "account-1",
-      status: "DRAFT",
+    mockCard({
       plan: {
         code: "BASIC",
         name: "Gói Tiêu Chuẩn",
@@ -554,10 +591,12 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       isPremium: true,
     });
 
-    db.card.update.mockResolvedValue({
+    db.card.updateMany.mockResolvedValue({ count: 1 });
+    db.card.findFirstOrThrow.mockResolvedValue({
       id: "card-1",
       templateId: "premium-template-id",
       slug: input.slug,
+      version: 1,
     });
 
     const updateInput: DraftCardInput = {
@@ -574,10 +613,7 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
   });
 
   it("rejects updating when photo count exceeds the plan limits", async () => {
-    db.card.findFirst.mockResolvedValue({
-      id: "card-1",
-      accountId: "account-1",
-      status: "DRAFT",
+    mockCard({
       plan: {
         code: "FREE",
         name: "Gói Dùng Thử",
@@ -596,6 +632,226 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
     await expect(
       CardService.updateDraft("account-1", "card-1", updateInput)
     ).rejects.toThrow("tối đa 5 ảnh");
+  });
+
+  describe("B5: Lost update (Optimistic Concurrency với expectedUpdatedAt)", () => {
+    it("updateDraft thành công khi khớp expectedUpdatedAt và trả về card mới", async () => {
+      const pastDate = new Date("2026-10-01T10:00:00.000Z");
+      const newDate = new Date("2026-10-02T10:00:00.000Z");
+      mockCard({ updatedAt: pastDate });
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({
+        id: "card-1",
+        slug: input.slug,
+        updatedAt: newDate,
+      });
+
+      const result = await CardService.updateDraft("account-1", "card-1", input, pastDate.toISOString());
+
+      expect(db.card.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: "card-1", accountId: "account-1", updatedAt: pastDate },
+      }));
+      expect(result).toMatchObject({ id: "card-1", updatedAt: newDate });
+    });
+
+    it("updateDraft ném 409 CARD_VERSION_CONFLICT khi expectedUpdatedAt không khớp", async () => {
+      const pastDate = new Date("2026-10-01T10:00:00.000Z");
+      const latestDate = new Date("2026-10-02T12:00:00.000Z");
+      mockCard({ updatedAt: latestDate });
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 0 }); // Không update được do stale updatedAt
+
+      await expect(
+        CardService.updateDraft("account-1", "card-1", input, pastDate.toISOString())
+      ).rejects.toMatchObject({
+        status: 409,
+        code: "CARD_VERSION_CONFLICT",
+        details: { currentUpdatedAt: latestDate.toISOString() },
+      });
+    });
+  });
+
+  describe("Mục 5: createDraft / updateDraft business rules", () => {
+    it("bankingPrimary: gửi null → DB nhận Prisma.DbNull cho phép xoá tài khoản", async () => {
+      mockCard({ version: 0 });
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({ id: "card-1", version: 1 });
+
+      await CardService.updateDraft("account-1", "card-1", {
+        ...input,
+        bankingPrimary: null, // Xoá ngân hàng
+      });
+
+      expect(db.card.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          bankingPrimary: Prisma.DbNull,
+        }),
+      }));
+    });
+
+    it("musicUrl & telegramChatId: trả 403 khi user cố đổi mà plan không cho phép, nhưng GIỮ cũ nếu không đổi", async () => {
+      mockCard({
+        version: 0,
+        musicUrl: "https://example.com/old-music.mp3",
+        telegramChatId: "old-telegram-id",
+      });
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      // Cố tình đổi sang bài hát mới → 403
+      await expect(
+        CardService.updateDraft("account-1", "card-1", {
+          ...input,
+          musicUrl: "https://example.com/new-music.mp3",
+        })
+      ).rejects.toMatchObject({
+        status: 403,
+        code: "PLAN_ENTITLEMENT_REQUIRED",
+      });
+
+      // Không đổi nhạc → giữ giá trị cũ (không set null)
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({ id: "card-1", version: 1 });
+
+      await CardService.updateDraft("account-1", "card-1", {
+        ...input,
+        musicUrl: "https://example.com/old-music.mp3", // Giữ nguyên nhạc cũ
+      });
+
+      expect(db.card.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+        data: expect.objectContaining({
+          musicUrl: "https://example.com/old-music.mp3",
+        }),
+      }));
+    });
+
+    it("slug: ném 409 SLUG_TAKEN khi trùng, ném 409 SLUG_LOCKED khi thiệp ACTIVE đổi slug", async () => {
+      // 1. Check trùng slug: isSlugAvailable trả về false do tìm thấy card khác
+      db.card.findFirst.mockImplementation(async (args: any) => {
+        if (args?.where?.id?.not !== undefined) {
+          return { id: "other-card-id" }; // slug trùng
+        }
+        return {
+          id: "card-1",
+          accountId: "account-1",
+          status: "DRAFT",
+          version: 0,
+          plan: { code: "FREE", name: "Gói FREE", maxPhotos: 5, allowPremiumTemplates: false },
+        };
+      });
+
+      await expect(
+        CardService.updateDraft("account-1", "card-1", { ...input, slug: "trung-slug" })
+      ).rejects.toMatchObject({
+        status: 409,
+        code: "SLUG_TAKEN",
+      });
+
+      // 2. ACTIVE card đổi slug → 409 SLUG_LOCKED
+      mockCard({
+        status: "ACTIVE", // Đã phát hành
+        slug: "slug-goc",
+      });
+
+      await expect(
+        CardService.updateDraft("account-1", "card-1", { ...input, slug: "slug-moi-thay-doi" })
+      ).rejects.toMatchObject({
+        status: 409,
+        code: "SLUG_LOCKED",
+      });
+    });
+
+    it("template premium: giữ nguyên template cũ thì cho sửa draft, chỉ chặn khi đổi sang premium khác", async () => {
+      mockCard({
+        templateId: "same-premium-tpl-id", // Đang dùng template này
+      });
+
+      db.template.findUnique.mockResolvedValue({
+        id: "same-premium-tpl-id",
+        slug: "wedding-heritage-crimson-gold",
+        category: "WEDDING",
+        isActive: true,
+        isPremium: true, // Template là premium nhưng card ĐÃ VÀ ĐANG dùng nó
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({ id: "card-1", version: 1 });
+
+      // Không đổi templateId → cho phép sửa!
+      const result = await CardService.updateDraft("account-1", "card-1", {
+        ...input,
+        templateSlug: "wedding-heritage-crimson-gold",
+      });
+      expect(result).toBeDefined();
+    });
+
+    it("upsert events: giữ nguyên ID của sự kiện cũ, update thay vì deleteMany", async () => {
+      mockCard();
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({ id: "card-1", version: 1 });
+
+      // DB hiện có event id: "existing-event-id"
+      db.cardEvent.findMany.mockResolvedValueOnce([{ id: "existing-event-id" }]);
+
+      await CardService.updateDraft("account-1", "card-1", {
+        ...input,
+        events: [
+          {
+            id: "existing-event-id",
+            eventName: "Lễ Cưới Cập Nhật",
+            venueName: "Nhà hàng",
+            address: "Hà Nội",
+          } as any,
+        ],
+      });
+
+      // Phải gọi update thay vì delete
+      expect(db.cardEvent.update).toHaveBeenCalledWith(expect.objectContaining({
+        where: { id: "existing-event-id", cardId: "card-1", accountId: "account-1" },
+        data: expect.objectContaining({ eventName: "Lễ Cưới Cập Nhật" }),
+      }));
+    });
   });
 });
 

@@ -47,8 +47,8 @@ export function EffectTool() {
   const catData = ((draftObj.data || draftObj.categoryData) as Record<string, unknown>) || {};
   const groom = (catData.groom as Record<string, unknown>) || {};
   const bride = (catData.bride as Record<string, unknown>) || {};
-  const groomName = (groom.fullName as string) || "";
-  const brideName = (bride.fullName as string) || "";
+  const groomName = (groom.shortName as string) || (groom.fullName as string) || "";
+  const brideName = (bride.shortName as string) || (bride.fullName as string) || "";
   const currentEnvelopeConfig = (catData.envelopeConfig || draftObj.envelopeConfig) as EnvelopeConfig | undefined;
 
   return (
@@ -196,13 +196,23 @@ export function EffectTool() {
         onClose={() => setIsEnvelopeModalOpen(false)}
         cardId={cardId}
         initialConfig={currentEnvelopeConfig}
-        initialGroomName={groomName || "Mai Lan"}
-        initialBrideName={brideName || "Tuấn Minh"}
+        initialGroomName={groomName || "Minh Khôi"}
+        initialBrideName={brideName || "Ngọc Hân"}
         onSaveSuccess={(savedConfig) => {
           updateFieldById("opening-effect", "WAX_SEAL");
           // Đồng bộ vào draft data
           if (catData) {
             catData.envelopeConfig = savedConfig;
+            if (savedConfig.groomName) {
+              if (!catData.groom) catData.groom = {};
+              (catData.groom as Record<string, unknown>).fullName = savedConfig.groomName;
+              (catData.groom as Record<string, unknown>).shortName = savedConfig.groomName;
+            }
+            if (savedConfig.brideName) {
+              if (!catData.bride) catData.bride = {};
+              (catData.bride as Record<string, unknown>).fullName = savedConfig.brideName;
+              (catData.bride as Record<string, unknown>).shortName = savedConfig.brideName;
+            }
           }
           if (draftObj) {
             (draftObj as Record<string, unknown>).envelopeConfig = savedConfig;

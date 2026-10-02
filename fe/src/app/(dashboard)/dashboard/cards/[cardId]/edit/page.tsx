@@ -51,6 +51,7 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  AlertCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -371,6 +372,7 @@ function EditCardContent() {
   const [age, setAge] = useState(25);
   const [babyName, setBabyName] = useState("");
   const [nickname, setNickname] = useState("");
+  const [gender, setGender] = useState<"BOY" | "GIRL" | "OTHER">("OTHER");
   const [ceremonyType, setCeremonyType] = useState<"ANNOUNCEMENT_ONLY" | "FULL_MONTH" | "ONE_YEAR">("FULL_MONTH");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -392,6 +394,8 @@ function EditCardContent() {
   const [testPlayingSrc, setTestPlayingSrc] = useState<string | null>(null);
   const [uploadedMusic, setUploadedMusic] = useState<UploadedMusic | null>(null);
   const [uploadingMusic, setUploadingMusic] = useState(false);
+  const [musicUploadError, setMusicUploadError] = useState<string | null>(null);
+  const [musicTouched, setMusicTouched] = useState(false);
   const musicInputRef = useRef<HTMLInputElement>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -402,11 +406,21 @@ function EditCardContent() {
   const [bankCodeBride, setBankCodeBride] = useState("VCB");
   const [accNumBride, setAccNumBride] = useState("");
   const [accNameBride, setAccNameBride] = useState("");
+  const [bankGroomTouched, setBankGroomTouched] = useState(false);
+  const [bankBrideTouched, setBankBrideTouched] = useState(false);
 
   // ── RSVP ──
   const [isRsvpEnabled, setIsRsvpEnabled] = useState(true);
   const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [rsvpCustomNote, setRsvpCustomNote] = useState("");
+
+  // ── Slug & Concurrency State ──
+  const [cardStatus, setCardStatus] = useState<string>("DRAFT");
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  const [checkingSlug, setCheckingSlug] = useState(false);
+  const [slugError, setSlugError] = useState<string | null>(null);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState<string | null>(null);
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
 
   // ── Save state ──
   const [saving, setSaving] = useState(false);
@@ -424,6 +438,13 @@ function EditCardContent() {
     categoryDataRef.current = card.categoryData;
     setCategory(card.cardCategory);
     setSlug(card.slug);
+    setCardStatus(card.status || "DRAFT");
+    if (card.updatedAt) {
+      setExpectedUpdatedAt(new Date(card.updatedAt).toISOString());
+    }
+    setBankGroomTouched(false);
+    setBankBrideTouched(false);
+    setMusicTouched(false);
     if (card.template?.slug) setTemplateSlug(card.template.slug);
     setIsVipExperience(Boolean((card as CardDetail & { plan?: { code?: string } }).plan?.code === "VIP"));
     setPrimaryColor(card.primaryColor);
@@ -492,6 +513,9 @@ function EditCardContent() {
     } else if (card.cardCategory === "NEWBORN" && card.categoryData.cardCategory === "NEWBORN") {
       setBabyName(card.categoryData.babyName);
       setNickname(card.categoryData.nickname || "");
+      if ((card.categoryData as any).gender) {
+        setGender((card.categoryData as any).gender);
+      }
       setWeight(card.categoryData.weight || "");
       setHeight(card.categoryData.height || "");
       setCeremonyType(card.categoryData.ceremonyType);
@@ -719,6 +743,54 @@ function EditCardContent() {
     load();
   }, [cardId, populateFromCard, loadAttempt]);
 
+  // ── Slug availability check (Debounce 400ms) ──
+  useEffect(() => {
+    if (!slug) {
+      setSlugAvailable(null);
+      setSlugError(null);
+      return;
+    }
+    const clean = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "");
+    if (clean.length < 3) {
+      setSlugAvailable(false);
+      setSlugError("Đường dẫn phải có ít nhất 3 ký tự");
+      setCheckingSlug(false);
+      return;
+    }
+    if (!/^[a-z0-9-]+$/.test(clean)) {
+      setSlugAvailable(false);
+      setSlugError("Đường dẫn chỉ chứa chữ thường, số và dấu gạch ngang");
+      setCheckingSlug(false);
+      return;
+    }
+
+    setCheckingSlug(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await ApiClient.request<{ available: boolean }>(
+          `/cards/slug-availability?slug=${encodeURIComponent(clean)}&excludeCardId=${encodeURIComponent(cardId)}`
+        );
+        if (res.success && res.data) {
+          setSlugAvailable(res.data.available);
+          if (!res.data.available) {
+            setSlugError("Đường dẫn này đã có người sử dụng");
+          } else {
+            setSlugError(null);
+          }
+        } else {
+          setSlugAvailable(false);
+          setSlugError(res.error || "Không thể kiểm tra đường dẫn");
+        }
+      } catch {
+        setSlugAvailable(null);
+      } finally {
+        setCheckingSlug(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [slug, cardId]);
+
   // ────────────────────────────────────────────────────────────────
   // PHOTO UPLOAD HANDLERS
   // ────────────────────────────────────────────────────────────────
@@ -806,49 +878,57 @@ function EditCardContent() {
     if (!file) return;
     e.target.value = "";
 
+    setMusicUploadError(null);
     setUploadingMusic(true);
     const localUrl = URL.createObjectURL(file);
 
     // Get duration via audio element
-    const tempAudio = new Audio(localUrl);
-    const duration = await new Promise<string>((resolve) => {
-      tempAudio.addEventListener("loadedmetadata", () => {
-        const s = Math.floor(tempAudio.duration);
-        const m = Math.floor(s / 60);
-        const sec = s % 60;
-        resolve(`${m}:${sec.toString().padStart(2, "0")}`);
+    let duration = "?:??";
+    try {
+      const tempAudio = new Audio(localUrl);
+      duration = await new Promise<string>((resolve) => {
+        tempAudio.addEventListener("loadedmetadata", () => {
+          const s = Math.floor(tempAudio.duration);
+          const m = Math.floor(s / 60);
+          const sec = s % 60;
+          resolve(`${m}:${sec.toString().padStart(2, "0")}`);
+        });
+        setTimeout(() => resolve("?:??"), 3000);
       });
-      setTimeout(() => resolve("?:??"), 3000);
-    });
+    } catch {
+      // ignore
+    }
 
-    const music: UploadedMusic = {
-      name: file.name.replace(/\.[^.]+$/, ""),
-      src: localUrl,
-      duration,
-      isLocal: true,
-    };
-
-    // Try upload to server
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await ApiClient.request<{ url: string }>("/upload/music", {
+      const res = await ApiClient.request<{ url: string }>("/media/upload", {
         method: "POST",
         body: formData,
       });
-      if (res.success && res.data?.url) {
-        URL.revokeObjectURL(localUrl);
-        music.src = res.data.url;
-        music.isLocal = false;
-      }
-    } catch {
-      // Keep localUrl — preview still works
-    }
+      URL.revokeObjectURL(localUrl);
 
-    setUploadedMusic(music);
-    setSelectedMusicSrc(music.src);
-    setMusicTab("upload");
-    setUploadingMusic(false);
+      if (res.success && res.data?.url) {
+        const music: UploadedMusic = {
+          name: file.name.replace(/\.[^.]+$/, ""),
+          src: res.data.url,
+          duration,
+          isLocal: false,
+        };
+        setUploadedMusic(music);
+        setSelectedMusicSrc(music.src);
+        setMusicTouched(true);
+        setMusicTab("upload");
+        setMusicUploadError(null);
+      } else {
+        setMusicUploadError(res.error || "Không thể tải lên tệp nhạc vào máy chủ.");
+      }
+    } catch (err: unknown) {
+      URL.revokeObjectURL(localUrl);
+      setMusicUploadError(err instanceof Error ? err.message : "Lỗi kết nối máy chủ khi tải nhạc.");
+    } finally {
+      setUploadingMusic(false);
+    }
   }, []);
 
   // ────────────────────────────────────────────────────────────────
@@ -925,7 +1005,7 @@ function EditCardContent() {
             cardCategory: "NEWBORN",
             babyName,
             nickname,
-            gender: "GIRL",
+            gender: (categoryDataRef.current as any)?.gender ?? gender ?? "OTHER",
             birthDate: new Date(),
             weight,
             height,
@@ -990,7 +1070,7 @@ function EditCardContent() {
   // SAVE (PUT)
   // ────────────────────────────────────────────────────────────────
 
-  const persistCard = async (draftSnapshot?: CardDetail, navigate = false) => {
+  const persistCard = async (draftSnapshot?: CardDetail, navigate = false, forceOverwrite = false) => {
     const saveRevision = draftRevisionRef.current;
     setSaving(true);
     setSaveError(null);
@@ -1053,32 +1133,53 @@ function EditCardContent() {
       };
     });
 
-    // 3. Chuẩn hóa tài khoản mừng cưới: chỉ gửi khi có số tài khoản và tên chủ thẻ
+    // 3. Chuẩn hóa tài khoản mừng cưới (F3):
+    // Khi user để trống bank thì gửi null (xoá), chỉ để undefined khi chưa chạm vào.
     const hasGroomBank = Boolean(accNumGroom?.trim() && accNameGroom?.trim());
     const hasBrideBank = Boolean(accNumBride?.trim() && accNameBride?.trim());
 
-    const bankingPrimary = hasGroomBank
-      ? {
-          bankCode: bankCodeGroom?.trim() || "MB",
-          accountNumber: accNumGroom.trim(),
-          accountName: accNameGroom.trim(),
-        }
+    const bankingPrimary = bankGroomTouched
+      ? hasGroomBank
+        ? {
+            bankCode: bankCodeGroom?.trim() || "MB",
+            accountNumber: accNumGroom.trim(),
+            accountName: accNameGroom.trim(),
+          }
+        : null
       : undefined;
 
-    const bankingSecondary = hasBrideBank
-      ? {
-          bankCode: bankCodeBride?.trim() || "VCB",
-          accountNumber: accNumBride.trim(),
-          accountName: accNameBride.trim(),
-        }
+    const bankingSecondary = bankBrideTouched
+      ? hasBrideBank
+        ? {
+            bankCode: bankCodeBride?.trim() || "VCB",
+            accountNumber: accNumBride.trim(),
+            accountName: accNameBride.trim(),
+          }
+        : null
       : undefined;
 
     // 4. Chuẩn hóa slug và templateSlug
     const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
+    if (cleanSlug.length < 3) {
+      setSaving(false);
+      setSaveError("Đường dẫn thiệp (Slug URL) phải có ít nhất 3 ký tự.");
+      return;
+    }
+    if (slugAvailable === false) {
+      setSaving(false);
+      setSaveError(slugError || "Đường dẫn thiệp đã có người sử dụng. Vui lòng chọn đường dẫn khác.");
+      return;
+    }
     const cleanTemplateSlug = templateSlug || selectedTemplate || "wedding-heritage-crimson-gold";
-    const cleanMusicUrl = selectedMusicSrc?.startsWith("blob:") ? undefined : (selectedMusicSrc?.trim() || undefined);
 
-    // 5. Chuẩn hóa Category Data
+    // 5. Chuẩn hóa nhạc (F3):
+    // Khi user để trống hoặc xóa nhạc thì gửi null (xóa), chỉ để undefined khi chưa chạm vào.
+    const cleanMusicUrl = selectedMusicSrc?.startsWith("blob:")
+      ? undefined
+      : selectedMusicSrc?.trim() || null;
+    const musicUrlPayload = musicTouched ? (cleanMusicUrl || null) : undefined;
+
+    // 6. Chuẩn hóa Category Data
     const effectiveDraft = draftSnapshot || previewCard;
     const catData = {
       ...(categoryDataRef.current || {}),
@@ -1103,7 +1204,7 @@ function EditCardContent() {
       cardCategory: category,
       events: formattedEvents,
       canvasDocument: catData.canvasDocument,
-      canvasElements: catData.canvasElements || catData.canvasDocument?.elements,
+      canvasElements: catData.canvasDocument?.elements ? undefined : catData.canvasElements,
       fieldPositions: catData.fieldPositions || {},
       fieldScales: catData.fieldScales || {},
       showBottomToolbar: catData.showBottomToolbar ?? true,
@@ -1159,7 +1260,7 @@ function EditCardContent() {
         : {
             babyName: catData.babyName?.trim() || babyName?.trim() || "Bé Yêu",
             nickname: catData.nickname?.trim() || nickname?.trim() || undefined,
-            gender: "GIRL" as const,
+            gender: (catData as any)?.gender ?? gender ?? "OTHER",
             birthDate: catData.birthDate || new Date().toISOString(),
             weight: catData.weight?.trim() || weight?.trim() || undefined,
             height: catData.height?.trim() || height?.trim() || undefined,
@@ -1168,25 +1269,35 @@ function EditCardContent() {
           }),
     };
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       slug: cleanSlug,
       templateSlug: cleanTemplateSlug,
       openingEffect,
       fallingEffect,
       primaryColor,
       fontFamily,
-      musicUrl: cleanMusicUrl,
       isAutoPlay,
       greetingMessage: greetingMessage?.trim() || undefined,
-      bankingPrimary,
-      bankingSecondary,
       photos: validPhotos,
       events: formattedEvents,
+      categoryData: categoryDataPayload,
       data: categoryDataPayload,
     };
+    if (!forceOverwrite && expectedUpdatedAt) {
+      payload.expectedUpdatedAt = expectedUpdatedAt;
+    }
+    if (musicUrlPayload !== undefined) {
+      payload.musicUrl = musicUrlPayload;
+    }
+    if (bankingPrimary !== undefined) {
+      payload.bankingPrimary = bankingPrimary;
+    }
+    if (bankingSecondary !== undefined) {
+      payload.bankingSecondary = bankingSecondary;
+    }
 
     try {
-      const res = await ApiClient.request<{ id: string; slug: string }>(`/cards/${cardId}`, {
+      const res = await ApiClient.request<{ id: string; slug: string; updatedAt?: string }>(`/cards/${cardId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
@@ -1194,6 +1305,10 @@ function EditCardContent() {
       setSaving(false);
 
       if (!res.success) {
+        if (res.status === 409 && ((res as any).code === "CARD_VERSION_CONFLICT" || res.error?.includes("phiên khác"))) {
+          setConflictModalOpen(true);
+          return;
+        }
         const errorDetails = (res as any).fieldErrors
           ? Object.entries((res as any).fieldErrors)
               .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(", ")}`)
@@ -1202,6 +1317,11 @@ function EditCardContent() {
         throw new Error(res.error
           ? `${res.error}${errorDetails ? ` (${errorDetails})` : ""}`
           : "Không thể lưu thay đổi. Vui lòng kiểm tra lại thông tin.");
+      }
+
+      const updatedCard = res.data as any;
+      if (updatedCard?.updatedAt) {
+        setExpectedUpdatedAt(new Date(updatedCard.updatedAt).toISOString());
       }
 
       if (navigate) confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
@@ -1647,18 +1767,45 @@ function EditCardContent() {
 
                 {/* Slug */}
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    Đường Dẫn Thiệp (Slug URL)
-                  </label>
-                  <div className="flex items-center text-xs rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2 sm:py-2.5 min-h-[44px] sm:min-h-[38px]">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      Đường Dẫn Thiệp (Slug URL)
+                    </label>
+                    {checkingSlug ? (
+                      <span className="text-[11px] text-stone-400 font-normal flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin text-[#BE944E]" />
+                        Đang kiểm tra...
+                      </span>
+                    ) : slugAvailable === true ? (
+                      <span className="text-[11px] text-emerald-600 font-bold">✓ Có thể sử dụng</span>
+                    ) : slugAvailable === false && slugError ? (
+                      <span className="text-[11px] text-rose-600 font-medium">✗ {slugError}</span>
+                    ) : null}
+                  </div>
+                  <div className={`flex items-center text-xs rounded-xl border ${
+                    cardStatus === "ACTIVE"
+                      ? "border-stone-200 bg-stone-100 cursor-not-allowed opacity-80"
+                      : slugAvailable === false
+                      ? "border-rose-300 bg-rose-50/40"
+                      : "border-stone-200 bg-stone-50"
+                  } px-3.5 py-2 sm:py-2.5 min-h-[44px] sm:min-h-[38px]`}>
                     <span className="text-stone-400 font-mono shrink-0">cardvite.vn/thiep/</span>
                     <input
                       type="text"
+                      disabled={cardStatus === "ACTIVE"}
                       value={slug}
                       onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                      className="font-bold font-mono text-base sm:text-xs text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1 py-1"
+                      className="font-bold font-mono text-base sm:text-xs text-[#BE944E] bg-transparent focus:outline-none flex-1 ml-1 py-1 disabled:cursor-not-allowed"
                     />
                   </div>
+                  {cardStatus === "ACTIVE" && (
+                    <p className="text-[11px] text-amber-700 mt-1.5 font-medium flex items-center gap-1">
+                      ⚠️ Thiệp đã kích hoạt (ACTIVE). Đường dẫn bị khoá để bảo đảm liên kết của khách mời luôn hoạt động.
+                    </p>
+                  )}
+                  {cardStatus !== "ACTIVE" && slugAvailable === false && slugError && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium">{slugError}</p>
+                  )}
                 </div>
               </div>
             )}
@@ -2104,7 +2251,10 @@ function EditCardContent() {
                       return (
                         <div
                           key={track.src}
-                          onClick={() => setSelectedMusicSrc(track.src)}
+                          onClick={() => {
+                            setSelectedMusicSrc(track.src);
+                            setMusicTouched(true);
+                          }}
                           className={`p-3 sm:p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 cursor-pointer min-h-[56px] ${
                             isSelected
                               ? "bg-amber-50/60 border-[#BE944E] ring-2 ring-[#BE944E]/20 shadow-xs"
@@ -2192,14 +2342,21 @@ function EditCardContent() {
                           <div className="flex items-center gap-2 shrink-0">
                             <button
                               type="button"
-                              onClick={() => setSelectedMusicSrc(uploadedMusic.src)}
+                              onClick={() => {
+                                setSelectedMusicSrc(uploadedMusic.src);
+                                setMusicTouched(true);
+                              }}
                               className={`px-3 py-2 rounded-xl text-xs font-bold transition min-h-[38px] ${selectedMusicSrc === uploadedMusic.src ? "bg-[#BE944E] text-white" : "bg-stone-100 text-stone-700 hover:bg-stone-200"}`}
                             >
                               {selectedMusicSrc === uploadedMusic.src ? "✓ Đang dùng" : "Chọn bài này"}
                             </button>
                             <button
                               type="button"
-                              onClick={() => { setUploadedMusic(null); setSelectedMusicSrc(MUSIC_OPTIONS[0].src); }}
+                              onClick={() => {
+                                setUploadedMusic(null);
+                                setSelectedMusicSrc("");
+                                setMusicTouched(true);
+                              }}
                               className="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-rose-100 hover:text-rose-500 flex items-center justify-center transition"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2217,6 +2374,12 @@ function EditCardContent() {
                           Đổi File Nhạc Khác
                         </button>
                       </div>
+                    )}
+
+                    {musicUploadError && (
+                      <p className="text-xs text-rose-600 font-medium text-center bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+                        {musicUploadError}
+                      </p>
                     )}
 
                     {/* Hint khi chưa có file */}
@@ -2251,16 +2414,33 @@ function EditCardContent() {
                 </div>
 
                 {/* Currently selected info */}
-                <div className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5EE] border border-[#EAE0CD] flex items-center gap-3">
-                  <Music className="w-4 h-4 text-[#BE944E] shrink-0" />
-                  <div className="min-w-0">
-                    <span className="text-[11px] text-stone-500 block">Nhạc đang chọn:</span>
-                    <span className="text-xs font-bold text-stone-800 truncate block">
-                      {uploadedMusic && selectedMusicSrc === uploadedMusic.src
-                        ? uploadedMusic.name
-                        : MUSIC_OPTIONS.find((m) => m.src === selectedMusicSrc)?.title || "Chưa chọn"}
-                    </span>
+                <div className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5EE] border border-[#EAE0CD] flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Music className="w-4 h-4 text-[#BE944E] shrink-0" />
+                    <div className="min-w-0">
+                      <span className="text-[11px] text-stone-500 block">Nhạc đang chọn:</span>
+                      <span className="text-xs font-bold text-stone-800 truncate block">
+                        {selectedMusicSrc
+                          ? uploadedMusic && selectedMusicSrc === uploadedMusic.src
+                            ? uploadedMusic.name
+                            : MUSIC_OPTIONS.find((m) => m.src === selectedMusicSrc)?.title || "Nhạc tuỳ chỉnh"
+                          : "Không sử dụng nhạc nền (Đã tắt)"}
+                      </span>
+                    </div>
                   </div>
+                  {Boolean(selectedMusicSrc) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedMusicSrc("");
+                        setUploadedMusic(null);
+                        setMusicTouched(true);
+                      }}
+                      className="px-2.5 py-1 text-xs rounded-lg border border-stone-200 bg-white text-stone-600 hover:text-rose-600 hover:border-rose-200 transition shrink-0"
+                    >
+                      Tắt nhạc
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -2278,39 +2458,119 @@ function EditCardContent() {
 
                 {/* Chú rể */}
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
-                  <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">1. Tài Khoản Chú Rể</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">1. Tài Khoản Chú Rể</span>
+                    {(accNumGroom || accNameGroom) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccNumGroom("");
+                          setAccNameGroom("");
+                          setBankGroomTouched(true);
+                        }}
+                        className="text-[11px] text-stone-400 hover:text-rose-600 transition"
+                      >
+                        Xoá tài khoản
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input type="text" value={bankCodeGroom} onChange={(e) => setBankCodeGroom(e.target.value)} placeholder="MB, VCB, ACB..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
+                      <input
+                        type="text"
+                        value={bankCodeGroom}
+                        onChange={(e) => {
+                          setBankCodeGroom(e.target.value);
+                          setBankGroomTouched(true);
+                        }}
+                        placeholder="MB, VCB, ACB..."
+                        className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]"
+                      />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input type="text" value={accNumGroom} onChange={(e) => setAccNumGroom(e.target.value)} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]" />
+                      <input
+                        type="text"
+                        value={accNumGroom}
+                        onChange={(e) => {
+                          setAccNumGroom(e.target.value);
+                          setBankGroomTouched(true);
+                        }}
+                        className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]"
+                      />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ TK (Không dấu)</label>
-                    <input type="text" value={accNameGroom} onChange={(e) => setAccNameGroom(e.target.value.toUpperCase())} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]" />
+                    <input
+                      type="text"
+                      value={accNameGroom}
+                      onChange={(e) => {
+                        setAccNameGroom(e.target.value.toUpperCase());
+                        setBankGroomTouched(true);
+                      }}
+                      className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]"
+                    />
                   </div>
                 </div>
 
                 {/* Cô dâu */}
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3">
-                  <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">2. Tài Khoản Cô Dâu</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">2. Tài Khoản Cô Dâu</span>
+                    {(accNumBride || accNameBride) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccNumBride("");
+                          setAccNameBride("");
+                          setBankBrideTouched(true);
+                        }}
+                        className="text-[11px] text-stone-400 hover:text-rose-600 transition"
+                      >
+                        Xoá tài khoản
+                      </button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Ngân Hàng</label>
-                      <input type="text" value={bankCodeBride} onChange={(e) => setBankCodeBride(e.target.value)} placeholder="VCB, Techcombank..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]" />
+                      <input
+                        type="text"
+                        value={bankCodeBride}
+                        onChange={(e) => {
+                          setBankCodeBride(e.target.value);
+                          setBankBrideTouched(true);
+                        }}
+                        placeholder="VCB, Techcombank..."
+                        className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-semibold min-h-[44px] sm:min-h-[38px]"
+                      />
                     </div>
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-600 mb-1">Số Tài Khoản</label>
-                      <input type="text" value={accNumBride} onChange={(e) => setAccNumBride(e.target.value)} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]" />
+                      <input
+                        type="text"
+                        value={accNumBride}
+                        onChange={(e) => {
+                          setAccNumBride(e.target.value);
+                          setBankBrideTouched(true);
+                        }}
+                        className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono font-bold min-h-[44px] sm:min-h-[38px]"
+                      />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tên Chủ TK (Không dấu)</label>
-                    <input type="text" value={accNameBride} onChange={(e) => setAccNameBride(e.target.value.toUpperCase())} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]" />
+                    <input
+                      type="text"
+                      value={accNameBride}
+                      onChange={(e) => {
+                        setAccNameBride(e.target.value.toUpperCase());
+                        setBankBrideTouched(true);
+                      }}
+                      className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-bold min-h-[44px] sm:min-h-[38px]"
+                    />
                   </div>
                 </div>
               </div>
@@ -2495,6 +2755,45 @@ function EditCardContent() {
         onClose={() => setShowApplyProfileModal(false)}
         onApply={handleApplyProfileSections}
       />
+
+      {/* ── CONFLICT MODAL (409 CARD_VERSION_CONFLICT) ── */}
+      {conflictModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 mx-auto">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-bold text-stone-900">Thiệp đã được sửa ở nơi khác</h3>
+              <p className="text-xs text-stone-500 leading-relaxed">
+                Nội dung thiệp trên hệ thống đã được cập nhật từ một phiên làm việc khác (hoặc tab/thiết bị khác). Bạn muốn tải lại dữ liệu mới nhất hay ghi đè bằng bản chỉnh sửa hiện tại?
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setConflictModalOpen(false);
+                  setLoadAttempt((c) => c + 1);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl border border-stone-200 text-xs font-bold text-stone-700 hover:bg-stone-50 transition"
+              >
+                Tải lại
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConflictModalOpen(false);
+                  void persistCard(undefined, false, true);
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#BE944E] text-white text-xs font-bold hover:bg-[#a88241] shadow-md transition"
+              >
+                Ghi đè
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

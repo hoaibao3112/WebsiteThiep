@@ -1,21 +1,30 @@
 import { z } from "zod";
 
+export const StoredImageUrlSchema = z.string().refine(
+  (value) =>
+    /^https?:\/\//i.test(value) ||
+    value.startsWith("/uploads/") ||
+    value.startsWith("/images/") ||
+    (value.startsWith("/") && !value.startsWith("//")),
+  "Ảnh không hợp lệ hoặc chưa được tải lên máy chủ"
+);
+
 export const CanvasElementSchema = z
   .object({
     id: z.string(),
     type: z.enum(["text", "image", "shape", "sticker", "preset", "widget", "stock"]),
     content: z.string().default(""),
-    x: z.number(), // Tọa độ X (px) - do người dùng tự do kéo thả
-    y: z.number(), // Tọa độ Y (px) - do người dùng tự do kéo thả
-    width: z.number().min(0), // Chiều rộng (px)
-    height: z.number().min(0), // Chiều cao (px)
-    rotation: z.number().default(0), // Góc xoay độ (0-360)
+    x: z.number().min(-2000).max(10000), // Tọa độ X (px) - giới hạn hợp lý
+    y: z.number().min(-2000).max(100000), // Tọa độ Y (px) - giới hạn hợp lý
+    width: z.number().min(0).max(10000), // Chiều rộng (px)
+    height: z.number().min(0).max(100000), // Chiều cao (px)
+    rotation: z.number().min(-360).max(360).default(0), // Góc xoay độ (-360 đến 360)
     zIndex: z.number().default(1), // Thứ tự lớp hiển thị
     // Styling & Typography
-    fontSize: z.number().optional(),
-    fontFamily: z.string().optional(),
-    color: z.string().optional(),
-    backgroundColor: z.string().optional(),
+    fontSize: z.number().min(1).max(500).optional(),
+    fontFamily: z.string().max(100).optional(),
+    color: z.string().max(100).optional(),
+    backgroundColor: z.string().max(100).optional(),
     opacity: z.number().min(0).max(1).optional(),
     textAlign: z.enum(["left", "center", "right", "justify"]).optional(),
     isBold: z.boolean().optional(),
@@ -26,11 +35,13 @@ export const CanvasElementSchema = z
     letterSpacing: z.number().optional(),
     lineHeight: z.number().optional(),
     padding: z.number().optional(),
-    borderRadius: z.number().optional(),
-    borderWidth: z.number().optional(),
-    borderColor: z.string().optional(),
+    borderRadius: z.number().min(0).max(1000).optional(),
+    borderWidth: z.number().min(0).max(100).optional(),
+    borderColor: z.string().max(100).optional(),
     shadow: z.string().optional(),
     isLocked: z.boolean().optional(),
+    userEdited: z.boolean().optional(),
+    bindingDetached: z.boolean().optional(),
     shapeType: z.enum([
       "line",
       "rect",
@@ -51,13 +62,23 @@ export const CanvasElementSchema = z
     ]).optional(),
     presetId: z.string().optional(),
     stockId: z.string().optional(),
-    svgContent: z.string().optional(),
+    svgContent: z.string().refine((svg) => {
+      if (!svg) return true;
+      const lower = svg.toLowerCase();
+      if (lower.includes("<script") || /on[a-z]+\s*=/i.test(svg)) {
+        return false;
+      }
+      return true;
+    }, "svgContent không được chứa thẻ script hoặc sự kiện nguy hiểm").optional(),
     svgType: z.enum(["frame", "divider", "custom"]).optional(),
-    imageUrl: z.string().optional(),
-    title: z.string().optional(),
+    imageUrl: z.union([StoredImageUrlSchema, z.literal("")]).optional(),
+    title: z.string().max(500).optional(),
     animation: z.string().optional(),
     loopAnimation: z.string().optional(),
-    linkUrl: z.string().optional(),
+    linkUrl: z.string().refine((url) => {
+      if (!url) return true;
+      return /^(https?:\/\/|tel:|mailto:)/i.test(url);
+    }, "linkUrl chỉ cho phép giao thức http, https, tel hoặc mailto").optional(),
     // Đối xứng (Flip)
     flipX: z.boolean().optional(),
     flipY: z.boolean().optional(),
@@ -89,8 +110,8 @@ export const CanvasElementSchema = z
       phone: z.string().max(30).optional(),
       showTitle: z.boolean().optional(),
     }).passthrough().optional(),
-  })
-  .passthrough();
+    updatedAt: z.string().optional(),
+  });
 
 export type CanvasElement = z.infer<typeof CanvasElementSchema>;
 

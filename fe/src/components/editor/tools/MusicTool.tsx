@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useEditor } from "../EditorContext";
-import { Music, Play, Pause, Check, Upload, VolumeX, Search } from "lucide-react";
+import { Music, Play, Pause, Check, Upload, VolumeX, Search, Loader2 } from "lucide-react";
+import { ApiClient } from "@/lib/api";
 
 const MUSIC_LIBRARY = [
   { id: "le-duong", name: "Lễ Đường (Nhạc Cưới Truyền Thống)", artist: "Traditional", src: "/music/le-duong.mp3", category: "vn" },
@@ -76,17 +77,33 @@ export function MusicTool() {
     });
   }, [filterCat, search]);
 
-  const handleCustomUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleCustomUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        updateFieldById("music", reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
     e.target.value = "";
+    setUploadError(null);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await ApiClient.request<{ url: string }>("/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.success && res.data?.url) {
+        updateFieldById("music", res.data.url);
+      } else {
+        setUploadError(res.error || "Không thể tải file nhạc lên máy chủ.");
+      }
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Lỗi tải file nhạc lên máy chủ.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -241,11 +258,16 @@ export function MusicTool() {
             className="p-6 rounded-2xl border-2 border-dashed border-stone-300 hover:border-amber-400 bg-stone-50 text-center cursor-pointer space-y-2"
           >
             <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 shadow-2xs flex items-center justify-center text-amber-600 mx-auto">
-              <Upload className="size-5" />
+              {isUploading ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
             </div>
-            <p className="text-xs font-bold text-stone-800">Tải file MP3 của riêng bạn</p>
-            <p className="text-[10px] text-stone-400">Dung lượng tối đa 15MB (.mp3, .wav, .m4a)</p>
+            <p className="text-xs font-bold text-stone-800">
+              {isUploading ? "Đang tải nhạc lên máy chủ..." : "Tải file MP3 của riêng bạn"}
+            </p>
+            <p className="text-[10px] text-stone-400">Dung lượng tối đa 10MB (.mp3, .wav, .ogg, .m4a)</p>
           </div>
+          {uploadError && (
+            <p className="text-xs text-rose-600 font-medium text-center">{uploadError}</p>
+          )}
         </div>
       )}
     </div>

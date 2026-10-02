@@ -171,6 +171,7 @@ export interface CardDetail {
   slug: string;
   cardCategory: CardCategory;
   status: "DRAFT" | "ACTIVE" | "EXPIRED" | "ARCHIVED";
+  updatedAt?: string | Date;
   openingEffect: OpeningEffectType;
   fallingEffect: FallingEffectType;
   musicUrl?: string | null;

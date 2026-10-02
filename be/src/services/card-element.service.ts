@@ -1,19 +1,14 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
+import { CanvasElementSchema } from "../lib/validators/card";
+import type { PatchElementBodySchema } from "../controllers/card-element.controller";
+import { assertCardEditable } from "./card.service";
+import { AccountEntitlementService } from "./account-entitlement.service";
+import { ensureWeddingSceneData } from "./wedding-scene.service";
+import { z } from "zod";
 
-interface PatchElementData {
-  customData?: Record<string, unknown>;
-  content?: string;
-  imageUrl?: string;
-  title?: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  fontSize?: number;
-  fontFamily?: string;
-  color?: string;
-}
+export type PatchElementData = z.infer<typeof PatchElementBodySchema>;
 
 export class CardElementService {
   /**
@@ -24,18 +19,31 @@ export class CardElementService {
     accountId: string,
     cardId: string,
     elementId: string,
-    patch: PatchElementData
+    patch: PatchElementData,
+    expectedUpdatedAt?: string | Date
   ) {
-    const card = await prisma.card.findFirst({
-      where: { id: cardId, accountId },
-      select: { id: true, categoryData: true, cardCategory: true },
-    });
+    const [card, effectivePlan] = await Promise.all([
+      prisma.card.findFirst({
+        where: { id: cardId, accountId },
+        include: { template: true },
+      }),
+      AccountEntitlementService.getEffectivePlan(accountId),
+    ]);
 
     if (!card) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập", "CARD_NOT_FOUND");
     }
 
-    const categoryData = (card.categoryData as Record<string, any>) || {};
+    assertCardEditable(card, effectivePlan);
+
+    let categoryData = (card.categoryData as Record<string, any>) || {};
+    if (card.template?.category === "WEDDING" || card.cardCategory === "WEDDING") {
+      categoryData = ensureWeddingSceneData(
+        card.template?.slug || "wedding-heritage-crimson-gold",
+        categoryData,
+      ) as Record<string, any>;
+    }
+
     let elements: any[] = [];
     let isWeddingScene = false;
 
@@ -60,23 +68,47 @@ export class CardElementService {
       ? { ...(currentEl.customData || {}), ...patch.customData }
       : currentEl.customData;
 
-    const updatedEl = {
+    const isEditingContent =
+      patch.content !== undefined ||
+      patch.imageUrl !== undefined ||
+      patch.widgetConfig !== undefined ||
+      patch.title !== undefined;
+    const userEdited = currentEl.userEdited === true || isEditingContent ? true : currentEl.userEdited;
+
+    const { version, ...patchFields } = patch;
+
+    // Merge tất cả các field đã validate
+    const mergedEl = {
       ...currentEl,
-      ...(patch.content !== undefined ? { content: patch.content } : {}),
-      ...(patch.imageUrl !== undefined ? { imageUrl: patch.imageUrl } : {}),
-      ...(patch.title !== undefined ? { title: patch.title } : {}),
-      ...(patch.x !== undefined ? { x: patch.x } : {}),
-      ...(patch.y !== undefined ? { y: patch.y } : {}),
-      ...(patch.width !== undefined ? { width: patch.width } : {}),
-      ...(patch.height !== undefined ? { height: patch.height } : {}),
-      ...(patch.fontSize !== undefined ? { fontSize: patch.fontSize } : {}),
-      ...(patch.fontFamily !== undefined ? { fontFamily: patch.fontFamily } : {}),
-      ...(patch.color !== undefined ? { color: patch.color } : {}),
+      ...patchFields,
       ...(updatedCustomData !== undefined ? { customData: updatedCustomData } : {}),
+      ...(userEdited !== undefined ? { userEdited } : {}),
       updatedAt: new Date().toISOString(),
     };
 
+    // Validate element sau khi merge bằng CanvasElementSchema
+    const parseResult = CanvasElementSchema.safeParse(mergedEl);
+    if (!parseResult.success) {
+      throw new HttpError(
+        400,
+        parseResult.error.errors[0]?.message || "Dữ liệu phần tử không hợp lệ",
+        "INVALID_ELEMENT_DATA",
+        parseResult.error.flatten().fieldErrors,
+      );
+    }
+
+    const updatedEl = parseResult.data;
     elements[targetIndex] = updatedEl;
+
+    // B4(c): nếu categoryData.canvasElements tồn tại thì cập nhật cùng element đó để không lệch
+    if (Array.isArray(categoryData.canvasElements)) {
+      const legacyIdx = categoryData.canvasElements.findIndex(
+        (el: any) => String(el.id) === String(elementId)
+      );
+      if (legacyIdx !== -1) {
+        categoryData.canvasElements[legacyIdx] = updatedEl;
+      }
+    }
 
     let updatedCategoryData: Record<string, any>;
     if (isWeddingScene) {
@@ -102,14 +134,42 @@ export class CardElementService {
       };
     }
 
-    await prisma.card.update({
-      where: { id: cardId, accountId },
+    const targetExpectedUpdatedAt = expectedUpdatedAt || (patch.expectedUpdatedAt as string | Date | undefined);
+    const whereClause: Prisma.CardWhereInput = {
+      id: cardId,
+      accountId,
+      ...(targetExpectedUpdatedAt ? { updatedAt: new Date(targetExpectedUpdatedAt) } : {}),
+    };
+
+    const updateResult = await prisma.card.updateMany({
+      where: whereClause,
       data: {
-        categoryData: updatedCategoryData,
+        categoryData: updatedCategoryData as Prisma.InputJsonValue,
       },
     });
 
-    return updatedEl;
+    if (updateResult.count === 0) {
+      const latestCard = await prisma.card.findFirst({
+        where: { id: cardId, accountId },
+        select: { updatedAt: true },
+      });
+      throw new HttpError(
+        409,
+        "Dữ liệu thiệp đã được cập nhật từ một phiên làm việc khác",
+        "CARD_VERSION_CONFLICT",
+        { currentUpdatedAt: latestCard?.updatedAt?.toISOString() },
+      );
+    }
+
+    const latestCard = await prisma.card.findFirstOrThrow({
+      where: { id: cardId, accountId },
+      select: { updatedAt: true },
+    });
+
+    return {
+      ...updatedEl,
+      updatedAt: latestCard.updatedAt,
+    };
   }
 
   /**
@@ -118,14 +178,21 @@ export class CardElementService {
   static async getElement(accountId: string, cardId: string, elementId: string) {
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
-      select: { id: true, categoryData: true },
+      include: { template: true },
     });
 
     if (!card) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập", "CARD_NOT_FOUND");
     }
 
-    const categoryData = (card.categoryData as Record<string, any>) || {};
+    let categoryData = (card.categoryData as Record<string, any>) || {};
+    if (card.template?.category === "WEDDING" || card.cardCategory === "WEDDING") {
+      categoryData = ensureWeddingSceneData(
+        card.template?.slug || "wedding-heritage-crimson-gold",
+        categoryData,
+      ) as Record<string, any>;
+    }
+
     const elements: any[] =
       categoryData.canvasDocument?.elements ||
       categoryData.canvasElements ||

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
+import multer from "multer";
 import { HttpError } from "../lib/http-error";
 import { logger } from "../lib/logger";
 
@@ -10,12 +11,29 @@ export function errorHandler(
   res: Response,
   _next: NextFunction
 ) {
-  // 1. Lỗi HTTP có mã trạng thái rõ ràng (throw từ services)
+  // 1. Lỗi Multer (upload file)
+  if (err instanceof multer.MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        success: false,
+        error: "Kích thước tập tin vượt quá giới hạn cho phép",
+        code: "LIMIT_FILE_SIZE",
+      });
+    }
+    return res.status(400).json({
+      success: false,
+      error: `Lỗi tải lên tập tin: ${err.message}`,
+      code: err.code,
+    });
+  }
+
+  // 2. Lỗi HTTP có mã trạng thái rõ ràng (throw từ services)
   if (err instanceof HttpError) {
     return res.status(err.status).json({
       success: false,
       error: err.message,
       code: err.code,
+      ...(err.details ? { fieldErrors: err.details } : {}),
     });
   }
 

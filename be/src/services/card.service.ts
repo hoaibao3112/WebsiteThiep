@@ -7,7 +7,19 @@ import {
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
-import { ensureWeddingScene, ensureWeddingSceneData } from "./wedding-scene.service";
+import { ensureWeddingScene, ensureWeddingSceneData, resolveBinding } from "./wedding-scene.service";
+
+export function assertCardEditable(
+  card: { status: string },
+  effectivePlan: { planCode: string }
+): void {
+  if (card.status === "ARCHIVED") {
+    throw new HttpError(409, "Thiệp đã lưu trữ và không thể chỉnh sửa", "CARD_STATE_CONFLICT");
+  }
+  if (card.status === "EXPIRED" && effectivePlan.planCode === "FREE") {
+    throw new HttpError(409, "Thiệp đã hết hạn và không thể chỉnh sửa", "CARD_STATE_CONFLICT");
+  }
+}
 
 export class CardService {
   private static cardAggregateInclude(accountId: string) {
@@ -31,8 +43,18 @@ export class CardService {
     input: DraftCardInput,
     idempotencyKey: string
   ) {
+    const existingByIdempotency = await prisma.card.findFirst({
+      where: { accountId, createIdempotencyKey: idempotencyKey },
+    });
+    if (existingByIdempotency) return existingByIdempotency;
+
     const maxAttempts = 3;
     input = { ...input, data: ensureWeddingScene(input) };
+
+    const isSlugFree = await this.isSlugAvailable(input.slug);
+    if (!isSlugFree) {
+      throw new HttpError(409, "Đường dẫn (slug) đã có người sử dụng", "SLUG_TAKEN");
+    }
 
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
       try {
@@ -64,6 +86,13 @@ export class CardService {
               throw new HttpError(400, "Mẫu thiệp không khả dụng cho gói hiện tại", "TEMPLATE_UNAVAILABLE");
             }
 
+            if (!effectivePlan.capabilities.allowMusicUpload && input.musicUrl) {
+              throw new HttpError(403, "Gói hiện tại không hỗ trợ tải lên nhạc", "PLAN_ENTITLEMENT_REQUIRED");
+            }
+            if (!effectivePlan.capabilities.allowTelegramNoti && input.telegramChatId) {
+              throw new HttpError(403, "Gói hiện tại không hỗ trợ thông báo Telegram", "PLAN_ENTITLEMENT_REQUIRED");
+            }
+
             if (effectivePlan.planCode === "FREE" && !isSystemAdmin) {
               const cardCount = await tx.card.count({ where: { accountId } });
               if (cardCount >= 2) {
@@ -78,6 +107,21 @@ export class CardService {
                 "PHOTO_LIMIT_EXCEEDED"
               );
             }
+
+            const bankingPrimaryValue = input.bankingPrimary === null
+              ? Prisma.DbNull
+              : input.bankingPrimary !== undefined
+              ? (input.bankingPrimary as Prisma.InputJsonValue)
+              : undefined;
+
+            const bankingSecondaryValue = input.bankingSecondary === null
+              ? Prisma.DbNull
+              : input.bankingSecondary !== undefined
+              ? (input.bankingSecondary as Prisma.InputJsonValue)
+              : undefined;
+
+            (input.data as any).events = input.events;
+            (input.data as any).photos = input.photos;
 
             const card = await tx.card.create({
               data: {
@@ -99,8 +143,8 @@ export class CardService {
                 fontFamily: input.fontFamily,
                 greetingMessage: input.greetingMessage,
                 categoryData: input.data as Prisma.InputJsonValue,
-                bankingPrimary: input.bankingPrimary as Prisma.InputJsonValue | undefined,
-                bankingSecondary: input.bankingSecondary as Prisma.InputJsonValue | undefined,
+                bankingPrimary: bankingPrimaryValue,
+                bankingSecondary: bankingSecondaryValue,
                 telegramChatId: effectivePlan.capabilities.allowTelegramNoti ? input.telegramChatId : null,
               },
             });
@@ -111,7 +155,7 @@ export class CardService {
                   accountId,
                   cardId: card.id,
                   eventName: event.eventName || "Sự kiện",
-                  eventDate: event.eventDate,
+                  eventDate: event.eventDate ? new Date(event.eventDate) : new Date(),
                   lunarDate: event.lunarDate,
                   venueName: event.venueName || "Chưa cập nhật",
                   address: event.address || "Chưa cập nhật",
@@ -291,8 +335,7 @@ export class CardService {
     return !existing;
   }
 
-  static async updateDraft(accountId: string, cardId: string, input: DraftCardInput) {
-    input = { ...input, data: ensureWeddingScene(input) };
+  static async updateDraft(accountId: string, cardId: string, input: DraftCardInput, expectedUpdatedAt?: string | Date) {
     const [existing, effectivePlan] = await Promise.all([
       prisma.card.findFirst({
         where: { id: cardId, accountId },
@@ -304,9 +347,21 @@ export class CardService {
     if (!existing) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa", "CARD_NOT_FOUND");
     }
-    if (existing.status === "EXPIRED" && effectivePlan.planCode === "FREE") {
-      throw new HttpError(409, "Thiệp đã hết hạn và không thể chỉnh sửa", "CARD_STATE_CONFLICT");
+
+    assertCardEditable(existing, effectivePlan);
+
+    // Kiểm tra trùng slug trước (exclude chính card)
+    const isSlugFree = await this.isSlugAvailable(input.slug, cardId);
+    if (!isSlugFree) {
+      throw new HttpError(409, "Đường dẫn (slug) đã có người sử dụng", "SLUG_TAKEN");
     }
+
+    // Nếu status đã ACTIVE và slug khác slug hiện tại -> 409 SLUG_LOCKED
+    if (existing.status === "ACTIVE" && input.slug !== existing.slug) {
+      throw new HttpError(409, "Thiệp đã phát hành không thể thay đổi đường dẫn (slug)", "SLUG_LOCKED");
+    }
+
+    input = { ...input, data: ensureWeddingScene(input, existing.categoryData) };
     if (input.photos.length > effectivePlan.capabilities.maxPhotos) {
       throw new HttpError(
         400,
@@ -324,7 +379,9 @@ export class CardService {
       throw new HttpError(400, "Mẫu thiệp không tồn tại hoặc không phù hợp với danh mục thiệp", "TEMPLATE_UNAVAILABLE");
     }
 
-    if (template.isPremium && !effectivePlan.capabilities.allowPremiumTemplates) {
+    // Template premium: chỉ chặn khi template.id đổi sang premium mà plan không cho phép; giữ nguyên template cũ thì cho sửa.
+    const isChangingToPremium = template.isPremium && template.id !== existing.templateId;
+    if (isChangingToPremium && !effectivePlan.capabilities.allowPremiumTemplates) {
       throw new HttpError(
         403,
         effectivePlan.planCode === "FREE"
@@ -334,49 +391,169 @@ export class CardService {
       );
     }
 
+    // musicUrl / telegramChatId: nếu plan không cho phép thì GIỮ giá trị cũ (không set null), hoặc trả 403 PLAN_ENTITLEMENT_REQUIRED khi user cố đổi.
+    let finalMusicUrl = existing.musicUrl;
+    if (effectivePlan.capabilities.allowMusicUpload) {
+      finalMusicUrl = input.musicUrl ?? null;
+    } else if (input.musicUrl !== undefined && input.musicUrl !== existing.musicUrl && input.musicUrl !== null && input.musicUrl !== "") {
+      throw new HttpError(403, "Gói hiện tại không hỗ trợ tải lên nhạc", "PLAN_ENTITLEMENT_REQUIRED");
+    }
+
+    let finalTelegramChatId = existing.telegramChatId;
+    if (effectivePlan.capabilities.allowTelegramNoti) {
+      finalTelegramChatId = input.telegramChatId ?? null;
+    } else if (input.telegramChatId !== undefined && input.telegramChatId !== existing.telegramChatId && input.telegramChatId !== null && input.telegramChatId !== "") {
+      throw new HttpError(403, "Gói hiện tại không hỗ trợ thông báo Telegram", "PLAN_ENTITLEMENT_REQUIRED");
+    }
+
+    // bankingPrimary / Secondary: null -> Prisma.DbNull, undefined -> không đụng
+    const bankingPrimaryValue = input.bankingPrimary === null
+      ? Prisma.DbNull
+      : input.bankingPrimary !== undefined
+      ? (input.bankingPrimary as Prisma.InputJsonValue)
+      : undefined;
+
+    const bankingSecondaryValue = input.bankingSecondary === null
+      ? Prisma.DbNull
+      : input.bankingSecondary !== undefined
+      ? (input.bankingSecondary as Prisma.InputJsonValue)
+      : undefined;
+
+    (input.data as any).events = input.events;
+    (input.data as any).photos = input.photos;
+
     return prisma.$transaction(async (tx) => {
-      const card = await tx.card.update({
-        where: { id: cardId, accountId },
+      const targetExpectedUpdatedAt = expectedUpdatedAt || (input as any).expectedUpdatedAt;
+      const whereClause: Prisma.CardWhereInput = {
+        id: cardId,
+        accountId,
+        ...(targetExpectedUpdatedAt ? { updatedAt: new Date(targetExpectedUpdatedAt) } : {}),
+      };
+
+      const updateResult = await tx.card.updateMany({
+        where: whereClause,
         data: {
           slug: input.slug,
           templateId: template.id,
           cardCategory: input.data.cardCategory,
           openingEffect: input.openingEffect,
           fallingEffect: input.fallingEffect,
-          musicUrl: effectivePlan.capabilities.allowMusicUpload ? input.musicUrl : null,
+          musicUrl: finalMusicUrl,
           isAutoPlay: input.isAutoPlay,
           primaryColor: input.primaryColor,
           fontFamily: input.fontFamily,
           greetingMessage: input.greetingMessage,
           categoryData: input.data as Prisma.InputJsonValue,
-          bankingPrimary: input.bankingPrimary as Prisma.InputJsonValue | undefined,
-          bankingSecondary: input.bankingSecondary as Prisma.InputJsonValue | undefined,
-          telegramChatId: effectivePlan.capabilities.allowTelegramNoti ? input.telegramChatId : null,
+          bankingPrimary: bankingPrimaryValue,
+          bankingSecondary: bankingSecondaryValue,
+          telegramChatId: finalTelegramChatId,
         },
       });
 
-      await tx.cardEvent.deleteMany({ where: { cardId, accountId } });
-      if (input.events.length > 0) {
-        await tx.cardEvent.createMany({
-          data: input.events.map((event, sortOrder) => ({
-            accountId, cardId, eventName: event.eventName || "Sự kiện",
-            eventDate: event.eventDate, lunarDate: event.lunarDate,
-            venueName: event.venueName || "Chưa cập nhật",
-            address: event.address || "Chưa cập nhật", mapUrl: event.mapUrl || null,
-            latitude: event.latitude, longitude: event.longitude, sortOrder,
-          })),
+      if (updateResult.count === 0) {
+        const latest = await tx.card.findFirst({
+          where: { id: cardId, accountId },
+          select: { updatedAt: true },
+        });
+        throw new HttpError(
+          409,
+          "Dữ liệu thiệp đã được cập nhật từ một phiên làm việc khác",
+          "CARD_VERSION_CONFLICT",
+          { currentUpdatedAt: latest?.updatedAt?.toISOString() },
+        );
+      }
+
+      const card = await tx.card.findFirstOrThrow({
+        where: { id: cardId, accountId },
+      });
+
+      // Upsert CardEvent theo id để giữ id ổn định
+      const existingEvents = (await tx.cardEvent.findMany({
+        where: { cardId, accountId },
+        select: { id: true },
+      })) || [];
+      const existingEventIds = new Set(existingEvents.map((e) => e.id));
+      const inputEventIds = new Set(input.events.filter((e) => e.id).map((e) => e.id!));
+
+      const toDeleteEventIds = existingEvents.filter((e) => !inputEventIds.has(e.id)).map((e) => e.id);
+      if (toDeleteEventIds.length > 0) {
+        await tx.cardEvent.deleteMany({
+          where: { id: { in: toDeleteEventIds }, cardId, accountId },
         });
       }
 
-      await tx.cardPhoto.deleteMany({ where: { cardId, accountId } });
-      if (input.photos.length > 0) {
-        await tx.cardPhoto.createMany({
-          data: input.photos.map((photo, sortOrder) => ({
-            accountId, cardId, url: photo.url, thumbUrl: photo.thumbUrl || null,
-            caption: photo.caption || null, isCover: photo.isCover ?? sortOrder === 0, sortOrder,
-          })),
+      for (let sortOrder = 0; sortOrder < input.events.length; sortOrder += 1) {
+        const event = input.events[sortOrder];
+        const eventDate = event.eventDate ? new Date(event.eventDate) : new Date();
+        const eventPayload = {
+          eventName: event.eventName || "Sự kiện",
+          eventDate,
+          lunarDate: event.lunarDate || null,
+          venueName: event.venueName || "Chưa cập nhật",
+          address: event.address || "Chưa cập nhật",
+          mapUrl: event.mapUrl || null,
+          latitude: event.latitude || null,
+          longitude: event.longitude || null,
+          sortOrder,
+        };
+
+        if (event.id && existingEventIds.has(event.id)) {
+          await tx.cardEvent.update({
+            where: { id: event.id, cardId, accountId },
+            data: eventPayload,
+          });
+        } else {
+          await tx.cardEvent.create({
+            data: {
+              ...eventPayload,
+              accountId,
+              cardId,
+            },
+          });
+        }
+      }
+
+      // Upsert CardPhoto theo id để giữ id ổn định
+      const existingPhotos = (await tx.cardPhoto.findMany({
+        where: { cardId, accountId },
+        select: { id: true },
+      })) || [];
+      const existingPhotoIds = new Set(existingPhotos.map((p) => p.id));
+      const inputPhotoIds = new Set(input.photos.filter((p) => p.id).map((p) => p.id!));
+
+      const toDeletePhotoIds = existingPhotos.filter((p) => !inputPhotoIds.has(p.id)).map((p) => p.id);
+      if (toDeletePhotoIds.length > 0) {
+        await tx.cardPhoto.deleteMany({
+          where: { id: { in: toDeletePhotoIds }, cardId, accountId },
         });
       }
+
+      for (let sortOrder = 0; sortOrder < input.photos.length; sortOrder += 1) {
+        const photo = input.photos[sortOrder];
+        const photoPayload = {
+          url: photo.url,
+          thumbUrl: photo.thumbUrl || null,
+          caption: photo.caption || null,
+          isCover: photo.isCover ?? sortOrder === 0,
+          sortOrder,
+        };
+
+        if (photo.id && existingPhotoIds.has(photo.id)) {
+          await tx.cardPhoto.update({
+            where: { id: photo.id, cardId, accountId },
+            data: photoPayload,
+          });
+        } else {
+          await tx.cardPhoto.create({
+            data: {
+              ...photoPayload,
+              accountId,
+              cardId,
+            },
+          });
+        }
+      }
+
       return card;
     });
   }
@@ -440,6 +617,15 @@ export class CardService {
         `Gói ${effectivePlan.planName} chỉ cho phép tối đa ${effectivePlan.capabilities.maxPhotos} ảnh`,
         "PHOTO_LIMIT_EXCEEDED"
       );
+    }
+
+    const categoryEvents = (card.categoryData as any)?.events;
+    if (Array.isArray(categoryEvents)) {
+      for (const ev of categoryEvents) {
+        if (!ev.eventDate || (typeof ev.eventDate === "string" && !ev.eventDate.trim())) {
+          throw new HttpError(400, "Vui lòng chọn ngày giờ tổ chức cho sự kiện trước khi xuất bản", "EVENT_DATE_REQUIRED");
+        }
+      }
     }
 
     PublishCardDataSchema.parse(card.categoryData);

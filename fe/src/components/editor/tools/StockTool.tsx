@@ -124,6 +124,7 @@ export function StockTool() {
             icon: item.icon,
             title: item.title,
             color: item.color,
+            imageUrl: item.imageUrl,
             isWide: item.isWide,
             width: item.width,
             height: item.height,

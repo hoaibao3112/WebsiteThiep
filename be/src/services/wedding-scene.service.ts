@@ -539,7 +539,7 @@ function canonicalSlug(templateSlug: string): string {
   return "wedding-heritage-crimson-gold";
 }
 
-function resolveBinding(data: JsonRecord, binding: string): unknown {
+export function resolveBinding(data: JsonRecord, binding: string): unknown {
   const pathParts = binding.match(/[^[.\]]+/g) ?? [];
   return pathParts.reduce<unknown>((value, key) => {
     const source = readRecord(value);
@@ -559,9 +559,10 @@ export function ensureWeddingSceneData(templateSlug: string, rawData: unknown): 
     const bindings = readRecord(existing.bindings);
     const elements = existing.elements.map((element) => {
       const elRec = readRecord(element) || {};
-      // If user customized content or customData, ALWAYS KEEP USER'S EDITS!
+      // If user customized content or customData or marked as userEdited, ALWAYS KEEP USER'S EDITS!
       const hasCustomData = elRec.customData && Object.keys(readRecord(elRec.customData) || {}).length > 0;
-      if (hasCustomData) {
+      const isUserEdited = elRec.userEdited === true || elRec.bindingDetached === true;
+      if (hasCustomData || isUserEdited) {
         return element;
       }
       const elId = String(elRec.id);
@@ -618,7 +619,79 @@ export function ensureWeddingSceneData(templateSlug: string, rawData: unknown): 
   return { ...data, canvasDocument: document };
 }
 
-export function ensureWeddingScene(input: DraftCardInput): DraftCardInput["data"] {
+export function markUserEditedElements(
+  inputData: unknown,
+  existingCategoryData: unknown,
+): JsonRecord {
+  const data = readRecord(inputData) ?? {};
+  const existingCategoryRecord = readRecord(existingCategoryData);
+  const existingDoc = readRecord(existingCategoryRecord?.canvasDocument);
+  const inputDoc = readRecord(data.canvasDocument);
+
+  if (!Array.isArray(inputDoc?.elements) || !existingCategoryRecord) {
+    return data;
+  }
+
+  const bindings = readRecord(inputDoc?.bindings) || readRecord(existingDoc?.bindings) || {};
+
+  const elements = inputDoc.elements.map((element) => {
+    const elRec = readRecord(element) || {};
+    if (elRec.userEdited === true || elRec.bindingDetached === true) {
+      return element;
+    }
+    const elId = String(elRec.id);
+    const binding = typeof bindings[elId] === "string" ? String(bindings[elId]) : "";
+    if (!binding) return element;
+
+    const currentBindingValue = resolveBinding(existingCategoryRecord, binding);
+    if (currentBindingValue === undefined) return element;
+
+    let isUserEdited = false;
+    if (elRec.type === "widget") {
+      const widgetConfig = readRecord(elRec.widgetConfig) ?? {};
+      const configKey = binding.endsWith(".eventDate")
+        ? "eventDate"
+        : binding.endsWith(".mapUrl")
+        ? "url"
+        : binding.endsWith(".eventName")
+        ? "title"
+        : "description";
+      if (
+        widgetConfig[configKey] !== undefined &&
+        widgetConfig[configKey] !== (typeof currentBindingValue === "string" ? currentBindingValue : "")
+      ) {
+        isUserEdited = true;
+      }
+    } else if (elRec.type === "image") {
+      if (
+        (elRec.imageUrl && elRec.imageUrl !== String(currentBindingValue)) ||
+        (elRec.content && elRec.content !== String(currentBindingValue))
+      ) {
+        isUserEdited = true;
+      }
+    } else {
+      if (typeof elRec.content === "string" && elRec.content !== String(currentBindingValue)) {
+        isUserEdited = true;
+      }
+    }
+
+    if (isUserEdited) {
+      return { ...elRec, userEdited: true, bindingDetached: true };
+    }
+    return element;
+  });
+
+  return {
+    ...data,
+    canvasDocument: {
+      ...inputDoc,
+      elements,
+    },
+  };
+}
+
+export function ensureWeddingScene(input: DraftCardInput, existingCategoryData?: unknown): DraftCardInput["data"] {
   if (input.data.cardCategory !== "WEDDING") return input.data;
-  return ensureWeddingSceneData(input.templateSlug, input.data) as DraftCardInput["data"];
+  const processedData = existingCategoryData ? markUserEditedElements(input.data, existingCategoryData) : input.data;
+  return ensureWeddingSceneData(input.templateSlug, processedData) as DraftCardInput["data"];
 }

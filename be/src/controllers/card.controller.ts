@@ -3,6 +3,7 @@ import { CardService } from "../services/card.service";
 import { DraftCardSchema } from "../lib/validators/card";
 import { z } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import { HttpError } from "../lib/http-error";
 import { ensureWeddingSceneData } from "../services/wedding-scene.service";
 
 export class CardController {
@@ -31,7 +32,9 @@ export class CardController {
   private static getAuth(req: AuthenticatedRequest) {
     const userId = req.user?.userId;
     const accountId = req.user?.accountId;
-    if (!userId || !accountId) throw new Error("Thiếu thông tin xác thực");
+    if (!userId || !accountId) {
+      throw new HttpError(401, "Thiếu thông tin xác thực", "UNAUTHORIZED");
+    }
     return { userId, accountId };
   }
 
@@ -55,8 +58,14 @@ export class CardController {
     try {
       const { accountId } = CardController.getAuth(req);
       const input = DraftCardSchema.parse(req.body);
-      const card = await CardService.updateDraft(accountId, req.params.id as string, input);
-      return res.status(200).json({ success: true, data: card });
+
+      const ifMatchHeader = req.headers["if-match"];
+      const expectedUpdatedAt =
+        input.expectedUpdatedAt ||
+        (ifMatchHeader ? ifMatchHeader.replace(/"/g, "").trim() : undefined);
+
+      const card = await CardService.updateDraft(accountId, req.params.id as string, input, expectedUpdatedAt);
+      return res.status(200).json({ success: true, data: card, updatedAt: card.updatedAt });
     } catch (error: unknown) {
       next(error);
     }

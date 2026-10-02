@@ -107,8 +107,8 @@ export function EnvelopeConfigModal({
   onClose,
   cardId,
   initialConfig,
-  initialGroomName = "Mai Lan",
-  initialBrideName = "Tuấn Minh",
+  initialGroomName = "Minh Khôi",
+  initialBrideName = "Ngọc Hân",
   onSaveSuccess,
 }: EnvelopeConfigModalProps) {
   const [styles, setStyles] = useState<EnvelopeStyle[]>(FALLBACK_STYLES);
@@ -121,16 +121,16 @@ export function EnvelopeConfigModal({
     initialConfig?.styleId || "vintage-cream"
   );
   const [groomName, setGroomName] = useState<string>(
-    initialConfig?.groomName ?? initialGroomName
+    initialConfig?.groomName || initialGroomName
   );
   const [brideName, setBrideName] = useState<string>(
-    initialConfig?.brideName ?? initialBrideName
+    initialConfig?.brideName || initialBrideName
   );
   const [title, setTitle] = useState<string>(
     initialConfig?.title || "We're getting married!"
   );
   const [fontFamily, setFontFamily] = useState<string>(
-    initialConfig?.fontFamily || "Aquarelle"
+    initialConfig?.fontFamily || "Playfair Display"
   );
   const [buttonText, setButtonText] = useState<string>(
     initialConfig?.buttonText || "CHẠM ĐỂ MỞ"
@@ -172,15 +172,16 @@ export function EnvelopeConfigModal({
   useEffect(() => {
     if (isOpen) {
       if (initialConfig?.styleId) setSelectedStyleId(initialConfig.styleId);
-      if (initialConfig?.groomName !== undefined) setGroomName(initialConfig.groomName);
-      else if (initialGroomName) setGroomName(initialGroomName);
-
-      if (initialConfig?.brideName !== undefined) setBrideName(initialConfig.brideName);
-      else if (initialBrideName) setBrideName(initialBrideName);
+      
+      const g = initialConfig?.groomName || initialGroomName || "Minh Khôi";
+      const b = initialConfig?.brideName || initialBrideName || "Ngọc Hân";
+      setGroomName(g);
+      setBrideName(b);
 
       if (initialConfig?.title) setTitle(initialConfig.title);
       if (initialConfig?.fontFamily) setFontFamily(initialConfig.fontFamily);
       if (initialConfig?.buttonText) setButtonText(initialConfig.buttonText);
+      setErrorMessage(null);
     }
   }, [isOpen, initialConfig, initialGroomName, initialBrideName]);
 
@@ -191,39 +192,52 @@ export function EnvelopeConfigModal({
 
   // Monogram tự động tính
   const calculatedMonogram = useMemo(() => {
-    return extractMonogram(groomName, brideName);
-  }, [groomName, brideName]);
+    return extractMonogram(groomName || initialGroomName, brideName || initialBrideName);
+  }, [groomName, brideName, initialGroomName, initialBrideName]);
 
   // Ghép tên cặp đôi
   const combinedCoupleName = useMemo(() => {
     const g = groomName.trim();
     const b = brideName.trim();
     if (g && b) return `${g} & ${b}`;
-    return g || b || "Mai Lan & Tuấn Minh";
-  }, [groomName, brideName]);
+    return g || b || `${initialGroomName || "Minh Khôi"} & ${initialBrideName || "Ngọc Hân"}`;
+  }, [groomName, brideName, initialGroomName, initialBrideName]);
 
-  // Xử lý lưu cấu hình (Gọi Backend API)
+  // Xử lý lưu cấu hình (Gọi Backend API nếu đã tạo thiệp, lưu local state nếu là thiệp mới)
   const handleSave = async () => {
     setIsSaving(true);
     setErrorMessage(null);
 
+    const finalGroom = groomName.trim() || initialGroomName || "Minh Khôi";
+    const finalBride = brideName.trim() || initialBrideName || "Ngọc Hân";
+
     const configToSave: EnvelopeConfig = {
       styleId: selectedStyleId,
       styleName: activeStyle.name,
-      groomName: groomName.trim(),
-      brideName: brideName.trim(),
-      title: title.trim(),
-      fontFamily,
-      buttonText: buttonText.trim(),
+      groomName: finalGroom,
+      brideName: finalBride,
+      title: title.trim() || "We're getting married!",
+      fontFamily: fontFamily || "Playfair Display",
+      buttonText: buttonText.trim() || "CHẠM ĐỂ MỞ",
       monogram: calculatedMonogram,
     };
 
     try {
-      if (cardId) {
-        // Lưu trực tiếp vào Database thông qua Backend PATCH endpoint
-        const res = await ApiClient.updateCardEnvelopeConfig(cardId, configToSave);
-        if (!res.success) {
-          throw new Error(res.error || "Không thể lưu cấu hình phong bì lên máy chủ");
+      // Chỉ gửi request backend nếu cardId hợp lệ và đã lưu trong database (không phải draft-new-card hoặc chưa tạo thiệp)
+      const isPersistedCard =
+        cardId &&
+        !cardId.startsWith("draft-") &&
+        cardId !== "draft-new-card" &&
+        !cardId.includes("temp");
+
+      if (isPersistedCard) {
+        try {
+          const res = await ApiClient.updateCardEnvelopeConfig(cardId, configToSave);
+          if (!res.success) {
+            console.warn("Lưu backend phong bì không thành công, tiếp tục lưu local:", res.error);
+          }
+        } catch (apiErr) {
+          console.warn("Lỗi mạng khi lưu phong bì backend, tiếp tục lưu local:", apiErr);
         }
       }
 
@@ -404,34 +418,34 @@ export function EnvelopeConfigModal({
               {/* Tên chú rể & Tên cô dâu */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
                     Tên chú rể
                   </label>
                   <input
                     type="text"
                     value={groomName}
                     onChange={(e) => setGroomName(e.target.value)}
-                    placeholder="Mai Lan"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 bg-stone-50/50"
+                    placeholder="Minh Khôi"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
                     Tên cô dâu
                   </label>
                   <input
                     type="text"
                     value={brideName}
                     onChange={(e) => setBrideName(e.target.value)}
-                    placeholder="Tuấn Minh"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 bg-stone-50/50"
+                    placeholder="Ngọc Hân"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                   />
                 </div>
               </div>
 
               {/* Dòng tiêu đề */}
               <div>
-                <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                <label className="block text-[11px] font-bold text-stone-700 mb-1">
                   Dòng tiêu đề
                 </label>
                 <input
@@ -439,13 +453,13 @@ export function EnvelopeConfigModal({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="We're getting married!"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 bg-stone-50/50"
+                  className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                 />
               </div>
 
               {/* Font hiển thị tên (Dropdown như trong ảnh) */}
               <div className="relative">
-                <label className="block text-[11px] font-medium text-stone-600 mb-1 text-center">
+                <label className="block text-[11px] font-bold text-stone-700 mb-1 text-center">
                   Font hiển thị tên
                 </label>
                 <button
@@ -454,7 +468,7 @@ export function EnvelopeConfigModal({
                     e.stopPropagation();
                     setFontDropdownOpen(!fontDropdownOpen);
                   }}
-                  className="w-full py-2 px-3 text-center text-sm font-serif font-bold text-stone-800 hover:bg-stone-50 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2 px-3 text-center text-sm font-serif font-bold text-stone-900 bg-stone-50 hover:bg-stone-100 rounded-xl border border-stone-200 transition flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <span>{fontFamily}</span>
                   <span className="text-[10px] text-stone-700">▼</span>
@@ -471,11 +485,11 @@ export function EnvelopeConfigModal({
                           setFontDropdownOpen(false);
                         }}
                         className={`w-full px-4 py-2 text-xs text-left flex items-center justify-between hover:bg-stone-50 transition ${
-                          fontFamily === font.id ? "bg-stone-100 font-bold text-stone-900" : "text-stone-700"
+                          fontFamily === font.id ? "bg-amber-50 font-bold text-amber-900" : "text-stone-700"
                         }`}
                       >
                         <span className={font.className}>{font.label}</span>
-                        {fontFamily === font.id && <Check className="w-3.5 h-3.5 text-stone-900" />}
+                        {fontFamily === font.id && <Check className="w-3.5 h-3.5 text-amber-600" />}
                       </button>
                     ))}
                   </div>
@@ -484,7 +498,7 @@ export function EnvelopeConfigModal({
 
               {/* Nút mở thiệp */}
               <div>
-                <label className="block text-[11px] font-medium text-stone-600 mb-1">
+                <label className="block text-[11px] font-bold text-stone-700 mb-1">
                   Nút mở thiệp
                 </label>
                 <input
@@ -492,7 +506,7 @@ export function EnvelopeConfigModal({
                   value={buttonText}
                   onChange={(e) => setButtonText(e.target.value)}
                   placeholder="CHẠM ĐỂ MỞ"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 bg-stone-50/50"
+                  className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                 />
               </div>
 
@@ -525,14 +539,19 @@ export function EnvelopeConfigModal({
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-black/10 via-transparent to-transparent pointer-events-none" />
 
               {/* DÒNG TIÊU ĐỀ */}
-              <div className="text-center z-10 mt-2">
-                <p className="text-xs sm:text-sm font-serif text-stone-600 tracking-wide">
+              <div className="text-center z-10 mt-2 px-3">
+                <p className="text-xs sm:text-sm font-serif text-stone-700 font-medium tracking-wide">
                   {title || "We're getting married!"}
                 </p>
                 {/* TÊN CẶP ĐÔI */}
                 <h3
-                  className="text-lg sm:text-2xl font-bold mt-1 text-stone-800 tracking-tight"
-                  style={{ fontFamily: fontFamily }}
+                  className="text-xl sm:text-2xl font-bold mt-1 text-stone-900 tracking-tight drop-shadow-xs"
+                  style={{
+                    fontFamily:
+                      fontFamily === "Aquarelle"
+                        ? "'Playfair Display', Georgia, serif"
+                        : fontFamily || "'Playfair Display', Georgia, serif",
+                  }}
                 >
                   {combinedCoupleName}
                 </h3>
