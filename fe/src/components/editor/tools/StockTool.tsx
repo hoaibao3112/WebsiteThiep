@@ -20,7 +20,7 @@ const PRIMARY_CATEGORY_IDS: StockCategoryId[] = [
   "heart",
 ];
 
-const MORE_CATEGORY_IDS: StockCategoryId[] = ["frames", "dividers", "vietnam"];
+const MORE_CATEGORY_IDS: StockCategoryId[] = ["frames", "dividers", "vietnam", "monogram"];
 
 export function StockTool() {
   const [activeTab, setActiveTab] = useState<StockCategoryId>("all");
@@ -303,6 +303,9 @@ export function StockTool() {
 
           {/* Nhóm 8: Văn hóa Việt */}
           {renderSection("vietnam", "Văn hóa Việt")}
+
+          {/* Nhóm 9: Chữ nghệ thuật (Monogram) */}
+          {renderSection("monogram", "Chữ nghệ thuật (Monogram)")}
         </div>
       ) : (
         /* ── CHẾ ĐỘ XEM CHI TIẾT THEO DANH MỤC ĐƯỢC CHỌN ── */

@@ -1,7 +1,7 @@
 export interface StockItem {
   id: string;
   title: string;
-  cat: "frames" | "dividers" | "wedding" | "character" | "flower" | "hy" | "heart" | "vietnam";
+  cat: "frames" | "dividers" | "wedding" | "character" | "flower" | "hy" | "heart" | "vietnam" | "monogram";
   svgType?: "frame" | "divider" | "custom";
   icon?: string;
   imageUrl?: string;
@@ -22,6 +22,7 @@ export const STOCK_CATEGORIES = [
   { id: "frames", label: "Khung viền" },
   { id: "dividers", label: "Đường phân cách" },
   { id: "vietnam", label: "Văn hóa Việt" },
+  { id: "monogram", label: "Chữ nghệ thuật (Monogram)" },
 ] as const;
 
 export type StockCategoryId = (typeof STOCK_CATEGORIES)[number]["id"];
@@ -408,6 +409,22 @@ export const STOCK_CATALOG: StockItem[] = [
     width: 130,
     height: 220,
   },
+  {
+    id: "vn-couple-lotus",
+    title: "Cặp đôi áo dài che ô bên đầm sen",
+    cat: "vietnam",
+    imageUrl: "/images/decor/vn-couple-lotus-umbrella.png",
+    width: 170,
+    height: 210,
+  },
+  {
+    id: "vn-bamboo",
+    title: "Khóm tre xanh Việt Nam",
+    cat: "vietnam",
+    imageUrl: "/images/decor/vn-green-bamboo.png",
+    width: 180,
+    height: 220,
+  },
   { id: "vn8", title: "Đường kẻ gấm Á Đông", cat: "vietnam", icon: "❖ ❖ ❖", color: "#BE944E", isWide: true, width: 160, height: 70 },
   { id: "vn10", title: "Đôi uyên ương hồ điệp", cat: "vietnam", icon: "🦆💕🦆", color: "#8B1E2D", isWide: true, width: 160, height: 70 },
   { id: "vn11", title: "Mây cát tường Á Đông", cat: "vietnam", icon: "☁️✨", color: "#D4AF37", isWide: true, width: 140, height: 70 },
@@ -512,9 +529,30 @@ export const STOCK_CATALOG: StockItem[] = [
     height: 140,
     isWide: true,
   },
-  { id: "f7", title: "Nhành Olive hòa hợp", cat: "flower", icon: "🫒🌿", isWide: true, width: 140, height: 80 },
-  { id: "f8", title: "Cành Lavender tím", cat: "flower", icon: "🪻", width: 100, height: 100 },
-  { id: "f9", title: "Bồ công anh may mắn", cat: "flower", icon: "🌾", width: 100, height: 100 },
+  {
+    id: "fl-white-rose",
+    title: "Bó hoa hồng trắng & lá khuynh diệp",
+    cat: "flower",
+    imageUrl: "/images/decor/white-rose-eucalyptus-bouquet.png",
+    width: 180,
+    height: 190,
+  },
+  {
+    id: "fl-bouquet-lineart",
+    title: "Bó hoa cưới minh họa pastel",
+    cat: "flower",
+    imageUrl: "/images/decor/floral-bouquet-lineart.png",
+    width: 160,
+    height: 210,
+  },
+  {
+    id: "fl-rose-peach",
+    title: "Bó hoa hồng cam pastel",
+    cat: "flower",
+    imageUrl: "/images/decor/rose-posy-peach.png",
+    width: 170,
+    height: 180,
+  },
   {
     id: "f10",
     title: "Vòng nguyệt quế hoa baby tròn",
@@ -592,4 +630,46 @@ export const STOCK_CATALOG: StockItem[] = [
     height: 180,
   },
   { id: "ht8", title: "Nhịp đập yêu thương", cat: "heart", icon: "💓", width: 100, height: 100 },
+
+  // ── 9. CHỮ NGHỆ THUẬT & MONOGRAM (PHA LÊ 3D & BOTANICAL INK) ──
+  {
+    id: "mono-z-floral",
+    title: "Chữ Z hoa lá nghệ thuật Vintage",
+    cat: "monogram",
+    imageUrl: "/images/decor/monogram-z-floral.png",
+    width: 200,
+    height: 200,
+  },
+  {
+    id: "mono-b-crystal",
+    title: "Chữ B pha lê 3D nguyên khối",
+    cat: "monogram",
+    imageUrl: "/images/decor/crystal-letter-b.png",
+    width: 180,
+    height: 210,
+  },
+  {
+    id: "mono-d-crystal",
+    title: "Chữ D pha lê 3D nguyên khối",
+    cat: "monogram",
+    imageUrl: "/images/decor/crystal-letter-d.png",
+    width: 200,
+    height: 210,
+  },
+  {
+    id: "mono-e-crystal",
+    title: "Chữ E pha lê 3D nguyên khối",
+    cat: "monogram",
+    imageUrl: "/images/decor/crystal-letter-e.png",
+    width: 190,
+    height: 210,
+  },
+  {
+    id: "mono-g-crystal",
+    title: "Chữ G pha lê 3D nguyên khối",
+    cat: "monogram",
+    imageUrl: "/images/decor/crystal-letter-g.png",
+    width: 200,
+    height: 200,
+  },
 ];
