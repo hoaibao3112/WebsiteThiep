@@ -146,6 +146,8 @@ export class CardService {
                 bankingPrimary: bankingPrimaryValue,
                 bankingSecondary: bankingSecondaryValue,
                 telegramChatId: effectivePlan.capabilities.allowTelegramNoti ? input.telegramChatId : null,
+                specialEffectConfig: (input.specialEffectConfig as Prisma.InputJsonValue) ?? null,
+                backgroundVideoConfig: (input.backgroundVideoConfig as Prisma.InputJsonValue) ?? null,
               },
             });
 
@@ -479,6 +481,18 @@ export class CardService {
       ? (input.bankingSecondary as Prisma.InputJsonValue)
       : undefined;
 
+    const specialEffectConfigValue = input.specialEffectConfig === null
+      ? Prisma.DbNull
+      : input.specialEffectConfig !== undefined
+      ? (input.specialEffectConfig as Prisma.InputJsonValue)
+      : undefined;
+
+    const backgroundVideoConfigValue = input.backgroundVideoConfig === null
+      ? Prisma.DbNull
+      : input.backgroundVideoConfig !== undefined
+      ? (input.backgroundVideoConfig as Prisma.InputJsonValue)
+      : undefined;
+
     (input.data as any).events = input.events;
     (input.data as any).photos = input.photos;
 
@@ -510,6 +524,8 @@ export class CardService {
           bankingPrimary: bankingPrimaryValue,
           bankingSecondary: bankingSecondaryValue,
           ...(finalTelegramChatId !== undefined ? { telegramChatId: finalTelegramChatId } : {}),
+          ...(specialEffectConfigValue !== undefined ? { specialEffectConfig: specialEffectConfigValue } : {}),
+          ...(backgroundVideoConfigValue !== undefined ? { backgroundVideoConfig: backgroundVideoConfigValue } : {}),
           version: { increment: 1 },
         },
       });

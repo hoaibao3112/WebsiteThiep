@@ -6,6 +6,8 @@ const ALLOWED_MIME_MAP: Record<string, string[]> = {
   "image/webp": [".webp"],
   "audio/mpeg": [".mp3"],
   "audio/mp3": [".mp3"],
+  "video/mp4": [".mp4"],
+  "video/webm": [".webm"],
 };
 
 function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
@@ -15,6 +17,12 @@ function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
   if (mimetype === "image/webp") return buffer.length >= 12 && buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP";
   if (mimetype === "audio/mpeg" || mimetype === "audio/mp3") {
     return buffer.toString("ascii", 0, 3) === "ID3" || (buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0);
+  }
+  if (mimetype === "video/mp4") {
+    return buffer.length >= 8 && buffer.toString("ascii", 4, 8) === "ftyp";
+  }
+  if (mimetype === "video/webm") {
+    return buffer[0] === 0x1a && buffer[1] === 0x45 && buffer[2] === 0xdf && buffer[3] === 0xa3;
   }
   return false;
 }
@@ -53,10 +61,11 @@ export class MediaService {
     form.append("folder", folder);
     form.append("signature", signature);
 
+    const timeoutMs = mimetype.startsWith("video/") ? 60_000 : 15_000;
     const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
       method: "POST",
       body: form,
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
     if (!response.ok || !result.secure_url) {

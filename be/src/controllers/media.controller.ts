@@ -2,6 +2,7 @@ import { Response, NextFunction } from "express";
 import { ZodError } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { MediaService } from "../services/media.service";
+import { VideoEmbedService } from "../services/video-embed.service";
 
 export class MediaController {
   static async upload(
@@ -33,6 +34,30 @@ export class MediaController {
       return res.status(error.message?.includes("Cloudinary") ? 503 : 400).json({
         success: false,
         error: error.message || "Không thể tải lên file",
+      });
+    }
+  }
+
+  static async parseVideo(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { url } = req.body;
+      if (!url || typeof url !== "string") {
+        return res.status(400).json({ success: false, error: "Vui lòng cung cấp URL video" });
+      }
+
+      const parsed = VideoEmbedService.parseVideoUrl(url);
+      return res.status(200).json({
+        success: true,
+        data: parsed,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        error: error.message || "Không thể phân tích URL video",
       });
     }
   }

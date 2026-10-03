@@ -214,6 +214,10 @@ model Card {
   bankingPrimary   Json? // { bankCode, accountNumber, accountName, qrUrl }
   bankingSecondary Json? // { bankCode, accountNumber, accountName, qrUrl } (Dành riêng cho cô dâu nếu là cưới)
 
+  // Cấu hình nâng cao tiện ích
+  specialEffectConfig   Json? // Chi tiết hiệu ứng rơi: { effectType, density, speed, customColor, opacity, triggerMode, particleCount }
+  backgroundVideoConfig Json? // Video nền thiệp: { enabled, videoSource, videoUrl, videoId, posterUrl, displayMode, objectFit, opacity, overlayColor, loop, muted, playbackRate }
+
   // Cấu hình nhận thông báo riêng cho thiệp
   telegramChatId String? // ID Telegram nhận thông báo RSVP của thiệp này
 

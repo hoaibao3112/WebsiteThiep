@@ -35,7 +35,7 @@ import {
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // Max 10MB
+  limits: { fileSize: 50 * 1024 * 1024 }, // Max 50MB cho ảnh / video ngắn
 });
 
 const memoryUpload = multer({
@@ -64,12 +64,17 @@ apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthCon
 apiRouter.get("/user/wedding-profile", authGuard, AuthController.getWeddingProfile);
 apiRouter.put("/user/wedding-profile", authGuard, AuthController.updateWeddingProfile);
 
-// --- MEDIA UPLOAD ---
+// --- MEDIA UPLOAD & VIDEO PARSE ---
 apiRouter.post(
   "/media/upload",
   authGuard,
   upload.single("file"),
   MediaController.upload
+);
+apiRouter.post(
+  "/media/parse-video",
+  authGuard,
+  MediaController.parseVideo
 );
 
 // --- CARD ROUTES ---

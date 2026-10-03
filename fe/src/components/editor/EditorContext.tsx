@@ -1629,6 +1629,105 @@ export function EditorProvider<T extends object>({
         url: "https://maps.google.com",
         buttonLabel: "XEM CHỈ ĐƯỜNG",
       };
+    } else if (widgetType === "embed-video") {
+      w = 340;
+      h = 240;
+      initialConfig = {
+        title: "Video Kỷ Niệm",
+        showTitle: true,
+        videoSource: "youtube",
+        videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        videoId: "dQw4w9WgXcQ",
+        autoPlay: false,
+        muted: true,
+        loop: false,
+        showControls: true,
+        aspectRatio: "16:9",
+        borderRadius: 12,
+      };
+    } else if (widgetType === "carousel") {
+      w = 340;
+      h = 280;
+      initialConfig = {
+        title: "Khoảnh Khắc Đáng Nhớ",
+        showTitle: true,
+        slides: [
+          { id: "slide-1", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80", caption: "Ngày đầu gặp gỡ" },
+          { id: "slide-2", imageUrl: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80", caption: "Hành trình yêu thương" },
+        ],
+        autoPlay: true,
+        autoPlayInterval: 4,
+        loop: true,
+        showArrows: true,
+        showDots: true,
+        transitionEffect: "slide",
+        aspectRatio: "16:9",
+        borderRadius: 12,
+      };
+    } else if (widgetType === "background-video") {
+      w = 360;
+      h = 260;
+      initialConfig = {
+        enabled: true,
+        videoSource: "upload",
+        videoUrl: "",
+        displayMode: "hero-section",
+        objectFit: "cover",
+        opacity: 0.6,
+        fallbackColor: "#000000",
+        autoPlay: true,
+        loop: true,
+        muted: true,
+      };
+    } else if (widgetType === "calendar") {
+      w = 320;
+      h = 280;
+      initialConfig = {
+        title: "Save The Date",
+        showTitle: true,
+        eventDate: "2026-12-29T09:00:00+07:00",
+        calendarStyle: "full-month",
+        showLunarDate: true,
+        showDayOfWeek: true,
+        showAddToCalendar: true,
+        highlightColor: "#D4AF37",
+      };
+    } else if (widgetType === "countdown") {
+      w = 320;
+      h = 160;
+      initialConfig = {
+        title: "Đếm Ngược Ngày Trọng Đại",
+        showTitle: true,
+        eventDate: "2026-12-29T09:00:00+07:00",
+        countdownStyle: "elegant-box",
+        showSeconds: true,
+        showLabels: true,
+        endMessage: "🎉 Hôm nay là ngày trọng đại!",
+        endAction: "show-message",
+      };
+    } else if (widgetType === "map") {
+      w = 340;
+      h = 260;
+      initialConfig = {
+        title: "Địa Điểm Tổ Chức",
+        showTitle: true,
+        mapDisplayMode: "embed-iframe",
+        showDirectionButton: true,
+        directionButtonText: "Xem chỉ đường",
+        mapZoom: 15,
+        mapHeight: 220,
+      };
+    } else if (widgetType === "gift") {
+      w = 300;
+      h = 180;
+      initialConfig = {
+        title: "Hộp Mừng Cưới",
+        showTitle: true,
+        displayMode: "popup-modal",
+        thankYouMessage: "Xin chân thành cảm ơn tình cảm của quý khách! 💝",
+        showCopyButton: true,
+        showBankLogo: true,
+      };
     }
 
     const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);

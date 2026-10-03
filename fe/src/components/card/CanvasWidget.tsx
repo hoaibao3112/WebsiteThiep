@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CalendarDays, Gift, Heart, Mail, MapPin, Phone, UserCheck } from "lucide-react";
+import { CalendarDays, Gift, Heart, Mail, MapPin, Phone, UserCheck, Video, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CanvasElement } from "@/types/canvas.types";
 import { readRecord, safeCanvasLink } from "@/lib/editor/canvas-presentation";
 
@@ -36,10 +36,46 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
     case "countdown": {
       const remaining = Number.isFinite(eventTime) && now !== null ? Math.max(0, Math.floor((eventTime - now) / 1000)) : 0;
       const values = [Math.floor(remaining / 86400), Math.floor(remaining / 3600) % 24, Math.floor(remaining / 60) % 60, remaining % 60];
-      return <div className="flex size-full flex-col items-center justify-center gap-3">{heading}<div className="grid w-full grid-cols-4 gap-2">{values.map((value, index) => <div key={index} className="rounded-lg bg-stone-900 px-1 py-3 text-white"><p className="text-xl tabular-nums">{Number.isFinite(eventTime) ? String(value).padStart(2, "0") : "—"}</p><p className="text-xs">{["ngày", "giờ", "phút", "giây"][index]}</p></div>)}</div>{!Number.isFinite(eventTime) && <p className="text-xs">Chọn ngày tổ chức trong thuộc tính</p>}</div>;
+      const isEnded = Number.isFinite(eventTime) && remaining === 0 && now !== null;
+      if (isEnded && config.endMessage) {
+        return (
+          <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-amber-50/80 rounded-2xl border border-amber-200">
+            {heading}
+            <p className="text-sm font-bold text-amber-900">{config.endMessage}</p>
+          </div>
+        );
+      }
+      return (
+        <div className="flex size-full flex-col items-center justify-center gap-2 p-2">
+          {heading}
+          <div className="grid w-full grid-cols-4 gap-1.5">
+            {values.map((value, index) => (
+              <div key={index} className="rounded-xl bg-stone-900/90 py-2 px-1 text-center text-white shadow-xs">
+                <p className="text-lg font-bold tabular-nums leading-none">{Number.isFinite(eventTime) ? String(value).padStart(2, "0") : "—"}</p>
+                <p className="text-[10px] text-stone-300 mt-0.5">{["ngày", "giờ", "phút", "giây"][index]}</p>
+              </div>
+            ))}
+          </div>
+          {!Number.isFinite(eventTime) && <p className="text-xs text-stone-400">Chọn ngày tổ chức trong thuộc tính</p>}
+        </div>
+      );
     }
     case "calendar":
-      return <div className="flex size-full flex-col items-center justify-center gap-3">{heading}<CalendarDays className="size-7" /><p className="text-xl">{Number.isFinite(eventTime) ? new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Ho_Chi_Minh" }).format(eventTime) : "Chọn ngày tổ chức"}</p>{text}</div>;
+      return (
+        <div className="flex size-full flex-col items-center justify-center gap-2 p-3 text-center bg-white/90 rounded-2xl border border-stone-200/80 shadow-xs">
+          {heading}
+          <div className="flex items-center gap-2 text-amber-900">
+            <CalendarDays className="size-6" />
+            <span className="text-base font-bold">
+              {Number.isFinite(eventTime) ? new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Ho_Chi_Minh" }).format(eventTime) : "Chọn ngày tổ chức"}
+            </span>
+          </div>
+          {config.lunarDate && (
+            <p className="text-xs text-stone-500 italic">{config.lunarDate}</p>
+          )}
+          {text}
+        </div>
+      );
     case "rsvp":
       return <div className="flex size-full flex-col items-center justify-center gap-3 text-center">{heading}{text}<button type="button" className={buttonClass} onClick={onRsvp}><UserCheck className="size-4" />{config.buttonLabel || "Gửi xác nhận"}</button></div>;
     case "gift":
@@ -339,7 +375,156 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
         </div>
       );
     }
+    case "embed-video":
+      return <EmbedVideoWidget config={config} heading={heading} />;
+    case "carousel":
+      return <CarouselWidget config={config} heading={heading} />;
+    case "background-video":
+      return <BackgroundVideoWidget config={config} />;
     default:
       return <p className="text-sm">{title || "Tiện ích"}</p>;
   }
+}
+
+function CarouselWidget({ config, heading }: { config: any; heading: React.ReactNode }) {
+  const slides = Array.isArray(config.slides) && config.slides.length > 0
+    ? config.slides
+    : [
+        { id: "1", imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80", caption: "Khoảnh khắc đáng nhớ" }
+      ];
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (config.autoPlay === false || slides.length <= 1) return;
+    const interval = (config.autoPlayInterval || 4) * 1000;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, interval);
+    return () => clearInterval(timer);
+  }, [config.autoPlay, config.autoPlayInterval, slides.length]);
+
+  const activeSlide = slides[current] || slides[0];
+
+  return (
+    <div className="relative size-full flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-stone-900/5 shadow-xs select-none">
+      {heading && <div className="absolute top-2 left-3 z-20">{heading}</div>}
+      <div className="relative size-full overflow-hidden">
+        <img
+          src={activeSlide.imageUrl}
+          alt={activeSlide.caption || "Ảnh cưới"}
+          className="size-full object-cover transition-opacity duration-500"
+        />
+        {activeSlide.caption && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-2.5 pt-6 text-center text-xs text-white">
+            {activeSlide.caption}
+          </div>
+        )}
+      </div>
+      {slides.length > 1 && config.showArrows !== false && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setCurrent((prev) => (prev - 1 + slides.length) % slides.length); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 size-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 z-20 cursor-pointer"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setCurrent((prev) => (prev + 1) % slides.length); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 size-7 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 z-20 cursor-pointer"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </>
+      )}
+      {slides.length > 1 && config.showDots !== false && (
+        <div className="absolute bottom-1.5 inset-x-0 flex justify-center gap-1.5 z-20">
+          {slides.map((_: any, idx: number) => (
+            <span
+              key={idx}
+              className={`size-1.5 rounded-full transition-all ${idx === current ? "bg-white w-4" : "bg-white/50"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmbedVideoWidget({ config, heading }: { config: any; heading: React.ReactNode }) {
+  const videoUrl = config.videoUrl || "";
+  const videoSource = config.videoSource || "youtube";
+  const videoId = config.videoId || "";
+
+  let embedSrc = "";
+  if (videoSource === "youtube") {
+    const id = videoId || (videoUrl.match(/(?:watch\?v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1]);
+    if (id) {
+      embedSrc = `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1${config.autoPlay ? "&autoplay=1" : ""}${config.muted !== false ? "&mute=1" : ""}${config.loop ? `&loop=1&playlist=${id}` : ""}`;
+    }
+  } else if (videoSource === "vimeo") {
+    const id = videoId || (videoUrl.match(/vimeo\.com\/(\d+)/)?.[1]);
+    if (id) {
+      embedSrc = `https://player.vimeo.com/video/${id}?badge=0${config.autoPlay ? "&autoplay=1" : ""}${config.muted !== false ? "&muted=1" : ""}`;
+    }
+  }
+
+  return (
+    <div className="relative size-full flex flex-col items-center justify-center overflow-hidden rounded-2xl bg-stone-900 shadow-xs">
+      {heading && <div className="absolute top-2 left-3 z-10">{heading}</div>}
+      {embedSrc ? (
+        <iframe
+          src={embedSrc}
+          title={config.title || "Video kỷ niệm"}
+          className="size-full border-0 rounded-2xl"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : videoUrl && (videoSource === "direct-url" || videoSource === "upload") ? (
+        <video
+          src={videoUrl}
+          controls={config.showControls !== false}
+          autoPlay={Boolean(config.autoPlay)}
+          muted={Boolean(config.muted ?? true)}
+          loop={Boolean(config.loop)}
+          playsInline
+          className="size-full object-cover rounded-2xl"
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center gap-2 text-stone-400 p-4 text-center">
+          <div className="size-12 rounded-full bg-white/10 flex items-center justify-center text-white">
+            <Video className="size-6" />
+          </div>
+          <span className="text-xs text-stone-300 font-medium">{config.title || "Nhúng Video"}</span>
+          <span className="text-[10px] text-stone-400">Nhập link YouTube / TikTok trong bảng thuộc tính</span>
+        </div>
+      )}
+      {config.caption && (
+        <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center text-xs text-white line-clamp-1">
+          {config.caption}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BackgroundVideoWidget({ config }: { config: any }) {
+  const isEnabled = config.enabled !== false;
+  return (
+    <div className="relative size-full flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-amber-600/30 bg-gradient-to-br from-stone-900 via-stone-800 to-amber-950 p-4 text-center text-white shadow-xs">
+      <div className="size-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 mb-2">
+        <Video className="size-5" />
+      </div>
+      <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300 mb-1">
+        Video Nền {config.displayMode === "fullscreen" ? "Toàn Trang" : "Hero Section"}
+      </h4>
+      <p className="text-[10px] text-stone-300 line-clamp-2 max-w-[240px]">
+        {config.videoUrl ? `Đã gắn: ${config.videoUrl.slice(0, 40)}...` : "Chưa gắn video nền. Tùy chỉnh URL trong bảng thuộc tính."}
+      </p>
+      <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[9px] font-medium text-amber-300">
+        ● {isEnabled ? "Đang bật" : "Đang tắt"} | Độ mờ: {Math.round((config.opacity ?? 0.6) * 100)}%
+      </span>
+    </div>
+  );
 }

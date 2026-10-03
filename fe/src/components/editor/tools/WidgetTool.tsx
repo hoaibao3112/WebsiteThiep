@@ -17,6 +17,9 @@ import {
   Compass,
   ScrollText,
   Sparkles,
+  Video,
+  GalleryHorizontalEnd,
+  MonitorPlay,
 } from "lucide-react";
 import { useEditor } from "../EditorContext";
 import type { WidgetType } from "@/types/canvas.types";
@@ -45,6 +48,9 @@ const widgets: WidgetItem[] = [
   { type: "contact", label: "Số điện thoại liên hệ", desc: "Gọi trực tiếp cho gia đình", icon: Phone },
   { type: "envelope", label: "Hiệu ứng phong bì thư", desc: "Mở bao thư tương tác", icon: Mail },
   { type: "guest-name", label: "Tên khách mời", desc: "Cá nhân hóa theo từng khách", icon: UserRound },
+  { type: "embed-video", label: "Nhúng Video", desc: "YouTube, Vimeo, TikTok", icon: Video },
+  { type: "carousel", label: "Carousel ảnh", desc: "Slider vuốt ngang hiệu ứng đẹp", icon: GalleryHorizontalEnd },
+  { type: "background-video", label: "Video Nền", desc: "Video nền toàn trang mờ ảo", icon: MonitorPlay },
 ];
 
 export function WidgetTool() {
