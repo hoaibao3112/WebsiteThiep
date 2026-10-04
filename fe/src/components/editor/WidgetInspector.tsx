@@ -1,8 +1,23 @@
 "use client";
 
-import { Plus, Trash2, Video, Sparkles, RefreshCw } from "lucide-react";
+import React, { useRef, useState } from "react";
+import {
+  Plus,
+  Trash2,
+  Video,
+  Sparkles,
+  RefreshCw,
+  UploadCloud,
+  Play,
+  RotateCcw,
+  Loader2,
+  ArrowUp,
+  ArrowDown,
+  Images,
+} from "lucide-react";
 import type { CanvasElement, CanvasWidgetConfig } from "@/types/canvas.types";
 import { useEditor } from "./EditorContext";
+import { uploadSingleImage } from "@/lib/image-upload";
 
 export function WidgetInspector({ element }: { element: CanvasElement }) {
   const { updateCanvasElement } = useEditor();
@@ -13,15 +28,35 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
   const inputClass =
     "w-full rounded-md border border-stone-200 bg-white px-2.5 py-1.5 text-xs outline-stone-500 focus:border-amber-500";
 
+  const [isUploadingSlides, setIsUploadingSlides] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+  const [isUploadingVideoCover, setIsUploadingVideoCover] = useState(false);
+  const multiFileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoCoverInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [replacingSlideIdx, setReplacingSlideIdx] = useState<number | null>(null);
+
+  const extractYouTubeId = (url: string) => {
+    if (!url) return null;
+    const trimmed = url.trim();
+    const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return shortMatch[1];
+    const pathMatch = trimmed.match(/youtube\.com\/(?:shorts|embed|v)\/([a-zA-Z0-9_-]{11})/);
+    if (pathMatch) return pathMatch[1];
+    const vMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (vMatch) return vMatch[1];
+    return null;
+  };
+
   const handleExtractVideo = (url: string) => {
     const trimmed = url.trim();
-    const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if (ytMatch?.[1]) {
+    const ytId = extractYouTubeId(trimmed);
+    if (ytId) {
       update({
         videoSource: "youtube",
-        videoId: ytMatch[1],
+        videoId: ytId,
         videoUrl: trimmed,
-        thumbnailUrl: `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`,
+        thumbnailUrl: `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
       });
       return;
     }
@@ -53,6 +88,70 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
     }
     update({ videoUrl: trimmed });
   };
+
+  const handleCarouselMultiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setIsUploadingSlides(true);
+    setUploadProgress(`Đang tải 1/${files.length} ảnh...`);
+    try {
+      const newSlides = [...(config.slides || [])];
+      for (let i = 0; i < files.length; i++) {
+        setUploadProgress(`Đang xử lý ảnh ${i + 1}/${files.length}...`);
+        const uploadedUrl = await uploadSingleImage(files[i]);
+        newSlides.push({
+          id: `slide-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 5)}`,
+          imageUrl: uploadedUrl,
+          caption: "",
+          sortOrder: newSlides.length,
+        });
+      }
+      update({ slides: newSlides });
+    } catch (err) {
+      alert("Tải ảnh thất bại: " + (err instanceof Error ? err.message : "Đã có lỗi xảy ra"));
+    } finally {
+      setIsUploadingSlides(false);
+      setUploadProgress("");
+      e.target.value = "";
+    }
+  };
+
+  const handleReplaceSlide = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || replacingSlideIdx === null) return;
+    setIsUploadingSlides(true);
+    try {
+      const uploadedUrl = await uploadSingleImage(file);
+      const updated = [...(config.slides || [])];
+      if (updated[replacingSlideIdx]) {
+        updated[replacingSlideIdx] = { ...updated[replacingSlideIdx], imageUrl: uploadedUrl };
+        update({ slides: updated });
+      }
+    } catch (err) {
+      alert("Đổi ảnh thất bại");
+    } finally {
+      setIsUploadingSlides(false);
+      setReplacingSlideIdx(null);
+      e.target.value = "";
+    }
+  };
+
+  const handleUploadVideoCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingVideoCover(true);
+    try {
+      const uploadedUrl = await uploadSingleImage(file);
+      update({ thumbnailUrl: uploadedUrl });
+    } catch (err) {
+      alert("Tải ảnh bìa thất bại");
+    } finally {
+      setIsUploadingVideoCover(false);
+      e.target.value = "";
+    }
+  };
+
+
 
   return (
     <fieldset disabled={element.isLocked} className="flex flex-col gap-3 border-b border-stone-200 pb-4 disabled:opacity-60">
@@ -241,7 +340,7 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
 
       {/* ── CÁC TRƯỜNG DÀNH CHO NHÚNG VIDEO ── */}
       {element.widgetType === "embed-video" && (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <label className="flex flex-col gap-1 text-xs text-stone-700">
             Nguồn video
             <select
@@ -257,17 +356,99 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
           </label>
 
           <label className="flex flex-col gap-1 text-xs text-stone-700">
-            URL Video
-            <div className="flex gap-1.5">
-              <input
-                className={inputClass}
-                value={config.videoUrl ?? ""}
-                placeholder="https://www.youtube.com/watch?v=..."
-                onChange={(e) => handleExtractVideo(e.target.value)}
-              />
-            </div>
-            <span className="text-[10px] text-stone-400">Tự động nhận diện YouTube, Vimeo, TikTok.</span>
+            URL Video YouTube / Video
+            <input
+              className={inputClass}
+              value={config.videoUrl ?? ""}
+              placeholder="https://www.youtube.com/watch?v=..."
+              onChange={(e) => handleExtractVideo(e.target.value)}
+            />
+            <span className="text-[10px] text-stone-400">
+              Dán link YouTube (tự động nhận diện video, shorts và ảnh bìa)
+            </span>
           </label>
+
+          {/* ẢNH BÌA VIDEO (YOUTUBE THUMBNAIL) PREVIEW */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-2.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-amber-950 uppercase flex items-center gap-1.5">
+                <Video className="size-3.5 text-amber-700" />
+                Ảnh Bìa Video (Thumbnail)
+              </span>
+              {config.videoId && config.videoSource === "youtube" && (
+                <span className="text-[9px] font-semibold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                  YouTube: {config.videoId}
+                </span>
+              )}
+            </div>
+
+            {config.thumbnailUrl ? (
+              <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-amber-300 shadow-inner group">
+                <img
+                  src={config.thumbnailUrl}
+                  alt="Ảnh bìa video"
+                  className="size-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/35 flex items-center justify-center opacity-85 group-hover:opacity-100 transition-opacity">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg">
+                    <Play className="size-5 fill-white ml-0.5" />
+                  </div>
+                </div>
+                <div className="absolute bottom-1 right-1 bg-black/70 px-1.5 py-0.5 rounded text-[9px] text-white font-medium">
+                  Ảnh bìa hiển thị trên thiệp
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4 px-2 border-2 border-dashed border-amber-200 rounded-lg text-center text-stone-400 bg-white/70">
+                <Video className="size-6 text-stone-300 mb-1" />
+                <span className="text-xs text-stone-600 font-medium">Chưa có ảnh bìa</span>
+                <span className="text-[10px] text-stone-400">Dán link YouTube ở trên để tự động hiển thị ảnh bìa</span>
+              </div>
+            )}
+
+            {/* Upload or Reset cover */}
+            <div className="flex items-center gap-2 pt-0.5">
+              <input
+                ref={videoCoverInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUploadVideoCover}
+              />
+              <button
+                type="button"
+                disabled={isUploadingVideoCover}
+                onClick={() => videoCoverInputRef.current?.click()}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-white border border-stone-200 px-2.5 py-1.5 text-[11px] font-semibold text-stone-700 shadow-2xs hover:bg-stone-50 active:scale-98 transition cursor-pointer disabled:opacity-60"
+              >
+                {isUploadingVideoCover ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin text-amber-600" />
+                    <span>Đang tải...</span>
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="size-3.5 text-amber-600" />
+                    <span>Đổi ảnh bìa từ máy</span>
+                  </>
+                )}
+              </button>
+
+              {config.videoId && config.videoSource === "youtube" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    update({ thumbnailUrl: `https://i.ytimg.com/vi/${config.videoId}/hqdefault.jpg` });
+                  }}
+                  title="Khôi phục ảnh bìa gốc của video YouTube"
+                  className="inline-flex items-center justify-center gap-1 rounded-lg bg-stone-100 border border-stone-200 px-2 py-1.5 text-[10px] font-medium text-stone-600 hover:bg-stone-200 transition cursor-pointer"
+                >
+                  <RotateCcw className="size-3" />
+                  <span>Bìa gốc</span>
+                </button>
+              )}
+            </div>
+          </div>
 
           <label className="flex flex-col gap-1 text-xs text-stone-700">
             Tiêu đề video
@@ -314,87 +495,178 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
         </div>
       )}
 
-      {/* ── CÁC TRƯỜNG DÀNH CHO CAROUSEL ── */}
+      {/* ── CÁC TRƯỜNG DÀNH CHO CAROUSEL (TẢI ẢNH TỪ MÁY) ── */}
       {element.widgetType === "carousel" && (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <label className="flex flex-col gap-1 text-xs text-stone-700">
             Tiêu đề Carousel
             <input className={inputClass} value={config.title ?? ""} placeholder="Khoảnh Khắc Đáng Nhớ" onChange={(e) => update({ title: e.target.value })} />
           </label>
 
-          <div className="space-y-2">
+          {/* Hidden file inputs */}
+          <input
+            ref={multiFileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={handleCarouselMultiUpload}
+          />
+          <input
+            ref={replaceFileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleReplaceSlide}
+          />
+
+          {/* Upload Button */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-stone-700">Danh sách ảnh ({config.slides?.length || 0})</span>
-              <button
-                type="button"
-                onClick={() => {
-                  const currentSlides = config.slides || [];
-                  const newSlide = {
-                    id: `slide-${Date.now()}`,
-                    imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80",
-                    caption: `Ảnh ${currentSlides.length + 1}`,
-                    sortOrder: currentSlides.length,
-                  };
-                  update({ slides: [...currentSlides, newSlide] });
-                }}
-                className="flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-900 cursor-pointer"
-              >
-                <Plus className="size-3.5" /> Thêm ảnh
-              </button>
+              <span className="text-xs font-bold text-amber-950">
+                Ảnh Trong Slider ({config.slides?.length || 0})
+              </span>
+              {uploadProgress && (
+                <span className="text-[10px] text-amber-700 font-semibold animate-pulse">
+                  {uploadProgress}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <button
+              type="button"
+              disabled={isUploadingSlides}
+              onClick={() => multiFileInputRef.current?.click()}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 px-3.5 py-2.5 text-xs font-bold text-white shadow-xs hover:from-amber-700 hover:to-amber-800 active:scale-98 transition cursor-pointer disabled:opacity-60"
+            >
+              {isUploadingSlides ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>{uploadProgress || "Đang tải ảnh..."}</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="size-4" />
+                  <span>Tải ảnh từ máy / điện thoại (Chọn nhiều ảnh)</span>
+                </>
+              )}
+            </button>
+            <p className="text-[10px] text-stone-500 text-center">
+              Hỗ trợ chọn cùng lúc nhiều ảnh JPG, PNG, WebP. Tự động nén tối ưu.
+            </p>
+          </div>
+
+          {/* Slides List */}
+          {(!config.slides || config.slides.length === 0) ? (
+            <div
+              onClick={() => multiFileInputRef.current?.click()}
+              className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-stone-200 rounded-xl bg-stone-50/60 text-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition group"
+            >
+              <UploadCloud className="size-8 text-stone-400 group-hover:text-amber-600 mb-1 transition-colors" />
+              <span className="text-xs font-semibold text-stone-700 group-hover:text-amber-900">
+                Chưa có ảnh nào trong Carousel
+              </span>
+              <span className="text-[10px] text-stone-400 mt-0.5">
+                Nhấn vào đây để tải ảnh cưới từ máy của bạn
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
               {(config.slides || []).map((slide, idx) => (
-                <div key={slide.id || idx} className="flex items-center gap-2 rounded-lg border border-stone-200 p-2 bg-stone-50/50">
-                  <img src={slide.imageUrl} alt="" className="size-10 rounded object-cover shrink-0" />
+                <div key={slide.id || idx} className="flex items-center gap-2.5 rounded-xl border border-stone-200 p-2 bg-white shadow-2xs hover:border-stone-300 transition">
+                  <div className="relative size-12 shrink-0 rounded-lg overflow-hidden border border-stone-200 bg-stone-100">
+                    <img src={slide.imageUrl} alt="" className="size-full object-cover" />
+                  </div>
+
                   <div className="flex-1 space-y-1 min-w-0">
                     <input
                       className={inputClass}
-                      value={slide.imageUrl}
-                      placeholder="URL ảnh"
-                      onChange={(e) => {
-                        const updated = [...(config.slides || [])];
-                        updated[idx] = { ...updated[idx], imageUrl: e.target.value };
-                        update({ slides: updated });
-                      }}
-                    />
-                    <input
-                      className={inputClass}
                       value={slide.caption || ""}
-                      placeholder="Chú thích ảnh"
+                      placeholder="Chú thích ảnh (tùy chọn)"
                       onChange={(e) => {
                         const updated = [...(config.slides || [])];
                         updated[idx] = { ...updated[idx], caption: e.target.value };
                         update({ slides: updated });
                       }}
                     />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReplacingSlideIdx(idx);
+                          replaceFileInputRef.current?.click();
+                        }}
+                        className="text-[10px] text-amber-700 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <RefreshCw className="size-2.5" /> Đổi ảnh
+                      </button>
+                      <span className="text-[10px] text-stone-300">|</span>
+                      <span className="text-[10px] text-stone-400">Ảnh #{idx + 1}</span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const updated = (config.slides || []).filter((_, i) => i !== idx);
-                      update({ slides: updated });
-                    }}
-                    className="text-stone-400 hover:text-red-500 p-1 cursor-pointer"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+
+                  {/* Reorder and Delete buttons */}
+                  <div className="flex flex-col items-center gap-0.5 shrink-0">
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => {
+                        if (idx === 0) return;
+                        const updated = [...(config.slides || [])];
+                        const temp = updated[idx - 1];
+                        updated[idx - 1] = updated[idx];
+                        updated[idx] = temp;
+                        update({ slides: updated });
+                      }}
+                      className="text-stone-400 hover:text-stone-700 disabled:opacity-20 cursor-pointer p-0.5"
+                      title="Lên trên"
+                    >
+                      <ArrowUp className="size-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === (config.slides?.length || 0) - 1}
+                      onClick={() => {
+                        const updated = [...(config.slides || [])];
+                        if (idx >= updated.length - 1) return;
+                        const temp = updated[idx + 1];
+                        updated[idx + 1] = updated[idx];
+                        updated[idx] = temp;
+                        update({ slides: updated });
+                      }}
+                      className="text-stone-400 hover:text-stone-700 disabled:opacity-20 cursor-pointer p-0.5"
+                      title="Xuống dưới"
+                    >
+                      <ArrowDown className="size-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = (config.slides || []).filter((_, i) => i !== idx);
+                        update({ slides: updated });
+                      }}
+                      className="text-stone-400 hover:text-rose-600 cursor-pointer p-0.5"
+                      title="Xóa ảnh"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-2 gap-2 text-xs pt-1">
             <label className="flex items-center gap-1.5 cursor-pointer">
               <input type="checkbox" checked={config.autoPlay ?? true} onChange={(e) => update({ autoPlay: e.target.checked })} />
               Tự động chuyển
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={config.showArrows !== false} onChange={(e) => update({ showArrows: e.target.checked })} />
+              <input type="checkbox" checked={config.showArrows ?? true} onChange={(e) => update({ showArrows: e.target.checked })} />
               Nút mũi tên
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" checked={config.showDots !== false} onChange={(e) => update({ showDots: e.target.checked })} />
+              <input type="checkbox" checked={config.showDots ?? true} onChange={(e) => update({ showDots: e.target.checked })} />
               Chấm phân trang
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer">
@@ -408,10 +680,10 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
             <input
               type="number"
               min={1}
-              max={30}
+              max={20}
               className={inputClass}
               value={config.autoPlayInterval ?? 4}
-              onChange={(e) => update({ autoPlayInterval: Number(e.target.value) || 4 })}
+              onChange={(e) => update({ autoPlayInterval: Number(e.target.value) })}
             />
           </label>
         </div>

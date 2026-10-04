@@ -56,6 +56,21 @@ export class VideoEmbedService {
     }
 
     // --- YouTube ---
+    try {
+      const u = new URL(trimmed);
+      if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
+        const videoId = u.searchParams.get("v")!;
+        if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+          return {
+            source: "youtube",
+            videoId,
+            embedUrl: `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`,
+            thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+          };
+        }
+      }
+    } catch {}
+
     for (const pattern of YOUTUBE_PATTERNS) {
       const match = trimmed.match(pattern);
       if (match?.[1]) {
@@ -64,7 +79,7 @@ export class VideoEmbedService {
           source: "youtube",
           videoId,
           embedUrl: `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`,
-          thumbnailUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
         };
       }
     }

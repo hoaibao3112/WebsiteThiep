@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CalendarDays, Gift, Heart, Mail, MapPin, Phone, UserCheck, Video, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, Gift, Heart, Mail, MapPin, Phone, UserCheck, Video, ChevronLeft, ChevronRight, Play, GalleryHorizontalEnd } from "lucide-react";
 import type { CanvasElement } from "@/types/canvas.types";
 import { readRecord, safeCanvasLink } from "@/lib/editor/canvas-presentation";
 import { ContactWidget } from "./widgets/ContactWidget";
@@ -468,16 +468,67 @@ function EmbedVideoWidget({ config, heading }: { config: any; heading: React.Rea
   const videoId = config.videoId || "";
 
   let embedSrc = "";
+  let ytId = "";
   if (videoSource === "youtube") {
-    const id = videoId || (videoUrl.match(/(?:watch\?v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/)?.[1]);
-    if (id) {
-      embedSrc = `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1${config.autoPlay ? "&autoplay=1" : ""}${config.muted !== false ? "&mute=1" : ""}${config.loop ? `&loop=1&playlist=${id}` : ""}`;
+    ytId = videoId || (videoUrl.match(/(?:youtu\.be\/|(?:watch\?.*v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/)?.[1]) || "";
+    if (ytId) {
+      embedSrc = `https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&autoplay=1${config.muted ? "&mute=1" : ""}${config.loop ? `&loop=1&playlist=${ytId}` : ""}`;
     }
   } else if (videoSource === "vimeo") {
     const id = videoId || (videoUrl.match(/vimeo\.com\/(\d+)/)?.[1]);
     if (id) {
-      embedSrc = `https://player.vimeo.com/video/${id}?badge=0${config.autoPlay ? "&autoplay=1" : ""}${config.muted !== false ? "&muted=1" : ""}`;
+      embedSrc = `https://player.vimeo.com/video/${id}?badge=0&autoplay=1${config.muted ? "&muted=1" : ""}`;
     }
+  }
+
+  // Determine thumbnail
+  const thumbUrl = config.thumbnailUrl || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : "");
+  const [isPlaying, setIsPlaying] = useState(Boolean(config.autoPlay));
+
+  if (!videoUrl && !embedSrc) {
+    return (
+      <div className="flex size-full flex-col items-center justify-center gap-2 text-stone-400 p-4 text-center bg-stone-900 rounded-2xl">
+        <div className="size-12 rounded-full bg-white/10 flex items-center justify-center text-white">
+          <Video className="size-6" />
+        </div>
+        <span className="text-xs text-stone-300 font-medium">{config.title || "Nhúng Video"}</span>
+        <span className="text-[10px] text-stone-400">Dán link YouTube trong bảng thuộc tính để hiển thị ảnh bìa</span>
+      </div>
+    );
+  }
+
+  // When not playing, show thumbnail with play button
+  if (!isPlaying && (thumbUrl || embedSrc)) {
+    return (
+      <div
+        className="relative size-full flex items-center justify-center overflow-hidden rounded-2xl bg-stone-950 group cursor-pointer shadow-xs select-none"
+        onClick={() => setIsPlaying(true)}
+      >
+        {thumbUrl ? (
+          <img
+            src={thumbUrl}
+            alt={config.title || "Ảnh bìa video YouTube"}
+            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="size-full bg-gradient-to-br from-stone-900 via-stone-800 to-black" />
+        )}
+        <div className="absolute inset-0 bg-black/30 transition-opacity group-hover:bg-black/20" />
+
+        {/* YouTube style Red Play Button */}
+        <div className="absolute flex size-14 items-center justify-center rounded-2xl bg-[#FF0000] text-white shadow-2xl transition-all duration-300 group-hover:scale-115 group-hover:shadow-red-500/40">
+          <Play className="size-7 fill-white ml-0.5" />
+        </div>
+
+        {heading && <div className="absolute top-2 left-3 z-10">{heading}</div>}
+
+        {config.caption && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2.5 pt-6 text-center text-xs text-white">
+            {config.caption}
+          </div>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -495,21 +546,13 @@ function EmbedVideoWidget({ config, heading }: { config: any; heading: React.Rea
         <video
           src={videoUrl}
           controls={config.showControls !== false}
-          autoPlay={Boolean(config.autoPlay)}
+          autoPlay
           muted={Boolean(config.muted ?? true)}
           loop={Boolean(config.loop)}
           playsInline
           className="size-full object-cover rounded-2xl"
         />
-      ) : (
-        <div className="flex flex-col items-center justify-center gap-2 text-stone-400 p-4 text-center">
-          <div className="size-12 rounded-full bg-white/10 flex items-center justify-center text-white">
-            <Video className="size-6" />
-          </div>
-          <span className="text-xs text-stone-300 font-medium">{config.title || "Nhúng Video"}</span>
-          <span className="text-[10px] text-stone-400">Nhập link YouTube / TikTok trong bảng thuộc tính</span>
-        </div>
-      )}
+      ) : null}
       {config.caption && (
         <div className="absolute inset-x-0 bottom-0 bg-black/60 p-2 text-center text-xs text-white line-clamp-1">
           {config.caption}
