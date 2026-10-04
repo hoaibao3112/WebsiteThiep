@@ -1797,7 +1797,8 @@ export function EditorProvider<T extends object>({
           { id: "f-1", type: "text", label: "Họ và tên của bạn", placeholder: "Nhập họ tên...", required: true, sortOrder: 0 },
           { id: "f-2", type: "phone", label: "Số điện thoại liên hệ", placeholder: "09xxxxxxxx", required: true, sortOrder: 1 },
           { id: "f-3", type: "radio", label: "Bạn cần xe đưa đón không?", options: ["Có, tôi cần xe", "Không, tôi tự di chuyển"], required: false, sortOrder: 2 },
-          { id: "f-4", type: "textarea", label: "Ghi chú thêm về món ăn hoặc chỗ ngồi", placeholder: "Ăn chay, dị ứng thực phẩm...", required: false, sortOrder: 3 },
+          { id: "f-4", type: "signature", label: "Chữ ký xác nhận", placeholder: "Nhấn để ký tên", required: false, sortOrder: 3 },
+          { id: "f-5", type: "textarea", label: "Ghi chú thêm về món ăn hoặc chỗ ngồi", placeholder: "Ăn chay, dị ứng thực phẩm...", required: false, sortOrder: 4 },
         ],
       };
     } else if (widgetType === "guest-signature") {

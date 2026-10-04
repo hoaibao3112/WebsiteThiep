@@ -23,8 +23,10 @@ import {
   SlidersHorizontal,
   Tv,
   BookOpen,
+  ExternalLink,
 } from "lucide-react";
 import { Album3DManagerModal } from "../card/Album3DManagerModal";
+import { LiveCardPreviewModal } from "./LiveCardPreviewModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { TextTool } from "./tools/TextTool";
 import { ImageTool } from "./tools/ImageTool";
@@ -60,7 +62,64 @@ export function VisualCardEditor<T extends object>({
   showTopBar = true,
   onSwitchToForm,
 }: VisualCardEditorProps<T>) {
+  return (
+    <EditorProvider
+      templateSlug={templateSlug}
+      draft={draft}
+      isVip={isVip}
+      onDraftChange={onDraftChange}
+      onSave={onSave}
+    >
+      <VisualCardEditorInner
+        templateSlug={templateSlug}
+        backUrl={backUrl}
+        previewUrl={previewUrl}
+        isSaving={isSaving}
+        showTopBar={showTopBar}
+        onSwitchToForm={onSwitchToForm}
+      >
+        {children}
+      </VisualCardEditorInner>
+    </EditorProvider>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────
+// INNER EDITOR WORKSPACE (HAS ACCESS TO LIVE UN-SAVED EDITOR CONTEXT)
+// ────────────────────────────────────────────────────────────────
+
+interface VisualCardEditorInnerProps {
+  templateSlug: string;
+  children: ReactNode;
+  backUrl?: string;
+  previewUrl?: string;
+  isSaving?: boolean;
+  showTopBar?: boolean;
+  onSwitchToForm?: () => void;
+}
+
+function VisualCardEditorInner({
+  templateSlug,
+  children,
+  backUrl = "/dashboard/cards",
+  previewUrl,
+  isSaving = false,
+  showTopBar = true,
+  onSwitchToForm,
+}: VisualCardEditorInnerProps) {
+  const {
+    draft,
+    canvasElements,
+    canvasHeight,
+    canvasBackgroundColor,
+    canvasBackgroundPattern,
+    canvasFallingEffect,
+    triggerSave,
+    saveState,
+  } = useEditor();
+
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const [showLivePreview, setShowLivePreview] = useState(false);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");
@@ -70,42 +129,66 @@ export function VisualCardEditor<T extends object>({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
+  // Keyboard shortcut Ctrl+P / Cmd+P for toggling live preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setShowLivePreview((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
-    <EditorProvider
-      templateSlug={templateSlug}
-      draft={draft}
-      isVip={isVip}
-      onDraftChange={onDraftChange}
-      onSave={onSave}
-    >
-      <div className={`flex flex-col ${showTopBar ? "h-screen" : "h-full"} w-full overflow-hidden bg-white select-none`}>
-        {/* 0. TOP BAR - MATCHING NGAYCHUNGDOI.COM/CARD/CREATE/CANVAS */}
-        {showTopBar && (
-          <CanvasTopBar
-            backUrl={backUrl}
-            previewUrl={previewUrl}
-            isSaving={isSaving}
-            onSwitchToForm={onSwitchToForm}
-          />
-        )}
+    <div className={`flex flex-col ${showTopBar ? "h-screen" : "h-full"} w-full overflow-hidden bg-white select-none`}>
+      {/* 0. TOP BAR - MATCHING NGAYCHUNGDOI.COM/CARD/CREATE/CANVAS */}
+      {showTopBar && (
+        <CanvasTopBar
+          backUrl={backUrl}
+          previewUrl={previewUrl}
+          isSaving={isSaving}
+          onSwitchToForm={onSwitchToForm}
+          onOpenPreview={() => setShowLivePreview(true)}
+        />
+      )}
 
-        {/* 1. DESKTOP STUDIO (3-Column Layout: Left Dock + Artboard Center + Properties Right) */}
-        {isDesktop !== false && (
-          <div className="hidden lg:flex flex-1 w-full overflow-hidden">
-            <LeftSidebar />
-            <CenterCanvas>{children}</CenterCanvas>
-            <RightPanel />
-          </div>
-        )}
+      {/* 1. DESKTOP STUDIO (3-Column Layout: Left Dock + Artboard Center + Properties Right) */}
+      {isDesktop !== false && (
+        <div className="hidden lg:flex flex-1 w-full overflow-hidden">
+          <LeftSidebar />
+          <CenterCanvas>{children}</CenterCanvas>
+          <RightPanel />
+        </div>
+      )}
 
-        {/* 2. MOBILE CANVAS WITH BOTTOM DOCK */}
-        {isDesktop === false && (
-          <div className="flex lg:hidden flex-1 w-full flex-col relative overflow-hidden">
-            <MobileEditorLayout>{children}</MobileEditorLayout>
-          </div>
-        )}
-      </div>
-    </EditorProvider>
+      {/* 2. MOBILE CANVAS WITH BOTTOM DOCK */}
+      {isDesktop === false && (
+        <div className="flex lg:hidden flex-1 w-full flex-col relative overflow-hidden">
+          <MobileEditorLayout onOpenPreview={() => setShowLivePreview(true)}>
+            {children}
+          </MobileEditorLayout>
+        </div>
+      )}
+
+      {/* 3. LIVE GUEST PREVIEW MODAL (USES CURRENT IN-MEMORY DRAFT & CANVASELEMENTS) */}
+      <LiveCardPreviewModal
+        isOpen={showLivePreview}
+        onClose={() => setShowLivePreview(false)}
+        draft={draft as any}
+        templateSlug={templateSlug}
+        canvasElements={canvasElements}
+        canvasHeight={canvasHeight}
+        canvasBackgroundColor={canvasBackgroundColor}
+        canvasBackgroundPattern={canvasBackgroundPattern}
+        canvasFallingEffect={canvasFallingEffect}
+        onSave={triggerSave}
+        isSaving={isSaving || saveState === "saving"}
+      >
+        {children}
+      </LiveCardPreviewModal>
+    </div>
   );
 }
 
@@ -118,6 +201,7 @@ interface CanvasTopBarProps {
   previewUrl?: string;
   isSaving?: boolean;
   onSwitchToForm?: () => void;
+  onOpenPreview?: () => void;
 }
 
 function CanvasTopBar({
@@ -125,6 +209,7 @@ function CanvasTopBar({
   previewUrl,
   isSaving = false,
   onSwitchToForm,
+  onOpenPreview,
 }: CanvasTopBarProps) {
   const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
@@ -158,16 +243,16 @@ function CanvasTopBar({
 
         {/* BRAND BADGE: Pink rounded square with Heart + ngày chung đôi */}
         <div className="flex items-center gap-2 select-none shrink-0">
-          <div className="size-7 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-600 shadow-2xs">
+          <div className="size-7 sm:size-8 rounded-lg bg-pink-100 flex items-center justify-center text-pink-500 shadow-2xs">
             <Heart className="size-4 fill-pink-500 text-pink-500" />
           </div>
-          <span className="font-serif font-bold text-sm sm:text-base text-stone-900 tracking-tight hidden xs:inline">
+          <span className="hidden sm:inline font-bold text-sm tracking-tight text-stone-800">
             ngày chung đôi
           </span>
         </div>
 
-        {/* UNDO / REDO CONTROLS (TRỰC TIẾP TRÊN TOPBAR KHỚP ẢNH MẪU) */}
-        <div className="flex items-center gap-0.5 sm:gap-1 pl-2 sm:pl-3 border-l border-stone-200">
+        {/* UNDO / REDO CONTROLS */}
+        <div className="flex items-center gap-0.5 border-l border-stone-200 pl-2 sm:pl-3">
           <button
             type="button"
             onClick={undo}
@@ -230,14 +315,28 @@ function CanvasTopBar({
           </button>
         )}
 
+        {/* NÚT XEM TRƯỚC TRỰC TIẾP (LIVE PREVIEW MODAL) */}
+        {onOpenPreview && (
+          <button
+            type="button"
+            onClick={onOpenPreview}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-2xs cursor-pointer"
+            title="Xem trước thiệp cưới thực tế như khách mời (Ctrl+P)"
+          >
+            <Eye className="size-3.5 text-amber-700" />
+            <span>Xem trước</span>
+          </button>
+        )}
+
         {previewUrl && (
           <Link
             href={previewUrl}
             target="_blank"
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-medium hover:bg-stone-50 transition"
+            title="Mở liên kết thiệp công khai (tab mới)"
           >
-            <Eye className="size-3.5" />
-            <span>Xem Thiệp</span>
+            <ExternalLink className="size-3 text-stone-500" />
+            <span>Mở link</span>
           </Link>
         )}
 
@@ -286,7 +385,12 @@ function CanvasTopBar({
 // MOBILE EDITOR LAYOUT (BOTTOM DOCK + DRAWER)
 // ────────────────────────────────────────────────────────────────
 
-function MobileEditorLayout({ children }: { children: ReactNode }) {
+interface MobileEditorLayoutProps {
+  children: ReactNode;
+  onOpenPreview?: () => void;
+}
+
+function MobileEditorLayout({ children, onOpenPreview }: MobileEditorLayoutProps) {
   const {
     activeTool,
     setActiveTool,
@@ -341,6 +445,19 @@ function MobileEditorLayout({ children }: { children: ReactNode }) {
       {/* Floating Bottom Quick Bar for Mobile */}
       <div className="sticky bottom-0 left-0 right-0 z-30 bg-stone-900/95 backdrop-blur-md border-t border-stone-800 px-2 py-2 flex items-center justify-between text-white safe-area-pb">
         <div className="flex items-center gap-1 overflow-x-auto flex-1">
+          {/* Nút Xem Trước Nhanh Trên Mobile */}
+          {onOpenPreview && (
+            <button
+              type="button"
+              onClick={onOpenPreview}
+              className="flex flex-col items-center justify-center min-w-[54px] py-1 px-1 rounded-xl text-[10px] font-bold text-amber-400 hover:text-amber-300 transition cursor-pointer shrink-0 border border-amber-400/30 bg-amber-400/10"
+              title="Xem trước thiệp"
+            >
+              <Eye className="size-4 mb-0.5" />
+              <span className="truncate">Xem trước</span>
+            </button>
+          )}
+
           {MOBILE_TOOLS.map((tool) => {
             const Icon = tool.icon;
             const isActive = activeTool === tool.id && mobileDrawerOpen;

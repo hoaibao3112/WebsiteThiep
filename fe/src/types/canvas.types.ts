@@ -201,7 +201,7 @@ export interface WidgetConfig {
   customFormSubtitle?: string;
   customFormFields?: Array<{
     id: string;
-    type: "text" | "textarea" | "select" | "radio" | "checkbox" | "rating" | "number" | "phone" | "email";
+    type: "text" | "textarea" | "select" | "radio" | "checkbox" | "rating" | "number" | "phone" | "email" | "signature";
     label: string;
     placeholder?: string;
     required: boolean;

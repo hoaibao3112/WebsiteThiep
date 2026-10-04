@@ -1204,6 +1204,7 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
                     <option value="radio">Nút tròn chọn 1 (Radio)</option>
                     <option value="checkbox">Nhiều lựa chọn (Checkbox)</option>
                     <option value="rating">Đánh giá sao (Rating 1-5)</option>
+                    <option value="signature">✍️ Chữ ký vẽ tay (Signature)</option>
                   </select>
                   <input
                     className={inputClass}

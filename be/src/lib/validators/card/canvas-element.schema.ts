@@ -255,7 +255,7 @@ export const CanvasElementSchema = z
       customFormSubtitle: z.string().max(300).optional(),
       customFormFields: z.array(z.object({
         id: z.string(),
-        type: z.enum(["text", "textarea", "select", "radio", "checkbox", "rating", "number", "phone", "email"]),
+        type: z.enum(["text", "textarea", "select", "radio", "checkbox", "rating", "number", "phone", "email", "signature"]),
         label: z.string().max(120),
         placeholder: z.string().max(120).optional(),
         required: z.boolean().default(false),

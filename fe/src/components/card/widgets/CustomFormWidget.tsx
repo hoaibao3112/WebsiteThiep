@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, CheckCircle2, Loader2, Star } from "lucide-react";
+import { FileText, CheckCircle2, Loader2, Star, PenTool, RotateCcw, Trash2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import type { CanvasWidgetConfig } from "@/types/canvas.types";
+import { SignatureDrawingModal } from "./SignatureDrawingModal";
 
 interface Props {
   config: CanvasWidgetConfig;
@@ -17,6 +18,7 @@ export function CustomFormWidget({ config, cardId, elementId, isEditor }: Props)
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeSigningFieldId, setActiveSigningFieldId] = useState<string | null>(null);
 
   const title = config.customFormTitle || config.title || "Biểu Mẫu Tùy Chỉnh";
   const subtitle = config.customFormSubtitle || config.description;
@@ -218,6 +220,48 @@ export function CustomFormWidget({ config, cardId, elementId, isEditor }: Props)
                     </span>
                   )}
                 </div>
+              ) : f.type === "signature" ? (
+                <div className="flex flex-col items-center gap-2 pt-1">
+                  {formData[f.id] ? (
+                    <div className="relative w-full rounded-2xl border-2 border-stone-200 bg-white p-3 flex flex-col items-center shadow-xs">
+                      <img
+                        src={formData[f.id]}
+                        alt="Chữ ký đã vẽ"
+                        className="max-h-24 object-contain"
+                      />
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => setActiveSigningFieldId(f.id)}
+                          className="px-3 py-1 rounded-full border border-amber-300 bg-amber-50 text-amber-700 text-[11px] font-semibold hover:bg-amber-100 transition cursor-pointer flex items-center gap-1"
+                        >
+                          <RotateCcw className="size-3" />
+                          <span>Ký lại</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFieldChange(f.id, "")}
+                          className="px-2.5 py-1 rounded-full border border-stone-200 text-stone-500 hover:text-rose-600 text-[11px] hover:bg-stone-50 transition cursor-pointer flex items-center gap-1"
+                        >
+                          <Trash2 className="size-3" />
+                          <span>Xóa</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full flex justify-center py-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveSigningFieldId(f.id)}
+                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-white text-xs font-bold shadow-md transition active:scale-95 hover:brightness-110 cursor-pointer"
+                        style={{ backgroundColor: buttonColor || "#EF4444" }}
+                      >
+                        <PenTool className="size-3.5" />
+                        <span>{f.placeholder || "Nhấn để ký tên"}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <input
                   type={f.type === "number" ? "number" : f.type === "email" ? "email" : f.type === "phone" ? "tel" : "text"}
@@ -244,6 +288,19 @@ export function CustomFormWidget({ config, cardId, elementId, isEditor }: Props)
           </button>
         </form>
       </div>
+
+      {/* POPUP DRAWING PAD MODAL */}
+      <SignatureDrawingModal
+        isOpen={Boolean(activeSigningFieldId)}
+        onClose={() => setActiveSigningFieldId(null)}
+        onConfirm={(dataUrl) => {
+          if (activeSigningFieldId) {
+            handleFieldChange(activeSigningFieldId, dataUrl);
+          }
+          setActiveSigningFieldId(null);
+        }}
+        title="Vẽ chữ ký của bạn"
+      />
     </div>
   );
 }
