@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const cspHeader = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.google.com https://*.googleapis.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' https: data: blob: res.cloudinary.com;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.google.com https://*.googleapis.com https://accounts.google.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
+  img-src 'self' https: data: blob: res.cloudinary.com https://*.googleusercontent.com https://*.google.com;
   font-src 'self' https://fonts.gstatic.com data:;
   media-src 'self' https: data: blob: res.cloudinary.com;
-  connect-src 'self' https: wss:;
-  frame-src 'none';
+  connect-src 'self' https: wss: https://accounts.google.com https://websitethiep.onrender.com;
+  frame-src 'self' https://accounts.google.com https://*.google.com https://www.google.com https://recaptcha.google.com https://*.youtube.com https://youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://maps.google.com https://www.google.com/maps;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
@@ -43,6 +43,10 @@ const nextConfig = {
           {
             key: "X-Frame-Options",
             value: "SAMEORIGIN",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
           },
           {
             key: "Referrer-Policy",

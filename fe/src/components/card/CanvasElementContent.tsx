@@ -262,7 +262,7 @@ function WeddingGiftLuxuryCard({
     </ScaledPresetWrapper>
   );
 }
-c
+
 export function CanvasElementContent({ element: el, draft, guestName, onRsvp, onGift }: { element: CanvasElement; draft?: object; guestName?: string; onRsvp?: () => void; onGift?: () => void }) {
   const data = readCanvasData(draft);
   if (el.type === "widget") {
