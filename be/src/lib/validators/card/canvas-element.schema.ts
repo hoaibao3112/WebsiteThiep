@@ -302,7 +302,7 @@ export const CanvasElementSchema = z
       signatureClearText: z.string().max(50).optional(),
     }).passthrough().optional(),
     updatedAt: z.string().optional(),
-  });
+  }).passthrough();
 
 export type CanvasElement = z.infer<typeof CanvasElementSchema>;
 

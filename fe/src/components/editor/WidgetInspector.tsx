@@ -162,6 +162,20 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
           ? "📜 Thẻ lời ước viền ren"
           : element.widgetType === "swan-ceremony"
           ? "🦢 Lễ tiệc & Thiên nga"
+          : element.widgetType === "timeline"
+          ? "⏳ Lịch trình sự kiện (Timeline)"
+          : element.widgetType === "dress-code"
+          ? "👗 Gợi ý trang phục (Dress Code)"
+          : element.widgetType === "love-story"
+          ? "📖 Câu chuyện tình yêu (Love Story)"
+          : element.widgetType === "menu"
+          ? "🍽️ Thực đơn tiệc cưới (Menu)"
+          : element.widgetType === "envelope"
+          ? "✉️ Bì thư mở thiệp cưới"
+          : element.widgetType === "album"
+          ? "📸 Album ảnh cưới"
+          : element.widgetType === "guest-name"
+          ? "👤 Tên khách mời cá nhân hóa"
           : element.widgetType === "embed-video"
           ? "🎬 Nhúng Video"
           : element.widgetType === "carousel"
@@ -202,6 +216,20 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
               Thời gian & Thứ
               <input className={inputClass} value={config.brideDate ?? "Vào Thứ Hai - 09h00"} onChange={(e) => update({ brideDate: e.target.value })} />
             </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Tháng
+                <input className={inputClass} value={config.brideMonth ?? "Tháng 02"} placeholder="Tháng 02" onChange={(e) => update({ brideMonth: e.target.value })} />
+              </label>
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Ngày
+                <input className={inputClass} value={config.brideDay ?? "21"} placeholder="21" onChange={(e) => update({ brideDay: e.target.value })} />
+              </label>
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Năm
+                <input className={inputClass} value={config.brideYear ?? "2026"} placeholder="2026" onChange={(e) => update({ brideYear: e.target.value })} />
+              </label>
+            </div>
             <label className="flex flex-col gap-1 text-[11px] text-stone-600">
               Ngày Âm lịch
               <input className={inputClass} value={config.brideLunarDate ?? "Tức Ngày 16 tháng 12 năm Ất Tỵ"} onChange={(e) => update({ brideLunarDate: e.target.value })} />
@@ -213,6 +241,10 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
             <label className="flex flex-col gap-1 text-[11px] text-stone-600">
               Link chỉ đường Google Maps
               <input type="url" className={inputClass} value={config.brideMapUrl ?? ""} placeholder="https://maps.google.com/..." onChange={(e) => update({ brideMapUrl: e.target.value })} />
+            </label>
+            <label className="flex flex-col gap-1 text-[11px] text-stone-600">
+              Tên nút chỉ đường
+              <input className={inputClass} value={config.brideButtonText ?? "Chỉ đường"} placeholder="Chỉ đường" onChange={(e) => update({ brideButtonText: e.target.value })} />
             </label>
           </div>
 
@@ -226,6 +258,20 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
               Thời gian & Thứ
               <input className={inputClass} value={config.groomDate ?? "Vào Thứ Hai - 14h00"} onChange={(e) => update({ groomDate: e.target.value })} />
             </label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Tháng
+                <input className={inputClass} value={config.groomMonth ?? "Tháng 02"} placeholder="Tháng 02" onChange={(e) => update({ groomMonth: e.target.value })} />
+              </label>
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Ngày
+                <input className={inputClass} value={config.groomDay ?? "21"} placeholder="21" onChange={(e) => update({ groomDay: e.target.value })} />
+              </label>
+              <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+                Năm
+                <input className={inputClass} value={config.groomYear ?? "2026"} placeholder="2026" onChange={(e) => update({ groomYear: e.target.value })} />
+              </label>
+            </div>
             <label className="flex flex-col gap-1 text-[11px] text-stone-600">
               Ngày Âm lịch
               <input className={inputClass} value={config.groomLunarDate ?? "Tức Ngày 16 tháng 12 năm Ất Tỵ"} onChange={(e) => update({ groomLunarDate: e.target.value })} />
@@ -237,6 +283,10 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
             <label className="flex flex-col gap-1 text-[11px] text-stone-600">
               Link chỉ đường Google Maps
               <input type="url" className={inputClass} value={config.groomMapUrl ?? ""} placeholder="https://maps.google.com/..." onChange={(e) => update({ groomMapUrl: e.target.value })} />
+            </label>
+            <label className="flex flex-col gap-1 text-[11px] text-stone-600">
+              Tên nút chỉ đường
+              <input className={inputClass} value={config.groomButtonText ?? "Chỉ đường"} placeholder="Chỉ đường" onChange={(e) => update({ groomButtonText: e.target.value })} />
             </label>
           </div>
         </div>
@@ -310,6 +360,21 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
             Thời gian & Thứ
             <input className={inputClass} value={config.description ?? "ĐƯỢC TỔ CHỨC VÀO LÚC 09:30, THỨ BẢY"} onChange={(e) => update({ description: e.target.value })} />
           </label>
+
+          <div className="grid grid-cols-3 gap-1.5">
+            <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+              Tháng
+              <input className={inputClass} value={config.ceremonyMonth ?? "THÁNG 12"} placeholder="THÁNG 12" onChange={(e) => update({ ceremonyMonth: e.target.value })} />
+            </label>
+            <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+              Ngày
+              <input className={inputClass} value={config.ceremonyDay ?? "29"} placeholder="29" onChange={(e) => update({ ceremonyDay: e.target.value })} />
+            </label>
+            <label className="flex flex-col gap-0.5 text-[10px] text-stone-600">
+              Năm
+              <input className={inputClass} value={config.ceremonyYear ?? "NĂM 2026"} placeholder="NĂM 2026" onChange={(e) => update({ ceremonyYear: e.target.value })} />
+            </label>
+          </div>
 
           <label className="flex flex-col gap-1 text-xs text-stone-700">
             Ngày Âm lịch
@@ -1290,7 +1355,481 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
         </div>
       )}
 
-      {/* ── CÁC TRƯỜNG TIỆN ÍCH CƠ BẢN KHÁC (album, guest-name, envelope...) ── */}
+      {/* ── CÁC TRƯỜNG DÀNH CHO LỊCH TRÌNH (TIMELINE) ── */}
+      {element.widgetType === "timeline" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề lịch trình
+            <input
+              className={inputClass}
+              value={config.timelineTitle ?? config.title ?? "Lịch Trình Tiệc Cưới"}
+              onChange={(e) => update({ timelineTitle: e.target.value, title: e.target.value })}
+            />
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-stone-700">
+              <span className="font-semibold">Các mốc sự kiện</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.timelineEvents || [
+                    { id: "1", time: "09:30", label: "Đón tiếp khách quý" },
+                    { id: "2", time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+                    { id: "3", time: "11:30", label: "Khai tiệc mừng" },
+                    { id: "4", time: "13:00", label: "Chụp ảnh kỉ niệm" },
+                  ];
+                  const newEvent = { id: `tl-${Date.now()}`, time: "12:00", label: "Sự kiện mới" };
+                  update({ timelineEvents: [...current, newEvent] });
+                }}
+                className="text-amber-800 hover:text-amber-950 font-semibold text-[11px] cursor-pointer"
+              >
+                + Thêm mốc
+              </button>
+            </div>
+            {(config.timelineEvents || [
+              { id: "1", time: "09:30", label: "Đón tiếp khách quý" },
+              { id: "2", time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+              { id: "3", time: "11:30", label: "Khai tiệc mừng" },
+              { id: "4", time: "13:00", label: "Chụp ảnh kỉ niệm" },
+            ]).map((item: any, idx: number) => (
+              <div key={item.id || idx} className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 border border-stone-200">
+                <input
+                  className={`${inputClass} w-20 text-center font-mono`}
+                  value={item.time}
+                  placeholder="09:30"
+                  onChange={(e) => {
+                    const current = [...(config.timelineEvents || [
+                      { id: "1", time: "09:30", label: "Đón tiếp khách quý" },
+                      { id: "2", time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+                      { id: "3", time: "11:30", label: "Khai tiệc mừng" },
+                      { id: "4", time: "13:00", label: "Chụp ảnh kỉ niệm" },
+                    ])];
+                    current[idx] = { ...current[idx], time: e.target.value };
+                    update({ timelineEvents: current });
+                  }}
+                />
+                <input
+                  className={`${inputClass} flex-1`}
+                  value={item.label}
+                  placeholder="Tên hoạt động..."
+                  onChange={(e) => {
+                    const current = [...(config.timelineEvents || [
+                      { id: "1", time: "09:30", label: "Đón tiếp khách quý" },
+                      { id: "2", time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+                      { id: "3", time: "11:30", label: "Khai tiệc mừng" },
+                      { id: "4", time: "13:00", label: "Chụp ảnh kỉ niệm" },
+                    ])];
+                    current[idx] = { ...current[idx], label: e.target.value };
+                    update({ timelineEvents: current });
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = (config.timelineEvents || [
+                      { id: "1", time: "09:30", label: "Đón tiếp khách quý" },
+                      { id: "2", time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+                      { id: "3", time: "11:30", label: "Khai tiệc mừng" },
+                      { id: "4", time: "13:00", label: "Chụp ảnh kỉ niệm" },
+                    ]).filter((_, i) => i !== idx);
+                    update({ timelineEvents: current });
+                  }}
+                  className="text-stone-400 hover:text-rose-600 transition cursor-pointer p-1"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO GỢI Ý TRANG PHỤC (DRESS CODE) ── */}
+      {element.widgetType === "dress-code" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề
+            <input
+              className={inputClass}
+              value={config.dressCodeTitle ?? config.title ?? "Gợi Ý Trang Phục"}
+              onChange={(e) => update({ dressCodeTitle: e.target.value, title: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả / Lưu ý trang phục
+            <textarea
+              className={inputClass}
+              rows={2}
+              value={config.dressCodeDescription ?? config.description ?? ""}
+              placeholder="Tone màu trang phục gợi ý..."
+              onChange={(e) => update({ dressCodeDescription: e.target.value, description: e.target.value })}
+            />
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-stone-700">
+              <span className="font-semibold">Màu sắc trang phục</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.dressCodeColors || [
+                    { id: "1", name: "Trắng", hex: "#FFFFFF" },
+                    { id: "2", name: "Be sữa", hex: "#F5EBE1" },
+                    { id: "3", name: "Hồng phấn", hex: "#FCE7EC" },
+                    { id: "4", name: "Xanh Sage", hex: "#87A987" },
+                  ];
+                  update({ dressCodeColors: [...current, { id: `dc-${Date.now()}`, name: "Màu mới", hex: "#E2E8F0" }] });
+                }}
+                className="text-amber-800 hover:text-amber-950 font-semibold text-[11px] cursor-pointer"
+              >
+                + Thêm màu
+              </button>
+            </div>
+            {(config.dressCodeColors || [
+              { id: "1", name: "Trắng", hex: "#FFFFFF" },
+              { id: "2", name: "Be sữa", hex: "#F5EBE1" },
+              { id: "3", name: "Hồng phấn", hex: "#FCE7EC" },
+              { id: "4", name: "Xanh Sage", hex: "#87A987" },
+            ]).map((c: any, idx: number) => (
+              <div key={c.id || idx} className="flex items-center gap-2 p-2 rounded-xl bg-stone-50 border border-stone-200">
+                <input
+                  type="color"
+                  className="size-8 rounded border border-stone-200 cursor-pointer shrink-0"
+                  value={c.hex || "#FFFFFF"}
+                  onChange={(e) => {
+                    const current = [...(config.dressCodeColors || [
+                      { id: "1", name: "Trắng", hex: "#FFFFFF" },
+                      { id: "2", name: "Be sữa", hex: "#F5EBE1" },
+                      { id: "3", name: "Hồng phấn", hex: "#FCE7EC" },
+                      { id: "4", name: "Xanh Sage", hex: "#87A987" },
+                    ])];
+                    current[idx] = { ...current[idx], hex: e.target.value };
+                    update({ dressCodeColors: current });
+                  }}
+                />
+                <input
+                  className={`${inputClass} flex-1`}
+                  value={c.name}
+                  placeholder="Tên màu..."
+                  onChange={(e) => {
+                    const current = [...(config.dressCodeColors || [
+                      { id: "1", name: "Trắng", hex: "#FFFFFF" },
+                      { id: "2", name: "Be sữa", hex: "#F5EBE1" },
+                      { id: "3", name: "Hồng phấn", hex: "#FCE7EC" },
+                      { id: "4", name: "Xanh Sage", hex: "#87A987" },
+                    ])];
+                    current[idx] = { ...current[idx], name: e.target.value };
+                    update({ dressCodeColors: current });
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = (config.dressCodeColors || [
+                      { id: "1", name: "Trắng", hex: "#FFFFFF" },
+                      { id: "2", name: "Be sữa", hex: "#F5EBE1" },
+                      { id: "3", name: "Hồng phấn", hex: "#FCE7EC" },
+                      { id: "4", name: "Xanh Sage", hex: "#87A987" },
+                    ]).filter((_, i) => i !== idx);
+                    update({ dressCodeColors: current });
+                  }}
+                  className="text-stone-400 hover:text-rose-600 transition cursor-pointer p-1"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO CÂU CHUYỆN TÌNH YÊU (LOVE STORY) ── */}
+      {element.widgetType === "love-story" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề
+            <input
+              className={inputClass}
+              value={config.loveStoryTitle ?? config.title ?? "Câu Chuyện Tình Yêu"}
+              onChange={(e) => update({ loveStoryTitle: e.target.value, title: e.target.value })}
+            />
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-stone-700">
+              <span className="font-semibold">Cột mốc thời gian</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.loveStoryMilestones || [
+                    { id: "1", year: "2020", title: "Lần đầu gặp" },
+                    { id: "2", year: "2022", title: "Nhận lời yêu" },
+                    { id: "3", year: "2025", title: "Lời cầu hôn" },
+                    { id: "4", year: "2026", title: "Chung đôi" },
+                  ];
+                  update({ loveStoryMilestones: [...current, { id: `ls-${Date.now()}`, year: "2027", title: "Kỷ niệm mới" }] });
+                }}
+                className="text-amber-800 hover:text-amber-950 font-semibold text-[11px] cursor-pointer"
+              >
+                + Thêm mốc
+              </button>
+            </div>
+            {(config.loveStoryMilestones || [
+              { id: "1", year: "2020", title: "Lần đầu gặp" },
+              { id: "2", year: "2022", title: "Nhận lời yêu" },
+              { id: "3", year: "2025", title: "Lời cầu hôn" },
+              { id: "4", year: "2026", title: "Chung đôi" },
+            ]).map((m: any, idx: number) => (
+              <div key={m.id || idx} className="flex items-center gap-1.5 p-2 rounded-xl bg-stone-50 border border-stone-200">
+                <input
+                  className={`${inputClass} w-20 text-center font-bold`}
+                  value={m.year}
+                  placeholder="2020"
+                  onChange={(e) => {
+                    const current = [...(config.loveStoryMilestones || [
+                      { id: "1", year: "2020", title: "Lần đầu gặp" },
+                      { id: "2", year: "2022", title: "Nhận lời yêu" },
+                      { id: "3", year: "2025", title: "Lời cầu hôn" },
+                      { id: "4", year: "2026", title: "Chung đôi" },
+                    ])];
+                    current[idx] = { ...current[idx], year: e.target.value };
+                    update({ loveStoryMilestones: current });
+                  }}
+                />
+                <input
+                  className={`${inputClass} flex-1`}
+                  value={m.title}
+                  placeholder="Tên cột mốc..."
+                  onChange={(e) => {
+                    const current = [...(config.loveStoryMilestones || [
+                      { id: "1", year: "2020", title: "Lần đầu gặp" },
+                      { id: "2", year: "2022", title: "Nhận lời yêu" },
+                      { id: "3", year: "2025", title: "Lời cầu hôn" },
+                      { id: "4", year: "2026", title: "Chung đôi" },
+                    ])];
+                    current[idx] = { ...current[idx], title: e.target.value };
+                    update({ loveStoryMilestones: current });
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = (config.loveStoryMilestones || [
+                      { id: "1", year: "2020", title: "Lần đầu gặp" },
+                      { id: "2", year: "2022", title: "Nhận lời yêu" },
+                      { id: "3", year: "2025", title: "Lời cầu hôn" },
+                      { id: "4", year: "2026", title: "Chung đôi" },
+                    ]).filter((_, i) => i !== idx);
+                    update({ loveStoryMilestones: current });
+                  }}
+                  className="text-stone-400 hover:text-rose-600 transition cursor-pointer p-1"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO THỰC ĐƠN (MENU) ── */}
+      {element.widgetType === "menu" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề thực đơn
+            <input
+              className={inputClass}
+              value={config.menuTitle ?? config.title ?? "Thực Đơn Tiệc Cưới"}
+              onChange={(e) => update({ menuTitle: e.target.value, title: e.target.value })}
+            />
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs text-stone-700">
+              <span className="font-semibold">Danh sách món ăn</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.menuCourses || [
+                    { id: "1", type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+                    { id: "2", type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+                    { id: "3", type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+                  ];
+                  update({ menuCourses: [...current, { id: `m-${Date.now()}`, type: "Món mới", dish: "Tên món ăn..." }] });
+                }}
+                className="text-amber-800 hover:text-amber-950 font-semibold text-[11px] cursor-pointer"
+              >
+                + Thêm món
+              </button>
+            </div>
+            {(config.menuCourses || [
+              { id: "1", type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+              { id: "2", type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+              { id: "3", type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+            ]).map((item: any, idx: number) => (
+              <div key={item.id || idx} className="flex flex-col gap-1.5 p-2 rounded-xl bg-stone-50 border border-stone-200">
+                <div className="flex items-center justify-between gap-1.5">
+                  <input
+                    className={`${inputClass} w-28 uppercase text-[10px] font-bold`}
+                    value={item.type}
+                    placeholder="KHAI VỊ / MÓN CHÍNH"
+                    onChange={(e) => {
+                      const current = [...(config.menuCourses || [
+                        { id: "1", type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+                        { id: "2", type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+                        { id: "3", type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+                      ])];
+                      current[idx] = { ...current[idx], type: e.target.value };
+                      update({ menuCourses: current });
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = (config.menuCourses || [
+                        { id: "1", type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+                        { id: "2", type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+                        { id: "3", type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+                      ]).filter((_, i) => i !== idx);
+                      update({ menuCourses: current });
+                    }}
+                    className="text-stone-400 hover:text-rose-600 transition cursor-pointer p-1"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+                <textarea
+                  rows={2}
+                  className={`${inputClass} text-xs`}
+                  value={item.dish}
+                  placeholder="Tên các món ăn..."
+                  onChange={(e) => {
+                    const current = [...(config.menuCourses || [
+                      { id: "1", type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+                      { id: "2", type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+                      { id: "3", type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+                    ])];
+                    current[idx] = { ...current[idx], dish: e.target.value };
+                    update({ menuCourses: current });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO BÌ THƯ (ENVELOPE) ── */}
+      {element.widgetType === "envelope" && (
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-xs">
+            <input
+              name="widgetShowTitle"
+              type="checkbox"
+              checked={config.showTitle !== false}
+              onChange={(e) => update({ showTitle: e.target.checked })}
+            />
+            Hiển thị tiêu đề khi mở thiệp
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Chữ trên nắp bì thư (khi đóng)
+            <input
+              className={inputClass}
+              value={config.buttonLabel ?? "Mở thiệp mời"}
+              placeholder="Mở thiệp mời"
+              onChange={(e) => update({ buttonLabel: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề lời mời (khi mở ra)
+            <input
+              className={inputClass}
+              value={config.title ?? ""}
+              placeholder="Trân Trọng Kính Mời"
+              onChange={(e) => update({ title: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Nội dung lời ngỏ bên trong
+            <textarea
+              className={inputClass}
+              rows={3}
+              value={config.description ?? "Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi!"}
+              placeholder="Nội dung lời ngỏ..."
+              onChange={(e) => update({ description: e.target.value })}
+            />
+          </label>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO TÊN KHÁCH MỜI (GUEST-NAME) ── */}
+      {element.widgetType === "guest-name" && (
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-xs">
+            <input
+              name="widgetShowTitle"
+              type="checkbox"
+              checked={config.showTitle !== false}
+              onChange={(e) => update({ showTitle: e.target.checked })}
+            />
+            Hiển thị dòng tiêu đề
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề (VD: Kính gửi, Thân gửi...)
+            <input
+              className={inputClass}
+              value={config.title ?? "Thân mời"}
+              placeholder="Thân mời"
+              onChange={(e) => update({ title: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tên hiển thị mặc định (fallback khi chưa chọn khách)
+            <input
+              className={inputClass}
+              value={config.description ?? "Quý khách"}
+              placeholder="Quý khách"
+              onChange={(e) => update({ description: e.target.value, fallbackName: e.target.value })}
+            />
+          </label>
+          <p className="text-[10px] text-stone-400">
+            💡 Khi bạn gửi link cá nhân hóa dạng /thiep/slug?to=NguyenVanA, tên khách sẽ tự động thay thế vào vị trí này.
+          </p>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH CHO ALBUM ẢNH (ALBUM) ── */}
+      {element.widgetType === "album" && (
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-xs">
+            <input
+              name="widgetShowTitle"
+              type="checkbox"
+              checked={config.showTitle !== false}
+              onChange={(e) => update({ showTitle: e.target.checked })}
+            />
+            Hiển thị tiêu đề
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề album
+            <input
+              className={inputClass}
+              value={config.title ?? "Khoảnh Khắc Kỷ Niệm"}
+              placeholder="Khoảnh Khắc Kỷ Niệm"
+              onChange={(e) => update({ title: e.target.value })}
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả / Lời tựa
+            <textarea
+              className={inputClass}
+              rows={2}
+              value={config.description ?? ""}
+              placeholder="Ghi chú về album ảnh cưới..."
+              onChange={(e) => update({ description: e.target.value })}
+            />
+          </label>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG TIỆN ÍCH CƠ BẢN KHÁC ── */}
       {element.widgetType !== "procession-route" &&
         element.widgetType !== "lace-vow-card" &&
         element.widgetType !== "swan-ceremony" &&
@@ -1305,7 +1844,14 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
         element.widgetType !== "contact" &&
         element.widgetType !== "reminder" &&
         element.widgetType !== "custom-form" &&
-        element.widgetType !== "guest-signature" && (
+        element.widgetType !== "guest-signature" &&
+        element.widgetType !== "timeline" &&
+        element.widgetType !== "dress-code" &&
+        element.widgetType !== "love-story" &&
+        element.widgetType !== "menu" &&
+        element.widgetType !== "envelope" &&
+        element.widgetType !== "guest-name" &&
+        element.widgetType !== "album" && (
           <>
             <label className="flex items-center gap-2 text-xs">
               <input
@@ -1328,12 +1874,6 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
               Tên nút
               <input className={inputClass} value={config.buttonLabel ?? ""} onChange={(event) => update({ buttonLabel: event.target.value })} />
             </label>
-            {element.widgetType === "guest-name" && (
-              <label className="flex flex-col gap-1 text-xs">
-                Tên khách mặc định (fallback)
-                <input className={inputClass} value={config.description ?? "Quý khách"} placeholder="Quý khách" onChange={(event) => update({ description: event.target.value })} />
-              </label>
-            )}
           </>
         )}
     </fieldset>

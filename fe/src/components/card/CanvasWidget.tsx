@@ -108,18 +108,21 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
     case "envelope":
       return <button type="button" onClick={() => setOpened(value => !value)} aria-expanded={opened} className="relative flex size-full flex-col items-center justify-center gap-3 overflow-hidden rounded-lg bg-[#8b2638] p-5 text-white shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2">{opened ? <><Heart className="size-8" />{heading}<p className="text-sm">{config.description || "Trân trọng kính mời quý khách đến chung vui cùng gia đình."}</p></> : <><Mail className="size-16" /><p className="text-sm">{config.buttonLabel || "Mở thiệp mời"}</p></>}</button>;
     case "timeline": {
-      const eventsList = [
-        { time: "09:30", label: "Đón tiếp khách quý" },
-        { time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
-        { time: "11:30", label: "Khai tiệc mừng" },
-        { time: "13:00", label: "Chụp ảnh kỉ niệm" },
-      ];
+      const eventsList = Array.isArray(config.timelineEvents) && config.timelineEvents.length > 0
+        ? config.timelineEvents
+        : [
+            { time: "09:30", label: "Đón tiếp khách quý" },
+            { time: "11:00", label: "Lễ thành hôn & Cắt bánh" },
+            { time: "11:30", label: "Khai tiệc mừng" },
+            { time: "13:00", label: "Chụp ảnh kỉ niệm" },
+          ];
+      const tTitle = config.timelineTitle || config.title || "Lịch Trình Tiệc Cưới";
       return (
         <div className="flex size-full flex-col items-center justify-center p-3.5 text-stone-800 bg-white/90 rounded-2xl border border-stone-200/80 shadow-xs">
-          {heading || <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-2">Lịch Trình Tiệc Cưới</h3>}
+          {heading || <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-2">{tTitle}</h3>}
           <div className="w-full space-y-2">
-            {eventsList.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2.5 text-xs">
+            {eventsList.map((item: any, idx: number) => (
+              <div key={item.id || idx} className="flex items-center gap-2.5 text-xs">
                 <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-semibold text-[11px] shrink-0 font-mono">
                   {item.time}
                 </span>
@@ -133,21 +136,25 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
       );
     }
     case "dress-code": {
-      const dressColors = [
-        { name: "Trắng", hex: "#FFFFFF", border: "#D1D5DB" },
-        { name: "Be sữa", hex: "#F5EBE1" },
-        { name: "Hồng phấn", hex: "#FCE7EC" },
-        { name: "Xanh Sage", hex: "#87A987" },
-      ];
+      const dressColors = Array.isArray(config.dressCodeColors) && config.dressCodeColors.length > 0
+        ? config.dressCodeColors
+        : [
+            { name: "Trắng", hex: "#FFFFFF", border: "#D1D5DB" },
+            { name: "Be sữa", hex: "#F5EBE1" },
+            { name: "Hồng phấn", hex: "#FCE7EC" },
+            { name: "Xanh Sage", hex: "#87A987" },
+          ];
+      const dTitle = config.dressCodeTitle || config.title || "Gợi Ý Trang Phục";
+      const dDesc = config.dressCodeDescription || config.description || "Tone màu trang phục gợi ý để những bức ảnh kỷ niệm cùng cô dâu & chú rể thật hài hòa";
       return (
         <div className="flex size-full flex-col items-center justify-center p-3.5 text-center text-stone-800 bg-white/90 rounded-2xl border border-stone-200/80 shadow-xs">
-          {heading || <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">Gợi Ý Trang Phục</h3>}
+          {heading || <h3 className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1">{dTitle}</h3>}
           <p className="text-[10px] text-stone-500 mb-2 max-w-[240px] line-clamp-2">
-            {config.description || "Tone màu trang phục gợi ý để những bức ảnh kỷ niệm cùng cô dâu & chú rể thật hài hòa"}
+            {dDesc}
           </p>
           <div className="flex items-center gap-3">
-            {dressColors.map((c, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-1">
+            {dressColors.map((c: any, idx: number) => (
+              <div key={c.id || idx} className="flex flex-col items-center gap-1">
                 <span
                   className="size-7 rounded-full shadow-xs border"
                   style={{ backgroundColor: c.hex, borderColor: c.border || "rgba(0,0,0,0.1)" }}
@@ -160,18 +167,21 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
       );
     }
     case "love-story": {
-      const milestones = [
-        { year: "2020", title: "Lần đầu gặp" },
-        { year: "2022", title: "Nhận lời yêu" },
-        { year: "2025", title: "Lời cầu hôn" },
-        { year: "2026", title: "Chung đôi" },
-      ];
+      const milestones = Array.isArray(config.loveStoryMilestones) && config.loveStoryMilestones.length > 0
+        ? config.loveStoryMilestones
+        : [
+            { year: "2020", title: "Lần đầu gặp" },
+            { year: "2022", title: "Nhận lời yêu" },
+            { year: "2025", title: "Lời cầu hôn" },
+            { year: "2026", title: "Chung đôi" },
+          ];
+      const lTitle = config.loveStoryTitle || config.title || "Câu Chuyện Tình Yêu";
       return (
         <div className="flex size-full flex-col items-center justify-center p-3 text-center text-stone-800 bg-white/90 rounded-2xl border border-stone-200/80 shadow-xs">
-          {heading || <h3 className="text-xs font-serif font-bold text-rose-950 mb-2">Câu Chuyện Tình Yêu</h3>}
+          {heading || <h3 className="text-xs font-serif font-bold text-rose-950 mb-2">{lTitle}</h3>}
           <div className="grid grid-cols-4 gap-1.5 w-full">
-            {milestones.map((m, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center p-1.5 rounded-lg bg-stone-50 border border-stone-100">
+            {milestones.map((m: any, idx: number) => (
+              <div key={m.id || idx} className="flex flex-col items-center text-center p-1.5 rounded-lg bg-stone-50 border border-stone-100">
                 <span className="text-xs font-bold text-amber-800">{m.year}</span>
                 <span className="text-[9px] text-stone-600 line-clamp-1 mt-0.5">{m.title}</span>
               </div>
@@ -181,17 +191,20 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
       );
     }
     case "menu": {
-      const courses = [
-        { type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
-        { type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
-        { type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
-      ];
+      const courses = Array.isArray(config.menuCourses) && config.menuCourses.length > 0
+        ? config.menuCourses
+        : [
+            { type: "Khai vị", dish: "Súp Hải Sản & Gỏi Ngó Sen Tôm Thịt" },
+            { type: "Món chính", dish: "Gà Hấp Lá Chanh, Bò Sốt Tiêu Đen, Cá Hấp Hồng Kông" },
+            { type: "Tráng miệng", dish: "Chè Hạt Sen Long Nhãn & Trái Cây Tươi" },
+          ];
+      const mTitle = config.menuTitle || config.title || "Thực Đơn Tiệc Cưới";
       return (
         <div className="flex size-full flex-col items-center justify-center p-3 text-center text-stone-800 bg-white/90 rounded-2xl border border-stone-200/80 shadow-xs">
-          {heading || <h3 className="text-xs font-bold uppercase tracking-widest text-amber-900 mb-1.5">Thực Đơn Tiệc Cưới</h3>}
+          {heading || <h3 className="text-xs font-bold uppercase tracking-widest text-amber-900 mb-1.5">{mTitle}</h3>}
           <div className="w-full space-y-1 text-left text-xs">
-            {courses.map((item, idx) => (
-              <div key={idx} className="border-b border-stone-100 pb-1">
+            {courses.map((item: any, idx: number) => (
+              <div key={item.id || idx} className="border-b border-stone-100 pb-1">
                 <span className="text-[9px] font-bold text-amber-800 uppercase block">{item.type}</span>
                 <span className="text-[10px] text-stone-700 block truncate">{item.dish}</span>
               </div>
@@ -203,15 +216,23 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
     case "procession-route": {
       const bTitle = config.brideTitle || "LỄ VU QUY";
       const bDate = config.brideDate || "Vào Thứ Hai - 09h00";
+      const bMonth = config.brideMonth || "Tháng 02";
+      const bDay = config.brideDay || "21";
+      const bYear = config.brideYear || "2026";
       const bLunar = config.brideLunarDate || "Tức Ngày 16 tháng 12 năm Ất Tỵ";
       const bVenue = config.brideVenue || "tại tư gia nhà gái";
       const bMap = safeCanvasLink(config.brideMapUrl || "https://maps.google.com");
+      const bBtn = config.brideButtonText || "Chỉ đường";
 
       const gTitle = config.groomTitle || "LỄ THÀNH HÔN";
       const gDate = config.groomDate || "Vào Thứ Hai - 14h00";
+      const gMonth = config.groomMonth || "Tháng 02";
+      const gDay = config.groomDay || "21";
+      const gYear = config.groomYear || "2026";
       const gLunar = config.groomLunarDate || "Tức Ngày 16 tháng 12 năm Ất Tỵ";
       const gVenue = config.groomVenue || "TẠI TƯ GIA NHÀ TRAI";
       const gMap = safeCanvasLink(config.groomMapUrl || "https://maps.google.com");
+      const gBtn = config.groomButtonText || "Chỉ đường";
 
       return (
         <div className="flex size-full flex-col justify-between p-4 bg-[#FCFAF7]/95 rounded-2xl border border-amber-900/10 shadow-sm text-stone-800 select-none overflow-hidden text-center">
@@ -220,9 +241,9 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
             <h4 className="font-serif font-bold text-base tracking-wider text-[#7A121D] uppercase">{bTitle}</h4>
             <p className="font-serif text-xs text-stone-600">{bDate}</p>
             <div className="flex items-center justify-center gap-2 font-serif text-[#7A121D] py-0.5">
-              <span className="text-xs uppercase tracking-wider">Tháng 02</span>
-              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">21</span>
-              <span className="text-xs uppercase tracking-wider">2026</span>
+              <span className="text-xs uppercase tracking-wider">{bMonth}</span>
+              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">{bDay}</span>
+              <span className="text-xs uppercase tracking-wider">{bYear}</span>
             </div>
             <p className="text-[10px] italic text-stone-500">{bLunar}</p>
             <div className="flex items-center justify-end gap-1.5 pr-2 pt-0.5">
@@ -230,7 +251,7 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
                 <span className="text-[10px] font-serif font-bold text-[#A26D38] block leading-tight">{bVenue}</span>
                 {bMap && (
                   <a href={bMap} target="_blank" rel="noopener noreferrer" className="inline-block mt-0.5 px-2.5 py-0.5 rounded bg-[#4A151B] text-white text-[9px] font-bold uppercase tracking-wider hover:opacity-90">
-                    Chỉ đường
+                    {bBtn}
                   </a>
                 )}
               </div>
@@ -262,7 +283,7 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
                 <span className="text-[10px] font-serif font-bold text-[#A26D38] block leading-tight">{gVenue}</span>
                 {gMap && (
                   <a href={gMap} target="_blank" rel="noopener noreferrer" className="inline-block mt-0.5 px-2.5 py-0.5 rounded bg-[#4A151B] text-white text-[9px] font-bold uppercase tracking-wider hover:opacity-90">
-                    Chỉ đường
+                    {gBtn}
                   </a>
                 )}
               </div>
@@ -270,9 +291,9 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
             <h4 className="font-serif font-bold text-base tracking-wider text-[#7A121D] uppercase">{gTitle}</h4>
             <p className="font-serif text-xs text-stone-600">{gDate}</p>
             <div className="flex items-center justify-center gap-2 font-serif text-[#7A121D] py-0.5">
-              <span className="text-xs uppercase tracking-wider">Tháng 02</span>
-              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">21</span>
-              <span className="text-xs uppercase tracking-wider">2026</span>
+              <span className="text-xs uppercase tracking-wider">{gMonth}</span>
+              <span className="text-2xl font-bold px-1.5 border-x border-[#7A121D]/30 leading-none">{gDay}</span>
+              <span className="text-xs uppercase tracking-wider">{gYear}</span>
             </div>
             <p className="text-[10px] italic text-stone-500">{gLunar}</p>
           </div>
@@ -318,6 +339,9 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
     case "swan-ceremony": {
       const mainTitle = config.title || "LỄ THÀNH HÔN";
       const timeDesc = config.description || "ĐƯỢC TỔ CHỨC VÀO LÚC 09:30, THỨ BẢY";
+      const cMonth = config.ceremonyMonth || "THÁNG 12";
+      const cDay = config.ceremonyDay || "29";
+      const cYear = config.ceremonyYear || "NĂM 2026";
       const venue = config.groomVenue || "TẠI TƯ GIA NHÀ TRAI";
       const addr = config.groomAddress || "174 Đường Trần Văn Kiểu, Phường 10, TP Hồ Chí Minh";
       const lunar = config.groomLunarDate || "(Tức ngày 18 tháng 10 năm Bính Ngọ)";
@@ -356,11 +380,11 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
           {/* Ô số ngày tháng kiểu khung ngang */}
           <div className="flex items-center justify-center gap-3 font-serif py-1 w-full max-w-[260px] border-y border-stone-200">
             <div className="border-b-2 border-[#7A121D] pb-0.5">
-              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">THÁNG 12</span>
+              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">{cMonth}</span>
             </div>
-            <span className="text-3xl font-bold text-[#7A121D] leading-none">29</span>
+            <span className="text-3xl font-bold text-[#7A121D] leading-none">{cDay}</span>
             <div className="border-b-2 border-[#7A121D] pb-0.5">
-              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">NĂM 2026</span>
+              <span className="text-xs uppercase tracking-wider text-[#7A121D] font-bold">{cYear}</span>
             </div>
           </div>
           <p className="text-[10px] italic text-stone-500">{lunar}</p>

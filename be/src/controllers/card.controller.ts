@@ -41,12 +41,22 @@ export class CardController {
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { userId, accountId } = CardController.getAuth(req);
-      const idempotencyKey = req.header("Idempotency-Key")?.trim();
-      if (!idempotencyKey) {
-        return res.status(400).json({ success: false, error: "Thiếu Idempotency-Key" });
+      const idempotencyKey = req.header("Idempotency-Key")?.trim() || crypto.randomUUID();
+
+      // Normalize body để tương thích cả data và categoryData từ client
+      const body = { ...(req.body || {}) };
+      if (!body.data && body.categoryData) {
+        body.data = body.categoryData;
       }
+      if (!body.data || typeof body.data !== "object") {
+        body.data = { cardCategory: (body.cardCategory as string)?.toUpperCase() || "WEDDING" };
+      } else {
+        const cat = (body.data.cardCategory || body.cardCategory || "WEDDING").toString().toUpperCase();
+        body.data = { ...body.data, cardCategory: cat };
+      }
+
       // Parse trực tiếp — ZodError sẽ được bắt bởi global error handler
-      const input = DraftCardSchema.parse(req.body);
+      const input = DraftCardSchema.parse(body);
       const card = await CardService.createDraft(userId, accountId, input, idempotencyKey);
       return res.status(201).json({ success: true, data: card });
     } catch (error: unknown) {
@@ -57,7 +67,17 @@ export class CardController {
   static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { accountId } = CardController.getAuth(req);
-      const input = DraftCardSchema.parse(req.body);
+
+      const body = { ...(req.body || {}) };
+      if (!body.data && body.categoryData) {
+        body.data = body.categoryData;
+      }
+      if (body.data && typeof body.data === "object") {
+        const cat = (body.data.cardCategory || body.cardCategory || "WEDDING").toString().toUpperCase();
+        body.data = { ...body.data, cardCategory: cat };
+      }
+
+      const input = DraftCardSchema.parse(body);
 
       const ifMatchHeader = req.headers["if-match"];
       const expectedUpdatedAt =

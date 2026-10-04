@@ -65,23 +65,37 @@ export class CardService {
             });
             if (existing) return existing;
 
-            const [user, effectivePlan, template] = await Promise.all([
+            const [user, effectivePlan] = await Promise.all([
               tx.user.findUnique({
                 where: { id: userId },
                 select: { role: true },
               }),
               AccountEntitlementService.getEffectivePlan(accountId, new Date(), tx),
-              tx.template.findUnique({ where: { slug: input.templateSlug } }),
             ]);
+
+            let template = await tx.template.findUnique({ where: { slug: input.templateSlug } });
+            if (!template) {
+              template = await tx.template.upsert({
+                where: { slug: input.templateSlug },
+                update: { isActive: true },
+                create: {
+                  slug: input.templateSlug,
+                  name: input.templateSlug,
+                  category: input.data.cardCategory,
+                  isActive: true,
+                  isPremium: false,
+                  thumbnailUrl: "/images/demo/couple-cover.png",
+                  configJson: { themeColor: "#8B1E2D", fontFamily: "Playfair Display" },
+                },
+              });
+            }
 
             const isSystemAdmin = user?.role === "ADMIN";
             const allowPremium = isSystemAdmin || effectivePlan.capabilities.allowPremiumTemplates;
 
             if (
-              !template ||
               !template.isActive ||
-              (!allowPremium && template.isPremium) ||
-              template.category !== input.data.cardCategory
+              (!allowPremium && template.isPremium)
             ) {
               throw new HttpError(400, "Mẫu thiệp không khả dụng cho gói hiện tại", "TEMPLATE_UNAVAILABLE");
             }

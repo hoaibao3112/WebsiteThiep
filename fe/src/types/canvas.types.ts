@@ -246,6 +246,38 @@ export interface WidgetConfig {
   signatureButtonText?: string;
   signatureSubmitText?: string;
   signatureClearText?: string;
+
+  // --- Timeline Widget ---
+  timelineTitle?: string;
+  timelineEvents?: Array<{ id: string; time: string; label: string }>;
+
+  // --- Dress Code Widget ---
+  dressCodeTitle?: string;
+  dressCodeDescription?: string;
+  dressCodeColors?: Array<{ id: string; name: string; hex: string; border?: string }>;
+
+  // --- Love Story Widget ---
+  loveStoryTitle?: string;
+  loveStoryMilestones?: Array<{ id: string; year: string; title: string; description?: string }>;
+
+  // --- Menu Widget ---
+  menuTitle?: string;
+  menuCourses?: Array<{ id: string; type: string; dish: string }>;
+
+  // --- Procession Route Widget ---
+  brideMonth?: string;
+  brideDay?: string;
+  brideYear?: string;
+  brideButtonText?: string;
+  groomMonth?: string;
+  groomDay?: string;
+  groomYear?: string;
+  groomButtonText?: string;
+
+  // --- Swan Ceremony Widget ---
+  ceremonyMonth?: string;
+  ceremonyDay?: string;
+  ceremonyYear?: string;
 }
 export type CanvasWidgetConfig = WidgetConfig;
 

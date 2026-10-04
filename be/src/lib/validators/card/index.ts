@@ -139,7 +139,7 @@ const CommonDraftFields = {
   fallingEffect: z.enum(["NONE", "PETAL", "HEART", "SNOW", "CONFETTI", "BALLOON"]).default("PETAL"),
   musicUrl: z.string().trim().max(2_000).nullable().optional(),
   isAutoPlay: z.boolean().default(true),
-  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#D4AF37"),
+  primaryColor: z.string().trim().max(50).default("#D4AF37"),
   fontFamily: z.string().trim().min(1).max(100).default("Inter"),
   greetingMessage: z.string().trim().max(2_000).nullable().optional(),
   bankingPrimary: z.object({
@@ -189,12 +189,12 @@ const CommonDraftFields = {
   }).nullable().optional(),
   photos: z.array(PhotoSchema).max(50).default([]),
   events: z.array(DraftEventSchema).max(10).default([]),
-  data: DraftCategoryDataSchema,
+  data: DraftCategoryDataSchema.optional().default({ cardCategory: "WEDDING" }),
   expectedUpdatedAt: z.union([z.string(), z.date()]).optional(),
   version: z.number().int().optional(),
 };
 
-export const DraftCardSchema = z.object(CommonDraftFields);
+export const DraftCardSchema = z.object(CommonDraftFields).passthrough();
 export const UpdateDraftCardSchema = DraftCardSchema;
 export const PublishCardDataSchema = CategoryDataSchema;
 
