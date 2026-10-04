@@ -20,6 +20,9 @@ import {
   Video,
   GalleryHorizontalEnd,
   MonitorPlay,
+  FileText,
+  CalendarPlus,
+  PenTool,
 } from "lucide-react";
 import { useEditor } from "../EditorContext";
 import type { WidgetType } from "@/types/canvas.types";
@@ -41,11 +44,14 @@ const widgets: WidgetItem[] = [
   { type: "menu", label: "Thực đơn tiệc", desc: "Menu món khai vị, món chính", icon: UtensilsCrossed },
   { type: "calendar", label: "Lịch ngày cưới", desc: "Hiển thị ngày tháng tổ chức", icon: CalendarDays },
   { type: "countdown", label: "Đếm ngược ngày cưới", desc: "Đồng hồ đếm ngược từng giây", icon: Timer },
+  { type: "reminder", label: "Thêm vào lịch hẹn", desc: "Google / Apple Calendar reminder", icon: CalendarPlus },
   { type: "map", label: "Bản đồ & Chỉ đường", desc: "Địa chỉ và nút Google Maps", icon: MapPin },
   { type: "rsvp", label: "Xác nhận tham dự", desc: "Form khách gửi phản hồi dự tiệc", icon: UserCheck },
+  { type: "custom-form", label: "Biểu mẫu tùy chỉnh", desc: "Khảo sát, câu hỏi, đăng ký dịch vụ", icon: FileText },
+  { type: "guest-signature", label: "Sổ lưu bút ký tên", desc: "Khách vẽ chữ ký & gửi lời chúc", icon: PenTool },
   { type: "gift", label: "Hộp mừng cưới / QR", desc: "Mã QR nhận lời chúc mừng", icon: Gift },
   { type: "album", label: "Album ảnh cưới", desc: "Bộ sưu tập ảnh kỷ niệm", icon: Images },
-  { type: "contact", label: "Số điện thoại liên hệ", desc: "Gọi trực tiếp cho gia đình", icon: Phone },
+  { type: "contact", label: "Nút liên hệ đa kênh", desc: "Gọi điện, Zalo, Messenger...", icon: Phone },
   { type: "envelope", label: "Hiệu ứng phong bì thư", desc: "Mở bao thư tương tác", icon: Mail },
   { type: "guest-name", label: "Tên khách mời", desc: "Cá nhân hóa theo từng khách", icon: UserRound },
   { type: "embed-video", label: "Nhúng Video", desc: "YouTube, Vimeo, TikTok", icon: Video },

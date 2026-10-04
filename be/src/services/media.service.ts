@@ -123,5 +123,82 @@ export class MediaService {
     const thumbUrl = photoUrl.replace("/upload/", "/upload/c_thumb,w_400,h_400,g_auto,q_auto,f_auto/");
     return { photoUrl, thumbUrl };
   }
+
+  /**
+   * Upload Buffer truc tiep len Cloudinary (dung cho signature data URL)
+   */
+  static async uploadBuffer(
+    buffer: Buffer,
+    filename: string,
+    mimetype: string,
+    folder = "cardvite/signatures"
+  ): Promise<{ url: string; thumbUrl?: string }> {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!cloudName || !apiKey || !apiSecret) {
+      throw new Error("Cloudinary chua duoc cau hinh");
+    }
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = crypto
+      .createHash("sha1")
+      .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+      .digest("hex");
+
+    const form = new FormData();
+    form.append("file", new Blob([buffer], { type: mimetype }), filename);
+    form.append("api_key", apiKey);
+    form.append("timestamp", String(timestamp));
+    form.append("folder", folder);
+    form.append("signature", signature);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
+    if (!response.ok || !result.secure_url) {
+      throw new Error(`Cloudinary upload that bai: ${result.error?.message || response.statusText}`);
+    }
+
+    const url = result.secure_url;
+    const thumbUrl = url.replace("/upload/", "/upload/c_thumb,w_200,h_200,g_auto,q_auto,f_auto/");
+    return { url, thumbUrl };
+  }
+
+  /**
+   * Xoa anh tren Cloudinary theo URL (trich public_id tu URL)
+   */
+  static async deleteByUrl(url: string): Promise<void> {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    if (!cloudName || !apiKey || !apiSecret) return;
+
+    // Extract public_id from Cloudinary URL
+    const match = url.match(/\/v\d+\/(.+?)(?:\.\w+)?$/);
+    if (!match?.[1]) return;
+    const publicId = match[1];
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = crypto
+      .createHash("sha1")
+      .update(`public_id=${publicId}&timestamp=${timestamp}${apiSecret}`)
+      .digest("hex");
+
+    const form = new FormData();
+    form.append("public_id", publicId);
+    form.append("api_key", apiKey);
+    form.append("timestamp", String(timestamp));
+    form.append("signature", signature);
+
+    await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(10_000),
+    }).catch(() => {/* silent */});
+  }
 }
 

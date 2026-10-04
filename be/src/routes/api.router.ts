@@ -16,6 +16,9 @@ import { EnvelopeController } from "../controllers/envelope.controller";
 import { WeddingMemoryController } from "../controllers/wedding-memory.controller";
 import { Album3DController } from "../controllers/album-3d.controller";
 import { AiController } from "../controllers/ai.controller";
+import { CustomFormController } from "../controllers/custom-form.controller";
+import { ReminderController } from "../controllers/reminder.controller";
+import { GuestSignatureController } from "../controllers/guest-signature.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -144,4 +147,21 @@ apiRouter.post("/ai/chat", validate(AiChatSchema), AiController.chat);
 apiRouter.get("/ai/leads", authGuard, adminGuard, AiController.getLeads);
 apiRouter.post("/ai/seed", authGuard, adminGuard, AiController.seedKnowledge);
 apiRouter.get("/ai/knowledge", authGuard, adminGuard, AiController.getKnowledge);
+
+// --- CUSTOM FORM ROUTES ---
+apiRouter.post("/cards/:cardId/custom-form/:elementId/submit", CustomFormController.submit);
+apiRouter.get("/cards/:cardId/custom-form/:elementId/submissions", authGuard, CustomFormController.getSubmissions);
+apiRouter.delete("/cards/:cardId/custom-form/:elementId/submissions/:submissionId", authGuard, CustomFormController.deleteSubmission);
+
+// --- REMINDER / CALENDAR ROUTES ---
+apiRouter.get("/cards/:cardId/reminder/google-calendar-url", ReminderController.getGoogleCalendarUrl);
+apiRouter.get("/cards/:cardId/reminder/ics", ReminderController.downloadIcs);
+
+// --- GUEST SIGNATURE (SỔ LƯU BÚT) ROUTES ---
+apiRouter.post("/cards/:cardId/signature/:elementId/submit", GuestSignatureController.submit);
+apiRouter.get("/cards/:cardId/signature/:elementId/gallery", GuestSignatureController.getGallery);
+apiRouter.get("/cards/:cardId/signature/:elementId/list", authGuard, GuestSignatureController.getList);
+apiRouter.patch("/cards/:cardId/signature/:elementId/:signatureId/approve", authGuard, GuestSignatureController.toggleApprove);
+apiRouter.delete("/cards/:cardId/signature/:elementId/:signatureId", authGuard, GuestSignatureController.deleteSignature);
+
 

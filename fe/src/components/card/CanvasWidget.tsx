@@ -4,6 +4,11 @@ import React, { useEffect, useState } from "react";
 import { CalendarDays, Gift, Heart, Mail, MapPin, Phone, UserCheck, Video, ChevronLeft, ChevronRight } from "lucide-react";
 import type { CanvasElement } from "@/types/canvas.types";
 import { readRecord, safeCanvasLink } from "@/lib/editor/canvas-presentation";
+import { ContactWidget } from "./widgets/ContactWidget";
+import { ReminderWidget } from "./widgets/ReminderWidget";
+import { RsvpWidget } from "./widgets/RsvpWidget";
+import { CustomFormWidget } from "./widgets/CustomFormWidget";
+import { GuestSignatureWidget } from "./widgets/GuestSignatureWidget";
 
 interface Props {
   element: CanvasElement;
@@ -16,6 +21,8 @@ interface Props {
 export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Props) {
   const config = element.widgetConfig ?? {};
   const root = readRecord(draft);
+  const cardId = (root.id as string) || (root.cardId as string) || "";
+  const isEditor = Boolean((root as any).isEditor);
   const events = Array.isArray(root.events) ? root.events : [];
   const firstEvent = readRecord(events[0]);
   const dateInput = config.eventDate || firstEvent.eventDate;
@@ -77,7 +84,7 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
         </div>
       );
     case "rsvp":
-      return <div className="flex size-full flex-col items-center justify-center gap-3 text-center">{heading}{text}<button type="button" className={buttonClass} onClick={onRsvp}><UserCheck className="size-4" />{config.buttonLabel || "Gửi xác nhận"}</button></div>;
+      return <RsvpWidget config={config} cardId={cardId} guestName={guestName} isEditor={isEditor} />;
     case "gift":
       return <div className="flex size-full flex-col items-center justify-center gap-3">{heading}<Gift className="size-8" />{text}<button type="button" className={buttonClass} onClick={onGift}>{config.buttonLabel || "Mở hộp mừng cưới"}</button></div>;
     case "guest-name":
@@ -86,11 +93,14 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
       const url = safeCanvasLink(config.url || (typeof firstEvent.mapUrl === "string" ? firstEvent.mapUrl : undefined));
       return <div className="flex size-full flex-col items-center justify-center gap-3 rounded-xl bg-stone-100 p-3">{heading}<MapPin className="size-8" /><p className="text-sm">{config.description || String(firstEvent.address || "Địa điểm tổ chức")}</p>{url ? <a href={url} target="_blank" rel="noopener noreferrer" className={buttonClass}>{config.buttonLabel || "Xem chỉ đường"}</a> : <p className="text-xs">Chưa có liên kết bản đồ</p>}</div>;
     }
-    case "contact": {
-      const phone = (config.phone || "").replace(/[\s()-]/g, "");
-      const url = safeCanvasLink(`tel:${phone}`);
-      return <div className="flex size-full flex-col items-center justify-center gap-3">{heading}<Phone className="size-6" />{text}{url ? <a href={url} className={buttonClass}>{config.buttonLabel || config.phone}</a> : <p className="text-xs">Chưa có số liên hệ</p>}</div>;
-    }
+    case "contact":
+      return <ContactWidget config={config} heading={heading} />;
+    case "reminder":
+      return <ReminderWidget config={config} cardId={cardId} elementId={element.id} defaultEventDate={typeof firstEvent.eventDate === "string" ? firstEvent.eventDate : undefined} />;
+    case "custom-form":
+      return <CustomFormWidget config={config} cardId={cardId} elementId={element.id} isEditor={isEditor} />;
+    case "guest-signature":
+      return <GuestSignatureWidget config={config} cardId={cardId} elementId={element.id} isEditor={isEditor} />;
     case "album": {
       const photos = Array.isArray(root.photos) ? root.photos.map(readRecord).filter(photo => typeof photo.url === "string") : [];
       return <div className="flex size-full flex-col gap-2">{heading}<div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-auto">{photos.map((photo, index) => <img key={index} src={String(photo.url)} alt={typeof photo.caption === "string" ? photo.caption : `Ảnh cưới ${index + 1}`} className="size-full min-h-0 object-cover" loading="lazy" />)}</div>{photos.length === 0 && <p className="text-xs">Thêm ảnh vào album thiệp</p>}</div>;

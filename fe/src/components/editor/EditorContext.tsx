@@ -1728,6 +1728,99 @@ export function EditorProvider<T extends object>({
         showCopyButton: true,
         showBankLogo: true,
       };
+    } else if (widgetType === "rsvp") {
+      w = 340;
+      h = 380;
+      initialConfig = {
+        title: "Xác Nhận Tham Dự",
+        rsvpTitle: "Xác Nhận Tham Dự",
+        rsvpSubtitle: "Sự hiện diện của quý khách là niềm vinh hạnh cho gia đình chúng tôi!",
+        rsvpFormStyle: "elegant",
+        rsvpShowGuestCount: true,
+        rsvpShowSide: true,
+        rsvpShowNote: true,
+        rsvpShowPhone: true,
+        rsvpRequirePhone: true,
+        rsvpButtonText: "Gửi Xác Nhận",
+        rsvpButtonColor: "#D4AF37",
+        rsvpSuccessMessage: "Cảm ơn quý khách đã gửi phản hồi!",
+        rsvpAttendingLabel: "Tham dự",
+        rsvpDeclinedLabel: "Rất tiếc không thể đến",
+      };
+    } else if (widgetType === "contact") {
+      w = 320;
+      h = 160;
+      initialConfig = {
+        title: "Liên Hệ Gia Đình",
+        contactTitle: "Liên Hệ Gia Đình",
+        contactSubtitle: "Liên hệ trực tiếp để được đón tiếp chu đáo nhất",
+        contactStyle: "buttons-row",
+        contactButtonSize: "md",
+        contactShowLabel: true,
+        contactChannels: [
+          { id: "c-1", type: "phone", label: "Gọi Chú Rể", value: "0901234567", enabled: true, sortOrder: 0, buttonColor: "#2563EB" },
+          { id: "c-2", type: "phone", label: "Gọi Cô Dâu", value: "0987654321", enabled: true, sortOrder: 1, buttonColor: "#E11D48" },
+          { id: "c-3", type: "zalo", label: "Nhắn Zalo", value: "https://zalo.me/0901234567", enabled: true, sortOrder: 2, buttonColor: "#0068FF" },
+        ],
+      };
+    } else if (widgetType === "reminder") {
+      w = 320;
+      h = 200;
+      initialConfig = {
+        title: "Thêm Vào Lịch Hẹn",
+        reminderTitle: "Đừng Quên Ngày Trọng Đại",
+        reminderDescription: "Nhấn nút bên dưới để lưu lịch hẹn vào điện thoại của bạn",
+        reminderEventTitle: "Lễ Cưới Mạnh Đức & Lan Nhi",
+        reminderEventDescription: "Tiệc cưới thân mật tổ chức tại Trung tâm Hội nghị",
+        reminderEventLocation: "TP. Hồ Chí Minh",
+        reminderDurationMinutes: 240,
+        reminderStyle: "card",
+        reminderButtonText: "Thêm Vào Lịch",
+        reminderShowGoogle: true,
+        reminderShowApple: true,
+        reminderShowOutlook: true,
+        reminderButtonColor: "#D4AF37",
+      };
+    } else if (widgetType === "custom-form") {
+      w = 340;
+      h = 420;
+      initialConfig = {
+        title: "Biểu Mẫu Tùy Chỉnh",
+        customFormTitle: "Khảo Sát Đón Tiếp Khách Mời",
+        customFormSubtitle: "Vui lòng cho chúng tôi biết thông tin để sắp xếp chu đáo nhất",
+        customFormButtonText: "Gửi Phản Hồi",
+        customFormButtonColor: "#D4AF37",
+        customFormStyle: "elegant",
+        customFormSuccessMessage: "Cảm ơn bạn đã gửi phản hồi!",
+        customFormAllowMultipleSubmit: false,
+        customFormFields: [
+          { id: "f-1", type: "text", label: "Họ và tên của bạn", placeholder: "Nhập họ tên...", required: true, sortOrder: 0 },
+          { id: "f-2", type: "phone", label: "Số điện thoại liên hệ", placeholder: "09xxxxxxxx", required: true, sortOrder: 1 },
+          { id: "f-3", type: "radio", label: "Bạn cần xe đưa đón không?", options: ["Có, tôi cần xe", "Không, tôi tự di chuyển"], required: false, sortOrder: 2 },
+          { id: "f-4", type: "textarea", label: "Ghi chú thêm về món ăn hoặc chỗ ngồi", placeholder: "Ăn chay, dị ứng thực phẩm...", required: false, sortOrder: 3 },
+        ],
+      };
+    } else if (widgetType === "guest-signature") {
+      w = 340;
+      h = 460;
+      initialConfig = {
+        title: "Sổ Lưu Bút Ký Tên",
+        signatureTitle: "Sổ Lưu Bút Kỹ Thuật Số",
+        signatureSubtitle: "Hãy để lại chữ ký và lời chúc kỷ niệm cho đôi uyên ương!",
+        signatureInstructions: "Dùng ngón tay hoặc chuột để ký tên vào khung bên dưới",
+        signatureCanvasColor: "#FFFDF9",
+        signaturePenColor: "#2C1810",
+        signaturePenWidth: 3,
+        signatureStyle: "polaroid",
+        signatureRequireName: true,
+        signatureRequireMessage: true,
+        signatureMaxMessageLength: 150,
+        signatureShowGallery: true,
+        signatureGalleryLimit: 12,
+        signatureButtonText: "Ký Tên Ngay",
+        signatureSubmitText: "Lưu Chữ Ký",
+        signatureClearText: "Xoá Vẽ Lại",
+      };
     }
 
     const { x: defaultX, y: defaultY, neededHeight } = getDefaultPosition(w, h, pos);

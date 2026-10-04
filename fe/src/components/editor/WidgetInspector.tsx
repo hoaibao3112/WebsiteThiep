@@ -77,6 +77,16 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
           ? "🗺️ Bản Đồ & Chỉ Đường"
           : element.widgetType === "gift"
           ? "🎁 Hộp Mừng Cưới / QR"
+          : element.widgetType === "rsvp"
+          ? "💌 Xác Nhận Tham Dự (RSVP)"
+          : element.widgetType === "contact"
+          ? "📞 Nút Liên Hệ Đa Kênh"
+          : element.widgetType === "reminder"
+          ? "🔔 Thêm Lời Nhắc Lịch"
+          : element.widgetType === "custom-form"
+          ? "📋 Biểu Mẫu Tùy Chỉnh"
+          : element.widgetType === "guest-signature"
+          ? "✍️ Sổ Lưu Bút Ký Tên"
           : "Nội dung tiện ích"}
       </legend>
 
@@ -617,7 +627,397 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
         </div>
       )}
 
-      {/* ── CÁC TRƯỜNG TIỆN ÍCH CƠ BẢN KHÁC (contact, rsvp, album, guest-name...) ── */}
+      {/* ── CÁC TRƯỜNG DÀNH RIÊNG CHO RSVP ── */}
+      {element.widgetType === "rsvp" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề form
+            <input className={inputClass} value={config.rsvpTitle ?? config.title ?? ""} placeholder="Xác Nhận Tham Dự" onChange={(e) => update({ rsvpTitle: e.target.value, title: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả / Lời ngỏ
+            <textarea className={inputClass} rows={2} value={config.rsvpSubtitle ?? config.description ?? ""} placeholder="Sự hiện diện của quý khách..." onChange={(e) => update({ rsvpSubtitle: e.target.value, description: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tên nút gửi
+            <input className={inputClass} value={config.rsvpButtonText ?? config.buttonLabel ?? ""} placeholder="Gửi Xác Nhận" onChange={(e) => update({ rsvpButtonText: e.target.value, buttonLabel: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Màu nút xác nhận
+            <div className="flex items-center gap-2">
+              <input type="color" className="size-8 rounded border border-stone-200 cursor-pointer" value={config.rsvpButtonColor || "#D4AF37"} onChange={(e) => update({ rsvpButtonColor: e.target.value })} />
+              <input className={inputClass} value={config.rsvpButtonColor || "#D4AF37"} onChange={(e) => update({ rsvpButtonColor: e.target.value })} />
+            </div>
+          </label>
+          <div className="rounded-lg bg-stone-50 p-2.5 border border-stone-200 space-y-2">
+            <span className="text-[11px] font-bold text-stone-700 block uppercase">Tùy Chọn Các Trường Form</span>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.rsvpShowGuestCount !== false} onChange={(e) => update({ rsvpShowGuestCount: e.target.checked })} />
+              Hỏi số người tham dự cùng
+            </label>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.rsvpShowSide !== false} onChange={(e) => update({ rsvpShowSide: e.target.checked })} />
+              Hỏi khách phía nhà Trai / Gái
+            </label>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.rsvpShowNote !== false} onChange={(e) => update({ rsvpShowNote: e.target.checked })} />
+              Ô nhập lời chúc & ghi chú món ăn
+            </label>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.rsvpShowPhone !== false} onChange={(e) => update({ rsvpShowPhone: e.target.checked })} />
+              Trường số điện thoại
+            </label>
+            {config.rsvpShowPhone !== false && (
+              <label className="flex items-center gap-2 text-xs text-stone-700 ml-4 cursor-pointer">
+                <input type="checkbox" checked={config.rsvpRequirePhone !== false} onChange={(e) => update({ rsvpRequirePhone: e.target.checked })} />
+                Bắt buộc điền số điện thoại
+              </label>
+            )}
+          </div>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Thông báo sau khi gửi thành công
+            <textarea className={inputClass} rows={2} value={config.rsvpSuccessMessage ?? ""} placeholder="Cảm ơn quý khách đã phản hồi..." onChange={(e) => update({ rsvpSuccessMessage: e.target.value })} />
+          </label>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH RIÊNG CHO NÚT LIÊN HỆ ĐA KÊNH ── */}
+      {element.widgetType === "contact" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề
+            <input className={inputClass} value={config.contactTitle ?? config.title ?? ""} placeholder="Liên Hệ Gia Đình" onChange={(e) => update({ contactTitle: e.target.value, title: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả
+            <input className={inputClass} value={config.contactSubtitle ?? config.description ?? ""} placeholder="Liên hệ trực tiếp..." onChange={(e) => update({ contactSubtitle: e.target.value, description: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Kiểu hiển thị
+              <select className={inputClass} value={config.contactStyle ?? "buttons-row"} onChange={(e) => update({ contactStyle: e.target.value as any })}>
+                <option value="buttons-row">Các nút ngang hàng</option>
+                <option value="buttons-grid">Dạng lưới 2 cột</option>
+                <option value="list">Danh sách dọc</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Kích thước nút
+              <select className={inputClass} value={config.contactButtonSize ?? "md"} onChange={(e) => update({ contactButtonSize: e.target.value as any })}>
+                <option value="sm">Nhỏ (sm)</option>
+                <option value="md">Vừa (md)</option>
+                <option value="lg">Lớn (lg)</option>
+              </select>
+            </label>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-stone-800">Danh Sách Kênh Liên Hệ</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.contactChannels || [];
+                  const newChannel = {
+                    id: `ch-${Date.now()}`,
+                    type: "phone" as const,
+                    label: "Gọi Chú Rể",
+                    value: "0901234567",
+                    enabled: true,
+                    sortOrder: current.length,
+                    buttonColor: "#2563EB",
+                  };
+                  update({ contactChannels: [...current, newChannel] });
+                }}
+                className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-200 cursor-pointer"
+              >
+                <Plus className="size-3" /> Thêm Kênh
+              </button>
+            </div>
+            {(config.contactChannels || []).map((ch, idx) => (
+              <div key={ch.id} className="rounded-xl border border-stone-200 bg-stone-50/70 p-2.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-stone-700">Kênh #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (config.contactChannels || []).filter(c => c.id !== ch.id);
+                      update({ contactChannels: updated });
+                    }}
+                    className="text-stone-400 hover:text-rose-600 transition cursor-pointer"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <select
+                    className={inputClass}
+                    value={ch.type}
+                    onChange={(e) => {
+                      const updated = [...(config.contactChannels || [])];
+                      updated[idx] = { ...updated[idx], type: e.target.value as any };
+                      update({ contactChannels: updated });
+                    }}
+                  >
+                    <option value="phone">Gọi điện (Phone)</option>
+                    <option value="zalo">Nhắn Zalo</option>
+                    <option value="messenger">Facebook Messenger</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">Email</option>
+                    <option value="telegram">Telegram</option>
+                  </select>
+                  <input
+                    className={inputClass}
+                    value={ch.label}
+                    placeholder="Nhãn nút (vd: Gọi Chú Rể)"
+                    onChange={(e) => {
+                      const updated = [...(config.contactChannels || [])];
+                      updated[idx] = { ...updated[idx], label: e.target.value };
+                      update({ contactChannels: updated });
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-1.5 items-center">
+                  <input
+                    className={`${inputClass} col-span-2`}
+                    value={ch.value}
+                    placeholder="Số ĐT hoặc Link"
+                    onChange={(e) => {
+                      const updated = [...(config.contactChannels || [])];
+                      updated[idx] = { ...updated[idx], value: e.target.value };
+                      update({ contactChannels: updated });
+                    }}
+                  />
+                  <input
+                    type="color"
+                    className="size-8 w-full rounded border border-stone-200 cursor-pointer"
+                    value={ch.buttonColor || "#1E293B"}
+                    onChange={(e) => {
+                      const updated = [...(config.contactChannels || [])];
+                      updated[idx] = { ...updated[idx], buttonColor: e.target.value };
+                      update({ contactChannels: updated });
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH RIÊNG CHO LỜI NHẮC CALENDAR ── */}
+      {element.widgetType === "reminder" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề widget
+            <input className={inputClass} value={config.reminderTitle ?? config.title ?? ""} placeholder="Đừng Quên Ngày Trọng Đại" onChange={(e) => update({ reminderTitle: e.target.value, title: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tên sự kiện trên lịch
+            <input className={inputClass} value={config.reminderEventTitle ?? ""} placeholder="Lễ Cưới Mạnh Đức & Lan Nhi" onChange={(e) => update({ reminderEventTitle: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả sự kiện
+            <textarea className={inputClass} rows={2} value={config.reminderEventDescription ?? ""} placeholder="Trân trọng kính mời..." onChange={(e) => update({ reminderEventDescription: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Địa điểm tổ chức
+            <input className={inputClass} value={config.reminderEventLocation ?? ""} placeholder="Trung tâm tiệc cưới..." onChange={(e) => update({ reminderEventLocation: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Kiểu hiển thị
+              <select className={inputClass} value={config.reminderStyle ?? "card"} onChange={(e) => update({ reminderStyle: e.target.value as any })}>
+                <option value="card">Thẻ chi tiết (card)</option>
+                <option value="button-row">Các nút ngang</option>
+                <option value="single-button">1 Nút đơn</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Thời lượng sự kiện
+              <select className={inputClass} value={config.reminderDurationMinutes ?? 240} onChange={(e) => update({ reminderDurationMinutes: Number(e.target.value) })}>
+                <option value={120}>2 giờ</option>
+                <option value={180}>3 giờ</option>
+                <option value={240}>4 giờ</option>
+                <option value={360}>6 giờ</option>
+                <option value={480}>Cả ngày (8h)</option>
+              </select>
+            </label>
+          </div>
+          <div className="rounded-lg bg-stone-50 p-2.5 border border-stone-200 space-y-1.5">
+            <span className="text-[11px] font-bold text-stone-700 block uppercase">Nền tảng hỗ trợ</span>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.reminderShowGoogle !== false} onChange={(e) => update({ reminderShowGoogle: e.target.checked })} />
+              Google Calendar
+            </label>
+            <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+              <input type="checkbox" checked={config.reminderShowApple !== false} onChange={(e) => update({ reminderShowApple: e.target.checked })} />
+              Apple / Outlook (.ics file)
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH RIÊNG CHO BIỂU MẪU TÙY CHỈNH ── */}
+      {element.widgetType === "custom-form" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề biểu mẫu
+            <input className={inputClass} value={config.customFormTitle ?? config.title ?? ""} placeholder="Khảo Sát Khách Mời" onChange={(e) => update({ customFormTitle: e.target.value, title: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Lời ngỏ / Mô tả
+            <textarea className={inputClass} rows={2} value={config.customFormSubtitle ?? config.description ?? ""} placeholder="Vui lòng để lại thông tin..." onChange={(e) => update({ customFormSubtitle: e.target.value, description: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tên nút gửi
+            <input className={inputClass} value={config.customFormButtonText ?? "Gửi Thông Tin"} onChange={(e) => update({ customFormButtonText: e.target.value })} />
+          </label>
+          <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+            <input type="checkbox" checked={Boolean(config.customFormAllowMultipleSubmit)} onChange={(e) => update({ customFormAllowMultipleSubmit: e.target.checked })} />
+            Cho phép khách gửi nhiều lần
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-stone-800">Các Câu Hỏi / Trường Dữ Liệu</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const current = config.customFormFields || [];
+                  const newField = {
+                    id: `field-${Date.now()}`,
+                    type: "text" as const,
+                    label: `Câu hỏi ${current.length + 1}`,
+                    placeholder: "",
+                    required: false,
+                    sortOrder: current.length,
+                  };
+                  update({ customFormFields: [...current, newField] });
+                }}
+                className="inline-flex items-center gap-1 rounded bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-200 cursor-pointer"
+              >
+                <Plus className="size-3" /> Thêm Trường
+              </button>
+            </div>
+            {(config.customFormFields || []).map((f, idx) => (
+              <div key={f.id} className="rounded-xl border border-stone-200 bg-stone-50/70 p-2.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-stone-700">Trường #{idx + 1}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = (config.customFormFields || []).filter(item => item.id !== f.id);
+                      update({ customFormFields: updated });
+                    }}
+                    className="text-stone-400 hover:text-rose-600 transition cursor-pointer"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <select
+                    className={inputClass}
+                    value={f.type}
+                    onChange={(e) => {
+                      const updated = [...(config.customFormFields || [])];
+                      updated[idx] = { ...updated[idx], type: e.target.value as any };
+                      update({ customFormFields: updated });
+                    }}
+                  >
+                    <option value="text">Chữ ngắn (Text)</option>
+                    <option value="phone">Số điện thoại</option>
+                    <option value="email">Email</option>
+                    <option value="number">Số lượng (Number)</option>
+                    <option value="textarea">Văn bản dài (Textarea)</option>
+                    <option value="select">Menu chọn 1 (Dropdown)</option>
+                    <option value="radio">Nút tròn chọn 1 (Radio)</option>
+                    <option value="checkbox">Nhiều lựa chọn (Checkbox)</option>
+                    <option value="rating">Đánh giá sao (Rating 1-5)</option>
+                  </select>
+                  <input
+                    className={inputClass}
+                    value={f.label}
+                    placeholder="Tiêu đề câu hỏi *"
+                    onChange={(e) => {
+                      const updated = [...(config.customFormFields || [])];
+                      updated[idx] = { ...updated[idx], label: e.target.value };
+                      update({ customFormFields: updated });
+                    }}
+                  />
+                </div>
+                {(f.type === "select" || f.type === "radio" || f.type === "checkbox") && (
+                  <input
+                    className={inputClass}
+                    value={(f.options || []).join(", ")}
+                    placeholder="Các lựa chọn (ngăn cách bởi dấu phẩy)"
+                    onChange={(e) => {
+                      const updated = [...(config.customFormFields || [])];
+                      const opts = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
+                      updated[idx] = { ...updated[idx], options: opts };
+                      update({ customFormFields: updated });
+                    }}
+                  />
+                )}
+                <label className="flex items-center gap-2 text-xs text-stone-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={f.required}
+                    onChange={(e) => {
+                      const updated = [...(config.customFormFields || [])];
+                      updated[idx] = { ...updated[idx], required: e.target.checked };
+                      update({ customFormFields: updated });
+                    }}
+                  />
+                  Bắt buộc khách phải điền
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG DÀNH RIÊNG CHO CHỮ KÝ KHÁCH MỜI ── */}
+      {element.widgetType === "guest-signature" && (
+        <div className="space-y-3">
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tiêu đề widget
+            <input className={inputClass} value={config.signatureTitle ?? config.title ?? ""} placeholder="Sổ Lưu Bút Kỹ Thuật Số" onChange={(e) => update({ signatureTitle: e.target.value, title: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Mô tả / Lời nhắn
+            <textarea className={inputClass} rows={2} value={config.signatureSubtitle ?? config.description ?? ""} placeholder="Hãy để lại chữ ký..." onChange={(e) => update({ signatureSubtitle: e.target.value, description: e.target.value })} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Hướng dẫn ký tên
+            <input className={inputClass} value={config.signatureInstructions ?? ""} placeholder="Vẽ chữ ký vào ô bên dưới" onChange={(e) => update({ signatureInstructions: e.target.value })} />
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Màu mực vẽ
+              <div className="flex items-center gap-1.5">
+                <input type="color" className="size-8 rounded border border-stone-200 cursor-pointer" value={config.signaturePenColor || "#2C1810"} onChange={(e) => update({ signaturePenColor: e.target.value })} />
+                <input className={inputClass} value={config.signaturePenColor || "#2C1810"} onChange={(e) => update({ signaturePenColor: e.target.value })} />
+              </div>
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-stone-700">
+              Màu nền canvas
+              <div className="flex items-center gap-1.5">
+                <input type="color" className="size-8 rounded border border-stone-200 cursor-pointer" value={config.signatureCanvasColor || "#FFFDF9"} onChange={(e) => update({ signatureCanvasColor: e.target.value })} />
+                <input className={inputClass} value={config.signatureCanvasColor || "#FFFDF9"} onChange={(e) => update({ signatureCanvasColor: e.target.value })} />
+              </div>
+            </label>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+            <input type="checkbox" checked={config.signatureShowGallery !== false} onChange={(e) => update({ signatureShowGallery: e.target.checked })} />
+            Hiển thị nút xem thư viện chữ ký của các khách khác
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-700">
+            Tên nút ký
+            <input className={inputClass} value={config.signatureButtonText ?? "Ký Tên Ngay"} onChange={(e) => update({ signatureButtonText: e.target.value })} />
+          </label>
+        </div>
+      )}
+
+      {/* ── CÁC TRƯỜNG TIỆN ÍCH CƠ BẢN KHÁC (album, guest-name, envelope...) ── */}
       {element.widgetType !== "procession-route" &&
         element.widgetType !== "lace-vow-card" &&
         element.widgetType !== "swan-ceremony" &&
@@ -627,7 +1027,12 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
         element.widgetType !== "calendar" &&
         element.widgetType !== "countdown" &&
         element.widgetType !== "map" &&
-        element.widgetType !== "gift" && (
+        element.widgetType !== "gift" &&
+        element.widgetType !== "rsvp" &&
+        element.widgetType !== "contact" &&
+        element.widgetType !== "reminder" &&
+        element.widgetType !== "custom-form" &&
+        element.widgetType !== "guest-signature" && (
           <>
             <label className="flex items-center gap-2 text-xs">
               <input
@@ -650,17 +1055,6 @@ export function WidgetInspector({ element }: { element: CanvasElement }) {
               Tên nút
               <input className={inputClass} value={config.buttonLabel ?? ""} onChange={(event) => update({ buttonLabel: event.target.value })} />
             </label>
-            {element.widgetType === "contact" && (
-              <label className="flex flex-col gap-1 text-xs">
-                Số điện thoại
-                <input name="widgetPhone" type="tel" className={inputClass} value={config.phone ?? ""} onChange={(event) => update({ phone: event.target.value })} />
-              </label>
-            )}
-            {element.widgetType === "rsvp" && (
-              <p className="text-xs leading-5 text-stone-500">
-                Khách gửi xác nhận qua form RSVP của thiệp. Danh sách phản hồi nằm trong mục quản lý khách mời.
-              </p>
-            )}
             {element.widgetType === "guest-name" && (
               <label className="flex flex-col gap-1 text-xs">
                 Tên khách mặc định (fallback)

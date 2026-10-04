@@ -17,7 +17,10 @@ export type WidgetType =
   | "swan-ceremony"
   | "embed-video"
   | "carousel"
-  | "background-video";
+  | "background-video"
+  | "custom-form"
+  | "reminder"
+  | "guest-signature";
 export type CanvasWidgetType = WidgetType;
 
 export interface WidgetConfig {
@@ -160,6 +163,89 @@ export interface WidgetConfig {
   playbackRate?: number;
   overlayColor?: string;
   overlayGradient?: string;
+
+  // --- RSVP Widget (form inline) ---
+  rsvpTitle?: string;
+  rsvpSubtitle?: string;
+  rsvpDeadline?: string;
+  rsvpFormStyle?: "classic" | "transparent" | "elegant" | "minimal";
+  rsvpShowGuestCount?: boolean;
+  rsvpShowSide?: boolean;
+  rsvpShowNote?: boolean;
+  rsvpShowPhone?: boolean;
+  rsvpRequirePhone?: boolean;
+  rsvpButtonText?: string;
+  rsvpButtonColor?: string;
+  rsvpSuccessMessage?: string;
+  rsvpAttendingLabel?: string;
+  rsvpDeclinedLabel?: string;
+
+  // --- Contact Widget (multi-channel) ---
+  contactTitle?: string;
+  contactSubtitle?: string;
+  contactStyle?: "buttons-row" | "buttons-grid" | "list" | "floating-fab" | "card-style";
+  contactChannels?: Array<{
+    id: string;
+    type: "phone" | "zalo" | "messenger" | "whatsapp" | "email" | "telegram" | "viber" | "line";
+    label: string;
+    value: string;
+    enabled: boolean;
+    sortOrder: number;
+    buttonColor?: string;
+  }>;
+  contactButtonSize?: "sm" | "md" | "lg";
+  contactShowLabel?: boolean;
+
+  // --- Custom Form Widget ---
+  customFormTitle?: string;
+  customFormSubtitle?: string;
+  customFormFields?: Array<{
+    id: string;
+    type: "text" | "textarea" | "select" | "radio" | "checkbox" | "rating" | "number" | "phone" | "email";
+    label: string;
+    placeholder?: string;
+    required: boolean;
+    options?: string[];
+    maxLength?: number;
+    sortOrder: number;
+  }>;
+  customFormButtonText?: string;
+  customFormButtonColor?: string;
+  customFormStyle?: "classic" | "transparent" | "elegant" | "minimal";
+  customFormSuccessMessage?: string;
+  customFormAllowMultipleSubmit?: boolean;
+
+  // --- Reminder Widget (Add to Calendar) ---
+  reminderTitle?: string;
+  reminderDescription?: string;
+  reminderEventTitle?: string;
+  reminderEventDescription?: string;
+  reminderEventLocation?: string;
+  reminderEventDate?: string;
+  reminderDurationMinutes?: number;
+  reminderStyle?: "button-row" | "single-button" | "card";
+  reminderButtonText?: string;
+  reminderShowGoogle?: boolean;
+  reminderShowApple?: boolean;
+  reminderShowOutlook?: boolean;
+  reminderButtonColor?: string;
+
+  // --- Guest Signature Widget ---
+  signatureTitle?: string;
+  signatureSubtitle?: string;
+  signatureInstructions?: string;
+  signatureCanvasColor?: string;
+  signaturePenColor?: string;
+  signaturePenWidth?: number;
+  signatureStyle?: "polaroid" | "envelope" | "elegant-card" | "chalkboard" | "minimal";
+  signatureRequireName?: boolean;
+  signatureRequireMessage?: boolean;
+  signatureMaxMessageLength?: number;
+  signatureShowGallery?: boolean;
+  signatureGalleryLimit?: number;
+  signatureButtonText?: string;
+  signatureSubmitText?: string;
+  signatureClearText?: string;
 }
 export type CanvasWidgetConfig = WidgetConfig;
 

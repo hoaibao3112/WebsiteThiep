@@ -47,6 +47,8 @@ model Account {
   orders              Order[]
   orderRequests       OrderRequest[]
   paymentTransactions PaymentTransaction[]
+  customFormSubmissions CustomFormSubmission[]
+  guestSignatures     GuestSignature[]
 
   @@index([currentPlanId])
   @@index([planExpiresAt])
@@ -235,6 +237,8 @@ model Card {
   wishes        Wish[]
   memories      WeddingMemory[]
   orders        Order[]
+  customFormSubmissions CustomFormSubmission[]
+  guestSignatures       GuestSignature[]
 
   @@index([userId])
   @@index([accountId])
@@ -595,4 +599,57 @@ model AiLead {
   @@map("ai_leads")
 }
 
+// ---------------------------------------------------------
+// 14. CUSTOM FORM SUBMISSIONS
+// ---------------------------------------------------------
+model CustomFormSubmission {
+  id              String   @id @default(cuid())
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId          String
+  card            Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  elementId       String   // ID của CanvasElement widget custom-form
+
+  guestId         String?  // Nullable: khách từ danh sách
+  submitterName   String?  // Tên người gửi (nếu có field tên)
+  submitterPhone  String?  // SĐT (nếu có field phone)
+
+  // Dữ liệu form dạng key-value: { "field-id-1": "giá trị", ... }
+  formData        Json
+
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+
+  @@index([cardId, elementId])
+  @@index([accountId, cardId])
+  @@map("custom_form_submissions")
+}
+
+// ---------------------------------------------------------
+// 15. GUEST SIGNATURES (Sổ lưu bút điện tử)
+// ---------------------------------------------------------
+model GuestSignature {
+  id           String   @id @default(cuid())
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId       String
+  card         Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  elementId    String   // ID widget canvas element
+
+  guestId      String?  // Nullable: khách từ danh sách
+  signerName   String   // Tên người ký
+  message      String?  // Lời nhắn kèm chữ ký
+  signatureUrl String   // URL ảnh chữ ký PNG (lưu lên Cloudinary)
+  thumbUrl     String?  // Thumbnail nhỏ
+
+  ipAddress    String?
+  isApproved   Boolean  @default(true) // Host có thể ẩn/xoá
+  createdAt    DateTime @default(now())
+
+  @@index([cardId, elementId])
+  @@index([accountId, cardId])
+  @@index([cardId, elementId, createdAt(sort: Desc)])
+  @@map("guest_signatures")
+}
 
