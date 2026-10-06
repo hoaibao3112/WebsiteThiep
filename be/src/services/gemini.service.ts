@@ -107,7 +107,7 @@ Mục tiêu của bạn:
       parts: [{ text: h.content }],
     }));
 
-    const modelsToTry = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
+    const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
     let rawAnswer = '';
 
     for (let attempt = 0; attempt < modelsToTry.length; attempt++) {
