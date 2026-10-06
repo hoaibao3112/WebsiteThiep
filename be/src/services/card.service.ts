@@ -463,8 +463,9 @@ export class CardService {
       // Xoá giá trị — nhưng nếu plan cho phép hoặc giá trị đã null rồi thì OK
       finalMusicUrl = null;
     } else {
-      // Có giá trị mới
-      if (!effectivePlan.capabilities.allowMusicUpload) {
+      // Có giá trị mới: chỉ chặn nếu khác giá trị hiện tại và plan không cho phép
+      const isChangingMusic = input.musicUrl !== existing.musicUrl;
+      if (isChangingMusic && !effectivePlan.capabilities.allowMusicUpload) {
         throw new HttpError(403, "Gói hiện tại không hỗ trợ tải lên nhạc", "PLAN_ENTITLEMENT_REQUIRED");
       }
       finalMusicUrl = input.musicUrl;
@@ -476,7 +477,8 @@ export class CardService {
     } else if (input.telegramChatId === null || input.telegramChatId === "") {
       finalTelegramChatId = null;
     } else {
-      if (!effectivePlan.capabilities.allowTelegramNoti) {
+      const isChangingTelegram = input.telegramChatId !== existing.telegramChatId;
+      if (isChangingTelegram && !effectivePlan.capabilities.allowTelegramNoti) {
         throw new HttpError(403, "Gói hiện tại không hỗ trợ thông báo Telegram", "PLAN_ENTITLEMENT_REQUIRED");
       }
       finalTelegramChatId = input.telegramChatId;
@@ -510,14 +512,18 @@ export class CardService {
     (input.data as any).events = input.events;
     (input.data as any).photos = input.photos;
 
-    // Item 3: version-based concurrency
+    // Item 3: Concurrency handling (expectedUpdatedAt hoặc clientVersion)
     const clientVersion = typeof input.version === "number" ? input.version : undefined;
+    const targetExpectedUpdatedAt = expectedUpdatedAt || input.expectedUpdatedAt;
+    const parsedExpectedDate = targetExpectedUpdatedAt
+      ? (typeof targetExpectedUpdatedAt === "string" ? new Date(targetExpectedUpdatedAt) : targetExpectedUpdatedAt)
+      : undefined;
 
     return prisma.$transaction(async (tx) => {
       const whereClause: Prisma.CardWhereInput = {
         id: cardId,
         accountId,
-        // Chỉ thêm version vào where khi client GỬI version
+        ...(parsedExpectedDate ? { updatedAt: parsedExpectedDate } : {}),
         ...(clientVersion !== undefined ? { version: clientVersion } : {}),
       };
 
@@ -547,13 +553,16 @@ export class CardService {
       if (updateResult.count === 0) {
         const latest = await tx.card.findFirst({
           where: { id: cardId, accountId },
-          select: { version: true },
+          select: { version: true, updatedAt: true },
         });
         throw new HttpError(
           409,
           "Dữ liệu thiệp đã được cập nhật từ một phiên làm việc khác",
           "CARD_VERSION_CONFLICT",
-          { currentVersion: latest?.version ?? 0 },
+          {
+            currentVersion: latest?.version ?? 0,
+            ...(latest?.updatedAt ? { currentUpdatedAt: latest.updatedAt.toISOString() } : {}),
+          },
         );
       }
 
@@ -561,7 +570,7 @@ export class CardService {
         where: { id: cardId, accountId },
       });
 
-      // Item 5+8: CardEvent — chỉ update khi khác dữ liệu cũ; bỏ qua event không có eventDate
+      // Item 5+8: CardEvent — chỉ update khi khác dữ liệu cũ; bảo toàn eventDate cũ nếu không truyền lại
       const existingEvents = await tx.cardEvent.findMany({
         where: { cardId, accountId },
         orderBy: { sortOrder: "asc" },
@@ -579,29 +588,34 @@ export class CardService {
 
       for (let sortOrder = 0; sortOrder < input.events.length; sortOrder += 1) {
         const event = input.events[sortOrder];
+        const existingEvt = event.id ? existingEventMap.get(event.id) : undefined;
 
-        // Item 8: eventDate thiếu → không ghi vào CardEvent (categoryData vẫn giữ)
-        if (!event.eventDate) continue;
+        // Nếu là event mới mà không có eventDate thì bỏ qua không tạo trong CardEvent
+        if (!existingEvt && !event.eventDate) continue;
 
-        const eventDate = new Date(event.eventDate);
+        const resolvedEventDate = event.eventDate
+          ? new Date(event.eventDate)
+          : (existingEvt?.eventDate ? new Date(existingEvt.eventDate) : new Date());
+
         const eventPayload = {
-          eventName: event.eventName || "Sự kiện",
-          eventDate,
-          lunarDate: event.lunarDate || null,
-          venueName: event.venueName || "Chưa cập nhật",
-          address: event.address || "Chưa cập nhật",
-          mapUrl: event.mapUrl || null,
-          latitude: event.latitude ?? null,
-          longitude: event.longitude ?? null,
+          eventName: event.eventName || (existingEvt?.eventName ?? "Sự kiện"),
+          eventDate: resolvedEventDate,
+          lunarDate: event.lunarDate !== undefined ? (event.lunarDate || null) : (existingEvt?.lunarDate ?? null),
+          venueName: event.venueName || (existingEvt?.venueName ?? "Chưa cập nhật"),
+          address: event.address || (existingEvt?.address ?? "Chưa cập nhật"),
+          mapUrl: event.mapUrl !== undefined ? (event.mapUrl || null) : (existingEvt?.mapUrl ?? null),
+          latitude: event.latitude !== undefined ? (event.latitude ?? null) : (existingEvt?.latitude ?? null),
+          longitude: event.longitude !== undefined ? (event.longitude ?? null) : (existingEvt?.longitude ?? null),
           sortOrder,
         };
 
-        if (event.id && existingEventMap.has(event.id)) {
+        if (event.id && existingEvt) {
           // Item 5: So sánh, chỉ update khi khác
-          const existingEvt = existingEventMap.get(event.id)!;
+          const prevTime = existingEvt.eventDate ? new Date(existingEvt.eventDate).getTime() : 0;
+          const newTime = resolvedEventDate ? resolvedEventDate.getTime() : 0;
           const needsUpdate =
             existingEvt.eventName !== eventPayload.eventName ||
-            existingEvt.eventDate.getTime() !== eventPayload.eventDate.getTime() ||
+            prevTime !== newTime ||
             existingEvt.lunarDate !== eventPayload.lunarDate ||
             existingEvt.venueName !== eventPayload.venueName ||
             existingEvt.address !== eventPayload.address ||

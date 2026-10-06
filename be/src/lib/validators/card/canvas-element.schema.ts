@@ -3,11 +3,11 @@ import { sanitizeSvg } from "../../sanitize-svg";
 
 export const StoredImageUrlSchema = z.string().refine(
   (value) =>
-    /^https?:\/\//i.test(value) ||
-    value.startsWith("data:image/") ||
-    value.startsWith("/uploads/") ||
-    value.startsWith("/images/") ||
-    (value.startsWith("/") && !value.startsWith("//")),
+    !value.startsWith("data:image/") &&
+    (/^https?:\/\//i.test(value) ||
+      value.startsWith("/uploads/") ||
+      value.startsWith("/images/") ||
+      (value.startsWith("/") && !value.startsWith("//"))),
   "Ảnh không hợp lệ hoặc chưa được tải lên máy chủ"
 );
 
@@ -64,7 +64,14 @@ export const CanvasElementSchema = z
     ]).optional(),
     presetId: z.string().optional(),
     stockId: z.string().optional(),
-    svgContent: z.string().transform((svg) => (svg ? sanitizeSvg(svg) : svg)).optional(),
+    svgContent: z
+      .string()
+      .refine(
+        (svg) => !/<script/i.test(svg) && !/\bon\w+\s*=/i.test(svg),
+        "svgContent không được chứa thẻ script hoặc sự kiện on*"
+      )
+      .transform((svg) => (svg ? sanitizeSvg(svg) : svg))
+      .optional(),
     svgType: z.enum(["frame", "divider", "custom"]).optional(),
     imageUrl: z.union([StoredImageUrlSchema, z.literal("")]).optional(),
     title: z.string().max(500).optional(),

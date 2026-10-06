@@ -153,7 +153,7 @@ export async function runPaymentDbPreflight(
     const overdueOrders = await db.order.findMany({
       where: {
         status: "PENDING",
-        expiresAt: { lt: now },
+        expiredAt: { lt: now },
       },
       select: { id: true },
     });
@@ -174,7 +174,7 @@ export async function runPaymentDbPreflight(
     const activeOrders = await db.order.findMany({
       where: {
         status: { in: ["PENDING", "AWAITING_REVIEW"] },
-        expiresAt: { gt: now },
+        expiredAt: { gt: now },
       },
       select: {
         id: true,

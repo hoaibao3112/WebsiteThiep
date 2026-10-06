@@ -194,7 +194,7 @@ const CommonDraftFields = {
   version: z.number().int().optional(),
 };
 
-export const DraftCardSchema = z.object(CommonDraftFields).passthrough();
+export const DraftCardSchema = z.object(CommonDraftFields);
 export const UpdateDraftCardSchema = DraftCardSchema;
 export const PublishCardDataSchema = CategoryDataSchema;
 

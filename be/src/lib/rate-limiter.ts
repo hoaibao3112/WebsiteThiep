@@ -56,6 +56,10 @@ export async function checkRateLimit(
     if (error instanceof HttpError) {
       throw error;
     }
+    if (process.env.NODE_ENV === "production") {
+      logger.error({ err: error, key }, "Redis rate limiter failed in production; failing closed");
+      throw new Error(`Redis rate limiter unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
     // Ghi log cảnh báo và fallback sang in-memory rate limiting để không làm sập luồng đăng nhập/OTP
     logger.warn({ err: error, key }, "Redis rate limiter unavailable; using in-memory fallback limiter");
     checkInMemoryRateLimit(key, maxCount, windowSeconds, errorMessage);

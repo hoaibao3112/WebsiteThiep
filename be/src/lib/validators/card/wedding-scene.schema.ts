@@ -84,7 +84,7 @@ export type WeddingSceneSectionType = (typeof WEDDING_SCENE_SECTION_TYPES)[numbe
 
 export const WeddingSceneSectionSchema = z.object({
   id: z.string().optional(),
-  type: z.string().optional().default("hero"),
+  type: z.enum(WEDDING_SCENE_SECTION_TYPES).optional().default("hero"),
   label: z.string().optional(),
   visible: z.boolean().optional().default(true),
   order: z.number().optional().default(0),
