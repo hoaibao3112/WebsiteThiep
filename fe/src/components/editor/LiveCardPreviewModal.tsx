@@ -53,6 +53,7 @@ interface LiveCardPreviewModalProps {
   children?: React.ReactNode;
   onSave?: () => void | Promise<void>;
   isSaving?: boolean;
+  saveButtonText?: string;
 }
 
 export function LiveCardPreviewModal({
@@ -68,6 +69,7 @@ export function LiveCardPreviewModal({
   children,
   onSave,
   isSaving = false,
+  saveButtonText,
 }: LiveCardPreviewModalProps) {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>("mobile");
   const [simulatedGuestName, setSimulatedGuestName] = useState("Anh Nam & Gia đình");
@@ -395,7 +397,7 @@ export function LiveCardPreviewModal({
                 ) : (
                   <>
                     <Save className="size-3.5" />
-                    <span>Lưu thiệp</span>
+                    <span>{saveButtonText || "Lưu thiệp"}</span>
                   </>
                 )}
               </button>
@@ -658,7 +660,7 @@ function CardRenderContent({
       <CanvasFallingEffect effect={canvasFallingEffect} />
 
       {/* 3. TEMPLATE LAYER (WHEN NO CANVAS DOCUMENT OR HYBRID) */}
-      {!isCanvasDocument && children && (
+      {(!isCanvasDocument || !hasCanvasElements) && children && (
         <div className="relative z-0 w-full overflow-hidden">
           {children}
         </div>

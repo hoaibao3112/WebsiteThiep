@@ -18,6 +18,7 @@ import { TEMPLATE_CONFIGS, getTemplateConfig } from "@/lib/editor/template-confi
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 import { CreateModeChoiceModal } from "@/components/card/CreateModeChoiceModal";
 import { createWeddingSceneFromWeddingData, hydrateWeddingScene } from "@/lib/editor/wedding-scene";
+import { LiveCardPreviewModal } from "@/components/editor/LiveCardPreviewModal";
 import {
   Heart,
   Cake,
@@ -30,6 +31,7 @@ import {
   Sparkle,
   LayoutTemplate,
   FilePlus2,
+  Eye,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -123,6 +125,7 @@ function CardBuilderContent() {
   const [slug, setSlug] = useState(`thiep-${Math.floor(100000 + Math.random() * 900000)}`);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const categoryDataRef = useRef<Record<string, any>>(initialDemoCard?.categoryData || {});
 
@@ -806,13 +809,26 @@ function CardBuilderContent() {
             </div>
           )}
 
-          {/* PRIMARY ACTION: XUẤT BẢN THIỆP */}
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={saving || saveSuccess}
-            className="min-h-10 px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#D4AF37] hover:from-[#A88240] hover:to-[#BE944E] text-white text-xs font-bold shadow-md active:scale-95 transition cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-50"
-          >
+          <div className="flex items-center gap-2">
+            {/* ACTION 1: XEM TRƯỚC THIỆP THỰC TẾ TRƯỚC KHI XUẤT BẢN */}
+            <button
+              type="button"
+              onClick={() => setShowPreviewModal(true)}
+              className="min-h-10 px-3 sm:px-4 py-2 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-950 text-xs font-bold shadow-2xs active:scale-95 transition cursor-pointer flex items-center gap-1.5 shrink-0"
+              title="Xem trước thiệp cưới thực tế như khách mời trên điện thoại, máy tính trước khi xuất bản"
+            >
+              <Eye className="w-4 h-4 text-amber-700" />
+              <span className="hidden sm:inline">Xem Trước</span>
+              <span className="sm:hidden">Xem</span>
+            </button>
+
+            {/* PRIMARY ACTION: XUẤT BẢN THIỆP */}
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={saving || saveSuccess}
+              className="min-h-10 px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#D4AF37] hover:from-[#A88240] hover:to-[#BE944E] text-white text-xs font-bold shadow-md active:scale-95 transition cursor-pointer flex items-center gap-1.5 shrink-0 disabled:opacity-50"
+            >
             {saving ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -831,6 +847,7 @@ function CardBuilderContent() {
               </>
             )}
           </button>
+          </div>
         </div>
 
         {/* ROW 2: HORIZONTAL SWIPEABLE BAR (CATEGORIES + TEMPLATES) */}
@@ -963,6 +980,31 @@ function CardBuilderContent() {
         onSelectPreset={(slug) => handleTemplateChange(slug)}
         currentTemplateSlug={templateSlug}
       />
+
+      {/* ── MODAL XEM TRƯỚC TRỰC TIẾP TRƯỚC KHI XUẤT BẢN ── */}
+      <LiveCardPreviewModal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        draft={previewCard}
+        templateSlug={templateSlug}
+        canvasElements={weddingScene?.elements || categoryDataRef.current?.canvasDocument?.elements || []}
+        canvasHeight={categoryDataRef.current?.canvasHeight || 1200}
+        canvasBackgroundColor={primaryColor}
+        canvasFallingEffect={fallingEffect}
+        onSave={handlePublish}
+        isSaving={saving}
+        saveButtonText="Xuất Bản Thiệp"
+      >
+        {category === "WEDDING" && (
+          <WeddingView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+        )}
+        {category === "BIRTHDAY" && (
+          <BirthdayView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+        )}
+        {category === "NEWBORN" && (
+          <NewbornView card={previewCard} templateSlug={templateSlug} isPreview={true} />
+        )}
+      </LiveCardPreviewModal>
     </div>
   );
 }

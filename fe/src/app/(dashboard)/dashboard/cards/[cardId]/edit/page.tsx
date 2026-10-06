@@ -15,6 +15,7 @@ import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal"
 import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyProfileModal";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { ElementAnimationsStudio } from "@/components/card/ElementAnimationsStudio";
+import { LiveCardPreviewModal } from "@/components/editor/LiveCardPreviewModal";
 import {
   Heart,
   Cake,
@@ -43,12 +44,12 @@ import {
   Upload,
   X,
   Star,
+  Eye,
   FileMusic,
   Volume2,
   RefreshCw,
   Loader2,
   Pencil,
-  Eye,
   ChevronLeft,
   ChevronRight,
   AlertCircle,
@@ -314,6 +315,7 @@ function EditCardContent() {
   const [activeTab, setActiveTab] = useState<(typeof EDIT_TABS)[number]["key"]>("theme");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
   const [mobileViewMode, setMobileViewMode] = useState<"edit" | "preview">("edit");
+  const [showFullscreenPreviewModal, setShowFullscreenPreviewModal] = useState(false);
   const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
 
   // ── Base config ──
@@ -1501,12 +1503,26 @@ function EditCardContent() {
 
             {/* RIGHT: SAVE & PREVIEW */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              {/* NÚT XEM TRƯỚC TOÀN MÀN HÌNH (GUEST SIMULATOR) */}
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowFullscreenPreviewModal(true)}
+                className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition cursor-pointer shadow-2xs shrink-0"
+                title="Xem trước thiệp cưới thực tế như khách mời trên điện thoại, máy tính"
+              >
+                <Eye className="w-3.5 h-3.5 text-amber-700" />
+                <span>Xem Trước</span>
+              </motion.button>
+
               <Link
                 href={`/thiep/${slug}`}
                 target="_blank"
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-stone-200 text-stone-600 text-xs font-semibold hover:bg-stone-50 transition"
+                title="Mở liên kết thiệp công khai (tab mới)"
               >
-                <span>Xem Thiệp</span>
+                <span>Mở Link</span>
               </Link>
 
               {/* QUICK FILL MODAL TRIGGER */}
@@ -2794,6 +2810,31 @@ function EditCardContent() {
           </div>
         </div>
       )}
+
+      {/* ── MODAL XEM TRƯỚC TOÀN MÀN HÌNH (FULLSCREEN LIVE PREVIEW) ── */}
+      <LiveCardPreviewModal
+        isOpen={showFullscreenPreviewModal}
+        onClose={() => setShowFullscreenPreviewModal(false)}
+        draft={previewCard}
+        templateSlug={templateSlug || selectedTemplate}
+        canvasElements={categoryDataRef.current?.canvasDocument?.elements || categoryDataRef.current?.canvasElements || []}
+        canvasHeight={categoryDataRef.current?.canvasHeight || 1200}
+        canvasBackgroundColor={primaryColor}
+        canvasFallingEffect={fallingEffect}
+        onSave={handleSaveCard}
+        isSaving={saving}
+        saveButtonText="Lưu Thay Đổi"
+      >
+        {category === "WEDDING" && (
+          <WeddingView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+        )}
+        {category === "BIRTHDAY" && (
+          <BirthdayView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+        )}
+        {category === "NEWBORN" && (
+          <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
+        )}
+      </LiveCardPreviewModal>
     </div>
   );
 }
