@@ -160,6 +160,7 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
               const isRed = styleId === "red";
               const isEmerald = styleId === "emerald";
               const isRose = styleId === "rose-gold";
+              const isPeony = styleId === "peony-crimson";
 
               const envColor = isCream
                 ? "#7B96A8"
@@ -167,6 +168,8 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                 ? "#F5EBE1"
                 : isRed
                 ? "#73161C"
+                : isPeony
+                ? "#8B1E2D"
                 : isEmerald
                 ? "#1B4332"
                 : isRose
@@ -179,6 +182,8 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                 ? "#E8DCCF"
                 : isRed
                 ? "#611015"
+                : isPeony
+                ? "#73161C"
                 : isEmerald
                 ? "#143326"
                 : isRose
@@ -191,6 +196,8 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                 ? "#1E1E1E"
                 : isRed
                 ? "#C89B3C"
+                : isPeony
+                ? "#D4AF37"
                 : isEmerald
                 ? "#D4AF37"
                 : isRose
@@ -203,6 +210,8 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                 ? "#D4AF37"
                 : isRed
                 ? "#611015"
+                : isPeony
+                ? "#F4E8D0"
                 : isEmerald
                 ? "#1B4332"
                 : isRose
@@ -287,7 +296,7 @@ export const WaxSealOpening: React.FC<WaxSealOpeningProps> = ({
                       </>
                     )}
 
-                    {isRed && (
+                    {(isRed || isPeony) && (
                       <>
                         <div className="absolute -left-6 top-1/2 -translate-y-1/2 pointer-events-none drop-shadow-md">
                           <svg width="50" height="75" viewBox="0 0 60 90" fill="none">

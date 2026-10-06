@@ -90,6 +90,23 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     defaultButtonText: "CHẠM ĐỂ MỞ",
     isVip: true,
   },
+  {
+    id: "peony-crimson",
+    name: "Mẫu đơn nhung đỏ",
+    envelopeColor: "#8B1E2D",
+    flapColor: "#73161C",
+    innerColor: "#420A0E",
+    sealColor: "#D4AF37",
+    sealBorderColor: "#AA8C2C",
+    monogramColor: "#F4E8D0",
+    bgTexture: "vintage-linen",
+    bgColor: "#FAF6F5",
+    decorStyle: "crimson-peony",
+    defaultTitle: "We're getting married!",
+    defaultFont: "Playfair Display",
+    defaultButtonText: "CHẠM ĐỂ MỞ",
+    isVip: true,
+  },
 ];
 
 export class EnvelopeService {

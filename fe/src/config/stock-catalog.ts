@@ -104,6 +104,14 @@ export const STOCK_CATALOG: StockItem[] = [
     width: 250,
     height: 300,
   },
+  {
+    id: "wd-peony-red-envelope",
+    title: "Phong bì hoa mẫu đơn nhung đỏ",
+    cat: "wedding",
+    imageUrl: "/images/decor/peony-red-envelope.png",
+    width: 210,
+    height: 290,
+  },
 
   // ── 3. KHUNG VIỀN VECTOR (FRAMES) ──
   {
@@ -560,6 +568,23 @@ export const STOCK_CATALOG: StockItem[] = [
     imageUrl: "/images/decor/wreath-baby-breath-round.png",
     width: 220,
     height: 220,
+  },
+  {
+    id: "fl-dried-baby-breath",
+    title: "Nhành hoa baby khô vintage",
+    cat: "flower",
+    imageUrl: "/images/decor/dried-baby-breath-branch.png",
+    width: 170,
+    height: 280,
+  },
+  {
+    id: "fl-cypress-garden",
+    title: "Vườn cây bách màu nước Tuscany",
+    cat: "flower",
+    imageUrl: "/images/decor/watercolor-cypress-garden.png",
+    width: 280,
+    height: 180,
+    isWide: true,
   },
 
   // ── 7. CHỮ HỶ ──
