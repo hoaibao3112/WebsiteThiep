@@ -86,16 +86,40 @@ const FALLING_EFFECTS = [
 // Thư viện ảnh nền có sẵn tuyển chọn tối ưu dung lượng và trang nhã
 const PRESET_BACKGROUND_IMAGES = [
   {
+    id: "bg-floral-pastel",
+    label: "Hoa hồng pastel & khuynh diệp",
+    url: "/images/backgrounds/bg-floral-pastel.webp",
+    thumb: "/images/backgrounds/bg-floral-pastel-thumb.webp",
+  },
+  {
+    id: "bg-crimson-oriental",
+    label: "Gấm đỏ hoàng gia & mạ vàng",
+    url: "/images/backgrounds/bg-crimson-oriental.webp",
+    thumb: "/images/backgrounds/bg-crimson-oriental-thumb.webp",
+  },
+  {
+    id: "bg-champagne-silk",
+    label: "Vân lụa satin Champagne",
+    url: "/images/backgrounds/bg-champagne-silk.webp",
+    thumb: "/images/backgrounds/bg-champagne-silk-thumb.webp",
+  },
+  {
+    id: "bg-vintage-botanical",
+    label: "Giấy da thảo mộc vintage",
+    url: "/images/backgrounds/bg-vintage-botanical.webp",
+    thumb: "/images/backgrounds/bg-vintage-botanical-thumb.webp",
+  },
+  {
+    id: "bg-ivory-gold-leaf",
+    label: "Giấy mỹ thuật viền lá vàng",
+    url: "/images/backgrounds/bg-ivory-gold-leaf.webp",
+    thumb: "/images/backgrounds/bg-ivory-gold-leaf-thumb.webp",
+  },
+  {
     id: "bg-paper-1",
     label: "Giấy mỹ thuật ngà",
     url: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=800&auto=format&fit=crop&q=80",
     thumb: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=300&auto=format&fit=crop&q=80",
-  },
-  {
-    id: "bg-paper-2",
-    label: "Vân lụa ánh kim",
-    url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=800&auto=format&fit=crop&q=80",
-    thumb: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&auto=format&fit=crop&q=80",
   },
   {
     id: "bg-paper-3",
