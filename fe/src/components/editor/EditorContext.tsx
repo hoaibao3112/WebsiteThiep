@@ -1268,6 +1268,22 @@ export function EditorProvider<T extends object>({
           isLocked: false,
           opacity: 1,
         };
+      } else if (item.id === "p-luxury-gift-box") {
+        newEl = {
+          id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          type: "stock",
+          stockId: "wd-luxury-gift-box",
+          title: "Hộp quà hoa khô thắt nơ vàng kim",
+          content: "/images/decor/luxury-gift-box-floral.png",
+          imageUrl: "/images/decor/luxury-gift-box-floral.png",
+          x: pos?.x ?? 80,
+          y: pos?.y ?? 200,
+          width: 200,
+          height: 190,
+          zIndex: maxZ + 1,
+          isLocked: false,
+          opacity: 1,
+        };
       } else if (item.id === "p-banking-qr") {
         newEl = {
           id: `preset-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,

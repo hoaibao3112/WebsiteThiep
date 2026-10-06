@@ -35,6 +35,7 @@ interface PresetItem {
     | "orchid-arch"
     | "envelope-songhy"
     | "wedding-gift-luxury"
+    | "luxury-gift"
     | "le-thanh-hon";
 }
 
@@ -178,6 +179,13 @@ const PRESET_CATALOG: PresetItem[] = [
     cat: "other",
     desc: "Lời tri ân chân thành từ Cô dâu & Chú rể",
     previewType: "thank-you",
+  },
+  {
+    id: "p-luxury-gift-box",
+    title: "Hộp quà hoa khô thắt nơ vàng kim",
+    cat: "other",
+    desc: "Hộp quà hoa khô phong cách hoàng gia thắt nơ lụa trang nhã",
+    previewType: "luxury-gift",
   },
   {
     id: "p-banking-qr",
@@ -658,6 +666,17 @@ export function PresetTool() {
             </div>
             <div className="text-[8.5px] font-serif font-bold text-stone-800 mt-1">11:00 • 18.12.2026</div>
             <div className="text-[6.5px] text-stone-500 mt-0.5">Tư gia Nhà Trai / Khách sạn</div>
+          </div>
+        );
+
+      case "luxury-gift":
+        return (
+          <div className="w-full h-28 bg-[#FFFDF9] rounded-xl relative overflow-hidden flex items-center justify-center p-2 border border-amber-200/80 shadow-2xs">
+            <img
+              src="/images/decor/luxury-gift-box-floral.png"
+              alt="Hộp quà hoa khô"
+              className="h-20 object-contain drop-shadow-sm"
+            />
           </div>
         );
 

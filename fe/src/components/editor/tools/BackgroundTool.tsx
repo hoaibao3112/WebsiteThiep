@@ -116,6 +116,24 @@ const PRESET_BACKGROUND_IMAGES = [
     thumb: "/images/backgrounds/bg-ivory-gold-leaf-thumb.webp",
   },
   {
+    id: "bg-hydrangea-blue",
+    label: "Cẩm tú cầu xanh mơ màng",
+    url: "/images/backgrounds/bg-hydrangea-blue.webp",
+    thumb: "/images/backgrounds/bg-hydrangea-blue-thumb.webp",
+  },
+  {
+    id: "bg-dragon-phoenix-crimson",
+    label: "Long Phụng sum vầy gấm đỏ",
+    url: "/images/backgrounds/bg-dragon-phoenix-crimson.webp",
+    thumb: "/images/backgrounds/bg-dragon-phoenix-crimson-thumb.webp",
+  },
+  {
+    id: "bg-lotus-watercolor",
+    label: "Hoa sen hồng màu nước",
+    url: "/images/backgrounds/bg-lotus-watercolor.webp",
+    thumb: "/images/backgrounds/bg-lotus-watercolor-thumb.webp",
+  },
+  {
     id: "bg-paper-1",
     label: "Giấy mỹ thuật ngà",
     url: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=800&auto=format&fit=crop&q=80",

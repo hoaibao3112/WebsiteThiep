@@ -112,6 +112,14 @@ export const STOCK_CATALOG: StockItem[] = [
     width: 210,
     height: 290,
   },
+  {
+    id: "wd-luxury-gift-box",
+    title: "Hộp quà hoa khô thắt nơ vàng kim",
+    cat: "wedding",
+    imageUrl: "/images/decor/luxury-gift-box-floral.png",
+    width: 200,
+    height: 190,
+  },
 
   // ── 3. KHUNG VIỀN VECTOR (FRAMES) ──
   {
@@ -637,6 +645,14 @@ export const STOCK_CATALOG: StockItem[] = [
     imageUrl: "/images/decor/heart-gift-box-golden-bow.png",
     width: 170,
     height: 170,
+  },
+  {
+    id: "ht-luxury-gift-box",
+    title: "Hộp quà hoa khô thắt nơ vàng kim",
+    cat: "heart",
+    imageUrl: "/images/decor/luxury-gift-box-floral.png",
+    width: 200,
+    height: 190,
   },
   {
     id: "ht6",
