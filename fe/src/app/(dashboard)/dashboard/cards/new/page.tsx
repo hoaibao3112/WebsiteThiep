@@ -852,44 +852,12 @@ function CardBuilderContent() {
 
         {/* ROW 2: HORIZONTAL SWIPEABLE BAR (CATEGORIES + TEMPLATES) */}
         <div className="px-3 sm:px-6 py-1.5 border-t border-stone-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {/* CATEGORY SELECTOR PILLS */}
+          {/* CATEGORY (CHUYÊN BIỆT THIỆP CƯỚI) */}
           <div className="flex items-center gap-1 shrink-0 p-0.5 bg-stone-100 rounded-xl border border-stone-200">
-            <button
-              type="button"
-              onClick={() => handleCategoryChange("WEDDING")}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
-                category === "WEDDING"
-                  ? "bg-white text-stone-900 shadow-xs font-bold"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Heart className="w-3 h-3 text-rose-500 fill-rose-500/20" />
-              <span>Cưới</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleCategoryChange("BIRTHDAY")}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
-                category === "BIRTHDAY"
-                  ? "bg-white text-stone-900 shadow-xs font-bold"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Cake className="w-3 h-3 text-amber-500" />
-              <span>Sinh Nhật</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleCategoryChange("NEWBORN")}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${
-                category === "NEWBORN"
-                  ? "bg-white text-stone-900 shadow-xs font-bold"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              <Baby className="w-3 h-3 text-blue-500" />
-              <span>Thôi Nôi</span>
-            </button>
+            <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-stone-900 shadow-xs flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+              <span>Thiệp Cưới</span>
+            </span>
           </div>
 
           <div className="h-5 w-px bg-stone-200 shrink-0" />

@@ -122,6 +122,10 @@ function VisualCardEditorInner({
   const [showLivePreview, setShowLivePreview] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) {
+      setIsDesktop(true);
+      return;
+    }
     const mql = window.matchMedia("(min-width: 1024px)");
     setIsDesktop(mql.matches);
     const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);

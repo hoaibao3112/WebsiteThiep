@@ -232,15 +232,15 @@ export function LiveCardPreviewModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex flex-col bg-stone-950/90 backdrop-blur-md select-none overflow-hidden animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-[100] flex flex-col bg-[#F7F3EB]/95 backdrop-blur-md select-none overflow-hidden animate-in fade-in duration-200">
         {/* ── TOP FLOATING CONTROL BAR ── */}
-        <header className="h-14 sm:h-16 px-3 sm:px-6 bg-stone-900/95 border-b border-stone-800 flex items-center justify-between gap-2 shrink-0 z-50 text-stone-200">
+        <header className="h-14 sm:h-16 px-3 sm:px-6 bg-[#FFFDF9]/95 border-b border-[#E7D6BE] flex items-center justify-between gap-2 shrink-0 z-50 text-[#3C3228] shadow-xs">
           {/* LEFT: TITLE & GUEST SIMULATOR */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-semibold transition cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#F4ECE1] hover:bg-[#EADDCB] text-[#5C4524] border border-[#DECFBA] text-xs font-semibold transition cursor-pointer shrink-0 shadow-2xs"
               title="Quay lại chỉnh sửa (Esc)"
             >
               <ChevronLeft className="size-4" />
@@ -252,34 +252,34 @@ export function LiveCardPreviewModal({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
               </span>
-              <span className="text-xs font-semibold text-stone-300">
+              <span className="text-xs font-semibold text-[#5C4D3C]">
                 Xem trước trải nghiệm khách mời
               </span>
             </div>
 
             {/* GUEST NAME SIMULATOR PILL */}
-            <div className="hidden lg:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700/80 rounded-full px-3 py-1 text-xs">
-              <User className="size-3 text-amber-400" />
-              <span className="text-stone-400 text-[11px]">Thử tên khách:</span>
+            <div className="hidden lg:flex items-center gap-1.5 bg-[#F9F5EC] border border-[#E0D2BE] rounded-full px-3 py-1 text-xs shadow-2xs">
+              <User className="size-3 text-[#B8860B]" />
+              <span className="text-[#8C7A68] text-[11px] font-medium">Thử tên khách:</span>
               <input
                 type="text"
                 value={simulatedGuestName}
                 onChange={(e) => setSimulatedGuestName(e.target.value)}
                 placeholder="Nhập tên khách mời..."
-                className="bg-transparent border-none text-white text-xs font-medium focus:outline-none w-36 px-1 hover:bg-stone-700/50 rounded"
+                className="bg-transparent border-none text-[#2D241E] text-xs font-medium focus:outline-none w-36 px-1 hover:bg-[#EFE8DC]/50 rounded placeholder:text-[#A89885]"
               />
             </div>
           </div>
 
           {/* CENTER: DEVICE SWITCHER */}
-          <div className="flex items-center bg-stone-800/90 p-1 rounded-full border border-stone-700/70 shadow-inner">
+          <div className="flex items-center bg-[#EFE6D7] p-1 rounded-full border border-[#DFCEB7] shadow-inner">
             <button
               type="button"
               onClick={() => setDeviceMode("mobile")}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                 deviceMode === "mobile"
-                  ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                  : "text-stone-400 hover:text-white"
+                  ? "bg-gradient-to-r from-[#C5A059] to-[#B3883D] text-white font-bold shadow-xs"
+                  : "text-[#7A6A56] hover:text-[#2D241E]"
               }`}
               title="Chế độ điện thoại di động (390px)"
             >
@@ -291,8 +291,8 @@ export function LiveCardPreviewModal({
               onClick={() => setDeviceMode("tablet")}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                 deviceMode === "tablet"
-                  ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                  : "text-stone-400 hover:text-white"
+                  ? "bg-gradient-to-r from-[#C5A059] to-[#B3883D] text-white font-bold shadow-xs"
+                  : "text-[#7A6A56] hover:text-[#2D241E]"
               }`}
               title="Chế độ máy tính bảng (Tablet)"
             >
@@ -304,8 +304,8 @@ export function LiveCardPreviewModal({
               onClick={() => setDeviceMode("desktop")}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
                 deviceMode === "desktop"
-                  ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                  : "text-stone-400 hover:text-white"
+                  ? "bg-gradient-to-r from-[#C5A059] to-[#B3883D] text-white font-bold shadow-xs"
+                  : "text-[#7A6A56] hover:text-[#2D241E]"
               }`}
               title="Chế độ toàn màn hình máy tính"
             >
@@ -323,8 +323,8 @@ export function LiveCardPreviewModal({
                 onClick={() => setEnvelopeOpened((prev) => !prev)}
                 className={`p-2 rounded-full border text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
                   !envelopeOpened
-                    ? "bg-amber-500/20 border-amber-500 text-amber-300"
-                    : "border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700"
+                    ? "bg-[#F8F1E4] border-[#C5A059] text-[#8C6424] shadow-2xs"
+                    : "border-[#DFCEB7] bg-white text-[#6B5A47] hover:bg-[#F9F5EC]"
                 }`}
                 title={envelopeOpened ? "Thử mở phong bì sáp" : "Đang đóng phong bì"}
               >
@@ -342,15 +342,15 @@ export function LiveCardPreviewModal({
                 onClick={toggleMusic}
                 className={`p-2 rounded-full border transition cursor-pointer flex items-center gap-1.5 text-xs ${
                   isPlayingMusic
-                    ? "bg-rose-500/20 border-rose-500/60 text-rose-300"
-                    : "border-stone-700 bg-stone-800 text-stone-400 hover:bg-stone-700"
+                    ? "bg-[#FFF0F2] border-[#F8B4C0] text-[#B82E47] shadow-2xs"
+                    : "border-[#DFCEB7] bg-white text-[#6B5A47] hover:bg-[#F9F5EC]"
                 }`}
                 title={isPlayingMusic ? "Tắt nhạc nền" : "Bật nhạc nền"}
               >
                 {isPlayingMusic ? (
                   <>
-                    <Volume2 className="size-4 text-rose-400 animate-pulse" />
-                    <span className="hidden xl:inline text-rose-300 font-semibold">Đang phát nhạc</span>
+                    <Volume2 className="size-4 text-[#B82E47] animate-pulse" />
+                    <span className="hidden xl:inline text-[#B82E47] font-semibold">Đang phát nhạc</span>
                   </>
                 ) : (
                   <>
@@ -365,7 +365,7 @@ export function LiveCardPreviewModal({
             <button
               type="button"
               onClick={handleReplay}
-              className="p-2 rounded-full bg-stone-800 border border-stone-700 hover:bg-stone-700 text-stone-300 transition cursor-pointer"
+              className="p-2 rounded-full bg-white border border-[#DFCEB7] hover:bg-[#F9F5EC] text-[#6B5A47] hover:text-[#2D241E] transition cursor-pointer shadow-2xs"
               title="Làm mới hoạt ảnh & cuộn lên đầu"
             >
               <RotateCcw className="size-4" />
@@ -377,10 +377,10 @@ export function LiveCardPreviewModal({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition shadow-md cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition shadow-sm cursor-pointer ${
                   saveSuccessTick
-                    ? "bg-emerald-500 text-white"
-                    : "bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold"
+                    ? "bg-emerald-600 text-white"
+                    : "bg-gradient-to-r from-[#C5A059] to-[#B3883D] hover:from-[#B3883D] hover:to-[#9E732E] text-white border border-[#A6783B]/20"
                 }`}
                 title="Lưu ngay thiệp này"
               >
@@ -407,7 +407,7 @@ export function LiveCardPreviewModal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-full bg-stone-800 hover:bg-rose-500/20 hover:text-rose-400 border border-stone-700 text-stone-400 transition cursor-pointer ml-1"
+              className="p-2 rounded-full bg-white hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 border border-[#DFCEB7] text-[#6B5A47] transition cursor-pointer ml-1 shadow-2xs"
               title="Đóng xem trước (Esc)"
             >
               <X className="size-4" />
@@ -419,18 +419,18 @@ export function LiveCardPreviewModal({
         <main className="flex-1 min-h-0 flex items-center justify-center p-2 sm:p-6 overflow-hidden relative">
           {/* DEVICE CONTAINER */}
           {deviceMode === "mobile" && (
-            <div className="relative w-[390px] h-[820px] max-h-[calc(100vh-84px)] rounded-[52px] border-[10px] border-stone-800 shadow-[0_25px_70px_rgba(0,0,0,0.8)] bg-white flex flex-col overflow-hidden ring-1 ring-white/10 shrink-0 animate-in zoom-in-95 duration-200">
+            <div className="relative w-[390px] h-[820px] max-h-[calc(100vh-84px)] rounded-[52px] border-[10px] border-[#D9CEBE] shadow-[0_25px_60px_rgba(140,110,75,0.2),0_10px_25px_rgba(0,0,0,0.06)] bg-white flex flex-col overflow-hidden ring-1 ring-[#BEA682]/40 shrink-0 animate-in zoom-in-95 duration-200">
               {/* SMARTPHONE HARDWARE ACCENTS */}
               {/* Dynamic Island */}
-              <div className="w-28 h-6 bg-stone-950 rounded-full mx-auto mt-2 z-40 shrink-0 flex items-center justify-between px-3 shadow-md">
-                <span className="size-2 rounded-full bg-stone-800 ring-1 ring-stone-700/50" />
-                <span className="size-2.5 rounded-full bg-[#10101c] ring-1 ring-blue-900/60" />
+              <div className="w-28 h-6 bg-[#26211C] rounded-full mx-auto mt-2 z-40 shrink-0 flex items-center justify-between px-3 shadow-inner">
+                <span className="size-2 rounded-full bg-[#3D352E] ring-1 ring-[#524840]" />
+                <span className="size-2.5 rounded-full bg-[#181310] ring-1 ring-[#42372E]" />
               </div>
 
               {/* iOS Status Bar */}
-              <div className="w-full px-7 -mt-5 flex items-center justify-between text-[11px] font-semibold text-stone-800 select-none z-30 pointer-events-none pb-2">
+              <div className="w-full px-7 -mt-5 flex items-center justify-between text-[11px] font-semibold text-[#4A3E33] select-none z-30 pointer-events-none pb-2">
                 <span>09:41</span>
-                <div className="flex items-center gap-1.5 text-stone-700">
+                <div className="flex items-center gap-1.5 text-[#5C4D3C]">
                   <Wifi className="size-3" />
                   <Battery className="size-3.5" />
                 </div>
@@ -450,7 +450,7 @@ export function LiveCardPreviewModal({
               >
                 {/* WAX SEAL ENVELOPE OPENING OVERLAY */}
                 {hasEnvelope && !envelopeOpened ? (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/95">
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#FAF6EE]/95">
                     <WaxSealOpening
                       primaryColor={primaryColor}
                       title={`${groomName} & ${brideName}`}
@@ -478,22 +478,22 @@ export function LiveCardPreviewModal({
               </div>
 
               {/* Home indicator bar */}
-              <div className="w-32 h-1 bg-stone-400/50 rounded-full mx-auto my-2 shrink-0 z-40 pointer-events-none" />
+              <div className="w-32 h-1 bg-[#D2C3B0] rounded-full mx-auto my-2 shrink-0 z-40 pointer-events-none" />
             </div>
           )}
 
           {deviceMode === "tablet" && (
-            <div className="relative w-[768px] h-[860px] max-h-[calc(100vh-84px)] rounded-[36px] border-[12px] border-stone-800 shadow-[0_25px_70px_rgba(0,0,0,0.8)] bg-white flex flex-col overflow-hidden ring-1 ring-white/10 shrink-0 animate-in zoom-in-95 duration-200">
+            <div className="relative w-[768px] h-[860px] max-h-[calc(100vh-84px)] rounded-[36px] border-[12px] border-[#D9CEBE] shadow-[0_25px_60px_rgba(140,110,75,0.2)] bg-white flex flex-col overflow-hidden ring-1 ring-[#BEA682]/40 shrink-0 animate-in zoom-in-95 duration-200">
               {/* Tablet Top Camera */}
-              <div className="w-full py-2 flex items-center justify-center bg-stone-900 text-stone-400 text-xs shrink-0 border-b border-stone-800">
-                <span className="size-2 rounded-full bg-stone-950 ring-1 ring-stone-700" />
+              <div className="w-full py-2 flex items-center justify-center bg-[#F7F2E7] text-[#8C7A68] text-xs shrink-0 border-b border-[#E8DEC8]">
+                <span className="size-2 rounded-full bg-[#26211C] ring-1 ring-[#D9CEBE]" />
               </div>
 
               {/* Tablet Content */}
               <div
                 ref={scrollViewportRef}
                 key={refreshKey}
-                className="flex-1 w-full overflow-y-auto overflow-x-hidden relative scroll-smooth flex justify-center bg-stone-100"
+                className="flex-1 w-full overflow-y-auto overflow-x-hidden relative scroll-smooth flex justify-center bg-[#F8F4EC]"
               >
                 <div
                   className="w-full max-w-[480px] min-h-full bg-white shadow-xl relative"
@@ -523,15 +523,15 @@ export function LiveCardPreviewModal({
           )}
 
           {deviceMode === "desktop" && (
-            <div className="relative w-full max-w-4xl h-[860px] max-h-[calc(100vh-84px)] rounded-2xl border border-stone-700/80 shadow-2xl bg-stone-900 flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative w-full max-w-4xl h-[860px] max-h-[calc(100vh-84px)] rounded-2xl border border-[#DFCEB7] shadow-2xl bg-[#FAF6EE] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
               {/* Browser Header Bar */}
-              <div className="h-10 bg-stone-800 px-4 border-b border-stone-700 flex items-center gap-3 shrink-0">
+              <div className="h-10 bg-[#F4EDE2] px-4 border-b border-[#DFCEB7] flex items-center gap-3 shrink-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="size-3 rounded-full bg-rose-500/80 inline-block" />
-                  <span className="size-3 rounded-full bg-amber-500/80 inline-block" />
-                  <span className="size-3 rounded-full bg-emerald-500/80 inline-block" />
+                  <span className="size-3 rounded-full bg-rose-400 inline-block" />
+                  <span className="size-3 rounded-full bg-amber-400 inline-block" />
+                  <span className="size-3 rounded-full bg-emerald-400 inline-block" />
                 </div>
-                <div className="flex-1 max-w-md mx-auto bg-stone-900/80 border border-stone-700 rounded-full px-3 py-1 text-[11px] text-stone-400 text-center truncate">
+                <div className="flex-1 max-w-md mx-auto bg-white/90 border border-[#DFCEB7] rounded-full px-3 py-1 text-[11px] text-[#7A6A56] text-center truncate">
                   https://cardvite.vn/thiep/{draft?.slug || "dam-cuoi-minh-khoi-ngoc-han"}
                 </div>
               </div>
@@ -540,7 +540,7 @@ export function LiveCardPreviewModal({
               <div
                 ref={scrollViewportRef}
                 key={refreshKey}
-                className="flex-1 w-full overflow-y-auto overflow-x-hidden relative scroll-smooth flex justify-center bg-stone-100/90 py-6"
+                className="flex-1 w-full overflow-y-auto overflow-x-hidden relative scroll-smooth flex justify-center bg-[#F8F4EC]/90 py-6"
               >
                 <div
                   className="w-[390px] min-h-full bg-white shadow-2xl rounded-sm relative overflow-hidden"
@@ -706,13 +706,13 @@ function CardRenderContent({
       {categoryData.showBottomToolbar !== false && (
         <nav
           aria-label="Tương tác với thiệp"
-          className="sticky bottom-4 mx-auto my-4 z-40 flex items-center justify-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3 py-1.5 text-xs shadow-xl ring-1 ring-black/10 max-w-[340px]"
+          className="sticky bottom-4 mx-auto my-4 z-40 flex items-center justify-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-3 py-1.5 text-xs shadow-xl ring-1 ring-[#DFCEB7] max-w-[340px]"
         >
           {categoryData.showWishButton !== false && (
             <button
               type="button"
               onClick={onOpenWishes}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-stone-700 hover:bg-stone-100 font-medium transition cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[#5C4D3C] hover:bg-[#F9F5EC] font-medium transition cursor-pointer"
             >
               <MessageSquare className="size-3.5 text-amber-600" />
               <span>Lời chúc</span>
@@ -723,7 +723,7 @@ function CardRenderContent({
             <button
               type="button"
               onClick={onOpenGift}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-stone-700 hover:bg-stone-100 font-medium transition cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[#5C4D3C] hover:bg-[#F9F5EC] font-medium transition cursor-pointer"
             >
               <Gift className="size-3.5 text-rose-500" />
               <span>Mừng cưới</span>
@@ -734,9 +734,9 @@ function CardRenderContent({
             <button
               type="button"
               onClick={onOpenRsvp}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 bg-stone-900 text-white font-semibold hover:bg-stone-800 transition shadow-xs cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 bg-gradient-to-r from-[#C5A059] to-[#B3883D] hover:from-[#B3883D] hover:to-[#9E732E] text-white font-semibold transition shadow-xs cursor-pointer"
             >
-              <UserCheck className="size-3.5 text-emerald-400" />
+              <UserCheck className="size-3.5 text-amber-100" />
               <span>Xác nhận</span>
             </button>
           )}

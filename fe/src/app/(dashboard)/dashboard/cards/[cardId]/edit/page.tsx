@@ -1664,26 +1664,11 @@ function EditCardContent() {
                 </div>
 
                 {/* Danh mục */}
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { key: "WEDDING", label: "Thiệp Cưới", icon: <Heart className="w-4 h-4" /> },
-                    { key: "BIRTHDAY", label: "Sinh Nhật", icon: <Cake className="w-4 h-4" /> },
-                    { key: "NEWBORN", label: "Thôi Nôi / Báo Hỷ", icon: <Baby className="w-4 h-4" /> },
-                  ].map((c) => (
-                    <button
-                      key={c.key}
-                      type="button"
-                      onClick={() => setCategory(c.key as CardCategory)}
-                      className={`p-2.5 sm:p-3 rounded-2xl border text-xs font-bold flex flex-col items-center gap-1.5 transition cursor-pointer min-h-[52px] ${
-                        category === c.key
-                          ? "bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border-amber-600 shadow-md"
-                          : "bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100"
-                      }`}
-                    >
-                      {c.icon}
-                      <span className="text-[11px] sm:text-xs text-center">{c.label}</span>
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <div className="px-4 py-2.5 rounded-2xl bg-gradient-to-tr from-[#B68837] to-[#E2BC6A] text-white border border-amber-600 shadow-sm flex items-center gap-2 font-bold text-xs">
+                    <Heart className="w-4 h-4 fill-white/20" />
+                    <span>Thiệp Cưới Hoàng Gia</span>
+                  </div>
                 </div>
 
                 {/* Mẫu thiệp preset */}

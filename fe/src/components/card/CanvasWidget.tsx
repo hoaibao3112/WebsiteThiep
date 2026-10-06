@@ -84,6 +84,17 @@ export function CanvasWidget({ element, draft, guestName, onRsvp, onGift }: Prop
         </div>
       );
     case "rsvp":
+      if (onRsvp) {
+        return (
+          <div className="flex size-full flex-col items-center justify-center gap-3">
+            {heading}
+            {text}
+            <button type="button" className={buttonClass} onClick={onRsvp}>
+              {config.buttonLabel || "Xác nhận tham dự"}
+            </button>
+          </div>
+        );
+      }
       return <RsvpWidget config={config} cardId={cardId} guestName={guestName} isEditor={isEditor} />;
     case "gift":
       return <div className="flex size-full flex-col items-center justify-center gap-3">{heading}<Gift className="size-8" />{text}<button type="button" className={buttonClass} onClick={onGift}>{config.buttonLabel || "Mở hộp mừng cưới"}</button></div>;

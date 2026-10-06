@@ -126,14 +126,8 @@ function LuxuryTemplateCard({
         )}
 
         {/* CATEGORY TAG (TOP RIGHT) */}
-        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-white/90 text-[9px] font-semibold tracking-wider uppercase border border-white/20">
-          {template.category === "WEDDING"
-            ? "Cưới"
-            : template.category === "NEWBORN"
-            ? "Thôi Nôi"
-            : template.category === "BIRTHDAY"
-            ? "Sinh Nhật"
-            : "Sự Kiện"}
+        <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-md text-amber-200 text-[9px] font-bold tracking-wider uppercase border border-amber-300/30">
+          Thiệp Cưới
         </span>
 
         {/* INTERACTIVE HOVER GLASS OVERLAY (DESKTOP) */}
@@ -240,37 +234,25 @@ export default function CollectionsPage() {
   const { user, openAuthModal } = useAuth();
   const router = useRouter();
 
-  const [selectedCat, setSelectedCat] = useState("ALL");
   const [selectedStyle, setSelectedStyle] = useState("ALL");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [selectedModalTemplate, setSelectedModalTemplate] = useState<TemplateModalData | null>(null);
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [displayedCount, setDisplayedCount] = useState(12);
 
-  const categoryScrollRef = useRef<HTMLDivElement>(null);
-  const styleScrollRef = useRef<HTMLDivElement>(null);
 
   const TEMPLATES = MASTER_TEMPLATES;
 
-  const categories = [
-    { id: "ALL", label: t("filterAll") || "Tất Cả" },
-    { id: "WEDDING", label: t("filterWedding") || "Đám Cưới" },
-    { id: "NEWBORN", label: t("filterNewborn") || "Đầy Tháng & Thôi Nôi" },
-    { id: "BIRTHDAY", label: t("filterBirthday") || "Sinh Nhật" },
-    { id: "EVENT", label: t("filterEvent") || "Sự Kiện" },
-  ];
-
   const styles = [
-    { id: "ALL", label: t("styleAll") || "Tất Cả Phong Cách" },
+    { id: "ALL", label: t("styleAll") || "Tất Cả Mẫu Cưới (9)" },
+    { id: "Cổ Điển Hoàng Gia", label: t("styleRoyalClassic") || "Cổ Điển Hoàng Gia" },
     { id: "Minimalist Luxury", label: t("styleMinimalistLuxury") || "Tối Giản Sang Trọng" },
     { id: "Floral Romance", label: t("styleFloralRomance") || "Hoa Cỏ Lãng Mạn" },
-    { id: "Cổ Điển Hoàng Gia", label: t("styleRoyalClassic") || "Cổ Điển Hoàng Gia" },
   ];
 
   const filteredTemplates = TEMPLATES.filter((tpl) => {
-    const matchCat = selectedCat === "ALL" || tpl.category === selectedCat;
     const matchStyle = selectedStyle === "ALL" || tpl.style === selectedStyle;
-    return matchCat && matchStyle;
+    return matchStyle;
   });
 
   const visibleTemplates = filteredTemplates.slice(0, displayedCount);
@@ -294,17 +276,7 @@ export default function CollectionsPage() {
     }
   };
 
-  const handleScrollCategories = (direction: "left" | "right") => {
-    if (!categoryScrollRef.current) return;
-    const amount = direction === "left" ? -180 : 180;
-    categoryScrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
-  };
 
-  const handleScrollStyles = (direction: "left" | "right") => {
-    if (!styleScrollRef.current) return;
-    const amount = direction === "left" ? -180 : 180;
-    styleScrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
-  };
 
   const handleLoadMore = () => {
     setDisplayedCount((prev) => Math.min(prev + 4, TEMPLATES.length));
@@ -440,7 +412,7 @@ export default function CollectionsPage() {
           className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#F5EEDF] border border-[#D9C4A1] text-[#8C6424] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] shadow-2xs"
         >
           <Sparkle className="w-3 h-3 fill-[#8C6424]" />
-          <span>{t("collectionsBadge") || "BỘ SƯU TẬP CAO CẤP"}</span>
+          <span>{t("collectionsBadge") || "BỘ SƯU TẬP THIỆP CƯỚI CAO CẤP"}</span>
           <Sparkle className="w-3 h-3 fill-[#8C6424]" />
         </motion.div>
 
@@ -451,7 +423,7 @@ export default function CollectionsPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="text-3xl sm:text-5xl lg:text-[54px] font-serif font-bold text-[#2A231C] tracking-tight leading-tight"
         >
-          {t("collectionsTitle") || "Kho Mẫu Thiệp Đa Danh Mục"}
+          {t("collectionsTitle") || "Bộ Sưu Tập Mẫu Thiệp Cưới Sang Trọng"}
         </motion.h1>
 
         {/* DESCRIPTION */}
@@ -461,50 +433,26 @@ export default function CollectionsPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-xs sm:text-sm text-stone-600 max-w-2xl mx-auto leading-relaxed"
         >
-          {t("collectionsDesc") || "Khám phá hàng trăm thiết kế thiệp cưới, đầy tháng, sinh nhật và sự kiện độc quyền. Được chế tác với sự tinh tế trong từng pixel, tối giản nhưng đậm chất nghệ thuật, hoàn hảo để lưu giữ khoảnh khắc của bạn."}
+          {t("collectionsDesc") || "Khám phá các thiết kế thiệp cưới trực tuyến độc quyền, từ nét đẹp Á Đông hoàng gia đến phong cách phương Tây tối giản tinh tế. Trải nghiệm phong bì sáp 3D, album ảnh cưới và xác nhận tham dự (RSVP) chuyên nghiệp."}
         </motion.p>
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. ELEGANT & COMPACT FILTER SYSTEM */}
+      {/* 3. ELEGANT WEDDING STYLES FILTER */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 my-6">
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl p-3 sm:p-4 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)] space-y-3">
-          {/* TIER 1: CATEGORIES PILL TABS */}
-          <div className="flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 px-1">
-            {categories.map((cat) => {
-              const isActive = selectedCat === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCat(cat.id)}
-                  className={`px-4 sm:px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md scale-102 ring-2 ring-[#BE944E]/30"
-                      : "bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200/80 hover:border-[#BE944E]/40"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* TIER 2: STYLES SUB-FILTER CHIPS */}
-          <div className="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-stone-100 px-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 shrink-0 mr-1 hidden sm:inline">
-              {t("stylePrefix") || "Phong cách:"}
-            </span>
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 my-6">
+        <div className="bg-white/85 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)]">
+          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar py-0.5 px-1">
             {styles.map((s) => {
               const isActive = selectedStyle === s.id;
               return (
                 <button
                   key={s.id}
                   onClick={() => setSelectedStyle(s.id)}
-                  className={`px-3 py-1 rounded-full text-[11px] whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer ${
                     isActive
-                      ? "bg-amber-100/90 text-[#8C6424] font-bold border border-[#BE944E]/50 shadow-2xs"
-                      : "text-stone-500 hover:text-stone-900 hover:bg-stone-100/60"
+                      ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md scale-102 ring-2 ring-[#BE944E]/30"
+                      : "bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200/80 hover:border-[#BE944E]/40"
                   }`}
                 >
                   {s.label}
