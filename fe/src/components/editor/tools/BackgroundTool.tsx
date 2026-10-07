@@ -86,6 +86,60 @@ const FALLING_EFFECTS = [
 // Thư viện ảnh nền có sẵn tuyển chọn tối ưu dung lượng và trang nhã
 const PRESET_BACKGROUND_IMAGES = [
   {
+    id: "bg-imperial-crimson-velvet",
+    label: "Nhung đỏ hoàng gia & Mẫu đơn vàng",
+    url: "/images/backgrounds/bg-imperial-crimson-velvet.jpg",
+    thumb: "/images/backgrounds/bg-imperial-crimson-velvet.jpg",
+  },
+  {
+    id: "bg-glasshouse-white-rose",
+    label: "Vòm hoa hồng trắng nhà kính Châu Âu",
+    url: "/images/backgrounds/bg-glasshouse-white-rose.jpg",
+    thumb: "/images/backgrounds/bg-glasshouse-white-rose.jpg",
+  },
+  {
+    id: "bg-ribbed-glass-pink-peony",
+    label: "Kính sọc mờ đọng sương & Mẫu đơn pastel",
+    url: "/images/backgrounds/bg-ribbed-glass-pink-peony.jpg",
+    thumb: "/images/backgrounds/bg-ribbed-glass-pink-peony.jpg",
+  },
+  {
+    id: "bg-roman-arch-marsala",
+    label: "Cổng vòm đá La Mã & Hoa hồng đỏ rực",
+    url: "/images/backgrounds/bg-roman-arch-marsala.jpg",
+    thumb: "/images/backgrounds/bg-roman-arch-marsala.jpg",
+  },
+  {
+    id: "bg-deckled-paper-botanical",
+    label: "Giấy cotton xé mép & Khuynh diệp",
+    url: "/images/backgrounds/bg-deckled-paper-botanical.jpg",
+    thumb: "/images/backgrounds/bg-deckled-paper-botanical.jpg",
+  },
+  {
+    id: "bg-deckled-paper-lotus",
+    label: "Màu nước hoa sen & Bụi vàng kim",
+    url: "/images/backgrounds/bg-deckled-paper-lotus.jpg",
+    thumb: "/images/backgrounds/bg-deckled-paper-lotus.jpg",
+  },
+  {
+    id: "bg-cinematic-golden-sunset",
+    label: "Ánh hoàng hôn Cinematic rực rỡ",
+    url: "/images/backgrounds/bg-cinematic-golden-sunset.jpg",
+    thumb: "/images/backgrounds/bg-cinematic-golden-sunset.jpg",
+  },
+  {
+    id: "bg-alpine-lake-pine",
+    label: "Hồ Thụy Sĩ ngọc bích & Rừng thông sương",
+    url: "/images/backgrounds/bg-alpine-lake-pine.jpg",
+    thumb: "/images/backgrounds/bg-alpine-lake-pine.jpg",
+  },
+  {
+    id: "bg-dragon-phoenix-gold-border",
+    label: "Gấm đỏ Long Phụng & Viền vàng cung đình",
+    url: "/images/backgrounds/bg-dragon-phoenix-gold-border.jpg",
+    thumb: "/images/backgrounds/bg-dragon-phoenix-gold-border.jpg",
+  },
+  {
     id: "bg-floral-pastel",
     label: "Hoa hồng pastel & khuynh diệp",
     url: "/images/backgrounds/bg-floral-pastel.webp",
