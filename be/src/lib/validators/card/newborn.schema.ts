@@ -26,6 +26,6 @@ export const NewbornDataSchema = z.object({
   ceremonyType: NewbornCeremonyType,
   greeting: z.string().optional(),
   events: z.array(EventSchema).optional().default([]),
-});
+}).passthrough();
 
 export type NewbornData = z.infer<typeof NewbornDataSchema>;

@@ -21,9 +21,9 @@ const PersonBioSchema = z.object({
 });
 
 const LoveStoryMilestoneSchema = z.object({
-  title: z.string().min(1, "Tiêu đề mốc thời gian"),
-  date: z.string().min(1, "Thời gian (VD: 10/2022)"),
-  description: z.string().nullable().optional(),
+  title: z.string().trim().max(120).default(""),
+  date: z.string().trim().max(80).default(""),
+  description: z.string().trim().max(1_000).nullable().optional(),
   imageUrl: z.string().nullable().optional().or(z.literal("")),
 });
 
@@ -38,6 +38,7 @@ const WeddingPhotoSchema = z.object({
 
 import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
 import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
+import { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
 
 export const TimelineEventSchema = z.object({
   time: z.string(),
@@ -48,8 +49,12 @@ export const TimelineEventSchema = z.object({
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
   heroSubtitle: z.string().nullable().optional(),
+  headerSubtitle: z.string().nullable().optional(),
+  headerDate: z.string().nullable().optional(),
   invitationTitle: z.string().nullable().optional(),
   coverPhotoUrl: z.string().nullable().optional().or(z.literal("")),
+  isReverseOrder: z.boolean().optional().default(false),
+  videoUrl: z.string().max(2000).nullable().optional(),
   groom: PersonBioSchema,
   bride: PersonBioSchema,
   greeting: z.string().nullable().optional(),
@@ -60,9 +65,18 @@ export const WeddingDataSchema = z.object({
   canvas: CanvasDocumentSchema.optional(),
   canvasElements: z.array(CanvasElementSchema).optional(),
   canvasDocument: WeddingSceneDocumentSchema.optional(),
+  envelopeConfig: EnvelopeConfigSchema.optional(),
+  elementAnimations: z.record(z.unknown()).optional(),
+  canvasWidth: z.number().optional(),
+  canvasHeight: z.number().optional(),
+  canvasBackgroundColor: z.string().optional(),
+  canvasBackgroundPattern: z.enum(["none", "flower-small", "flower-large"]).optional(),
+  showBottomToolbar: z.boolean().optional(),
+  showWishButton: z.boolean().optional(),
+  showGiftQR: z.boolean().optional(),
+  showRSVP: z.boolean().optional(),
   fieldPositions: z.record(z.any()).optional(),
   fieldScales: z.record(z.any()).optional(),
 }).passthrough();
-
 
 export type WeddingData = z.infer<typeof WeddingDataSchema>;

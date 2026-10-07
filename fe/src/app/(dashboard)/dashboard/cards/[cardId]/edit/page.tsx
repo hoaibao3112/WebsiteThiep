@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -375,6 +375,9 @@ function EditCardContent() {
   const [brideAddress, setBrideAddress] = useState("");
   const [groomPhone, setGroomPhone] = useState("");
   const [groomAddress, setGroomAddress] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [headerSubtitle, setHeaderSubtitle] = useState("");
+  const [headerDate, setHeaderDate] = useState("");
   const [isReverseOrder, setIsReverseOrder] = useState(false);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [showQuickFill, setShowQuickFill] = useState(false);
@@ -460,7 +463,6 @@ function EditCardContent() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const categoryDataRef = React.useRef<CardDetail["categoryData"]>(DEMO_CARD.categoryData);
   const draftRevisionRef = React.useRef(0);
-  const [videoUrl, setVideoUrl] = useState("");
 
   // ────────────────────────────────────────────────────────────────
   // LOAD DATA FROM API
@@ -538,6 +540,8 @@ function EditCardContent() {
       setCoverPhotoUrl((card.categoryData as any).coverPhotoUrl || "");
       setLoveStory(ls || []);
       if ((card.categoryData as any).videoUrl) setVideoUrl((card.categoryData as any).videoUrl);
+      if ((card.categoryData as any).headerSubtitle) setHeaderSubtitle((card.categoryData as any).headerSubtitle);
+      if ((card.categoryData as any).headerDate) setHeaderDate((card.categoryData as any).headerDate);
       if ((card.categoryData as any).isReverseOrder !== undefined) setIsReverseOrder((card.categoryData as any).isReverseOrder);
       if (Array.isArray((card.categoryData as any).timelineEvents) && (card.categoryData as any).timelineEvents.length > 0) {
         setTimelineEvents((card.categoryData as any).timelineEvents);
@@ -804,11 +808,13 @@ function EditCardContent() {
     }
 
     setCheckingSlug(true);
+    let isMounted = true;
     const timer = setTimeout(async () => {
       try {
         const res = await ApiClient.request<{ available: boolean }>(
           `/cards/slug-availability?slug=${encodeURIComponent(clean)}&excludeCardId=${encodeURIComponent(cardId)}`
         );
+        if (!isMounted) return;
         if (res.success && res.data) {
           setSlugAvailable(res.data.available);
           if (!res.data.available) {
@@ -821,13 +827,16 @@ function EditCardContent() {
           setSlugError(res.error || "Không thể kiểm tra đường dẫn");
         }
       } catch {
-        setSlugAvailable(null);
+        if (isMounted) setSlugAvailable(null);
       } finally {
-        setCheckingSlug(false);
+        if (isMounted) setCheckingSlug(false);
       }
     }, 400);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [slug, cardId]);
 
   // ────────────────────────────────────────────────────────────────
@@ -921,31 +930,30 @@ function EditCardContent() {
     setUploadingMusic(true);
     const localUrl = URL.createObjectURL(file);
 
-    // Get duration via audio element
-    let duration = "?:??";
     try {
-      const tempAudio = new Audio(localUrl);
-      duration = await new Promise<string>((resolve) => {
-        tempAudio.addEventListener("loadedmetadata", () => {
-          const s = Math.floor(tempAudio.duration);
-          const m = Math.floor(s / 60);
-          const sec = s % 60;
-          resolve(`${m}:${sec.toString().padStart(2, "0")}`);
+      // Get duration via audio element
+      let duration = "?:??";
+      try {
+        const tempAudio = new Audio(localUrl);
+        duration = await new Promise<string>((resolve) => {
+          tempAudio.addEventListener("loadedmetadata", () => {
+            const s = Math.floor(tempAudio.duration);
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            resolve(`${m}:${sec.toString().padStart(2, "0")}`);
+          });
+          setTimeout(() => resolve("?:??"), 3000);
         });
-        setTimeout(() => resolve("?:??"), 3000);
-      });
-    } catch {
-      // ignore
-    }
+      } catch {
+        // ignore
+      }
 
-    try {
       const formData = new FormData();
       formData.append("file", file);
       const res = await ApiClient.request<{ url: string }>("/media/upload", {
         method: "POST",
         body: formData,
       });
-      URL.revokeObjectURL(localUrl);
 
       if (res.success && res.data?.url) {
         const music: UploadedMusic = {
@@ -963,9 +971,9 @@ function EditCardContent() {
         setMusicUploadError(res.error || "Không thể tải lên tệp nhạc vào máy chủ.");
       }
     } catch (err: unknown) {
-      URL.revokeObjectURL(localUrl);
       setMusicUploadError(err instanceof Error ? err.message : "Lỗi kết nối máy chủ khi tải nhạc.");
     } finally {
+      URL.revokeObjectURL(localUrl);
       setUploadingMusic(false);
     }
   }, []);
@@ -987,10 +995,11 @@ function EditCardContent() {
   };
 
   // ────────────────────────────────────────────────────────────────
-  // BUILD LIVE PREVIEW CARD
+  // ────────────────────────────────────────────────────────────────
+  // BUILD LIVE PREVIEW CARD (MEMOIZED)
   // ────────────────────────────────────────────────────────────────
 
-  const previewCard: CardDetail = {
+  const previewCard: CardDetail = useMemo(() => ({
     id: cardId,
     slug,
     cardCategory: category,
@@ -1013,6 +1022,10 @@ function EditCardContent() {
             canvasWidth: 390,
             canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
             cardCategory: "WEDDING",
+            headerSubtitle: headerSubtitle || (categoryDataRef.current as any)?.headerSubtitle,
+            headerDate: headerDate || (categoryDataRef.current as any)?.headerDate,
+            isReverseOrder,
+            videoUrl: videoUrl || (categoryDataRef.current as any)?.videoUrl,
             coverPhotoUrl: coverPhotoUrl || photos.find((p) => p.isCover)?.url || photos[0]?.url,
             groom: {
               ...((categoryDataRef.current as WeddingDataPayload).groom ?? {}),
@@ -1020,6 +1033,7 @@ function EditCardContent() {
               shortName: groomShort || ((categoryDataRef.current as WeddingDataPayload).groom?.shortName),
               birthOrder: groomBirthOrder || ((categoryDataRef.current as WeddingDataPayload).groom?.birthOrder),
               avatarUrl: groomAvatar || ((categoryDataRef.current as WeddingDataPayload).groom?.avatarUrl),
+              phone: groomPhone || ((categoryDataRef.current as WeddingDataPayload).groom?.phone),
               address: groomAddress,
               parents: { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather, motherName: groomMother, address: groomAddress },
             },
@@ -1029,6 +1043,7 @@ function EditCardContent() {
               shortName: brideShort || ((categoryDataRef.current as WeddingDataPayload).bride?.shortName),
               birthOrder: brideBirthOrder || ((categoryDataRef.current as WeddingDataPayload).bride?.birthOrder),
               avatarUrl: brideAvatar || ((categoryDataRef.current as WeddingDataPayload).bride?.avatarUrl),
+              phone: bridePhone || ((categoryDataRef.current as WeddingDataPayload).bride?.phone),
               address: brideAddress,
               parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother, address: brideAddress },
             },
@@ -1055,7 +1070,57 @@ function EditCardContent() {
             events: [],
             elementAnimations,
           },
-  };
+  }), [
+    cardId,
+    slug,
+    category,
+    fallingEffect,
+    isAutoPlay,
+    primaryColor,
+    fontFamily,
+    selectedMusicSrc,
+    greetingMessage,
+    bankCodeGroom,
+    accNumGroom,
+    accNameGroom,
+    bankCodeBride,
+    accNumBride,
+    accNameBride,
+    events,
+    photos,
+    coverPhotoUrl,
+    groomName,
+    groomShort,
+    groomBirthOrder,
+    groomAvatar,
+    groomPhone,
+    groomAddress,
+    groomFather,
+    groomMother,
+    brideName,
+    brideShort,
+    brideBirthOrder,
+    brideAvatar,
+    bridePhone,
+    brideAddress,
+    brideFather,
+    brideMother,
+    loveStory,
+    timelineEvents,
+    videoUrl,
+    isReverseOrder,
+    headerSubtitle,
+    headerDate,
+    elementAnimations,
+    celebrantName,
+    age,
+    babyName,
+    nickname,
+    gender,
+    weight,
+    height,
+    ceremonyType,
+  ]);
 
   // Sync edits from VisualCardEditor back to local state hooks
   const handleDraftChange = useCallback((nextDraft: CardDetail) => {
@@ -1068,7 +1133,10 @@ function EditCardContent() {
     if (nextDraft.greetingMessage !== undefined) setGreetingMessage(nextDraft.greetingMessage || "");
     if (nextDraft.fallingEffect) setFallingEffect(nextDraft.fallingEffect as any);
     if (nextDraft.openingEffect) setOpeningEffect(nextDraft.openingEffect as any);
-    if ((nextDraft as any).templateSlug) setTemplateSlug((nextDraft as any).templateSlug);
+    if ((nextDraft as any).templateSlug) {
+      setTemplateSlug((nextDraft as any).templateSlug);
+      setSelectedTemplate((nextDraft as any).templateSlug);
+    }
 
     const catData = nextDraft.categoryData as any;
     if (catData) {
@@ -1077,9 +1145,12 @@ function EditCardContent() {
         if (catData.groom.shortName !== undefined) setGroomShort(catData.groom.shortName || "");
         if (catData.groom.birthOrder !== undefined) setGroomBirthOrder(catData.groom.birthOrder || "");
         if (catData.groom.avatarUrl !== undefined) setGroomAvatar(catData.groom.avatarUrl || "");
+        if (catData.groom.phone !== undefined) setGroomPhone(catData.groom.phone || "");
+        if (catData.groom.address !== undefined) setGroomAddress(catData.groom.address || "");
         if (catData.groom.parents) {
           if (catData.groom.parents.fatherName !== undefined) setGroomFather(catData.groom.parents.fatherName || "");
           if (catData.groom.parents.motherName !== undefined) setGroomMother(catData.groom.parents.motherName || "");
+          if (catData.groom.parents.address !== undefined && !catData.groom.address) setGroomAddress(catData.groom.parents.address || "");
         }
       }
       if (catData.bride) {
@@ -1087,11 +1158,20 @@ function EditCardContent() {
         if (catData.bride.shortName !== undefined) setBrideShort(catData.bride.shortName || "");
         if (catData.bride.birthOrder !== undefined) setBrideBirthOrder(catData.bride.birthOrder || "");
         if (catData.bride.avatarUrl !== undefined) setBrideAvatar(catData.bride.avatarUrl || "");
+        if (catData.bride.phone !== undefined) setBridePhone(catData.bride.phone || "");
+        if (catData.bride.address !== undefined) setBrideAddress(catData.bride.address || "");
         if (catData.bride.parents) {
           if (catData.bride.parents.fatherName !== undefined) setBrideFather(catData.bride.parents.fatherName || "");
           if (catData.bride.parents.motherName !== undefined) setBrideMother(catData.bride.parents.motherName || "");
+          if (catData.bride.parents.address !== undefined && !catData.bride.address) setBrideAddress(catData.bride.parents.address || "");
         }
       }
+      if (catData.videoUrl !== undefined) setVideoUrl(catData.videoUrl || "");
+      if (catData.isReverseOrder !== undefined) setIsReverseOrder(Boolean(catData.isReverseOrder));
+      if (catData.headerSubtitle !== undefined) setHeaderSubtitle(catData.headerSubtitle || "");
+      if (catData.headerDate !== undefined) setHeaderDate(catData.headerDate || "");
+      if (Array.isArray(catData.timelineEvents)) setTimelineEvents(catData.timelineEvents);
+      if (Array.isArray(catData.loveStory)) setLoveStory(catData.loveStory);
       if (catData.coverPhotoUrl) {
         setCoverPhotoUrl(catData.coverPhotoUrl);
         setPhotos((prev) => {
@@ -1117,9 +1197,63 @@ function EditCardContent() {
     setSaving(true);
     setSaveError(null);
 
+    // Snapshot all states synchronously at save start to avoid stale closures (H1)
+    const snapPhotos = [...photos];
+    const snapEvents = [...events];
+    const snapTimelineEvents = [...timelineEvents];
+    const snapLoveStory = [...loveStory];
+    const snapGroomName = groomName;
+    const snapGroomShort = groomShort;
+    const snapGroomFather = groomFather;
+    const snapGroomMother = groomMother;
+    const snapGroomBirthOrder = groomBirthOrder;
+    const snapGroomAvatar = groomAvatar;
+    const snapGroomPhone = groomPhone;
+    const snapGroomAddress = groomAddress;
+    const snapBrideName = brideName;
+    const snapBrideShort = brideShort;
+    const snapBrideFather = brideFather;
+    const snapBrideMother = brideMother;
+    const snapBrideBirthOrder = brideBirthOrder;
+    const snapBrideAvatar = brideAvatar;
+    const snapBridePhone = bridePhone;
+    const snapBrideAddress = brideAddress;
+    const snapSlug = slug;
+    const snapTemplateSlug = templateSlug;
+    const snapSelectedTemplate = selectedTemplate;
+    const snapPrimaryColor = primaryColor;
+    const snapFontFamily = fontFamily;
+    const snapOpeningEffect = openingEffect;
+    const snapFallingEffect = fallingEffect;
+    const snapGreetingMessage = greetingMessage;
+    const snapIsAutoPlay = isAutoPlay;
+    const snapVideoUrl = videoUrl;
+    const snapIsReverseOrder = isReverseOrder;
+    const snapHeaderSubtitle = headerSubtitle;
+    const snapHeaderDate = headerDate;
+    const snapCoverPhotoUrl = coverPhotoUrl;
+    const snapAccNumGroom = accNumGroom;
+    const snapAccNameGroom = snapGroomName;
+    const snapBankCodeGroom = bankCodeGroom;
+    const snapAccNumBride = accNumBride;
+    const snapAccNameBride = snapBrideName;
+    const snapBankCodeBride = bankCodeBride;
+    const snapBankGroomTouched = bankGroomTouched;
+    const snapBankBrideTouched = bankBrideTouched;
+    const snapMusicTouched = musicTouched;
+    const snapSelectedMusicSrc = selectedMusicSrc;
+    const snapCelebrantName = celebrantName;
+    const snapAge = age;
+    const snapBabyName = babyName;
+    const snapNickname = nickname;
+    const snapGender = gender;
+    const snapWeight = weight;
+    const snapHeight = height;
+    const snapCeremonyType = ceremonyType;
+
     // 1. Chuẩn hóa hình ảnh: chuyển đổi mọi blob URL thành Base64 Data URL nếu có
     const safePhotos = await Promise.all(
-      photos.map(async (p) => {
+      snapPhotos.map(async (p) => {
         let safeUrl = p.url;
         if (safeUrl.startsWith("blob:")) {
           try {
@@ -1156,7 +1290,7 @@ function EditCardContent() {
       }));
 
     // 2. Chuẩn hóa sự kiện: eventDate phải luôn là chuỗi ISO Date hợp lệ
-    const formattedEvents = events.map((e) => {
+    const formattedEvents = snapEvents.map((e) => {
       let isoDate: string;
       try {
         const d = e.eventDate ? new Date(e.eventDate) : new Date();
@@ -1176,32 +1310,31 @@ function EditCardContent() {
     });
 
     // 3. Chuẩn hóa tài khoản mừng cưới (F3):
-    // Khi user để trống bank thì gửi null (xoá), chỉ để undefined khi chưa chạm vào.
-    const hasGroomBank = Boolean(accNumGroom?.trim() && accNameGroom?.trim());
-    const hasBrideBank = Boolean(accNumBride?.trim() && accNameBride?.trim());
+    const hasGroomBank = Boolean(snapAccNumGroom?.trim() && accNameGroom?.trim());
+    const hasBrideBank = Boolean(snapAccNumBride?.trim() && accNameBride?.trim());
 
-    const bankingPrimary = bankGroomTouched
+    const bankingPrimary = snapBankGroomTouched
       ? hasGroomBank
         ? {
-            bankCode: bankCodeGroom?.trim() || "MB",
-            accountNumber: accNumGroom.trim(),
+            bankCode: snapBankCodeGroom?.trim() || "MB",
+            accountNumber: snapAccNumGroom.trim(),
             accountName: accNameGroom.trim(),
           }
         : null
       : undefined;
 
-    const bankingSecondary = bankBrideTouched
+    const bankingSecondary = snapBankBrideTouched
       ? hasBrideBank
         ? {
-            bankCode: bankCodeBride?.trim() || "VCB",
-            accountNumber: accNumBride.trim(),
+            bankCode: snapBankCodeBride?.trim() || "VCB",
+            accountNumber: snapAccNumBride.trim(),
             accountName: accNameBride.trim(),
           }
         : null
       : undefined;
 
     // 4. Chuẩn hóa slug và templateSlug
-    const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
+    const cleanSlug = snapSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
     if (cleanSlug.length < 3) {
       setSaving(false);
       setSaveError("Đường dẫn thiệp (Slug URL) phải có ít nhất 3 ký tự.");
@@ -1212,104 +1345,99 @@ function EditCardContent() {
       setSaveError(slugError || "Đường dẫn thiệp đã có người sử dụng. Vui lòng chọn đường dẫn khác.");
       return;
     }
-    const cleanTemplateSlug = templateSlug || selectedTemplate || "wedding-heritage-crimson-gold";
+    const cleanTemplateSlug = snapTemplateSlug || snapSelectedTemplate || "wedding-heritage-crimson-gold";
 
-    // 5. Chuẩn hóa nhạc (F3):
-    // Khi user để trống hoặc xóa nhạc thì gửi null (xóa), chỉ để undefined khi chưa chạm vào.
-    const cleanMusicUrl = selectedMusicSrc?.startsWith("blob:")
+    // 5. Chuẩn hóa nhạc:
+    const cleanMusicUrl = snapSelectedMusicSrc?.startsWith("blob:")
       ? undefined
-      : selectedMusicSrc?.trim() || null;
-    const musicUrlPayload = musicTouched ? (cleanMusicUrl || null) : undefined;
+      : snapSelectedMusicSrc?.trim() || null;
+    const musicUrlPayload = snapMusicTouched ? (cleanMusicUrl || null) : undefined;
 
-    // 6. Chuẩn hóa Category Data
-    const effectiveDraft = draftSnapshot || previewCard;
-    const catData = {
-      ...(categoryDataRef.current || {}),
-      ...(effectiveDraft?.categoryData || {}),
-      ...(draftSnapshot?.categoryData || {}),
-    } as any;
-
-    const resolvedGroomName =
-      catData?.groom?.fullName?.trim() ||
-      groomName?.trim() ||
-      "Chú Rể";
-
-    const resolvedBrideName =
-      catData?.bride?.fullName?.trim() ||
-      brideName?.trim() ||
-      "Cô Dâu";
+    // 6. Chuẩn hóa Category Data — Single source of truth (H2)
+    const baseCatData = (draftSnapshot?.categoryData || categoryDataRef.current || {}) as Record<string, any>;
+    const resolvedGroomName = baseCatData.groom?.fullName?.trim() || snapGroomName.trim() || "Chú Rể";
+    const resolvedBrideName = baseCatData.bride?.fullName?.trim() || snapBrideName.trim() || "Cô Dâu";
 
     const categoryDataPayload = {
-      ...catData,
+      ...baseCatData,
       canvasWidth: 390,
-      canvasHeight: draftSnapshot?.categoryData?.canvasHeight ?? catData.canvasHeight ?? catData.canvasDocument?.height ?? categoryDataRef.current.canvasHeight ?? 1200,
+      canvasHeight: draftSnapshot?.categoryData?.canvasHeight ?? baseCatData.canvasHeight ?? baseCatData.canvasDocument?.height ?? 1200,
       cardCategory: category,
       events: formattedEvents,
-      canvasDocument: catData.canvasDocument,
-      canvasElements: catData.canvasDocument?.elements ? undefined : catData.canvasElements,
-      fieldPositions: catData.fieldPositions || {},
-      fieldScales: catData.fieldScales || {},
-      showBottomToolbar: catData.showBottomToolbar ?? true,
-      showWishButton: catData.showWishButton ?? true,
-      showGiftQR: catData.showGiftQR ?? true,
-      showRSVP: catData.showRSVP ?? true,
-      envelopeConfig: catData.envelopeConfig || (draftSnapshot as any)?.envelopeConfig || (draftSnapshot as any)?.categoryData?.envelopeConfig || undefined,
+      canvasDocument: baseCatData.canvasDocument,
+      canvasElements: baseCatData.canvasDocument?.elements ? undefined : baseCatData.canvasElements,
+      fieldPositions: baseCatData.fieldPositions || {},
+      fieldScales: baseCatData.fieldScales || {},
+      showBottomToolbar: baseCatData.showBottomToolbar ?? true,
+      showWishButton: baseCatData.showWishButton ?? true,
+      showGiftQR: baseCatData.showGiftQR ?? true,
+      showRSVP: baseCatData.showRSVP ?? true,
+      envelopeConfig: baseCatData.envelopeConfig || (draftSnapshot as any)?.envelopeConfig || undefined,
       elementAnimations,
       ...(category === "WEDDING"
         ? {
+            coverPhotoUrl: snapCoverPhotoUrl || baseCatData.coverPhotoUrl || validPhotos.find((p) => p.isCover)?.url || validPhotos[0]?.url,
+            headerSubtitle: snapHeaderSubtitle.trim() || baseCatData.headerSubtitle || undefined,
+            headerDate: snapHeaderDate.trim() || baseCatData.headerDate || undefined,
+            isReverseOrder: baseCatData.isReverseOrder ?? snapIsReverseOrder,
+            videoUrl: baseCatData.videoUrl?.trim() || snapVideoUrl.trim() || undefined,
             groom: {
-              ...(catData.groom ?? {}),
+              ...(baseCatData.groom ?? {}),
               fullName: resolvedGroomName,
-              shortName: catData.groom?.shortName?.trim() || groomShort?.trim() || undefined,
-              birthOrder: catData.groom?.birthOrder?.trim() || groomBirthOrder?.trim() || undefined,
-              phone: catData.groom?.phone?.trim() || groomPhone?.trim() || undefined,
-              address: catData.groom?.address?.trim() || groomAddress?.trim() || undefined,
-              parents: (catData.groom?.parents?.fatherName || catData.groom?.parents?.motherName || catData.groom?.parents?.address || groomFather?.trim() || groomMother?.trim() || groomAddress?.trim())
+              shortName: baseCatData.groom?.shortName?.trim() || snapGroomShort.trim() || undefined,
+              birthOrder: baseCatData.groom?.birthOrder?.trim() || snapGroomBirthOrder.trim() || undefined,
+              avatarUrl: baseCatData.groom?.avatarUrl?.trim() || snapGroomAvatar.trim() || undefined,
+              phone: baseCatData.groom?.phone?.trim() || snapGroomPhone.trim() || undefined,
+              address: baseCatData.groom?.address?.trim() || snapGroomAddress.trim() || undefined,
+              parents: (baseCatData.groom?.parents?.fatherName || baseCatData.groom?.parents?.motherName || baseCatData.groom?.parents?.address || snapGroomFather.trim() || snapGroomMother.trim() || snapGroomAddress.trim())
                 ? {
-                    ...(catData.groom?.parents ?? {}),
-                    fatherName: catData.groom?.parents?.fatherName?.trim() || groomFather?.trim() || undefined,
-                    motherName: catData.groom?.parents?.motherName?.trim() || groomMother?.trim() || undefined,
-                    address: catData.groom?.parents?.address?.trim() || groomAddress?.trim() || undefined,
+                    ...(baseCatData.groom?.parents ?? {}),
+                    fatherName: baseCatData.groom?.parents?.fatherName?.trim() || snapGroomFather.trim() || undefined,
+                    motherName: baseCatData.groom?.parents?.motherName?.trim() || snapGroomMother.trim() || undefined,
+                    address: baseCatData.groom?.parents?.address?.trim() || snapGroomAddress.trim() || undefined,
                   }
                 : undefined,
             },
             bride: {
-              ...(catData.bride ?? {}),
+              ...(baseCatData.bride ?? {}),
               fullName: resolvedBrideName,
-              shortName: catData.bride?.shortName?.trim() || brideShort?.trim() || undefined,
-              birthOrder: catData.bride?.birthOrder?.trim() || brideBirthOrder?.trim() || undefined,
-              phone: catData.bride?.phone?.trim() || bridePhone?.trim() || undefined,
-              address: catData.bride?.address?.trim() || brideAddress?.trim() || undefined,
-              parents: (catData.bride?.parents?.fatherName || catData.bride?.parents?.motherName || catData.bride?.parents?.address || brideFather?.trim() || brideMother?.trim() || brideAddress?.trim())
+              shortName: baseCatData.bride?.shortName?.trim() || snapBrideShort.trim() || undefined,
+              birthOrder: baseCatData.bride?.birthOrder?.trim() || snapBrideBirthOrder.trim() || undefined,
+              avatarUrl: baseCatData.bride?.avatarUrl?.trim() || snapBrideAvatar.trim() || undefined,
+              phone: baseCatData.bride?.phone?.trim() || snapBridePhone.trim() || undefined,
+              address: baseCatData.bride?.address?.trim() || snapBrideAddress.trim() || undefined,
+              parents: (baseCatData.bride?.parents?.fatherName || baseCatData.bride?.parents?.motherName || baseCatData.bride?.parents?.address || snapBrideFather.trim() || snapBrideMother.trim() || snapBrideAddress.trim())
                 ? {
-                    ...(catData.bride?.parents ?? {}),
-                    fatherName: catData.bride?.parents?.fatherName?.trim() || brideFather?.trim() || undefined,
-                    motherName: catData.bride?.parents?.motherName?.trim() || brideMother?.trim() || undefined,
-                    address: catData.bride?.parents?.address?.trim() || brideAddress?.trim() || undefined,
+                    ...(baseCatData.bride?.parents ?? {}),
+                    fatherName: baseCatData.bride?.parents?.fatherName?.trim() || snapBrideFather.trim() || undefined,
+                    motherName: baseCatData.bride?.parents?.motherName?.trim() || snapBrideMother.trim() || undefined,
+                    address: baseCatData.bride?.parents?.address?.trim() || snapBrideAddress.trim() || undefined,
                   }
                 : undefined,
             },
-            loveStory: (catData.loveStory || loveStory).map((item: any) => ({
+            loveStory: (baseCatData.loveStory || snapLoveStory).map((item: any) => ({
               title: item.title?.trim() || "Kỷ niệm",
               date: item.date?.trim() || "",
               description: item.description?.trim() || undefined,
               imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl || undefined,
             })),
             photos: validPhotos,
-            timelineEvents: timelineEvents.length > 0 ? timelineEvents : ((catData as any)?.timelineEvents ?? []),
-            videoUrl: catData.videoUrl?.trim() || videoUrl?.trim() || undefined,
-            isReverseOrder: catData.isReverseOrder ?? isReverseOrder,
+            timelineEvents: snapTimelineEvents.length > 0 ? snapTimelineEvents : (baseCatData.timelineEvents ?? []),
           }
         : category === "BIRTHDAY"
-        ? { celebrantName: catData.celebrantName?.trim() || celebrantName?.trim() || "Chủ Tiệc", age: Number(catData.age) || Number(age) || 18, events: formattedEvents }
+        ? {
+            celebrantName: baseCatData.celebrantName?.trim() || snapCelebrantName.trim() || "Chủ Tiệc",
+            age: Number(baseCatData.age) || Number(snapAge) || 18,
+            events: formattedEvents,
+          }
         : {
-            babyName: catData.babyName?.trim() || babyName?.trim() || "Bé Yêu",
-            nickname: catData.nickname?.trim() || nickname?.trim() || undefined,
-            gender: (catData as any)?.gender ?? gender ?? "OTHER",
-            birthDate: catData.birthDate || new Date().toISOString(),
-            weight: catData.weight?.trim() || weight?.trim() || undefined,
-            height: catData.height?.trim() || height?.trim() || undefined,
-            ceremonyType: catData.ceremonyType || ceremonyType,
+            babyName: baseCatData.babyName?.trim() || snapBabyName.trim() || "Bé Yêu",
+            nickname: baseCatData.nickname?.trim() || snapNickname.trim() || undefined,
+            gender: baseCatData.gender ?? snapGender ?? "OTHER",
+            birthDate: baseCatData.birthDate || new Date().toISOString(),
+            weight: baseCatData.weight?.trim() || snapWeight.trim() || undefined,
+            height: baseCatData.height?.trim() || snapHeight.trim() || undefined,
+            ceremonyType: baseCatData.ceremonyType || snapCeremonyType,
             events: formattedEvents,
           }),
     };
@@ -1466,8 +1594,15 @@ function EditCardContent() {
                     {category === "WEDDING" ? "Thiệp Cưới" : category === "BIRTHDAY" ? "Sinh Nhật" : "Thôi Nôi"}
                   </span>
                 </div>
-                <p className="hidden sm:block text-[11px] text-stone-400 font-mono truncate">
-                  /thiep/<span className="text-[#BE944E] font-bold">{slug}</span>
+                <p className="hidden sm:flex items-center gap-2 text-[11px] text-stone-400 font-mono truncate">
+                  <span>/thiep/<span className="text-[#BE944E] font-bold">{slug}</span></span>
+                  <span className={`text-[10px] px-2 py-0.2 rounded-full font-bold uppercase ${
+                    cardStatus === "ACTIVE"
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                      : "bg-stone-100 text-stone-600 border border-stone-200"
+                  }`}>
+                    {cardStatus === "ACTIVE" ? "Đang hoạt động" : "Bản nháp"}
+                  </span>
                 </p>
               </div>
             </div>

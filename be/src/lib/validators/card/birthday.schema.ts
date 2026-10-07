@@ -11,6 +11,7 @@ export const BirthdayDataSchema = z.object({
   themeMood: z.string().optional(),
   hobbies: z.array(z.string()).default([]),
   events: z.array(EventSchema).min(1, "Vui lòng nhập thông tin tiệc sinh nhật"),
-});
+}).passthrough();
 
 export type BirthdayData = z.infer<typeof BirthdayDataSchema>;
+

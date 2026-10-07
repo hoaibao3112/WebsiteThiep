@@ -113,6 +113,10 @@ interface WeddingAccordionFormProps {
   selectedMusicSrc: string;
   onMusicChange: (src: string) => void;
 
+  // Timeline Schedule
+  timelineEvents?: Array<{ time: string; title: string; icon?: string }>;
+  onTimelineEventsChange?: (events: Array<{ time: string; title: string; icon?: string }>) => void;
+
   // Video
   videoUrl?: string;
   onVideoUrlChange?: (url: string) => void;
@@ -610,16 +614,73 @@ export function WeddingAccordionForm(props: WeddingAccordionFormProps) {
         </div>
       </AccordionItem>
 
-      {/* 12. LỊCH TRÌNH NGÀY CƯỚI */}
-      <AccordionItem id="schedule" title="Lịch trình ngày cưới" isComplete={false}>
+      {/* 12. LỊCH TRÌNH NGÀY CƯỚI (TIMELINE) */}
+      <AccordionItem id="schedule" title="Lịch trình tiệc cưới (Timeline)" isComplete={Boolean(props.timelineEvents && props.timelineEvents.length > 0)}>
         <div className="space-y-3">
-          <div className="flex gap-2">
-            {["Sơ đồ dọc", "Sơ đồ sole", "Sơ đồ ngang 4 điểm", "Dạng thẻ"].map((s, idx) => (
-              <span key={s} className="flex-1 p-2 rounded-xl border border-stone-200 bg-white text-center text-[10px] font-bold">
-                {s}
-              </span>
-            ))}
-          </div>
+          {(props.timelineEvents || []).map((tItem, tIdx) => (
+            <div key={tIdx} className="p-3 rounded-xl bg-white border border-stone-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-amber-700">Mốc {tIdx + 1}</span>
+                {(props.timelineEvents || []).length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (props.onTimelineEventsChange && props.timelineEvents) {
+                        props.onTimelineEventsChange(props.timelineEvents.filter((_, i) => i !== tIdx));
+                      }
+                    }}
+                    className="text-stone-400 hover:text-rose-500 p-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  placeholder="17:30"
+                  value={tItem.time}
+                  onChange={(e) => {
+                    if (props.onTimelineEventsChange && props.timelineEvents) {
+                      const copy = [...props.timelineEvents];
+                      copy[tIdx].time = e.target.value;
+                      props.onTimelineEventsChange(copy);
+                    }
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs font-mono font-bold text-center"
+                />
+                <input
+                  type="text"
+                  placeholder="Tên mốc (VD: Đón khách)"
+                  value={tItem.title}
+                  onChange={(e) => {
+                    if (props.onTimelineEventsChange && props.timelineEvents) {
+                      const copy = [...props.timelineEvents];
+                      copy[tIdx].title = e.target.value;
+                      props.onTimelineEventsChange(copy);
+                    }
+                  }}
+                  className="col-span-2 px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs font-bold"
+                />
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              if (props.onTimelineEventsChange) {
+                props.onTimelineEventsChange([
+                  ...(props.timelineEvents || []),
+                  { time: "20:00", title: "Giao lưu & Khiêu vũ", icon: "sparkles" },
+                ]);
+              }
+            }}
+            className="w-full py-2 rounded-xl border border-dashed border-stone-300 bg-white text-stone-700 font-bold flex items-center justify-center gap-1 hover:border-amber-400"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Thêm mốc lịch trình</span>
+          </button>
           <PaddingSelector />
         </div>
       </AccordionItem>

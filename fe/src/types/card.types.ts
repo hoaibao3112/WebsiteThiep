@@ -31,6 +31,7 @@ export interface WeddingDataPayload extends CanvasCategoryData {
   invitationTitle?: string;
   coverPhotoUrl?: string;
   isReverseOrder?: boolean;
+  videoUrl?: string;
   groom: {
     fullName: string;
     shortName?: string;
