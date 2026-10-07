@@ -8,3 +8,5 @@ export * from "./Template06PureLotus";
 export * from "./Template07Cinematic";
 export * from "./Template08AlpineLake";
 export * from "./Template09ImperialDragon";
+export * from "./Template10NhaCoHy";
+export * from "./Template11SageGardenGlass";

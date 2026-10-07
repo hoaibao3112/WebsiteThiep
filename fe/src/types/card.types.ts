@@ -70,6 +70,11 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     description?: string;
     imageUrl?: string;
   }>;
+  timelineEvents?: Array<{
+    time: string;
+    title: string;
+    icon?: string;
+  }>;
   events?: EventItem[];
 }
 

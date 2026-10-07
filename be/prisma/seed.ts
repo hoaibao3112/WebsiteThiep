@@ -203,6 +203,22 @@ async function main() {
       isPremium: true,
       configJson: { themeColor: "#7A121D", fontFamily: "Playfair Display", style: "Burgundy Arch Editorial" },
     },
+    {
+      slug: "wedding-nha-co-hy",
+      name: "Nhà Có Hỷ — Cổ Phục Việt Nam",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/templates/cover-10-nha-co-hy.webp",
+      isPremium: true,
+      configJson: { themeColor: "#B22222", fontFamily: "Playfair Display", style: "Vietnamese Traditional Heritage" },
+    },
+    {
+      slug: "wedding-sage-garden-glass",
+      name: "Vườn Bạch Hoa Kính Mờ — Sage Botanical Glass",
+      category: "WEDDING" as const,
+      thumbnailUrl: "/images/templates/cover-11-sage-garden.webp",
+      isPremium: true,
+      configJson: { themeColor: "#3B523B", fontFamily: "Playfair Display", style: "Sage Garden Frosted Glass Botanical" },
+    },
 
     // ── MẪU CŨ ──
     {

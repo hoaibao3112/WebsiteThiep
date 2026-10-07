@@ -46,6 +46,8 @@ const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
   "wedding-alpine-lake-romance": { primary: "#2B6B6D", secondary: "#D8ECE8", accent: "#D0A983", surface: "#F8FCFB", text: "#1C3C3D", headingFont: "Playfair Display", bodyFont: "Quicksand", radius: "lg", density: "airy" },
   "wedding-imperial-dragon-crimson": { primary: "#6E1719", secondary: "#F2D7B5", accent: "#D9A441", surface: "#FFF8EC", text: "#351616", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-nha-co-hy": { primary: "#B22222", secondary: "#FBF7EF", accent: "#C89B3C", surface: "#FCF9F2", text: "#2B1416", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-sage-garden-glass": { primary: "#3B523B", secondary: "#EDF3EC", accent: "#8FB38D", surface: "#F7FAF6", text: "#203322", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "airy" },
 };
 
 function asWeddingData(card: CardDetail): WeddingDataPayload {

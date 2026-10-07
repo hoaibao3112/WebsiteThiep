@@ -168,6 +168,24 @@ const TEMPLATE_PRESETS = [
     font: "Playfair Display",
     bg: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&auto=format&fit=crop",
   },
+  {
+    id: "wedding-nha-co-hy",
+    name: "Nhà Có Hỷ (Cổ Phục)",
+    category: "WEDDING",
+    tag: "HERITAGE",
+    color: "#B22222",
+    font: "Playfair Display",
+    bg: "/images/templates/cover-10-nha-co-hy.webp",
+  },
+  {
+    id: "wedding-sage-garden-glass",
+    name: "Vườn Bạch Hoa Kính Mờ",
+    category: "WEDDING",
+    tag: "BOTANICAL",
+    color: "#3B523B",
+    font: "Playfair Display",
+    bg: "/images/templates/cover-11-sage-garden.webp",
+  },
 ];
 
 const MUSIC_OPTIONS = [
@@ -496,7 +514,7 @@ function EditCardContent() {
       setGroomFather(groom.parents?.fatherName || "");
       setGroomMother(groom.parents?.motherName || "");
       if ((groom as any).phone) setGroomPhone((groom as any).phone);
-      if ((groom as any).address) setGroomAddress((groom as any).address);
+      setGroomAddress((groom as any).address || groom.parents?.address || "");
       setBrideName(bride.fullName);
       setBrideShort(bride.shortName || "");
       setBrideBirthOrder(bride.birthOrder || "");
@@ -504,7 +522,7 @@ function EditCardContent() {
       setBrideFather(bride.parents?.fatherName || "");
       setBrideMother(bride.parents?.motherName || "");
       if ((bride as any).phone) setBridePhone((bride as any).phone);
-      if ((bride as any).address) setBrideAddress((bride as any).address);
+      setBrideAddress((bride as any).address || bride.parents?.address || "");
       setCoverPhotoUrl((card.categoryData as any).coverPhotoUrl || "");
       setLoveStory(ls || []);
       if ((card.categoryData as any).videoUrl) setVideoUrl((card.categoryData as any).videoUrl);
@@ -983,7 +1001,8 @@ function EditCardContent() {
               shortName: groomShort || ((categoryDataRef.current as WeddingDataPayload).groom?.shortName),
               birthOrder: groomBirthOrder || ((categoryDataRef.current as WeddingDataPayload).groom?.birthOrder),
               avatarUrl: groomAvatar || ((categoryDataRef.current as WeddingDataPayload).groom?.avatarUrl),
-              parents: { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather, motherName: groomMother },
+              address: groomAddress,
+              parents: { ...((categoryDataRef.current as WeddingDataPayload).groom?.parents ?? {}), fatherName: groomFather, motherName: groomMother, address: groomAddress },
             },
             bride: {
               ...((categoryDataRef.current as WeddingDataPayload).bride ?? {}),
@@ -991,9 +1010,11 @@ function EditCardContent() {
               shortName: brideShort || ((categoryDataRef.current as WeddingDataPayload).bride?.shortName),
               birthOrder: brideBirthOrder || ((categoryDataRef.current as WeddingDataPayload).bride?.birthOrder),
               avatarUrl: brideAvatar || ((categoryDataRef.current as WeddingDataPayload).bride?.avatarUrl),
-              parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother },
+              address: brideAddress,
+              parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother, address: brideAddress },
             },
             loveStory,
+            timelineEvents: (categoryDataRef.current as any)?.timelineEvents ?? [],
             photos,
             events: [],
             elementAnimations,
@@ -1224,11 +1245,12 @@ function EditCardContent() {
               birthOrder: catData.groom?.birthOrder?.trim() || groomBirthOrder?.trim() || undefined,
               phone: catData.groom?.phone?.trim() || groomPhone?.trim() || undefined,
               address: catData.groom?.address?.trim() || groomAddress?.trim() || undefined,
-              parents: (catData.groom?.parents?.fatherName || catData.groom?.parents?.motherName || groomFather?.trim() || groomMother?.trim())
+              parents: (catData.groom?.parents?.fatherName || catData.groom?.parents?.motherName || catData.groom?.parents?.address || groomFather?.trim() || groomMother?.trim() || groomAddress?.trim())
                 ? {
                     ...(catData.groom?.parents ?? {}),
                     fatherName: catData.groom?.parents?.fatherName?.trim() || groomFather?.trim() || undefined,
                     motherName: catData.groom?.parents?.motherName?.trim() || groomMother?.trim() || undefined,
+                    address: catData.groom?.parents?.address?.trim() || groomAddress?.trim() || undefined,
                   }
                 : undefined,
             },
@@ -1239,11 +1261,12 @@ function EditCardContent() {
               birthOrder: catData.bride?.birthOrder?.trim() || brideBirthOrder?.trim() || undefined,
               phone: catData.bride?.phone?.trim() || bridePhone?.trim() || undefined,
               address: catData.bride?.address?.trim() || brideAddress?.trim() || undefined,
-              parents: (catData.bride?.parents?.fatherName || catData.bride?.parents?.motherName || brideFather?.trim() || brideMother?.trim())
+              parents: (catData.bride?.parents?.fatherName || catData.bride?.parents?.motherName || catData.bride?.parents?.address || brideFather?.trim() || brideMother?.trim() || brideAddress?.trim())
                 ? {
                     ...(catData.bride?.parents ?? {}),
                     fatherName: catData.bride?.parents?.fatherName?.trim() || brideFather?.trim() || undefined,
                     motherName: catData.bride?.parents?.motherName?.trim() || brideMother?.trim() || undefined,
+                    address: catData.bride?.parents?.address?.trim() || brideAddress?.trim() || undefined,
                   }
                 : undefined,
             },
@@ -1864,6 +1887,10 @@ function EditCardContent() {
                       <input type="text" value={groomMother} onChange={(e) => setGroomMother(e.target.value)} placeholder="Lê Thị Mai" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-[10px] text-stone-500 mb-1">Địa Chỉ Nhà Trai (Phụ Huynh)</label>
+                    <input type="text" value={groomAddress} onChange={(e) => setGroomAddress(e.target.value)} placeholder="82 Trần Phú, phường Nha Trang, tỉnh Khánh Hòa" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
+                  </div>
                 </div>
 
                 {/* Cô Dâu */}
@@ -1895,6 +1922,10 @@ function EditCardContent() {
                       <label className="block text-[10px] text-stone-500 mb-1">Họ Tên Mẹ</label>
                       <input type="text" value={brideMother} onChange={(e) => setBrideMother(e.target.value)} placeholder="Phạm Thu Cúc" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-stone-500 mb-1">Địa Chỉ Nhà Gái (Phụ Huynh)</label>
+                    <input type="text" value={brideAddress} onChange={(e) => setBrideAddress(e.target.value)} placeholder="45 Lê Hồng Phong, phường Tuy Hòa, tỉnh Đắk Lắk" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                   </div>
                 </div>
 

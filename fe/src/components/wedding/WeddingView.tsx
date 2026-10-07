@@ -15,6 +15,8 @@ import { getTemplateConfig } from "@/lib/editor/template-config";
 import { X } from "lucide-react";
 import { getWeddingScene } from "@/lib/editor/wedding-scene";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
+import { Template10NhaCoHy } from "./templates/Template10NhaCoHy";
+import { Template11SageGardenGlass } from "./templates/Template11SageGardenGlass";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
 import { Album3DConfig } from "@/types/album-3d.types";
@@ -148,7 +150,29 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
       {/* 4. RENDER TEMPLATE GIAO DIỆN TƯƠNG ỨNG */}
       <div className="relative">
-        {scene && (
+        {effectiveSlug === "wedding-nha-co-hy" ? (
+          <Template10NhaCoHy
+            card={card}
+            data={data}
+            primaryColor={primaryColor}
+            guestName={activeGuestName}
+            onOpenRsvp={() => setShowRsvp(true)}
+            onOpenGift={() => setShowGift(true)}
+            onSelectPhoto={(url) => setSelectedPhoto(url)}
+            isPreview={isPreview}
+          />
+        ) : effectiveSlug === "wedding-sage-garden-glass" ? (
+          <Template11SageGardenGlass
+            card={card}
+            data={data}
+            primaryColor={primaryColor}
+            guestName={activeGuestName}
+            onOpenRsvp={() => setShowRsvp(true)}
+            onOpenGift={() => setShowGift(true)}
+            onSelectPhoto={(url) => setSelectedPhoto(url)}
+            isPreview={isPreview}
+          />
+        ) : scene ? (
           <WeddingSceneRenderer
             card={card}
             data={data}
@@ -159,7 +183,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
             onSelectPhoto={(url) => setSelectedPhoto(url)}
             isPreview={isPreview}
           />
-        )}
+        ) : null}
 
         {/* 4.1 ALBUM ẢNH CƯỚI LẬT TRANG 3D CHÂN THỰC */}
         {(() => {

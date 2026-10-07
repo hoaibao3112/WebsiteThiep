@@ -36,6 +36,8 @@ const TEMPLATE_SECTIONS: Record<string, WeddingSceneSectionType[]> = {
   "wedding-alpine-lake-romance": ["hero", "couple", "calendar", "story", "gallery", "rsvp", "gift"],
   "wedding-imperial-dragon-crimson": ["hero", "invitation", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
   "wedding-crimson-arch-editorial": ["hero", "invitation", "story-collage", "countdown-arch", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
+  "wedding-nha-co-hy": ["hero", "ceremony", "venue", "calendar", "gallery", "rsvp", "gift", "farewell"],
+  "wedding-sage-garden-glass": ["hero", "ceremony", "gallery", "venue", "calendar", "timeline", "guestbook", "gift", "farewell"],
 };
 
 const TOKENS: Record<string, JsonRecord> = {
@@ -50,6 +52,8 @@ const TOKENS: Record<string, JsonRecord> = {
   "wedding-alpine-lake-romance": { primary: "#2B6B6D", secondary: "#D8ECE8", accent: "#D0A983", surface: "#F8FCFB", text: "#1C3C3D", headingFont: "Playfair Display", bodyFont: "Quicksand", radius: "lg", density: "airy" },
   "wedding-imperial-dragon-crimson": { primary: "#6E1719", secondary: "#FAF5EE", accent: "#B88E4C", surface: "#FAF6F0", text: "#3A1215", headingFont: "Playfair Display", bodyFont: "Inter", radius: "sm", density: "comfortable" },
   "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-nha-co-hy": { primary: "#B22222", secondary: "#FBF7EF", accent: "#C89B3C", surface: "#FCF9F2", text: "#2B1416", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
+  "wedding-sage-garden-glass": { primary: "#3B523B", secondary: "#EDF3EC", accent: "#8FB38D", surface: "#F7FAF6", text: "#203322", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "airy" },
 };
 
 const TEMPLATE_MOTIFS: Record<string, string> = {
@@ -64,6 +68,8 @@ const TEMPLATE_MOTIFS: Record<string, string> = {
   "wedding-alpine-lake-romance": "≈",
   "wedding-imperial-dragon-crimson": "囍",
   "wedding-crimson-arch-editorial": "❧",
+  "wedding-nha-co-hy": "囍",
+  "wedding-sage-garden-glass": "🌿",
 };
 
 type WidgetType = "calendar" | "countdown" | "map" | "contact" | "rsvp" | "album" | "guest-name" | "gift" | "envelope";

@@ -19,6 +19,8 @@ export class CardController {
         "wedding-cinematic-editorial",
         "wedding-alpine-lake-romance",
         "wedding-imperial-dragon-crimson",
+        "wedding-nha-co-hy",
+        "wedding-sage-garden-glass",
         "wedding-blank",
       ]).safeParse(req.params.slug);
       if (!templateSlug.success) return res.status(404).json({ success: false, error: "Không tìm thấy mẫu thiệp cưới" });

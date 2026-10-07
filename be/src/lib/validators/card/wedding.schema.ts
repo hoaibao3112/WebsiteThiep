@@ -4,6 +4,7 @@ import { EventSchema } from "./event.schema";
 const ParentInfoSchema = z.object({
   fatherName: z.string().nullable().optional(),
   motherName: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
   isPassedAwayFather: z.boolean().default(false),
   isPassedAwayMother: z.boolean().default(false),
 });
@@ -14,6 +15,7 @@ const PersonBioSchema = z.object({
   avatarUrl: z.string().nullable().optional().or(z.literal("")),
   birthOrder: z.string().nullable().optional(), // "Trưởng nam", "Út nữ"...
   phone: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
   parents: ParentInfoSchema.nullable().optional(),
   story: z.string().nullable().optional(),
 });
@@ -37,6 +39,12 @@ const WeddingPhotoSchema = z.object({
 import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.schema";
 import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 
+export const TimelineEventSchema = z.object({
+  time: z.string(),
+  title: z.string(),
+  icon: z.string().optional(),
+});
+
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
   heroSubtitle: z.string().nullable().optional(),
@@ -46,6 +54,7 @@ export const WeddingDataSchema = z.object({
   bride: PersonBioSchema,
   greeting: z.string().nullable().optional(),
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
+  timelineEvents: z.array(TimelineEventSchema).optional().default([]),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
   canvas: CanvasDocumentSchema.optional(),

@@ -14,6 +14,8 @@ export type TemplateVariant =
   | "wedding-alpine-lake-romance"
   | "wedding-imperial-dragon-crimson"
   | "wedding-crimson-arch-editorial"
+  | "wedding-nha-co-hy"
+  | "wedding-sage-garden-glass"
   | "glow-party"
   | "little-prince"
   | "sweet-angel";
@@ -131,6 +133,24 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     defaultFontFamily: "Playfair Display",
     sections: ["hero", "invitation", "story-collage", "countdown-arch", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
     vipOnly: true,
+  },
+  "wedding-nha-co-hy": {
+    slug: "wedding-nha-co-hy",
+    category: "WEDDING",
+    variant: "wedding-nha-co-hy",
+    label: "Nhà Có Hỷ (Cổ Phục Áo Tấc)",
+    defaultPrimaryColor: "#B22222",
+    defaultFontFamily: "Playfair Display",
+    sections: ["hero", "ceremony", "gallery", "reception", "calendar", "venue", "guestbook", "gift", "farewell"],
+  },
+  "wedding-sage-garden-glass": {
+    slug: "wedding-sage-garden-glass",
+    category: "WEDDING",
+    variant: "wedding-sage-garden-glass",
+    label: "Vườn Bạch Hoa Kính Mờ (Sage Botanical Glass)",
+    defaultPrimaryColor: "#3B523B",
+    defaultFontFamily: "Playfair Display",
+    sections: ["hero", "ceremony", "gallery", "reception", "calendar", "timeline", "venue", "guestbook", "gift", "farewell"],
   },
 
   // ── MẪU CŨ ĐỂ TƯƠNG THÍCH NGƯỢC (BACKWARD COMPATIBILITY) ──
