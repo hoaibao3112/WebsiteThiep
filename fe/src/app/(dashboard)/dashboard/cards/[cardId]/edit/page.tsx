@@ -53,6 +53,7 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Clock,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -378,9 +379,20 @@ function EditCardContent() {
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [showQuickFill, setShowQuickFill] = useState(false);
 
-  // ── Editor Mode ("canvas" = WYSIWYG Studio, "form" = Accordion Form) ──
-  const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
+  // ── Editor Mode ("form" = Biểu Mẫu 2 cột Live Preview, "canvas" = WYSIWYG Studio) ──
+  const [editorMode, setEditorMode] = useState<"canvas" | "form">("form");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // ── Timeline events (Lịch trình tiệc cưới chi tiết) ──
+  const [timelineEvents, setTimelineEvents] = useState<
+    Array<{ time: string; title: string; icon?: string }>
+  >([
+    { time: "17:30", title: "Đón khách", icon: "welcome" },
+    { time: "18:30", title: "Khai tiệc", icon: "cake" },
+    { time: "18:45", title: "Rót rượu, cắt bánh", icon: "champagne" },
+    { time: "19:00", title: "Phục vụ món chính", icon: "dinner" },
+    { time: "21:00", title: "Kết thúc tiệc", icon: "farewell" },
+  ]);
 
   // ── Love story ──
   const [loveStory, setLoveStory] = useState<
@@ -527,6 +539,13 @@ function EditCardContent() {
       setLoveStory(ls || []);
       if ((card.categoryData as any).videoUrl) setVideoUrl((card.categoryData as any).videoUrl);
       if ((card.categoryData as any).isReverseOrder !== undefined) setIsReverseOrder((card.categoryData as any).isReverseOrder);
+      if (Array.isArray((card.categoryData as any).timelineEvents) && (card.categoryData as any).timelineEvents.length > 0) {
+        setTimelineEvents((card.categoryData as any).timelineEvents);
+      }
+      // Đảm bảo các mẫu thiệp có layout chuyên biệt luôn mở ở chế độ Biểu Mẫu + Live Preview
+      if (card.template?.slug === "wedding-nha-co-hy" || card.template?.slug === "wedding-sage-garden-glass") {
+        setEditorMode("form");
+      }
     } else if (card.cardCategory === "BIRTHDAY" && card.categoryData.cardCategory === "BIRTHDAY") {
       setCelebrantName(card.categoryData.celebrantName);
       setAge(card.categoryData.age || 25);
@@ -1014,7 +1033,7 @@ function EditCardContent() {
               parents: { ...((categoryDataRef.current as WeddingDataPayload).bride?.parents ?? {}), fatherName: brideFather, motherName: brideMother, address: brideAddress },
             },
             loveStory,
-            timelineEvents: (categoryDataRef.current as any)?.timelineEvents ?? [],
+            timelineEvents: timelineEvents.length > 0 ? timelineEvents : ((categoryDataRef.current as any)?.timelineEvents ?? []),
             photos,
             events: [],
             elementAnimations,
@@ -1277,6 +1296,7 @@ function EditCardContent() {
               imageUrl: item.imageUrl?.startsWith("blob:") ? undefined : item.imageUrl || undefined,
             })),
             photos: validPhotos,
+            timelineEvents: timelineEvents.length > 0 ? timelineEvents : ((catData as any)?.timelineEvents ?? []),
             videoUrl: catData.videoUrl?.trim() || videoUrl?.trim() || undefined,
             isReverseOrder: catData.isReverseOrder ?? isReverseOrder,
           }
@@ -2056,6 +2076,74 @@ function EditCardContent() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* ── LỊCH TRÌNH TIỆC CƯỚI (TIMELINE CHI TIẾT) ── */}
+                <div className="pt-4 border-t border-stone-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#BE944E]" />
+                        <span>Lịch Trình Tiệc Cưới (Timeline)</span>
+                      </h4>
+                      <p className="text-[11px] text-stone-500">Cài đặt các mốc thời gian đón khách, khai tiệc, cắt bánh...</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTimelineEvents([
+                          ...timelineEvents,
+                          { time: "20:00", title: "Giao lưu & Khiêu vũ", icon: "sparkles" },
+                        ])
+                      }
+                      className="px-3 py-1.5 rounded-xl bg-[#FAF5EE] text-[#BE944E] border border-[#EAE0CD] hover:bg-[#BE944E] hover:text-white text-xs font-bold flex items-center gap-1 transition"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Thêm mốc</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {timelineEvents.map((tItem, tIdx) => (
+                      <div
+                        key={tIdx}
+                        className="flex items-center gap-2 p-2.5 rounded-xl bg-stone-50 border border-stone-200"
+                      >
+                        <input
+                          type="text"
+                          value={tItem.time}
+                          onChange={(e) => {
+                            const u = [...timelineEvents];
+                            u[tIdx].time = e.target.value;
+                            setTimelineEvents(u);
+                          }}
+                          placeholder="17:30"
+                          className="w-20 px-2.5 py-2 text-xs font-bold font-mono rounded-lg bg-white border border-stone-200 text-center"
+                        />
+                        <input
+                          type="text"
+                          value={tItem.title}
+                          onChange={(e) => {
+                            const u = [...timelineEvents];
+                            u[tIdx].title = e.target.value;
+                            setTimelineEvents(u);
+                          }}
+                          placeholder="Tên hoạt động (Đón khách, Khai tiệc...)"
+                          className="flex-1 px-3 py-2 text-xs font-medium rounded-lg bg-white border border-stone-200"
+                        />
+                        {timelineEvents.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setTimelineEvents(timelineEvents.filter((_, i) => i !== tIdx))}
+                            className="p-1.5 text-stone-400 hover:text-rose-500 transition"
+                            title="Xoá mốc này"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

@@ -734,18 +734,26 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
             <CanvasFallingEffect effect={canvasFallingEffect} />
 
 
-            {/* ── TEMPLATE VIEW LAYER (Chỉ hiển thị cho mẫu Birthday, Newborn hoặc HTML legacy không dùng canvasDocument) ── */}
-            <div
-              className={`relative z-0 w-full overflow-hidden ${(draft as any)?.categoryData?.canvasDocument ? "hidden" : ""}`}
-              style={{ pointerEvents: "none", minHeight: 0 }}
-            >
-              <div
-                className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer"
-                style={{ minHeight: 0 }}
-              >
-                {children}
-              </div>
-            </div>
+            {/* ── TEMPLATE VIEW LAYER (Hiển thị đầy đủ giao diện thiệp mẫu) ── */}
+            {(() => {
+              const currentTemplateSlug = (draft as any)?.template?.slug || (draft as any)?.templateSlug;
+              const isRichTemplate = currentTemplateSlug === "wedding-nha-co-hy" || currentTemplateSlug === "wedding-sage-garden-glass";
+              const isHidden = !isRichTemplate && Boolean((draft as any)?.categoryData?.canvasDocument);
+
+              return (
+                <div
+                  className={`relative z-0 w-full overflow-hidden ${isHidden ? "hidden" : ""}`}
+                  style={{ pointerEvents: "none", minHeight: 0 }}
+                >
+                  <div
+                    className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer"
+                    style={{ minHeight: 0 }}
+                  >
+                    {children}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ── FREE CANVAS ELEMENTS LAYER ── */}
             {canvasElements.map((el) => {
