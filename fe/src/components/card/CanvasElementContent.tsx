@@ -68,8 +68,8 @@ function ArchCountdownBoxes({ targetDate }: { targetDate: string }) {
         { val: timeLeft.minutes, label: "PHÚT" },
         { val: timeLeft.seconds, label: "GIÂY" },
       ].map((item, i) => (
-        <div key={i} className="bg-[#111111] text-white rounded-md py-2 px-2.5 min-w-[55px] text-center shadow-md">
-          <div className="text-xl font-bold font-mono tracking-tight leading-none">
+        <div key={i} className="bg-[#111111] text-white rounded-md py-2 px-2.5 min-w-[55px] text-center shadow-md" suppressHydrationWarning>
+          <div className="text-xl font-bold font-mono tracking-tight leading-none" suppressHydrationWarning>
             {String(item.val).padStart(2, "0")}
           </div>
           <div className="text-[9px] uppercase tracking-widest text-stone-300 mt-1 font-sans">
@@ -1098,15 +1098,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             </div>
 
             {/* 4 White Countdown Square Boxes */}
-            <div className="grid grid-cols-4 gap-2 w-full max-w-[310px]">
+            <div className="grid grid-cols-4 gap-2 w-full max-w-[310px]" suppressHydrationWarning>
               {[
                 { num: cd.days, label: "ngày" },
                 { num: cd.hours, label: "giờ" },
                 { num: cd.minutes, label: "phút" },
                 { num: cd.seconds, label: "giây" },
               ].map((item, idx) => (
-                <div key={idx} className="bg-white rounded-md py-2 px-1 text-center shadow-lg">
-                  <span className="text-base font-bold text-stone-900 font-sans block leading-tight">
+                <div key={idx} className="bg-white rounded-md py-2 px-1 text-center shadow-lg" suppressHydrationWarning>
+                  <span className="text-base font-bold text-stone-900 font-sans block leading-tight" suppressHydrationWarning>
                     {item.num}
                   </span>
                   <span className="text-[10px] text-stone-500 font-medium block">
@@ -1620,15 +1620,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           </div>
 
           {/* 4 Wine Red Countdown Boxes */}
-          <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1">
+          <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1" suppressHydrationWarning>
             {[
               { num: cd1.days, label: "ngày" },
               { num: cd1.hours, label: "giờ" },
               { num: cd1.minutes, label: "phút" },
               { num: cd1.seconds, label: "giây" },
             ].map((box, idx) => (
-              <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40">
-                <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
+              <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40" suppressHydrationWarning>
+                <span className="text-lg font-bold font-mono block leading-none" suppressHydrationWarning>{box.num}</span>
                 <span className="text-[9.5px] uppercase opacity-90 block mt-1 tracking-wider font-sans">{box.label}</span>
               </div>
             ))}
@@ -1717,15 +1717,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           </div>
 
           {/* 4 Wine Red Countdown Boxes */}
-          <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1">
+          <div className="grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full pt-1" suppressHydrationWarning>
             {[
               { num: cd2.days, label: "ngày" },
               { num: cd2.hours, label: "giờ" },
               { num: cd2.minutes, label: "phút" },
               { num: cd2.seconds, label: "giây" },
             ].map((box, idx) => (
-              <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40">
-                <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
+              <div key={idx} className="bg-[#6B1724] text-white rounded-xl py-2 px-1 text-center shadow-lg border border-rose-950/40" suppressHydrationWarning>
+                <span className="text-lg font-bold font-mono block leading-none" suppressHydrationWarning>{box.num}</span>
                 <span className="text-[9.5px] uppercase opacity-90 block mt-1 tracking-wider font-sans">{box.label}</span>
               </div>
             ))}
@@ -2325,15 +2325,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           </div>
 
           {/* Countdown Timer with 4 Dark Olive Square Boxes */}
-          <div className="mt-3 grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full">
+          <div className="mt-3 grid grid-cols-4 gap-2.5 max-w-[320px] mx-auto w-full" suppressHydrationWarning>
             {[
               { label: "ngày", val: cd.days },
               { label: "giờ", val: cd.hours },
               { label: "phút", val: cd.minutes },
               { label: "giây", val: cd.seconds },
             ].map((item) => (
-              <div key={item.label} className="bg-[#364733] rounded-lg p-2 text-center text-white shadow-md">
-                <span className="font-serif text-lg font-bold block leading-none">
+              <div key={item.label} className="bg-[#364733] rounded-lg p-2 text-center text-white shadow-md" suppressHydrationWarning>
+                <span className="font-serif text-lg font-bold block leading-none" suppressHydrationWarning>
                   {item.val}
                 </span>
                 <span className="text-[9px] uppercase tracking-wider text-stone-300 font-medium block mt-1">
@@ -3207,15 +3207,15 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           {/* Translucent bottom invitation panel */}
           <div className="absolute bottom-3 left-3 right-3 p-4 rounded-2xl bg-white/90 backdrop-blur-md shadow-2xl border border-white/80 text-center space-y-2.5">
             {/* 4 Terracotta Countdown Boxes */}
-            <div className="grid grid-cols-4 gap-2 max-w-[290px] mx-auto">
+            <div className="grid grid-cols-4 gap-2 max-w-[290px] mx-auto" suppressHydrationWarning>
               {[
                 { num: cd.days, unit: "ngày" },
                 { num: cd.hours, unit: "giờ" },
                 { num: cd.minutes, unit: "phút" },
                 { num: cd.seconds, unit: "giây" },
               ].map((box, idx) => (
-                <div key={idx} className="bg-gradient-to-b from-[#A53424] to-[#882519] text-white rounded-xl py-2 px-1 shadow-md text-center border-t border-rose-300/30">
-                  <span className="text-lg font-bold font-mono block leading-none">{box.num}</span>
+                <div key={idx} className="bg-gradient-to-b from-[#A53424] to-[#882519] text-white rounded-xl py-2 px-1 shadow-md text-center border-t border-rose-300/30" suppressHydrationWarning>
+                  <span className="text-lg font-bold font-mono block leading-none" suppressHydrationWarning>{box.num}</span>
                   <span className="text-[9.5px] uppercase opacity-95 block mt-1 tracking-wider font-sans">{box.unit}</span>
                 </div>
               ))}
