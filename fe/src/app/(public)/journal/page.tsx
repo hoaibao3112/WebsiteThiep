@@ -20,6 +20,8 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { Footer } from "@/components/shared/Footer";
+import { JournalHeroDecorations } from "@/components/journal/JournalHeroDecorations";
+import { JournalHeroBouquetShowcase } from "@/components/journal/JournalHeroBouquetShowcase";
 
 interface Article {
   id: string;
@@ -206,7 +208,10 @@ export default function JournalPage() {
       {/* 2. HERO SPLIT SECTION (CẨM NANG & CẢM HỨNG TỔ CHỨC TIỆC) */}
       {/* ------------------------------------------------------------- */}
       <section className="relative max-w-7xl mx-auto px-6 pt-10 pb-16 md:px-12 lg:px-20 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        {/* HIỆU ỨNG BƯỚM 3D & BÓNG BÔNG ÁNH SÁNG BỒNG BỀNH */}
+        <JournalHeroDecorations />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* LEFT BANNER CONTENT */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -247,23 +252,10 @@ export default function JournalPage() {
             </div>
           </motion.div>
 
-          {/* RIGHT BANNER: LUXURY BRIDAL BOUQUET IMAGE */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7 }}
-            className="lg:col-span-6 relative flex justify-center"
-          >
-            <div className="relative w-full max-w-lg aspect-[16/10] sm:aspect-[16/11] rounded-[36px] sm:rounded-[44px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.12)] border border-[#EFE8DC]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/images/journal-hero-bouquet.jpg"
-                alt="Bó hoa cưới sang trọng"
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-            </div>
-          </motion.div>
+          {/* RIGHT BANNER: BỘ SƯU TẬP 4 BÓ HOA CƯỚI SANG TRỌNG TƯƠNG TÁC */}
+          <div className="lg:col-span-6 relative flex justify-center">
+            <JournalHeroBouquetShowcase />
+          </div>
         </div>
 
         {/* 4 FEATURE PILLARS (FLOATING GLASS BAR) */}
