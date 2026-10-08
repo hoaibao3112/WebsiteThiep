@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CardDetail, WeddingDataPayload } from "@/types/card.types";
-import { WaxSealOpening } from "../shared/OpeningEffect/WaxSealOpening";
+import { WeddingCoverOpening } from "./opening/WeddingCoverOpening";
 import { FallingEffect } from "../shared/FallingEffect";
 import { AudioPlayer } from "../shared/AudioPlayer";
 import { FloatingCelebrationWidget } from "../shared/FloatingCelebrationWidget";
@@ -88,9 +88,6 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
     });
   }, [card]);
 
-  const activeGuestName = resolvedGuestName || guestName;
-  const shouldShowOpening = !isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(activeGuestName) || hasGuestQuery);
-
   const data = (card.categoryData as WeddingDataPayload) || {};
   const primaryColor = card.primaryColor || "#BE944E";
   const effectiveSlug = templateSlug || card.template?.slug;
@@ -101,6 +98,23 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
   const groomShortName = data.groom?.shortName || data.groom?.fullName || "Chú rể";
   const brideShortName = data.bride?.shortName || data.bride?.fullName || "Cô dâu";
   const isDemoCard = isDemo || Boolean(card.id?.startsWith("demo-")) || Boolean(DEMO_TEMPLATES_MAP[card.slug]) || Boolean(templateSlug && DEMO_TEMPLATES_MAP[templateSlug]);
+
+  const activeGuestName = resolvedGuestName || guestName;
+  const envelopeConfig = (data.envelopeConfig || (card.categoryData as any)?.envelopeConfig) as import("@/types/card.types").EnvelopeConfig | undefined;
+  const isCoverOpeningExplicitlyDisabled = envelopeConfig?.enabled === false;
+  const shouldShowOpening =
+    !isPreview &&
+    !opened &&
+    !isCoverOpeningExplicitlyDisabled &&
+    (
+      card.openingEffect === "WAX_SEAL" ||
+      card.openingEffect === "GATE_OPEN" ||
+      envelopeConfig?.enabled === true ||
+      isDemoCard ||
+      Boolean(activeGuestName) ||
+      hasGuestQuery ||
+      Boolean(effectiveSlug)
+    );
 
   return (
     <div
@@ -117,15 +131,13 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         "--wedding-scene-text": scene?.tokens.text || "#2e1b1b",
       } as React.CSSProperties}
     >
-      {/* 1. HIỆU ỨNG MỞ PHONG BÌ SÁP NẾN / MÀN KÉO SANG 2 BÊN */}
+      {/* 1. MÀN HÌNH BÌA MỞ THIỆP CƯỚI CAO CẤP CÓ ÂM THANH & CHUYỂN ĐỘNG (11 MẪU THIỆP & TÙY BIẾN TỪ BACKEND) */}
       {shouldShowOpening && (
-        <WaxSealOpening
-          primaryColor={primaryColor}
-          title={`${groomShortName} & ${brideShortName}`}
+        <WeddingCoverOpening
+          templateSlug={effectiveSlug}
+          envelopeConfig={envelopeConfig}
+          weddingData={data}
           guestName={activeGuestName}
-          isVipExperience={isVipExperience}
-          monogram={getMonogram(data.groom?.fullName, data.bride?.fullName)}
-          envelopeConfig={data.envelopeConfig || (card.categoryData as any)?.envelopeConfig}
           onOpenStart={() => setAudioStarted(true)}
           onOpened={() => setOpened(true)}
         />

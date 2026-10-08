@@ -120,6 +120,28 @@ const FALLBACK_STYLES: EnvelopeStyle[] = [
     defaultButtonText: "CHẠM ĐỂ MỞ",
     isVip: true,
   },
+  {
+    id: "peony-purple",
+    name: "Mẫu đơn tím hoàng kim",
+    envelopeColor: "#32123B",
+    flapColor: "#250B2D",
+    innerColor: "#1A0620",
+    sealColor: "#D4AF37",
+    sealBorderColor: "#F5D77F",
+    monogramColor: "#FFFFFF",
+    bgTexture: "starry-night",
+    bgColor: "#190A1D",
+    bgGradient: "radial-gradient(ellipse at center, #2C1035 0%, #17071D 100%)",
+    cardBg: "#1F0B24",
+    borderColor: "#D4AF37",
+    ornamentType: "peony-purple",
+    sealIcon: "heart",
+    decorStyle: "purple-peony-gold",
+    defaultTitle: "THIỆP MỜI CƯỚI",
+    defaultFont: "Great Vibes",
+    defaultButtonText: "Mở thiệp",
+    isVip: true,
+  },
 ];
 
 const FONT_OPTIONS = [
@@ -168,8 +190,11 @@ export function EnvelopeConfigModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Form states
+  const [enabled, setEnabled] = useState<boolean>(
+    initialConfig?.enabled ?? true
+  );
   const [selectedStyleId, setSelectedStyleId] = useState<string>(
-    initialConfig?.styleId || "vintage-cream"
+    initialConfig?.styleId || "peony-purple"
   );
   const [groomName, setGroomName] = useState<string>(
     initialConfig?.groomName || initialGroomName
@@ -178,13 +203,25 @@ export function EnvelopeConfigModal({
     initialConfig?.brideName || initialBrideName
   );
   const [title, setTitle] = useState<string>(
-    initialConfig?.title || "We're getting married!"
+    initialConfig?.title || initialConfig?.coverTitle || "THIỆP MỜI CƯỚI"
+  );
+  const [weddingDateText, setWeddingDateText] = useState<string>(
+    initialConfig?.weddingDateText || "19 tháng 12, 2026"
+  );
+  const [salutation, setSalutation] = useState<string>(
+    initialConfig?.salutation || "Thân Mời"
+  );
+  const [sealIcon, setSealIcon] = useState<"heart" | "song-hy" | "monogram" | "flower" | "ring">(
+    initialConfig?.sealIcon || "heart"
+  );
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(
+    initialConfig?.soundEnabled ?? true
   );
   const [fontFamily, setFontFamily] = useState<string>(
-    initialConfig?.fontFamily || "Playfair Display"
+    initialConfig?.fontFamily || "Great Vibes"
   );
   const [buttonText, setButtonText] = useState<string>(
-    initialConfig?.buttonText || "CHẠM ĐỂ MỞ"
+    initialConfig?.buttonText || "Mở thiệp"
   );
   const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -222,6 +259,7 @@ export function EnvelopeConfigModal({
   // Đồng bộ giá trị khởi tạo khi mở modal
   useEffect(() => {
     if (isOpen) {
+      if (initialConfig?.enabled !== undefined) setEnabled(initialConfig.enabled);
       if (initialConfig?.styleId) setSelectedStyleId(initialConfig.styleId);
       
       const g = initialConfig?.groomName || initialGroomName || "Minh Khôi";
@@ -229,7 +267,11 @@ export function EnvelopeConfigModal({
       setGroomName(g);
       setBrideName(b);
 
-      if (initialConfig?.title) setTitle(initialConfig.title);
+      if (initialConfig?.title || initialConfig?.coverTitle) setTitle(initialConfig.title || initialConfig.coverTitle || "THIỆP MỜI CƯỚI");
+      if (initialConfig?.weddingDateText) setWeddingDateText(initialConfig.weddingDateText);
+      if (initialConfig?.salutation) setSalutation(initialConfig.salutation);
+      if (initialConfig?.sealIcon) setSealIcon(initialConfig.sealIcon);
+      if (initialConfig?.soundEnabled !== undefined) setSoundEnabled(initialConfig.soundEnabled);
       if (initialConfig?.fontFamily) setFontFamily(initialConfig.fontFamily);
       if (initialConfig?.buttonText) setButtonText(initialConfig.buttonText);
       setErrorMessage(null);
@@ -263,14 +305,25 @@ export function EnvelopeConfigModal({
     const finalBride = brideName.trim() || initialBrideName || "Ngọc Hân";
 
     const configToSave: EnvelopeConfig = {
+      enabled,
       styleId: selectedStyleId,
       styleName: activeStyle.name,
       groomName: finalGroom,
       brideName: finalBride,
-      title: title.trim() || "We're getting married!",
-      fontFamily: fontFamily || "Playfair Display",
-      buttonText: buttonText.trim() || "CHẠM ĐỂ MỞ",
+      title: title.trim() || "THIỆP MỜI CƯỚI",
+      coverTitle: title.trim() || "THIỆP MỜI CƯỚI",
+      weddingDateText: weddingDateText.trim() || "19 tháng 12, 2026",
+      salutation: salutation.trim() || "Thân Mời",
+      sealIcon,
+      soundEnabled,
+      fontFamily: fontFamily || "Great Vibes",
+      buttonText: buttonText.trim() || "Mở thiệp",
       monogram: calculatedMonogram,
+      envelopeColor: activeStyle.envelopeColor,
+      sealColor: activeStyle.sealColor,
+      cardBg: activeStyle.cardBg,
+      bgGradient: activeStyle.bgGradient,
+      ornamentType: activeStyle.ornamentType,
     };
 
     try {
@@ -462,9 +515,20 @@ export function EnvelopeConfigModal({
 
             {/* 2. NỘI DUNG HIỂN THỊ */}
             <div className="p-4 rounded-2xl border border-stone-200 bg-white space-y-3.5">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-900 block">
-                Nội dung hiển thị
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold uppercase tracking-wider text-stone-900 block">
+                  Cấu hình Bìa &amp; Nội dung mở thiệp
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-stone-700">
+                  <input
+                    type="checkbox"
+                    checked={enabled}
+                    onChange={(e) => setEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-stone-300"
+                  />
+                  <span>Bật màn hình bìa</span>
+                </label>
+              </div>
 
               {/* Tên chú rể & Tên cô dâu */}
               <div className="grid grid-cols-2 gap-3">
@@ -494,18 +558,103 @@ export function EnvelopeConfigModal({
                 </div>
               </div>
 
-              {/* Dòng tiêu đề */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Dòng tiêu đề
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="We're getting married!"
-                  className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
-                />
+              {/* Dòng tiêu đề & Lời mời */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Tiêu đề bìa
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="THIỆP MỜI CƯỚI"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Lời kính mời
+                  </label>
+                  <input
+                    type="text"
+                    value={salutation}
+                    onChange={(e) => setSalutation(e.target.value)}
+                    placeholder="Thân Mời"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
+                  />
+                </div>
+              </div>
+
+              {/* Ngày cưới & Nút mở thiệp */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Ngày cưới hiển thị
+                  </label>
+                  <input
+                    type="text"
+                    value={weddingDateText}
+                    onChange={(e) => setWeddingDateText(e.target.value)}
+                    placeholder="19 tháng 12, 2026"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Chữ trên nút bấm
+                  </label>
+                  <input
+                    type="text"
+                    value={buttonText}
+                    onChange={(e) => setButtonText(e.target.value)}
+                    placeholder="Mở thiệp"
+                    className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
+                  />
+                </div>
+              </div>
+
+              {/* Con dấu sáp & Bật âm thanh */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Con dấu hoàng gia
+                  </label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { id: "heart", label: "♥ Tim" },
+                      { id: "song-hy", label: "囍 Hỷ" },
+                      { id: "monogram", label: "ML Chữ" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setSealIcon(opt.id as any)}
+                        className={`py-1.5 px-2 text-[11px] font-bold rounded-lg border transition ${
+                          sealIcon === opt.id
+                            ? "bg-amber-600 text-white border-amber-600 shadow-2xs"
+                            : "bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-stone-700 mb-1">
+                    Hiệu ứng âm thanh
+                  </label>
+                  <label className="flex items-center gap-2 h-8 px-2 rounded-xl border border-stone-200 bg-stone-50 cursor-pointer text-xs font-medium text-stone-700">
+                    <input
+                      type="checkbox"
+                      checked={soundEnabled}
+                      onChange={(e) => setSoundEnabled(e.target.checked)}
+                      className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500 border-stone-300"
+                    />
+                    <span className="truncate">Chuông &amp; Giấy lụa</span>
+                  </label>
+                </div>
               </div>
 
               {/* Font hiển thị tên (Dropdown như trong ảnh) */}
@@ -547,24 +696,9 @@ export function EnvelopeConfigModal({
                 )}
               </div>
 
-              {/* Nút mở thiệp */}
-              <div>
-                <label className="block text-[11px] font-bold text-stone-700 mb-1">
-                  Nút mở thiệp
-                </label>
-                <input
-                  type="text"
-                  value={buttonText}
-                  onChange={(e) => setButtonText(e.target.value)}
-                  placeholder="CHẠM ĐỂ MỞ"
-                  className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
-                />
-              </div>
-
               {/* Chú thích thông tin tự ghép */}
               <p className="text-[11px] text-stone-500 italic leading-relaxed pt-1">
-                Tên trên phong bì tự ghép từ chú rể &amp; cô dâu (dạng &quot;Tên &amp; Tên&quot;).
-                Monogram lấy chữ cái đầu tên gọi (từ cuối trong họ tên).
+                Toàn bộ thông tin trên bìa lưu trực tiếp vào máy chủ và hiển thị cho người xem khi mở thiệp cưới.
               </p>
             </div>
           </div>

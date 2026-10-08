@@ -153,6 +153,11 @@ export interface EnvelopeStyle {
   monogramColor: string;
   bgTexture: string;
   bgColor: string;
+  bgGradient?: string;
+  cardBg?: string;
+  borderColor?: string;
+  ornamentType?: string;
+  sealIcon?: string;
   decorStyle: string;
   defaultTitle: string;
   defaultFont: string;
@@ -161,14 +166,28 @@ export interface EnvelopeStyle {
 }
 
 export interface EnvelopeConfig {
+  enabled?: boolean;
   styleId: string;
   styleName?: string;
   groomName?: string;
   brideName?: string;
   title?: string;
+  coverTitle?: string;
+  salutation?: string;
+  weddingDateText?: string;
   fontFamily?: string;
   buttonText?: string;
   monogram?: string;
+  sealIcon?: "heart" | "song-hy" | "monogram" | "flower" | "ring";
+  sealColor?: string;
+  envelopeColor?: string;
+  bgGradient?: string;
+  cardBg?: string;
+  borderColor?: string;
+  ornamentType?: string;
+  soundEnabled?: boolean;
+  soundUrl?: string;
+  musicAutoplayOnOpen?: boolean;
   updatedAt?: string;
 }
 

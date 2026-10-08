@@ -11,6 +11,11 @@ export const EnvelopeStyleSchema = z.object({
   monogramColor: z.string().trim().regex(/^#[0-9A-Fa-f]{6}$/),
   bgTexture: z.string().trim().default("vintage-linen"),
   bgColor: z.string().trim().default("#EFEBE4"),
+  bgGradient: z.string().trim().optional(),
+  cardBg: z.string().trim().optional(),
+  borderColor: z.string().trim().optional(),
+  ornamentType: z.string().trim().optional(),
+  sealIcon: z.string().trim().default("heart"),
   decorStyle: z.string().trim().default("blue-hydrangea"),
   defaultTitle: z.string().trim().default("We're getting married!"),
   defaultFont: z.string().trim().default("Aquarelle"),
@@ -21,14 +26,27 @@ export const EnvelopeStyleSchema = z.object({
 export type EnvelopeStyle = z.infer<typeof EnvelopeStyleSchema>;
 
 export const EnvelopeConfigSchema = z.object({
+  enabled: z.boolean().default(true),
   styleId: z.string().trim().min(1).default("vintage-cream"),
   styleName: z.string().trim().optional(),
   groomName: z.string().trim().max(100).default(""),
   brideName: z.string().trim().max(100).default(""),
   title: z.string().trim().max(150).default("We're getting married!"),
+  coverTitle: z.string().trim().max(150).optional(),
+  salutation: z.string().trim().max(100).optional(),
+  weddingDateText: z.string().trim().max(100).optional(),
   fontFamily: z.string().trim().max(100).default("Aquarelle"),
   buttonText: z.string().trim().max(50).default("CHẠM ĐỂ MỞ"),
   monogram: z.string().trim().max(10).optional(),
+  sealIcon: z.enum(["heart", "song-hy", "monogram", "flower", "ring"]).default("heart"),
+  sealColor: z.string().trim().optional(),
+  envelopeColor: z.string().trim().optional(),
+  bgGradient: z.string().trim().optional(),
+  ornamentType: z.string().trim().optional(),
+  soundEnabled: z.boolean().default(true),
+  soundUrl: z.string().trim().optional(),
+  musicAutoplayOnOpen: z.boolean().default(true),
 });
 
 export type EnvelopeConfig = z.infer<typeof EnvelopeConfigSchema>;
+
