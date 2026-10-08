@@ -86,7 +86,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             alt="Cinematic Poster"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-            className="w-full h-full object-cover opacity-90"
+            className="w-full h-full object-cover object-top opacity-90"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
 
@@ -137,7 +137,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
         {/* 3. LANDSCAPE PHOTO: RIGHT LOVE | RIGHT REASON */}
         <section className="relative w-full aspect-[16/10] overflow-hidden bg-stone-900 text-white text-center flex flex-col justify-end p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={carPhoto} alt="Right Love" className="absolute inset-0 w-full h-full object-cover opacity-85" />
+          <img src={carPhoto} alt="Right Love" className="absolute inset-0 w-full h-full object-cover object-top opacity-85" />
           <div className="absolute inset-0 bg-black/40 pointer-events-none" />
 
           <div className="relative z-10 space-y-1">
@@ -171,7 +171,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             className="relative max-w-xs mx-auto aspect-[4/3] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={studioPhoto} alt="Sweet Couple" className="w-full h-full object-cover transition duration-500" />
+            <img src={studioPhoto} alt="Sweet Couple" className="w-full h-full object-cover object-top transition duration-500" />
             <motion.span
               animate={{ scale: [1, 1.08, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -215,7 +215,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             className="relative max-w-xs mx-auto aspect-[3/4] rounded-2xl overflow-hidden shadow-lg cursor-pointer bg-stone-100"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={carPhoto} alt="Love and freedom" className="w-full h-full object-cover transition duration-300" />
+            <img src={carPhoto} alt="Love and freedom" className="w-full h-full object-cover object-top transition duration-300" />
             <div className="absolute bottom-3 left-4 text-left">
               <span className="text-sm font-serif italic text-white block drop-shadow">love and freedom</span>
               <span className="text-xl font-serif italic text-[#C92A2A] font-bold block drop-shadow">
@@ -248,7 +248,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
             alt="Calendar overlay"
             animate={{ scale: [1, 1.06, 1] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            className="absolute inset-0 w-full h-full object-cover object-top opacity-60"
           />
           <div className="absolute inset-0 bg-black/50 pointer-events-none" />
 
@@ -313,7 +313,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
               className="aspect-[3/4] rounded-xl overflow-hidden shadow-sm bg-stone-200 cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Editorial 1" className="w-full h-full object-cover" />
+              <img src={coverPhoto} alt="Editorial 1" className="w-full h-full object-cover object-top" />
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.03 }}
@@ -321,7 +321,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
               className="aspect-[3/4] rounded-xl overflow-hidden shadow-sm bg-stone-200 cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={carPhoto} alt="Editorial 2" className="w-full h-full object-cover" />
+              <img src={carPhoto} alt="Editorial 2" className="w-full h-full object-cover object-top" />
             </motion.div>
           </div>
 
@@ -337,7 +337,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
               className="flex-1 aspect-[4/3] rounded-2xl overflow-hidden shadow-md bg-stone-200 cursor-pointer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={studioPhoto} alt="Embracing Moment" className="w-full h-full object-cover" />
+              <img src={studioPhoto} alt="Embracing Moment" className="w-full h-full object-cover object-top" />
             </motion.div>
             <div className="writing-vertical text-[10px] font-mono tracking-[0.3em] uppercase text-stone-400 font-bold select-none">
               FOREVER · AND · EVER
@@ -400,7 +400,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
           <div className="pt-3">
             <div className="aspect-[21/9] rounded-2xl overflow-hidden relative shadow-md">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={stagePhoto} alt="Panorama Love" className="w-full h-full object-cover" />
+              <img src={stagePhoto} alt="Panorama Love" className="w-full h-full object-cover object-top" />
               <div className="absolute inset-0 bg-black/30" />
             </div>
             <div className="py-2 flex items-center justify-between text-[10px] font-serif uppercase tracking-[0.25em] text-stone-500 font-semibold px-2">
@@ -444,7 +444,7 @@ export const Template07Cinematic: React.FC<WeddingTemplateProps> = ({
         {/* 8. YOU ARE MY SUNSHINE & KHỐI RSVP */}
         <section className="relative w-full aspect-[9/16] overflow-hidden bg-stone-900 text-white flex flex-col justify-between p-6 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={coverPhoto} alt="Sunshine" className="absolute inset-0 w-full h-full object-cover opacity-85" />
+          <img src={coverPhoto} alt="Sunshine" className="absolute inset-0 w-full h-full object-cover object-top opacity-85" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/40 pointer-events-none" />
 
           <div className="relative z-10 pt-6">

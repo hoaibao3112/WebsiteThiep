@@ -214,7 +214,7 @@ export const Template08AlpineLake: React.FC<WeddingTemplateProps> = ({
             alt="Alpine Lake Calendar"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-black/25 pointer-events-none" />
 

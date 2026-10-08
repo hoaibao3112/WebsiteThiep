@@ -161,7 +161,7 @@ export const LoveStoryTimeline: React.FC<LoveStoryTimelineProps> = ({
                       <img
                         src={item.imageUrl}
                         alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500"
                       />
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition" />
                     </motion.div>

@@ -1123,22 +1123,50 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                 Đổi stock
               </button>
             ) : (element.type === "image" || Boolean(element.imageUrl)) ? (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCropModal(true)}
-                  className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
-                >
-                  Cắt ảnh
-                </button>
-                <button
-                  type="button"
-                  disabled={isUploading}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-amber-800 text-xs font-semibold shadow-2xs transition cursor-pointer text-center disabled:opacity-50"
-                >
-                  {isUploading ? "Đang tải..." : "Đổi ảnh"}
-                </button>
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCropModal(true)}
+                    className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-700 text-xs font-semibold shadow-2xs transition cursor-pointer text-center"
+                  >
+                    Cắt ảnh
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isUploading}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="py-1.5 px-3 rounded-xl border border-stone-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-amber-800 text-xs font-semibold shadow-2xs transition cursor-pointer text-center disabled:opacity-50"
+                  >
+                    {isUploading ? "Đang tải..." : "Đổi ảnh"}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-stone-200/80">
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Góc căn ảnh</label>
+                    <select
+                      value={element.customData?.objectPosition || "center top"}
+                      onChange={(e) => updateCustomData({ objectPosition: e.target.value })}
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-white focus:outline-blue-500"
+                    >
+                      <option value="center top">Gương mặt (Phía trên)</option>
+                      <option value="center 20%">Gần trên (20%)</option>
+                      <option value="center center">Chính giữa (50%)</option>
+                      <option value="center bottom">Phía dưới</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Tỷ lệ khung</label>
+                    <select
+                      value={element.customData?.objectFit || "cover"}
+                      onChange={(e) => updateCustomData({ objectFit: e.target.value })}
+                      className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-white focus:outline-blue-500"
+                    >
+                      <option value="cover">Lấp đầy (Cover)</option>
+                      <option value="contain">Trọn vẹn (Contain)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             ) : null}
           </div>
@@ -2871,6 +2899,32 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   updateCanvasElement(element.id, { imageUrl: url, content: url });
                 }}
               />
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                <div>
+                  <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Vị trí lấy nét</label>
+                  <select
+                    value={element.customData?.objectPosition || "center top"}
+                    onChange={(e) => updateCustomData({ objectPosition: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-stone-50 focus:outline-blue-500"
+                  >
+                    <option value="center top">Gương mặt / Phía trên (Khuyên dùng)</option>
+                    <option value="center 20%">Gần trên (20%)</option>
+                    <option value="center center">Chính giữa</option>
+                    <option value="center bottom">Phía dưới</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Chế độ ảnh</label>
+                  <select
+                    value={element.customData?.objectFit || "cover"}
+                    onChange={(e) => updateCustomData({ objectFit: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-stone-50 focus:outline-blue-500"
+                  >
+                    <option value="cover">Lấp đầy khung (Cover)</option>
+                    <option value="contain">Trọn vẹn ảnh (Contain)</option>
+                  </select>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-1.5">
                 <input
                   type="text"
@@ -2927,6 +2981,32 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
                   updateCanvasElement(element.id, { imageUrl: url, content: url });
                 }}
               />
+              <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                <div>
+                  <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Vị trí lấy nét</label>
+                  <select
+                    value={element.customData?.objectPosition || "center top"}
+                    onChange={(e) => updateCustomData({ objectPosition: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-stone-50 focus:outline-blue-500"
+                  >
+                    <option value="center top">Gương mặt / Phía trên (Khuyên dùng)</option>
+                    <option value="center 20%">Gần trên (20%)</option>
+                    <option value="center center">Chính giữa</option>
+                    <option value="center bottom">Phía dưới</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-stone-600 block mb-0.5">Chế độ ảnh</label>
+                  <select
+                    value={element.customData?.objectFit || "cover"}
+                    onChange={(e) => updateCustomData({ objectFit: e.target.value })}
+                    className="w-full px-2 py-1 text-xs rounded-lg border border-stone-200 bg-stone-50 focus:outline-blue-500"
+                  >
+                    <option value="cover">Lấp đầy khung (Cover)</option>
+                    <option value="contain">Trọn vẹn ảnh (Contain)</option>
+                  </select>
+                </div>
+              </div>
               <input
                 type="text"
                 placeholder="Tiêu đề (We got married)"

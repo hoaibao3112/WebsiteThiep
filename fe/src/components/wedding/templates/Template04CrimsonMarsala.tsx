@@ -76,7 +76,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
             alt="Marsala Wedding Arch"
             animate={{ scale: [1, 1.07, 1] }}
             transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
@@ -97,7 +97,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
             >
               <div className="aspect-[3/4] overflow-hidden rounded-lg bg-stone-100 mb-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover" />
+                <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover object-top" />
               </div>
               <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-stone-500 block">GROOM</span>
               <p data-editable-field="groom-name" data-editable-type="text" className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{groomName}</p>
@@ -112,7 +112,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
             >
               <div className="aspect-[3/4] overflow-hidden rounded-lg bg-stone-100 mb-1.5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover" />
+                <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover object-top" />
               </div>
               <span className="text-[9px] font-mono tracking-widest uppercase font-bold text-stone-500 block">BRIDE</span>
               <p data-editable-field="bride-name" data-editable-type="text" className="text-xs font-serif italic font-bold text-[#6B1724] animate-shimmer-text">{brideName}</p>
@@ -151,7 +151,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
                 alt="Arch Cover"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/30 pointer-events-none" />
 
@@ -334,7 +334,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
               className="aspect-[3/4] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Couple Detail" className="w-full h-full object-cover transition duration-300" />
+              <img src={coverPhoto} alt="Couple Detail" className="w-full h-full object-cover object-top transition duration-300" />
             </motion.div>
 
             <div className="space-y-2 text-xs">
@@ -408,7 +408,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={brideAvatar} alt="Bride Detail" className="w-full h-full object-cover transition duration-300" />
+                <img src={brideAvatar} alt="Bride Detail" className="w-full h-full object-cover object-top transition duration-300" />
               </motion.div>
             </div>
 
@@ -547,7 +547,7 @@ export const Template04CrimsonMarsala: React.FC<WeddingTemplateProps> = ({
           <motion.img
             src={coverPhoto}
             alt="Marsala Thanks"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
 

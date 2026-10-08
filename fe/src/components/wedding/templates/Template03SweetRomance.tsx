@@ -119,7 +119,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               alt="Sweet Couple"
               animate={{ scale: [1, 1.07, 1] }}
               transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
@@ -258,7 +258,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               className="aspect-[4/3] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={coverPhoto} alt="Marry Me" className="w-full h-full object-cover hover:scale-105 transition duration-500" />
+              <img src={coverPhoto} alt="Marry Me" className="w-full h-full object-cover object-top hover:scale-105 transition duration-500" />
             </div>
 
             <div className="text-right">
@@ -304,7 +304,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-sm cursor-pointer bg-stone-100"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover transition duration-300" />
+                <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover object-top transition duration-300" />
               </motion.div>
             </div>
             <div className="text-right pr-2">
@@ -324,7 +324,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
                 className="aspect-[3/4] rounded-2xl overflow-hidden shadow-sm cursor-pointer bg-stone-100"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover transition duration-300" />
+                <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover object-top transition duration-300" />
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.03 }}
@@ -370,7 +370,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
           {/* Ảnh có nhúng lưới lịch với trái tim trên ngày 24 */}
           <div className="relative rounded-3xl overflow-hidden shadow-lg aspect-[4/5] bg-stone-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coverPhoto} alt="Save the date" className="w-full h-full object-cover" />
+            <img src={coverPhoto} alt="Save the date" className="w-full h-full object-cover object-top" />
             <div className="absolute inset-0 bg-black/30" />
 
             {/* Inset translucent calendar box */}
@@ -516,7 +516,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               className="w-16 h-16 rounded-full overflow-hidden border-2 border-rose-300 shadow-sm cursor-pointer shrink-0"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover" />
+              <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover object-top" />
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.03 }}
@@ -558,7 +558,7 @@ export const Template03SweetRomance: React.FC<WeddingTemplateProps> = ({
               className="w-16 h-16 rounded-full overflow-hidden border-2 border-rose-300 shadow-sm cursor-pointer shrink-0"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover" />
+              <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover object-top" />
             </motion.div>
           </div>
 

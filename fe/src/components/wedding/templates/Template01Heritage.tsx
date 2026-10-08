@@ -123,7 +123,7 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
                 alt="Wedding Portrait"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-amber-200 text-[10px] flex items-center gap-1.5 shadow">
@@ -177,7 +177,7 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
                 className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm cursor-pointer"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover" />
+                <img src={groomAvatar} alt="Chú Rể" className="w-full h-full object-cover object-top" />
               </div>
               <div>
                 <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">CHÚ RỂ</span>
@@ -204,7 +204,7 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
                 className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-sm cursor-pointer"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover" />
+                <img src={brideAvatar} alt="Cô Dâu" className="w-full h-full object-cover object-top" />
               </div>
               <div>
                 <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block">CÔ DÂU</span>

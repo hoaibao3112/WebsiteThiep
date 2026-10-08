@@ -116,7 +116,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
               >
                 <div className="w-full h-full overflow-hidden bg-stone-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover" />
+                  <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover object-top" />
                 </div>
               </motion.div>
 
@@ -127,7 +127,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
               >
                 <div className="w-full h-full overflow-hidden bg-stone-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover" />
+                  <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover object-top" />
                 </div>
               </motion.div>
             </div>
@@ -191,7 +191,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
             >
               <div className="aspect-[3/4] overflow-hidden bg-stone-100 mb-1.5 rounded-2xs">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={coverPhoto} alt="My Love" className="w-full h-full object-cover transition duration-300" />
+                <img src={coverPhoto} alt="My Love" className="w-full h-full object-cover object-top transition duration-300" />
               </div>
               <span className="text-xs font-serif italic text-stone-600 block pt-0.5">My Love</span>
             </motion.div>
@@ -271,7 +271,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
               className="col-span-3 aspect-[9/16] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100 border border-stone-200/60"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={brideAvatar} alt="Cô Dâu Mai Lan" className="w-full h-full object-cover transition duration-300" />
+              <img src={brideAvatar} alt="Cô Dâu Mai Lan" className="w-full h-full object-cover object-top transition duration-300" />
             </motion.div>
 
             {/* Cột thơ màu xanh rêu ở giữa với chùm hoa */}
@@ -294,7 +294,7 @@ export const Template05ForestBotanical: React.FC<WeddingTemplateProps> = ({
               className="col-span-3 aspect-[9/16] rounded-2xl overflow-hidden shadow-md cursor-pointer bg-stone-100 border border-stone-200/60"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={groomAvatar} alt="Chú Rể Tuấn Minh" className="w-full h-full object-cover transition duration-300" />
+              <img src={groomAvatar} alt="Chú Rể Tuấn Minh" className="w-full h-full object-cover object-top transition duration-300" />
             </motion.div>
           </div>
 

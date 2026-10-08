@@ -75,7 +75,7 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             alt="Hero Couple Editorial"
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-top"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/30 pointer-events-none" />
 
@@ -394,7 +394,7 @@ export const Template02ModernMagazine: React.FC<WeddingTemplateProps> = ({
             alt="Calendar Background"
             animate={{ scale: [1, 1.04, 1] }}
             transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover opacity-60"
+            className="absolute inset-0 w-full h-full object-cover object-top opacity-60"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/40 pointer-events-none" />
 

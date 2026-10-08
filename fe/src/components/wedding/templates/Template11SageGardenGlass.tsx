@@ -415,7 +415,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                     src={photoUrl}
                     alt={`Ảnh cưới ${idx + 1}`}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 50vw, 220px"
                   />
 

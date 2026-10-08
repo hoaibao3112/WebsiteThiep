@@ -179,7 +179,7 @@ export const Template06PureLotus: React.FC<WeddingTemplateProps> = ({
               alt="Lotus Wedding Moment"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
             />
             {/* Gradient mờ ảo chuyển tiếp vào nền trắng bên dưới */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FCFDFC]" />
