@@ -50,28 +50,18 @@ export class OtpService {
     const attemptsKey = `otp:attempts:${normalizedEmail}`;
     await redis.del(attemptsKey);
 
-    // 7. [HIGH] Đẩy job gửi mail vào BullMQ queue xử lý bất đồng bộ (kèm fallback trực tiếp nếu Redis offline)
-    if (redis.status === "ready") {
-      try {
-        await mailQueue.add("send-otp-email", {
-          email: normalizedEmail,
-          otp,
-        });
-      } catch (queueErr) {
-        console.warn("[OtpService] BullMQ warning, fallback sending mail directly:", queueErr);
-        setImmediate(() => {
-          MailService.sendOtpEmail(normalizedEmail, otp).catch((err) => {
-            console.error("[OtpService] Fallback send mail failed:", err);
-          });
-        });
-      }
-    } else {
-      // Redis offline -> Gửi email trực tiếp bất đồng bộ qua MailService
-      setImmediate(() => {
-        MailService.sendOtpEmail(normalizedEmail, otp).catch((err) => {
-          console.error("[OtpService] Direct send mail failed:", err);
-        });
-      });
+    // 7. Gửi email OTP trực tiếp qua MailService
+    try {
+      await MailService.sendOtpEmail(normalizedEmail, otp);
+    } catch (mailErr) {
+      console.error("[OtpService] Lỗi khi gửi OTP qua MailService:", mailErr);
+      await redis.del(otpKey);
+      await redis.del(cooldownKey);
+      throw new HttpError(
+        500,
+        "Không thể gửi mã xác thực tới Gmail của bạn lúc này. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau!",
+        "MAIL_SEND_FAILED"
+      );
     }
 
     return { cooldown: EMAIL_COOLDOWN_SECONDS };
