@@ -332,7 +332,8 @@ export function Wedding3DFlipbook({
                           <img
                             src={leftPage.url}
                             alt={leftPage.caption || "Ảnh cưới"}
-                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                            className="w-full h-full object-cover object-top group-hover:scale-[1.02] transition-transform duration-500"
+                            style={{ objectPosition: "center top" }}
                             loading="lazy"
                           />
                         </div>
@@ -369,7 +370,8 @@ export function Wedding3DFlipbook({
                         <img
                           src={rightPage.url}
                           alt={rightPage.caption || "Ảnh cưới"}
-                          className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                          className="w-full h-full object-cover object-top group-hover:scale-[1.02] transition-transform duration-500"
+                          style={{ objectPosition: "center top" }}
                           loading="lazy"
                         />
                       </div>
@@ -558,7 +560,7 @@ export function Wedding3DFlipbook({
                     isActive ? "border-amber-400 ring-2 ring-amber-400/50" : "border-stone-700 opacity-60 hover:opacity-100"
                   }`}
                 >
-                  <img src={p.url} alt={`Trang ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={p.url} alt={`Trang ${idx + 1}`} className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                   <span className="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-white font-mono text-center py-0.5">
                     {idx + 1}
                   </span>

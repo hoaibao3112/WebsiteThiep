@@ -1057,7 +1057,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       return (
         <div className="w-full h-full relative overflow-hidden select-none bg-stone-900 flex flex-col justify-end text-white">
-          <img src={photo} alt="Calendar Background" className="absolute inset-0 w-full h-full object-cover object-center" />
+          <img src={photo} alt="Calendar Background" className="absolute inset-0 w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none" />
 
           <div className="relative z-10 px-5 pb-5 text-center flex flex-col items-center">
@@ -1389,7 +1389,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
             {/* Arch Photo Frame */}
             <div className="w-[300px] h-[430px] rounded-t-[150px] rounded-b-2xl overflow-hidden relative shadow-2xl border-4 border-white">
-              <img src={archPhoto} alt="Wedding Arch" className="w-full h-full object-cover object-center" />
+              <img src={archPhoto} alt="Wedding Arch" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
               {/* Circular Glassmorphism Calendar */}
@@ -2454,7 +2454,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
       return (
         <div className="w-full h-full relative overflow-hidden select-none bg-stone-900 flex flex-col justify-end">
-          <img src={coverPhoto} alt="Farewell Forest" className="absolute inset-0 w-full h-full object-cover object-center" />
+          <img src={coverPhoto} alt="Farewell Forest" className="absolute inset-0 w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/80 to-transparent pointer-events-none" />
 
           <div className="relative z-10 px-6 pb-8 text-center flex flex-col items-center text-stone-800">
@@ -2689,7 +2689,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
         <div className="w-full h-full flex flex-col justify-between select-none bg-[#FCFDFB]">
           {/* Full-width couple banner with bottom gradient fade */}
           <div className="w-full h-[260px] relative overflow-hidden bg-stone-100">
-            <img src={photoUrl} alt="Invitation Banner" className="w-full h-full object-cover object-center" />
+            <img src={photoUrl} alt="Invitation Banner" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#FCFDFB] via-[#FCFDFB]/60 to-transparent pointer-events-none" />
           </div>
 
@@ -3390,12 +3390,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
           {/* Overlapping photos */}
           <div className="relative z-10 mt-1 h-[250px]">
             {/* Photo 1: Couple top right */}
-            <div className="absolute right-2 top-0 w-[55%] aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border-2 border-white">
-              <img src={photoTop} alt="Marry Me" className="w-full h-full object-cover" />
+            <div className="absolute right-2 top-0 w-[55%] aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-stone-100">
+              <img src={photoTop} alt="Marry Me" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
             {/* Photo 2: Bride bottom left overlapping */}
-            <div className="absolute left-2 bottom-0 w-[50%] aspect-[3/4] rounded-2xl overflow-hidden shadow-xl border-2 border-white">
-              <img src={photoBottom} alt="Bride" className="w-full h-full object-cover" />
+            <div className="absolute left-2 bottom-0 w-[50%] aspect-[3/4] rounded-2xl overflow-hidden shadow-xl border-2 border-white bg-stone-100">
+              <img src={photoBottom} alt="Bride" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
           </div>
         </div>
@@ -3422,13 +3422,13 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               <p className="text-xs text-stone-700 font-serif italic">TP. Điện Biên</p>
             </div>
             <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-md border-2 border-white bg-stone-100">
-              <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover" />
+              <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex-1 aspect-[16/7] rounded-2xl overflow-hidden border border-[#8B2E20]/40 shadow-sm">
-              <img src={couplePhoto} alt="Couple" className="w-full h-full object-cover" />
+            <div className="flex-1 aspect-[16/10] rounded-2xl overflow-hidden border border-[#8B2E20]/40 shadow-sm bg-stone-100">
+              <img src={couplePhoto} alt="Couple" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
             <span className="font-cursive text-lg text-rose-400 tracking-widest [writing-mode:vertical-lr] rotate-180">
               Bride
@@ -3453,7 +3453,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
           <div className="grid grid-cols-2 gap-3 items-center my-auto">
             <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-md border-2 border-white bg-stone-100">
-              <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover" />
+              <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
             <div className="p-4 rounded-2xl border-2 border-[#8B2E20] bg-white/70 backdrop-blur-xs text-center space-y-1 shadow-sm">
               <h4 className="font-script text-2xl text-[#8B2E20] font-normal leading-tight">{groom}</h4>
@@ -3466,8 +3466,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             <span className="font-cursive text-lg text-rose-400 tracking-widest [writing-mode:vertical-lr] rotate-180">
               Groom
             </span>
-            <div className="flex-1 aspect-[16/7] rounded-2xl overflow-hidden border border-[#8B2E20]/40 shadow-sm">
-              <img src={couplePhoto} alt="Couple" className="w-full h-full object-cover" />
+            <div className="flex-1 aspect-[16/10] rounded-2xl overflow-hidden border border-[#8B2E20]/40 shadow-sm bg-stone-100">
+              <img src={couplePhoto} alt="Couple" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
           </div>
         </div>
@@ -3497,8 +3497,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             <span className="text-[10px] font-mono font-bold bg-[#BA3E2C] text-white px-2.5 py-0.5 rounded-sm">{headerBadge}</span>
           </div>
 
-          <div className="relative flex-1 rounded-2xl overflow-hidden shadow-lg border-2 border-[#8B2E20]/30 mt-1">
-            <img src={photo} alt="Save the date" className="w-full h-full object-cover" />
+          <div className="relative flex-1 rounded-2xl overflow-hidden shadow-lg border-2 border-[#8B2E20]/30 mt-1 bg-stone-100">
+            <img src={photo} alt="Save the date" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             <div className="absolute inset-0 bg-black/15 pointer-events-none" />
 
             {/* Overlaid calendar grid */}
@@ -3582,25 +3582,48 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       return (
         <div className="w-full h-full p-4 flex flex-col justify-between select-none bg-transparent">
           {/* Header banner */}
-          <div className="bg-[#BA3E2C] text-white py-1 text-center rounded-sm">
+          <div className="bg-[#BA3E2C] text-white py-1.5 text-center rounded-sm shadow-xs">
             <span className="text-xs uppercase font-mono tracking-[0.3em] font-bold">
               I N V I T A T I O N
             </span>
           </div>
 
-          {/* 3 Photos with vertical cursive labels */}
-          <div className="relative flex items-center justify-center gap-2 my-2">
-            <span className="font-script text-xl text-stone-400 tracking-wider [writing-mode:vertical-lr] rotate-180 shrink-0">
+          {/* 3 Photos with vertical cursive labels: 1 featured + 2 portraits grid */}
+          <div className="relative flex items-center justify-center gap-2 my-2 flex-1">
+            <span className="font-script text-xl text-stone-400 tracking-wider [writing-mode:vertical-lr] rotate-180 shrink-0 select-none">
               I love you forever
             </span>
-            <div className="flex-1 space-y-2">
-              {photos.map((p, i) => (
-                <div key={i} className="aspect-[16/7] rounded-xl overflow-hidden shadow-md border-2 border-white">
-                  <img src={p} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
+            <div className="flex-1 flex flex-col gap-2">
+              {/* Photo 1: Featured wedding portrait */}
+              <div className="w-full h-[205px] rounded-xl overflow-hidden shadow-md border-2 border-white bg-stone-100 group">
+                <img
+                  src={photos[0]}
+                  alt="Gallery 1"
+                  className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+                  style={{ objectPosition: "center top" }}
+                />
+              </div>
+              {/* Photos 2 & 3: Side-by-side vertical portraits */}
+              <div className="grid grid-cols-2 gap-2 h-[185px]">
+                <div className="h-full rounded-xl overflow-hidden shadow-md border-2 border-white bg-stone-100 group">
+                  <img
+                    src={photos[1]}
+                    alt="Gallery 2"
+                    className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+                    style={{ objectPosition: "center top" }}
+                  />
                 </div>
-              ))}
+                <div className="h-full rounded-xl overflow-hidden shadow-md border-2 border-white bg-stone-100 group">
+                  <img
+                    src={photos[2]}
+                    alt="Gallery 3"
+                    className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500"
+                    style={{ objectPosition: "center top" }}
+                  />
+                </div>
+              </div>
             </div>
-            <span className="font-script text-xl text-stone-400 tracking-wider [writing-mode:vertical-lr] shrink-0">
+            <span className="font-script text-xl text-stone-400 tracking-wider [writing-mode:vertical-lr] shrink-0 select-none">
               Nice to meet you
             </span>
           </div>
@@ -3659,7 +3682,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-rose-100 shadow-md cursor-pointer hover:shadow-lg transition pointer-events-auto"
             >
               <div className="size-16 rounded-full overflow-hidden border-2 border-rose-300 p-0.5 shrink-0 bg-[#FFF0E6]">
-                <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover rounded-full" />
+                <img src={brideAvatar} alt="Bride" className="w-full h-full object-cover object-top rounded-full" style={{ objectPosition: "center top" }} />
               </div>
               <div className="flex-1 text-left">
                 <span className="text-xs text-stone-400 block">Cô dâu</span>
@@ -3685,7 +3708,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 <p className="text-xs font-mono text-stone-600">MB Bank : 012345678</p>
               </div>
               <div className="size-16 rounded-full overflow-hidden border-2 border-rose-300 p-0.5 shrink-0 bg-[#FFF0E6]">
-                <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover rounded-full" />
+                <img src={groomAvatar} alt="Groom" className="w-full h-full object-cover object-top rounded-full" style={{ objectPosition: "center top" }} />
               </div>
             </div>
           </div>
@@ -4972,22 +4995,22 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 {/* Cột trái: 2 ảnh nhỏ xếp dọc (4 cols) */}
                 <div className="col-span-4 flex flex-col gap-2 h-full">
                   <div className="h-1/2 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
-                    <img src={p2} alt="Wedding Photo 2" className="w-full h-full object-cover" />
+                    <img src={p2} alt="Wedding Photo 2" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                   </div>
                   <div className="h-1/2 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
-                    <img src={p3} alt="Wedding Photo 3" className="w-full h-full object-cover" />
+                    <img src={p3} alt="Wedding Photo 3" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                   </div>
                 </div>
 
                 {/* Cột giữa: 1 ảnh lớn dọc nổi bật (5 cols) */}
                 <div className="col-span-5 h-full rounded-md overflow-hidden shadow-md bg-stone-100 border border-[#6E1719]/10">
-                  <img src={p1} alt="Main Wedding Photo" className="w-full h-full object-cover" />
+                  <img src={p1} alt="Main Wedding Photo" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                 </div>
 
                 {/* Cột phải: 1 ảnh nhỏ góc phải (3 cols) */}
                 <div className="col-span-3 flex flex-col justify-center h-full">
                   <div className="h-44 w-full rounded-md overflow-hidden shadow-xs bg-stone-100">
-                    <img src={p4} alt="Wedding Photo 4" className="w-full h-full object-cover" />
+                    <img src={p4} alt="Wedding Photo 4" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                   </div>
                 </div>
               </div>
@@ -4995,10 +5018,10 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
               {/* Phần dưới: 2 ảnh chữ nhật nằm ngang đối xứng */}
               <div className="w-full grid grid-cols-2 gap-2 h-[170px]">
                 <div className="w-full h-full rounded-md overflow-hidden shadow-xs bg-stone-100">
-                  <img src={p5} alt="Wedding Photo 5" className="w-full h-full object-cover" />
+                  <img src={p5} alt="Wedding Photo 5" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                 </div>
                 <div className="w-full h-full rounded-md overflow-hidden shadow-xs bg-stone-100">
-                  <img src={p6} alt="Wedding Photo 6" className="w-full h-full object-cover" />
+                  <img src={p6} alt="Wedding Photo 6" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
                 </div>
               </div>
             </div>
@@ -5180,7 +5203,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                 <img
                   src={coverImg}
                   alt="Couple Cover"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
+                  style={{ objectPosition: "center top" }}
                 />
               </div>
             </div>
@@ -5397,11 +5421,11 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
             <div className="relative w-full max-w-[340px] h-[260px] mx-auto my-2">
               {/* Left photo (lift) */}
               <div className="absolute left-2 top-0 w-[155px] h-[230px] shadow-md bg-white p-1 border border-stone-200/60 z-10">
-                <img src={photo1} alt="Staggered 1" className="w-full h-full object-cover" />
+                <img src={photo1} alt="Staggered 1" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
               </div>
               {/* Right photo (back hug) */}
               <div className="absolute right-2 top-6 w-[165px] h-[230px] shadow-lg bg-white p-1 border border-stone-200/60 z-20">
-                <img src={photo2} alt="Staggered 2" className="w-full h-full object-cover" />
+                <img src={photo2} alt="Staggered 2" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
               </div>
             </div>
 
@@ -5442,7 +5466,7 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
             {/* Grand Arch Portrait */}
             <div className="w-[280px] h-[390px] rounded-t-full overflow-hidden shadow-lg border border-stone-200/80 bg-stone-100 my-2">
-              <img src={grandPhoto} alt="Grand Arch" className="w-full h-full object-cover" />
+              <img src={grandPhoto} alt="Grand Arch" className="w-full h-full object-cover object-top" style={{ objectPosition: "center top" }} />
             </div>
 
             {/* 4 Modern Dark Countdown Boxes */}
@@ -5555,7 +5579,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
                   <img
                     src={imgUrl}
                     alt={`Gallery ${idx + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
+                    style={{ objectPosition: "center top" }}
                   />
                 </div>
               ))}

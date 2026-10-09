@@ -16,6 +16,7 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     monogramColor: "#4A5D6B",
     bgTexture: "vintage-linen",
     bgColor: "#EFEBE4",
+    sealIcon: "monogram",
     decorStyle: "blue-hydrangea", // Hoa tú cầu xanh & hoa baby trắng
     defaultTitle: "We're getting married!",
     defaultFont: "Aquarelle",
@@ -33,6 +34,7 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     monogramColor: "#D4AF37", // Monogram khắc vàng gold
     bgTexture: "ivory-paper",
     bgColor: "#FAF8F5",
+    sealIcon: "monogram",
     decorStyle: "white-green", // Hoa cúc trắng & cành lá xanh thanh lịch
     defaultTitle: "We're getting married!",
     defaultFont: "Playfair Display",
@@ -50,6 +52,7 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     monogramColor: "#611015",
     bgTexture: "linen-light",
     bgColor: "#FAF6F5",
+    sealIcon: "song-hy",
     decorStyle: "burgundy-butterfly", // Hoa hồng nhung đỏ & bướm bay
     defaultTitle: "We're getting married!",
     defaultFont: "Great Vibes",
@@ -67,6 +70,7 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     monogramColor: "#1B4332",
     bgTexture: "emerald-linen",
     bgColor: "#F4F7F5",
+    sealIcon: "ring",
     decorStyle: "gold-eucalyptus", // Lá khuynh diệp nhũ vàng
     defaultTitle: "We're getting married!",
     defaultFont: "Cinzel",
@@ -84,6 +88,7 @@ const ENVELOPE_STYLES: EnvelopeStyle[] = [
     monogramColor: "#FFFFFF",
     bgTexture: "soft-linen",
     bgColor: "#FCF8F7",
+    sealIcon: "heart",
     decorStyle: "pink-peony", // Hoa mẫu đơn phấn hồng
     defaultTitle: "We're getting married!",
     defaultFont: "Alex Brush",
