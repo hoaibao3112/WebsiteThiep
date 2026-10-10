@@ -16,6 +16,7 @@ import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyPro
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { ElementAnimationsStudio } from "@/components/card/ElementAnimationsStudio";
 import { LiveCardPreviewModal } from "@/components/editor/LiveCardPreviewModal";
+import { useAuth } from "@/context/AuthContext";
 import {
   Heart,
   Cake,
@@ -1528,6 +1529,8 @@ function EditCardContent() {
   // LOADING SCREEN
   // ────────────────────────────────────────────────────────────────
 
+  const { openAuthModal } = useAuth();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F6F0] flex items-center justify-center">
@@ -1542,14 +1545,29 @@ function EditCardContent() {
   }
 
   if (loadError) {
+    const isAuthError = loadError.toLowerCase().includes("đăng nhập") || loadError.includes("401") || loadError.toLowerCase().includes("phiên");
     return (
       <main className="min-h-screen bg-[#F8F6F0] flex items-center justify-center p-6">
         <div role="alert" className="max-w-md rounded-2xl border border-rose-200 bg-white p-6 text-center shadow-sm">
-          <h1 className="font-serif text-xl font-bold text-stone-900">Không thể mở thiệp</h1>
+          <h1 className="font-serif text-xl font-bold text-stone-900">
+            {isAuthError ? "Yêu Cầu Đăng Nhập" : "Không thể mở thiệp"}
+          </h1>
           <p className="mt-2 text-sm text-rose-700">{loadError}</p>
           <div className="mt-5 flex justify-center gap-3">
-            <Link href="/dashboard/cards" className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold">Quay lại</Link>
-            <button type="button" onClick={() => setLoadAttempt((value) => value + 1)} className="min-h-11 rounded-xl bg-[#BE944E] px-4 py-2.5 text-sm font-bold text-white">Thử lại</button>
+            {isAuthError ? (
+              <button
+                type="button"
+                onClick={() => openAuthModal("login")}
+                className="min-h-11 rounded-xl bg-[#BE944E] px-5 py-2.5 text-sm font-bold text-white shadow-xs hover:bg-[#a8813f] transition"
+              >
+                Đăng Nhập Lại
+              </button>
+            ) : (
+              <>
+                <Link href="/dashboard/cards" className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold">Quay lại</Link>
+                <button type="button" onClick={() => setLoadAttempt((value) => value + 1)} className="min-h-11 rounded-xl bg-[#BE944E] px-4 py-2.5 text-sm font-bold text-white">Thử lại</button>
+              </>
+            )}
           </div>
         </div>
       </main>
