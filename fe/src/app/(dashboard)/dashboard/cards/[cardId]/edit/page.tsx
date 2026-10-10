@@ -343,6 +343,7 @@ function EditCardContent() {
   const [slug, setSlug] = useState("");
   const [templateSlug, setTemplateSlug] = useState("wedding-minimalist-gold");
   const [isVipExperience, setIsVipExperience] = useState(false);
+  const [allowMusicUpload, setAllowMusicUpload] = useState(true);
   const [primaryColor, setPrimaryColor] = useState("#BE944E");
   const [fontFamily, setFontFamily] = useState("Playfair Display");
   const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
@@ -480,7 +481,9 @@ function EditCardContent() {
     setBankBrideTouched(false);
     setMusicTouched(false);
     if (card.template?.slug) setTemplateSlug(card.template.slug);
-    setIsVipExperience(Boolean((card as CardDetail & { plan?: { code?: string } }).plan?.code === "VIP"));
+    const cardPlan = (card as any).plan;
+    setIsVipExperience(Boolean(cardPlan?.code === "VIP"));
+    setAllowMusicUpload(Boolean(cardPlan?.allowMusicUpload ?? (cardPlan?.code === "VIP" || cardPlan?.code === "BASIC")));
     setPrimaryColor(card.primaryColor);
     setFontFamily(card.fontFamily);
     setOpeningEffect((card.openingEffect as "WAX_SEAL" | "GATE_OPEN" | "NONE") || "WAX_SEAL");
@@ -1233,10 +1236,10 @@ function EditCardContent() {
     const snapHeaderDate = headerDate;
     const snapCoverPhotoUrl = coverPhotoUrl;
     const snapAccNumGroom = accNumGroom;
-    const snapAccNameGroom = snapGroomName;
+    const snapAccNameGroom = accNameGroom;
     const snapBankCodeGroom = bankCodeGroom;
     const snapAccNumBride = accNumBride;
-    const snapAccNameBride = snapBrideName;
+    const snapAccNameBride = accNameBride;
     const snapBankCodeBride = bankCodeBride;
     const snapBankGroomTouched = bankGroomTouched;
     const snapBankBrideTouched = bankBrideTouched;
@@ -1251,21 +1254,28 @@ function EditCardContent() {
     const snapHeight = height;
     const snapCeremonyType = ceremonyType;
 
-    // 1. Chuẩn hóa hình ảnh: chuyển đổi mọi blob URL thành Base64 Data URL nếu có
+    // 1. Chuẩn hóa hình ảnh: Tải lên máy chủ nếu ảnh còn là blob: hoặc data:image/ để tránh lỗi 400 BASE64_NOT_ALLOWED
     const safePhotos = await Promise.all(
       snapPhotos.map(async (p) => {
         let safeUrl = p.url;
-        if (safeUrl.startsWith("blob:")) {
+        if (safeUrl.startsWith("blob:") || safeUrl.startsWith("data:image/")) {
           try {
             const resp = await fetch(safeUrl);
             const blob = await resp.blob();
-            safeUrl = await new Promise<string>((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.readAsDataURL(blob);
+            const file = new File([blob], `photo-${Date.now()}.webp`, { type: blob.type || "image/webp" });
+            const formData = new FormData();
+            formData.append("file", file);
+            const uploadRes = await ApiClient.request<{ url: string }>("/media/upload", {
+              method: "POST",
+              body: formData,
             });
-          } catch {
-            safeUrl = "";
+            if (uploadRes.success && uploadRes.data?.url) {
+              safeUrl = uploadRes.data.url;
+            } else {
+              console.warn("Upload fallback fail for photo:", p.id);
+            }
+          } catch (err) {
+            console.warn("Lỗi khi upload ảnh blob:", err);
           }
         }
         return {
@@ -1278,7 +1288,7 @@ function EditCardContent() {
       })
     );
 
-    // Lọc các ảnh rỗng hoặc không hợp lệ, loại bỏ hoàn toàn các trường null
+    // Lọc các ảnh rỗng hoặc không hợp lệ, loại bỏ hoàn toàn các trường null và blob chưa upload
     const validPhotos = safePhotos
       .filter((p) => Boolean(p.url && !p.url.startsWith("blob:")))
       .map((p, idx) => ({
@@ -1289,7 +1299,7 @@ function EditCardContent() {
         isCover: p.isCover ?? idx === 0,
       }));
 
-    // 2. Chuẩn hóa sự kiện: eventDate phải luôn là chuỗi ISO Date hợp lệ
+    // 2. Chuẩn hóa sự kiện: eventDate phải luôn là chuỗi ISO Date hợp lệ, giữ nguyên ID thực tế trong database
     const formattedEvents = snapEvents.map((e) => {
       let isoDate: string;
       try {
@@ -1298,8 +1308,9 @@ function EditCardContent() {
       } catch {
         isoDate = new Date().toISOString();
       }
+      const isTemporaryId = e.id?.startsWith("local-") || e.id?.startsWith("event-new-") || (e.id?.startsWith("event-") && !e.id.includes("-"));
       return {
-        id: e.id?.startsWith("local-") || e.id?.startsWith("event-") ? undefined : e.id,
+        id: isTemporaryId ? undefined : e.id,
         eventName: e.eventName?.trim() || "Lễ Cưới",
         eventDate: isoDate,
         lunarDate: e.lunarDate?.trim() || undefined,
@@ -1309,16 +1320,16 @@ function EditCardContent() {
       };
     });
 
-    // 3. Chuẩn hóa tài khoản mừng cưới (F3):
-    const hasGroomBank = Boolean(snapAccNumGroom?.trim() && accNameGroom?.trim());
-    const hasBrideBank = Boolean(snapAccNumBride?.trim() && accNameBride?.trim());
+    // 3. Chuẩn hóa tài khoản mừng cưới: Sử dụng chính xác snapAccNameGroom và snapAccNameBride
+    const hasGroomBank = Boolean(snapAccNumGroom?.trim() && snapAccNameGroom?.trim());
+    const hasBrideBank = Boolean(snapAccNumBride?.trim() && snapAccNameBride?.trim());
 
     const bankingPrimary = snapBankGroomTouched
       ? hasGroomBank
         ? {
             bankCode: snapBankCodeGroom?.trim() || "MB",
             accountNumber: snapAccNumGroom.trim(),
-            accountName: accNameGroom.trim(),
+            accountName: snapAccNameGroom.trim().toUpperCase(),
           }
         : null
       : undefined;
@@ -1328,7 +1339,7 @@ function EditCardContent() {
         ? {
             bankCode: snapBankCodeBride?.trim() || "VCB",
             accountNumber: snapAccNumBride.trim(),
-            accountName: accNameBride.trim(),
+            accountName: snapAccNameBride.trim().toUpperCase(),
           }
         : null
       : undefined;
@@ -1858,7 +1869,20 @@ function EditCardContent() {
                     {TEMPLATE_PRESETS.map((tpl) => (
                       <div
                         key={tpl.id}
-                        onClick={() => { setSelectedTemplate(tpl.id); setTemplateSlug(tpl.id); setPrimaryColor(tpl.color); setFontFamily(tpl.font); }}
+                        onClick={() => {
+                          setSelectedTemplate(tpl.id);
+                          setTemplateSlug(tpl.id);
+                          setPrimaryColor(tpl.color);
+                          setFontFamily(tpl.font);
+                          if (categoryDataRef.current) {
+                            categoryDataRef.current = {
+                              ...categoryDataRef.current,
+                              canvasDocument: undefined,
+                              canvasElements: undefined,
+                            };
+                          }
+                          setHasUnsavedChanges(true);
+                        }}
                         className={`rounded-2xl border p-3 cursor-pointer transition relative overflow-hidden flex flex-col justify-between h-28 sm:h-32 group ${
                           selectedTemplate === tpl.id
                             ? "border-2 border-[#BE944E] ring-2 ring-[#BE944E]/30 bg-amber-50/40 shadow-md"
@@ -2547,8 +2571,24 @@ function EditCardContent() {
                 {/* UPLOAD TAB */}
                 {musicTab === "upload" && (
                   <div className="space-y-4">
-                    {/* Upload Zone */}
-                    {!uploadedMusic ? (
+                    {!allowMusicUpload ? (
+                      <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-center space-y-2.5">
+                        <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-[#BE944E] mx-auto">
+                          <Sparkles className="w-5 h-5" />
+                        </div>
+                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider">Tính Năng Dành Cho Gói Trả Phí</h4>
+                        <p className="text-xs text-stone-600 leading-relaxed max-w-sm mx-auto">
+                          Tải nhạc MP3 tự chọn là đặc quyền dành riêng cho gói Tiêu Chuẩn & VIP. Bạn có thể sử dụng miễn phí toàn bộ các bản nhạc tình yêu trong Kho Nhạc Có Sẵn nhé!
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setMusicTab("library")}
+                          className="mt-2 px-4 py-2 rounded-xl bg-[#BE944E] text-white text-xs font-bold shadow-xs hover:bg-[#a8813f] transition"
+                        >
+                          Chọn Nhạc Có Sẵn Miễn Phí
+                        </button>
+                      </div>
+                    ) : !uploadedMusic ? (
                       <div
                         onClick={() => musicInputRef.current?.click()}
                         className="border-2 border-dashed border-stone-300 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-[#BE944E]/60 hover:bg-amber-50/30 transition"
