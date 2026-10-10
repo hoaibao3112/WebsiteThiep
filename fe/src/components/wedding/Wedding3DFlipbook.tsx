@@ -14,9 +14,13 @@ import {
   BookOpen,
   Sparkles,
   Layers,
+  Download,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { Album3DConfig, AlbumCoverTheme, Album3DPage } from "@/types/album-3d.types";
 import { playPageFlipSound } from "@/lib/audio/page-flip-sound";
+import { downloadImage } from "@/lib/utils/download-image";
 
 interface Wedding3DFlipbookProps {
   config?: Album3DConfig;
@@ -93,9 +97,32 @@ export function Wedding3DFlipbook({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [turnDirection, setTurnDirection] = useState<"next" | "prev">("next");
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+  const [downloadedKey, setDownloadedKey] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleDownloadPage = useCallback(
+    async (page: Album3DPage, pageNumber: number, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const key = page.id || `page-${pageNumber}`;
+      setDownloadingKey(key);
+      try {
+        const ext = page.url.split(".").pop()?.split("?")[0] || "jpg";
+        const cleanExt = ["jpg", "jpeg", "png", "webp"].includes(ext.toLowerCase()) ? ext : "jpg";
+        const filename = `anh-cuoi-trang-${pageNumber}.${cleanExt}`;
+        await downloadImage(page.url, filename);
+        setDownloadedKey(key);
+        setTimeout(() => {
+          setDownloadedKey((current) => (current === key ? null : current));
+        }, 1800);
+      } finally {
+        setDownloadingKey(null);
+      }
+    },
+    []
+  );
 
   // Responsive detection
   useEffect(() => {
@@ -336,6 +363,22 @@ export function Wedding3DFlipbook({
                             style={{ objectPosition: "center top" }}
                             loading="lazy"
                           />
+                          {/* Nút tải ảnh mini góc trên bên phải (Desktop) */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDownloadPage(leftPage!, (currentSpread - 1) * 2 + 1, e)}
+                            className="absolute top-2 right-2 z-20 size-7 sm:size-8 rounded-full bg-black/45 hover:bg-black/75 backdrop-blur-md text-white/90 border border-white/20 shadow-md flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 active:scale-90 cursor-pointer"
+                            title="Tải ảnh này về máy"
+                            aria-label={`Tải ảnh trang ${(currentSpread - 1) * 2 + 1}`}
+                          >
+                            {downloadingKey === (leftPage.id || `page-${(currentSpread - 1) * 2 + 1}`) ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                            ) : downloadedKey === (leftPage.id || `page-${(currentSpread - 1) * 2 + 1}`) ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            ) : (
+                              <Download className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                         </div>
                         {leftPage.caption && (
                           <p className="mt-3 text-center text-xs font-serif italic text-stone-600 truncate px-2">
@@ -374,6 +417,22 @@ export function Wedding3DFlipbook({
                           style={{ objectPosition: "center top" }}
                           loading="lazy"
                         />
+                        {/* Nút tải ảnh mini góc trên bên phải (Mobile & Desktop) */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleDownloadPage(rightPage!, isMobile ? currentSpread : (currentSpread - 1) * 2 + 2, e)}
+                          className="absolute top-2 right-2 z-20 size-7 sm:size-8 rounded-full bg-black/45 hover:bg-black/75 backdrop-blur-md text-white/90 border border-white/20 shadow-md flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 active:scale-90 cursor-pointer"
+                          title="Tải ảnh này về máy"
+                          aria-label={`Tải ảnh trang ${isMobile ? currentSpread : (currentSpread - 1) * 2 + 2}`}
+                        >
+                          {downloadingKey === (rightPage.id || `page-${isMobile ? currentSpread : (currentSpread - 1) * 2 + 2}`) ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                          ) : downloadedKey === (rightPage.id || `page-${isMobile ? currentSpread : (currentSpread - 1) * 2 + 2}`) ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5" />
+                          )}
+                        </button>
                       </div>
                       {rightPage.caption && (
                         <p className="mt-3 text-center text-xs font-serif italic text-stone-600 truncate px-2">
@@ -494,6 +553,33 @@ export function Wedding3DFlipbook({
         >
           {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
         </button>
+
+        {/* NÚT TẢI ẢNH ĐANG XEM (CHỈ HIỂN THỊ KHI ĐANG MỞ CÁC TRANG ẢNH BÊN TRONG) */}
+        {!isFrontCover && !isBackCover && (rightPage || leftPage) && (
+          <button
+            type="button"
+            onClick={(e) => {
+              const target = rightPage || leftPage;
+              const pageNum = isMobile
+                ? currentSpread
+                : rightPage
+                ? (currentSpread - 1) * 2 + 2
+                : (currentSpread - 1) * 2 + 1;
+              if (target) handleDownloadPage(target, pageNum, e);
+            }}
+            className="size-9 rounded-full bg-stone-900/90 text-white flex items-center justify-center hover:bg-black transition shadow-md active:scale-95 cursor-pointer"
+            title="Tải ảnh trang đang xem về máy"
+            aria-label="Tải ảnh trang đang xem về máy"
+          >
+            {downloadingKey ? (
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
+            ) : downloadedKey ? (
+              <Check className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+          </button>
+        )}
 
         {/* MỞ DANH SÁCH THUMBNAILS */}
         <button
