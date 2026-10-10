@@ -59,7 +59,7 @@ apiRouter.post("/auth/google", validate(GoogleLoginSchema), AuthController.googl
 apiRouter.post("/auth/register", validate(RegisterSchema), AuthController.register);
 apiRouter.post("/auth/login", validate(LoginSchema), AuthController.login);
 apiRouter.post("/auth/logout", AuthController.logout);
-apiRouter.get("/auth/me", authGuard, AuthController.getMe);
+apiRouter.get("/auth/me", AuthController.getMe);
 
 apiRouter.put("/auth/profile", authGuard, validate(UpdateProfileSchema), AuthController.updateProfile);
 

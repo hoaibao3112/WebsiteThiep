@@ -3,6 +3,7 @@ import { AuthService } from "../services/auth.service";
 import { OtpService } from "../services/otp.service";
 import { WeddingProfileSchema } from "../lib/validators/wedding-profile.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import { prisma } from "../lib/prisma";
 import crypto from "node:crypto";
 
 import { COOKIE_OPTIONS, CSRF_COOKIE_OPTIONS } from "../config/security";
@@ -134,22 +135,51 @@ export class AuthController {
     }
   }
 
-  static async getMe(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.userId;
-      const accountId = req.user?.accountId;
-      if (!userId || !accountId) {
-        return res.status(401).json({ success: false, error: "Chưa đăng nhập" });
+      const authHeader = req.headers.authorization;
+      let token: string | undefined;
+
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      } else if (req.cookies && req.cookies.auth_token) {
+        token = req.cookies.auth_token;
       }
 
-      const user = await AuthService.getMe(userId, accountId);
-      let csrfToken = req.cookies?.csrf_token;
-      if (!csrfToken) {
-        csrfToken = crypto.randomBytes(32).toString("base64url");
-        res.cookie("csrf_token", csrfToken, CSRF_COOKIE_OPTIONS);
+      if (!token) {
+        return res.status(200).json({ success: true, data: null });
       }
-      res.setHeader("X-CSRF-Token", csrfToken);
-      res.status(200).json({ success: true, data: user });
+
+      try {
+        const decoded = AuthService.verifyToken(token);
+        const membership = await prisma.accountMember.findUnique({
+          where: { accountId_userId: { accountId: decoded.accountId, userId: decoded.userId } },
+          select: { id: true, role: true },
+        });
+
+        if (!membership) {
+          if (req.cookies?.auth_token) {
+            res.clearCookie("auth_token", COOKIE_OPTIONS);
+            res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
+          }
+          return res.status(200).json({ success: true, data: null });
+        }
+
+        const user = await AuthService.getMe(decoded.userId, decoded.accountId);
+        let csrfToken = req.cookies?.csrf_token;
+        if (!csrfToken) {
+          csrfToken = crypto.randomBytes(32).toString("base64url");
+          res.cookie("csrf_token", csrfToken, CSRF_COOKIE_OPTIONS);
+        }
+        res.setHeader("X-CSRF-Token", csrfToken);
+        return res.status(200).json({ success: true, data: user });
+      } catch {
+        if (req.cookies?.auth_token) {
+          res.clearCookie("auth_token", COOKIE_OPTIONS);
+          res.clearCookie("csrf_token", CSRF_COOKIE_OPTIONS);
+        }
+        return res.status(200).json({ success: true, data: null });
+      }
     } catch (error: unknown) {
       next(error);
     }
