@@ -1,4 +1,4 @@
-﻿import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { HttpError } from "../lib/http-error";
 
@@ -13,6 +13,75 @@ interface CustomFormField {
   sortOrder: number;
 }
 
+const MAX_TEXT_LENGTH = 2000;
+const MAX_CHECKBOX_SELECTIONS = 50;
+const PHONE_REGEX = /^(0|\+84)[3|5|7|8|9]\d{8}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type SanitizeResult = { ok: true; value: unknown } | { ok: false; error: string };
+
+/**
+ * Chuẩn hóa 1 giá trị khách gửi theo đúng type của field.
+ * - Trả `{ ok: true, value: undefined }` khi giá trị rỗng (để bước required quyết định).
+ * - Mọi key không thuộc cấu hình form đều bị loại bỏ ở caller (không lưu dữ liệu tùy ý).
+ */
+export function sanitizeFieldValue(field: CustomFormField, raw: unknown): SanitizeResult {
+  if (raw === undefined || raw === null || raw === "") return { ok: true, value: undefined };
+
+  const options = Array.isArray(field.options) ? field.options.filter((o) => typeof o === "string") : [];
+  const textLimit = Math.min(field.maxLength && field.maxLength > 0 ? field.maxLength : MAX_TEXT_LENGTH, MAX_TEXT_LENGTH);
+
+  switch (field.type) {
+    case "text":
+    case "textarea":
+    case "phone":
+    case "email": {
+      if (typeof raw !== "string") return { ok: false, error: "Giá trị không hợp lệ" };
+      const value = raw.trim();
+      if (value === "") return { ok: true, value: undefined };
+      if (value.length > textLimit) return { ok: false, error: `Tối đa ${textLimit} ký tự` };
+      if (field.type === "phone" && !PHONE_REGEX.test(value.replace(/\s/g, ""))) {
+        return { ok: false, error: "Số điện thoại không hợp lệ" };
+      }
+      if (field.type === "email" && !EMAIL_REGEX.test(value)) {
+        return { ok: false, error: "Email không hợp lệ" };
+      }
+      return { ok: true, value };
+    }
+    case "number": {
+      const num = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+      if (!Number.isFinite(num)) return { ok: false, error: "Giá trị phải là số" };
+      return { ok: true, value: num };
+    }
+    case "rating": {
+      const num = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+      if (!Number.isFinite(num) || num < 0 || num > 10) return { ok: false, error: "Điểm đánh giá không hợp lệ" };
+      return { ok: true, value: num };
+    }
+    case "select":
+    case "radio": {
+      if (typeof raw !== "string") return { ok: false, error: "Lựa chọn không hợp lệ" };
+      if (options.length > 0 && !options.includes(raw)) return { ok: false, error: "Lựa chọn không hợp lệ" };
+      if (raw.length > textLimit) return { ok: false, error: `Tối đa ${textLimit} ký tự` };
+      return { ok: true, value: raw };
+    }
+    case "checkbox": {
+      if (!Array.isArray(raw)) return { ok: false, error: "Lựa chọn không hợp lệ" };
+      if (raw.length === 0) return { ok: true, value: undefined };
+      if (raw.length > MAX_CHECKBOX_SELECTIONS) return { ok: false, error: "Chọn quá nhiều mục" };
+      const values: string[] = [];
+      for (const item of raw) {
+        if (typeof item !== "string" || item.length > textLimit) return { ok: false, error: "Lựa chọn không hợp lệ" };
+        if (options.length > 0 && !options.includes(item)) return { ok: false, error: "Lựa chọn không hợp lệ" };
+        values.push(item);
+      }
+      return { ok: true, value: values };
+    }
+    default:
+      return { ok: false, error: "Loại trường không được hỗ trợ" };
+  }
+}
+
 export class CustomFormService {
   static async submit(
     cardId: string,
@@ -21,6 +90,11 @@ export class CustomFormService {
     guestToken?: string,
     meta?: { ipAddress?: string; userAgent?: string }
   ) {
+    // 0. formData phải là object thuần (không nhận mảng)
+    if (!formData || typeof formData !== "object" || Array.isArray(formData)) {
+      throw new HttpError(400, "formData khong hop le", "INVALID_FORM_DATA");
+    }
+
     // 1. Rate limit: 3 submit / IP / 5 phut / elementId
     if (meta?.ipAddress) {
       await checkRateLimit(
@@ -42,7 +116,7 @@ export class CustomFormService {
     }
 
     // 3. Lay widgetConfig tu canvasDocument
-    const categoryData = card.categoryData as Record<string, unknown>;
+    const categoryData = (card.categoryData ?? {}) as Record<string, unknown>;
     const canvasDoc = categoryData?.canvasDocument as Record<string, unknown> | undefined;
     const elements = Array.isArray(canvasDoc?.elements) ? canvasDoc.elements : [];
     const element = elements.find(
@@ -56,46 +130,41 @@ export class CustomFormService {
       ? (widgetConfig.customFormFields as CustomFormField[])
       : [];
 
-    // 4. Validate formData theo fields config
+    if (fields.length === 0) {
+      throw new HttpError(422, "Bieu mau chua duoc cau hinh", "FORM_NOT_CONFIGURED");
+    }
+
+    // 4. Chuẩn hóa + validate formData theo fields config.
+    //    CHỈ giữ các key thuộc cấu hình form — mọi key khác bị bỏ để không lưu dữ liệu tùy ý.
     const errors: Record<string, string> = {};
+    const sanitized: Record<string, unknown> = {};
     for (const field of fields) {
-      const value = formData[field.id];
-      if (field.required && (value === undefined || value === null || value === "")) {
-        errors[field.id] = `"${field.label}" la bat buoc`;
+      const result = sanitizeFieldValue(field, formData[field.id]);
+      if (!result.ok) {
+        errors[field.id] = result.error;
         continue;
       }
-      if (value !== undefined && value !== null && value !== "") {
-        if (field.type === "phone") {
-          const phone = String(value).replace(/\s/g, "");
-          if (!/^(0|\+84)[3|5|7|8|9]\d{8}$/.test(phone)) {
-            errors[field.id] = "So dien thoai khong hop le";
-          }
-        }
-        if (field.type === "email") {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
-            errors[field.id] = "Email khong hop le";
-          }
-        }
-        if (field.maxLength && String(value).length > field.maxLength) {
-          errors[field.id] = `Toi da ${field.maxLength} ky tu`;
-        }
+      if (result.value === undefined) {
+        if (field.required) errors[field.id] = `"${field.label}" la bat buoc`;
+        continue;
       }
+      sanitized[field.id] = result.value;
     }
     if (Object.keys(errors).length > 0) {
       throw new HttpError(422, "Du lieu form khong hop le", "VALIDATION_ERROR", errors);
     }
 
-    // 5. Extract submitterName/Phone tu formData
+    // 5. Extract submitterName/Phone tu du lieu da chuan hoa
     let submitterName: string | null = null;
     let submitterPhone: string | null = null;
     for (const field of fields) {
       if (field.type === "text" && !submitterName) {
-        const val = formData[field.id];
-        if (val) submitterName = String(val);
+        const val = sanitized[field.id];
+        if (typeof val === "string") submitterName = val.slice(0, 100);
       }
       if (field.type === "phone" && !submitterPhone) {
-        const val = formData[field.id];
-        if (val) submitterPhone = String(val);
+        const val = sanitized[field.id];
+        if (typeof val === "string") submitterPhone = val.slice(0, 20);
       }
     }
 
@@ -121,9 +190,9 @@ export class CustomFormService {
         guestId,
         submitterName,
         submitterPhone,
-        formData: formData as object,
+        formData: sanitized as object,
         ipAddress: meta?.ipAddress,
-        userAgent: meta?.userAgent,
+        userAgent: meta?.userAgent?.slice(0, 500),
       },
     });
 

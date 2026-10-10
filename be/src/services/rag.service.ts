@@ -7,6 +7,32 @@ import {
   RagContextArticle,
 } from './gemini.service';
 import { dispatchLeadNotification } from './notification.service';
+import { HttpError } from '../lib/http-error';
+
+const KNOWLEDGE_CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_MESSAGES_PER_SESSION = 60;
+
+type KnowledgeArticle = Awaited<ReturnType<typeof prisma.aiKnowledgeArticle.findMany>>[number];
+let knowledgeCache: { loadedAt: number; articles: KnowledgeArticle[] } | null = null;
+
+/** Gọi sau khi seed/cập nhật kho tri thức để lần chat kế tiếp đọc dữ liệu mới. */
+export function invalidateKnowledgeCache(): void {
+  knowledgeCache = null;
+}
+
+/**
+ * Kho tri thức hiếm khi đổi nhưng trước đây bị load FULL (kèm vector embedding) ở MỖI tin nhắn.
+ * Cache in-memory 5 phút để giảm tải DB và bộ nhớ.
+ */
+async function loadActiveArticles(): Promise<KnowledgeArticle[]> {
+  const now = Date.now();
+  if (knowledgeCache && now - knowledgeCache.loadedAt < KNOWLEDGE_CACHE_TTL_MS) {
+    return knowledgeCache.articles;
+  }
+  const articles = await prisma.aiKnowledgeArticle.findMany({ where: { isActive: true } });
+  knowledgeCache = { loadedAt: now, articles };
+  return articles;
+}
 
 /**
  * Tính Cosine Similarity giữa 2 vector số học
@@ -34,9 +60,7 @@ export function cosineSimilarity(vecA: number[], vecB: number[]): number {
  */
 export async function searchRelevantArticles(query: string, limit = 4): Promise<RagContextArticle[]> {
   try {
-    const articles = await prisma.aiKnowledgeArticle.findMany({
-      where: { isActive: true },
-    });
+    const articles = await loadActiveArticles();
 
     if (articles.length === 0) {
       return [];
@@ -101,6 +125,16 @@ export async function handleCustomerChat(params: {
   suggestions?: string[];
 }> {
   const { sessionId, message } = params;
+
+  // 0. Chặn spam: mỗi session có trần số tin nhắn (sessionId do client tự đặt)
+  const existingMessages = await prisma.aiChatMessage.count({ where: { sessionId } });
+  if (existingMessages >= MAX_MESSAGES_PER_SESSION) {
+    throw new HttpError(
+      429,
+      'Phiên trò chuyện đã đạt giới hạn. Vui lòng để lại SĐT/Zalo để chuyên viên hỗ trợ trực tiếp nhé!',
+      'AI_SESSION_LIMIT'
+    );
+  }
 
   // 1. Đảm bảo session tồn tại
   await prisma.aiChatSession.upsert({
@@ -175,15 +209,22 @@ export async function handleCustomerChat(params: {
         },
       });
 
-      // Gửi thông báo Telegram ngầm không chặn luồng trả lời
-      dispatchLeadNotification({
-        customerName: extractedLead.name,
-        phone: extractedLead.phone,
-        demand: extractedLead.demand || message,
-        sessionId,
-      }).catch((err) => {
-        logger.error({ err }, 'Error dispatching lead notification to Telegram');
-      });
+      // Validate phone VN trước khi gửi Telegram — chống prompt injection spam admin
+      const VIET_PHONE_RE = /^(0[3-9]\d{8}|\+84[3-9]\d{8})$/;
+      const cleanPhone = extractedLead.phone.replace(/\s/g, '');
+      if (VIET_PHONE_RE.test(cleanPhone)) {
+        // Gửi thông báo Telegram ngầm không chặn luồng trả lời
+        dispatchLeadNotification({
+          customerName: extractedLead.name,
+          phone: extractedLead.phone,
+          demand: extractedLead.demand || message,
+          sessionId,
+        }).catch((err) => {
+          logger.error({ err }, 'Error dispatching lead notification to Telegram');
+        });
+      } else {
+        logger.warn({ phone: extractedLead.phone, sessionId }, 'AI extracted invalid VN phone; skipping Telegram notification');
+      }
     } catch (leadError) {
       logger.error({ leadError }, 'Failed to save captured lead to database');
     }

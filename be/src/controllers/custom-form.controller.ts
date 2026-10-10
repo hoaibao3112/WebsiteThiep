@@ -11,7 +11,7 @@ export class CustomFormController {
         formData: Record<string, unknown>;
         guestToken?: string;
       };
-      if (!formData || typeof formData !== "object") {
+      if (!formData || typeof formData !== "object" || Array.isArray(formData)) {
         return res.status(400).json({ success: false, error: "formData khong hop le" });
       }
       const ipAddress = req.ip || req.socket.remoteAddress;

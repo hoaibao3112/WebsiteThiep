@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { Request, Response } from 'express';
-import { handleCustomerChat } from '../services/rag.service';
+import { handleCustomerChat, invalidateKnowledgeCache } from '../services/rag.service';
+import { HttpError } from '../lib/http-error';
 import { seedAiKnowledge } from '../services/ai-seed.service';
 import { prisma } from '../lib/prisma';
 import { logger } from '../lib/logger';
@@ -12,9 +14,12 @@ export class AiController {
   static async chat(req: Request, res: Response): Promise<void> {
     try {
       const { message, sessionId } = req.body;
-      const finalSessionId = sessionId && typeof sessionId === 'string' && sessionId.trim() !== ''
-        ? sessionId.trim()
-        : `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      // sessionId do client gửi: chỉ chấp nhận ký tự an toàn, còn lại tự sinh bằng CSPRNG
+      const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;
+      const finalSessionId =
+        typeof sessionId === 'string' && SESSION_ID_PATTERN.test(sessionId.trim())
+          ? sessionId.trim()
+          : `session_${Date.now()}_${randomUUID()}`;
 
       const result = await handleCustomerChat({
         sessionId: finalSessionId,
@@ -26,6 +31,10 @@ export class AiController {
         data: result,
       });
     } catch (error) {
+      if (error instanceof HttpError) {
+        res.status(error.status).json({ success: false, message: error.message, code: error.code });
+        return;
+      }
       logger.error({ error }, 'AiController.chat error');
       res.status(500).json({
         success: false,
@@ -74,6 +83,7 @@ export class AiController {
   static async seedKnowledge(_req: Request, res: Response): Promise<void> {
     try {
       await seedAiKnowledge();
+      invalidateKnowledgeCache();
       res.status(200).json({
         success: true,
         message: 'Đã nạp kho tri thức AI RAG thành công!',

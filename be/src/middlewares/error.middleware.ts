@@ -27,6 +27,16 @@ export function errorHandler(
     });
   }
 
+  // 1b. Lỗi từ dịch vụ lưu trữ (Cloudinary): log chi tiết, trả message chung — không lộ nội dung lỗi của nhà cung cấp
+  if (err instanceof HttpError && err.code?.startsWith("STORAGE_")) {
+    logger.error({ err }, "Storage provider error");
+    return res.status(err.status === 502 ? 502 : 503).json({
+      success: false,
+      error: "Dịch vụ lưu trữ tệp tạm thời không khả dụng, vui lòng thử lại sau",
+      code: err.code,
+    });
+  }
+
   // 2. Lỗi HTTP có mã trạng thái rõ ràng (throw từ services)
   if (err instanceof HttpError) {
     const details = err.details as Record<string, any> | undefined;
@@ -87,6 +97,25 @@ export function errorHandler(
       error: "Truy cập từ nguồn không được phép",
       code: "CORS_REJECTED",
     });
+  }
+
+  // 4b. Lỗi từ body-parser (payload quá lớn / JSON hỏng) — trước đây rơi xuống 500
+  if (typeof err === "object" && err !== null && "type" in err) {
+    const bodyErrType = (err as { type?: unknown }).type;
+    if (bodyErrType === "entity.too.large") {
+      return res.status(413).json({
+        success: false,
+        error: "Dữ liệu gửi lên quá lớn",
+        code: "PAYLOAD_TOO_LARGE",
+      });
+    }
+    if (bodyErrType === "entity.parse.failed") {
+      return res.status(400).json({
+        success: false,
+        error: "Dữ liệu JSON không hợp lệ",
+        code: "INVALID_JSON",
+      });
+    }
   }
 
   // 5. Fallback — lỗi chưa xác định

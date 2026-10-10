@@ -6,6 +6,7 @@ services:
     buildCommand: npm install --include=dev && npm run build
     preDeployCommand: npm run db:deploy
     startCommand: npm start
+    # /health = liveness (không phụ thuộc DB/Redis). Readiness chi tiết ở /ready.
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -34,11 +35,18 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
+      - key: APP_URL
+        sync: false
+      # Redis: ưu tiên REDIS_URL (rediss:// cho TLS). REDIS_HOST/PORT/PASSWORD chỉ dùng khi không có REDIS_URL.
+      - key: REDIS_URL
+        sync: false
       - key: REDIS_HOST
         sync: false
       - key: REDIS_PORT
         sync: false
       - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_TLS
         sync: false
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
@@ -47,6 +55,18 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: GEMINI_API_KEY
+        sync: false
+      # Thanh toán VietQR (bắt buộc ở production — thiếu sẽ fail startup)
+      - key: BANK_CODE
+        sync: false
+      - key: BANK_ACCOUNT
+        sync: false
+      - key: BANK_ACCOUNT_NAME
+        sync: false
+      # Telegram (thông báo lead từ AI chatbot gửi từ web service)
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_ADMIN_CHAT_ID
         sync: false
   - type: worker
     name: cardvite-worker
@@ -61,11 +81,17 @@ services:
         sync: false
       - key: DIRECT_URL
         sync: false
+      - key: APP_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
       - key: REDIS_HOST
         sync: false
       - key: REDIS_PORT
         sync: false
       - key: REDIS_PASSWORD
+        sync: false
+      - key: REDIS_TLS
         sync: false
       - key: SMTP_HOST
         sync: false
@@ -76,4 +102,7 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM
+        sync: false
+      # Worker gửi thông báo RSVP qua Telegram — thiếu token thì mọi job rơi vào DLQ
+      - key: TELEGRAM_BOT_TOKEN
         sync: false

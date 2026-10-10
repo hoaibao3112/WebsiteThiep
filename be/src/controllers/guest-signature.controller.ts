@@ -1,28 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import { GuestSignatureService } from "../services/guest-signature.service";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import { GuestSignatureSubmitSchema } from "../schemas/guest-signature.schema";
 
 export class GuestSignatureController {
   static async submit(req: Request, res: Response, next: NextFunction) {
     try {
       const cardId = req.params.cardId as string;
       const elementId = req.params.elementId as string;
-      const { signerName, signatureDataUrl, message, guestToken } = req.body as {
-        signerName: string;
-        signatureDataUrl: string;
-        message?: string;
-        guestToken?: string;
-      };
-      if (!signerName?.trim()) {
-        return res.status(400).json({ success: false, error: "Ten nguoi ky la bat buoc" });
+      // Validate kiểu dữ liệu bằng Zod — body sai kiểu (object/array...) trả 400 thay vì TypeError -> 500
+      const parsed = GuestSignatureSubmitSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          success: false,
+          error: parsed.error.issues[0]?.message || "Du lieu khong hop le",
+        });
       }
-      if (!signatureDataUrl) {
-        return res.status(400).json({ success: false, error: "Du lieu chu ky la bat buoc" });
-      }
+      const { signerName, signatureDataUrl, message, guestToken } = parsed.data;
       const ipAddress = req.ip || req.socket.remoteAddress;
       const userAgent = req.headers["user-agent"];
       const result = await GuestSignatureService.submit(
-        cardId, elementId, signerName, signatureDataUrl, message, guestToken, { ipAddress, userAgent }
+        cardId, elementId, signerName, signatureDataUrl, message ?? undefined, guestToken ?? undefined, { ipAddress, userAgent }
       );
       res.status(201).json(result);
     } catch (error: unknown) {

@@ -1,7 +1,10 @@
-﻿import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma";
 import { checkRateLimit } from "../lib/rate-limiter";
 import { HttpError } from "../lib/http-error";
-import { MediaService } from "./media.service";
+import { MediaService, validateMagicBytes } from "./media.service";
+
+const DATA_URL_PATTERN = /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/]+={0,2})$/;
+const MAX_DATA_URL_LENGTH = 2_000_000;
 
 export class GuestSignatureService {
   static async submit(
@@ -13,44 +16,49 @@ export class GuestSignatureService {
     guestToken?: string,
     meta?: { ipAddress?: string; userAgent?: string }
   ) {
-    // 1. Rate limit: 2 chu ky / IP, 1 chu ky / guestToken
-    const rateLimitKey = guestToken
-      ? `ratelimit:signature:token:${guestToken}:${cardId}:${elementId}`
-      : `ratelimit:signature:ip:${meta?.ipAddress}:${cardId}:${elementId}`;
-    const maxAttempts = guestToken ? 1 : 2;
-    if (meta?.ipAddress || guestToken) {
-      await checkRateLimit(rateLimitKey, maxAttempts, 86400, "Ban da ky ten roi. Moi tai khoan chi duoc ky 1 lan!");
+    const ip = meta?.ipAddress || "unknown";
+
+    // 1. Chống flood theo IP (rộng tay vì nhiều khách có thể dùng chung wifi tại tiệc)
+    await checkRateLimit(
+      `ratelimit:signature:flood:${ip}`,
+      30,
+      3600,
+      "Ban thao tac qua nhanh. Vui long thu lai sau it phut!"
+    );
+
+    // 2. Validate data URL + magic bytes TRƯỚC khi đụng DB / Cloudinary
+    if (signatureDataUrl.length > MAX_DATA_URL_LENGTH) {
+      throw new HttpError(400, "Anh chu ky qua lon (toi da 1.5MB)", "FILE_TOO_LARGE");
+    }
+    const match = DATA_URL_PATTERN.exec(signatureDataUrl);
+    if (!match) {
+      throw new HttpError(400, "Chu ky phai la anh PNG/JPEG (data URL)", "INVALID_SIGNATURE");
+    }
+    const mimetype = match[1];
+    const buffer = Buffer.from(match[2], "base64");
+    if (!validateMagicBytes(buffer, mimetype)) {
+      throw new HttpError(400, "Noi dung chu ky khong phai anh hop le", "INVALID_SIGNATURE");
     }
 
-    // 2. Validate card ACTIVE
+    // 3. Validate card ACTIVE + widget thuộc thiệp này
     const card = await prisma.card.findUnique({
       where: { id: cardId },
-      select: { id: true, status: true, expiredAt: true, accountId: true },
+      select: { id: true, status: true, expiredAt: true, accountId: true, categoryData: true },
     });
     if (!card) throw new HttpError(404, "Thiep khong ton tai", "CARD_NOT_FOUND");
     if (card.status !== "ACTIVE" || (card.expiredAt && card.expiredAt <= new Date())) {
       throw new HttpError(400, "Thiep da het han", "CARD_INACTIVE");
     }
-
-    // 3. Validate signatureDataUrl
-    if (!signatureDataUrl.startsWith("data:image/png;base64,") &&
-        !signatureDataUrl.startsWith("data:image/jpeg;base64,")) {
-      throw new HttpError(400, "Chu ky phai la anh PNG/JPEG (data URL)", "INVALID_SIGNATURE");
-    }
-    if (signatureDataUrl.length > 2_000_000) {
-      throw new HttpError(400, "Anh chu ky qua lon (toi da 1.5MB)", "FILE_TOO_LARGE");
+    const categoryData = (card.categoryData ?? {}) as Record<string, unknown>;
+    const canvasDoc = categoryData.canvasDocument as Record<string, unknown> | undefined;
+    const elements = Array.isArray(canvasDoc?.elements) ? (canvasDoc.elements as Array<Record<string, unknown>>) : [];
+    if (!elements.some((el) => el.id === elementId)) {
+      throw new HttpError(404, "Widget khong ton tai", "WIDGET_NOT_FOUND");
     }
 
-    // 4. Upload len Cloudinary
-    const base64Data = signatureDataUrl.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
-    const uploaded = await MediaService.uploadBuffer(
-      buffer,
-      `signature-${cardId}-${Date.now()}.png`,
-      "image/png"
-    );
-
-    // 5. Resolve guestId tu guestToken
+    // 4. Resolve guest từ guestToken TRƯỚC khi chọn khóa rate limit.
+    //    Token do client gửi → chỉ tin khi nó khớp 1 khách thật của thiệp này;
+    //    nếu không, coi như khách ẩn danh (giới hạn theo IP) — không thể xoay token giả để né limit.
     let guestId: string | null = null;
     if (guestToken) {
       const guest = await prisma.guest.findFirst({
@@ -59,6 +67,30 @@ export class GuestSignatureService {
       });
       if (guest) guestId = guest.id;
     }
+
+    if (guestId) {
+      await checkRateLimit(
+        `ratelimit:signature:guest:${guestId}:${elementId}`,
+        1,
+        86400,
+        "Ban da ky ten roi. Moi tai khoan chi duoc ky 1 lan!"
+      );
+    } else {
+      await checkRateLimit(
+        `ratelimit:signature:ip:${ip}:${cardId}:${elementId}`,
+        2,
+        86400,
+        "Ban da ky ten roi. Moi tai khoan chi duoc ky 1 lan!"
+      );
+    }
+
+    // 5. Upload len Cloudinary
+    const extension = mimetype === "image/jpeg" ? "jpg" : "png";
+    const uploaded = await MediaService.uploadBuffer(
+      buffer,
+      `signature-${cardId}-${Date.now()}.${extension}`,
+      mimetype
+    );
 
     // 6. Luu GuestSignature
     const signature = await prisma.guestSignature.create({

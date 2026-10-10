@@ -24,6 +24,7 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d";
+const JWT_ALGORITHM = "HS256" as const;
 
 // [SECURITY FIX] Rate limit cho login / register truyền thống (chống brute-force & credential stuffing)
 const MAX_LOGIN_ATTEMPTS_PER_IP = 10; // 10 lần / 15 phút / IP
@@ -224,7 +225,8 @@ export class AuthService {
         `ratelimit:register:ip:${clientIp}`,
         MAX_REGISTER_ATTEMPTS_PER_IP,
         REGISTER_WINDOW_SECONDS,
-        "Địa chỉ IP của bạn đã đăng ký quá nhiều lần. Vui lòng thử lại sau!"
+        "Địa chỉ IP của bạn đã đăng ký quá nhiều lần. Vui lòng thử lại sau!",
+        { failClosed: true }
       );
     }
 
@@ -283,14 +285,16 @@ export class AuthService {
         `ratelimit:login:ip:${clientIp}`,
         MAX_LOGIN_ATTEMPTS_PER_IP,
         LOGIN_WINDOW_SECONDS,
-        "Địa chỉ IP của bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!"
+        "Địa chỉ IP của bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!",
+        { failClosed: true }
       );
     }
     await checkRateLimit(
       `ratelimit:login:email:${normalizedEmail}`,
       MAX_LOGIN_ATTEMPTS_PER_EMAIL,
       LOGIN_WINDOW_SECONDS,
-      "Tài khoản này đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!"
+      "Tài khoản này đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!",
+      { failClosed: true }
     );
 
     const user = await prisma.user.findUnique({
@@ -426,7 +430,7 @@ export class AuthService {
    * Helper sinh JWT token
    */
   static generateToken(payload: TokenPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN, algorithm: JWT_ALGORITHM });
   }
 
   private static async ensureDefaultAccount(userId: string, name: string | null): Promise<string> {
@@ -486,6 +490,7 @@ export class AuthService {
    * Helper verify JWT token
    */
   static verifyToken(token: string): TokenPayload {
-    return jwt.verify(token, JWT_SECRET) as TokenPayload;
+    // Pin thuật toán — không chấp nhận token ký bằng thuật toán khác
+    return jwt.verify(token, JWT_SECRET, { algorithms: [JWT_ALGORITHM] }) as TokenPayload;
   }
 }

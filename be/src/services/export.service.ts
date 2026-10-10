@@ -136,6 +136,7 @@ export class ExportService {
       });
     });
 
-    return (await workbook.xlsx.writeBuffer()) as unknown as Buffer;
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
   }
 }

@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { HttpError } from "../lib/http-error";
 
 const ALLOWED_MIME_MAP: Record<string, string[]> = {
   "image/jpeg": [".jpg", ".jpeg"],
@@ -31,13 +32,13 @@ export { validateMagicBytes, ALLOWED_MIME_MAP };
 
 export class MediaService {
   static async handleFileUpload(file: Express.Multer.File, accountId: string): Promise<string> {
-    if (!file?.buffer) throw new Error("Không có file nào được tải lên hoặc file rỗng");
+    if (!file?.buffer) throw new HttpError(400, "Không có file nào được tải lên hoặc file rỗng", "INVALID_FILE");
     const mimetype = file.mimetype.toLowerCase();
     const extensions = ALLOWED_MIME_MAP[mimetype];
-    if (!extensions) throw new Error("Định dạng file không hợp lệ");
+    if (!extensions) throw new HttpError(400, "Định dạng file không hợp lệ", "INVALID_FILE");
     const extension = file.originalname.slice(file.originalname.lastIndexOf(".")).toLowerCase();
     if (!extensions.includes(extension) || !validateMagicBytes(file.buffer, mimetype)) {
-      throw new Error("Nội dung file không khớp định dạng khai báo");
+      throw new HttpError(400, "Nội dung file không khớp định dạng khai báo", "INVALID_FILE");
     }
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -45,7 +46,7 @@ export class MediaService {
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
-      throw new Error("Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.");
+      throw new HttpError(503, "Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.", "STORAGE_UNAVAILABLE");
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
@@ -69,7 +70,7 @@ export class MediaService {
     });
     const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
     if (!response.ok || !result.secure_url) {
-      throw new Error(`Cloudinary upload thất bại: ${result.error?.message || response.statusText}`);
+      throw new HttpError(502, `Cloudinary upload thất bại: ${result.error?.message || response.statusText}`, "STORAGE_UPLOAD_FAILED");
     }
     return result.secure_url;
   }
@@ -78,15 +79,15 @@ export class MediaService {
     file: Express.Multer.File,
     accountId: string
   ): Promise<{ photoUrl: string; thumbUrl: string }> {
-    if (!file?.buffer) throw new Error("Không có file ảnh nào được tải lên hoặc file rỗng");
+    if (!file?.buffer) throw new HttpError(400, "Không có file ảnh nào được tải lên hoặc file rỗng", "INVALID_FILE");
     const mimetype = file.mimetype.toLowerCase();
     const extensions = ALLOWED_MIME_MAP[mimetype];
     if (!extensions || !mimetype.startsWith("image/")) {
-      throw new Error("Định dạng ảnh không hợp lệ (chỉ hỗ trợ JPG, PNG, WEBP)");
+      throw new HttpError(400, "Định dạng ảnh không hợp lệ (chỉ hỗ trợ JPG, PNG, WEBP)", "INVALID_FILE");
     }
     const extension = file.originalname.slice(file.originalname.lastIndexOf(".")).toLowerCase();
     if (!extensions.includes(extension) || !validateMagicBytes(file.buffer, mimetype)) {
-      throw new Error("Nội dung file không khớp định dạng ảnh khai báo");
+      throw new HttpError(400, "Nội dung file không khớp định dạng ảnh khai báo", "INVALID_FILE");
     }
 
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -94,7 +95,7 @@ export class MediaService {
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
-      throw new Error("Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.");
+      throw new HttpError(503, "Cloudinary chưa được cấu hình. Vui lòng thiết lập biến môi trường Cloudinary.", "STORAGE_UNAVAILABLE");
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
@@ -117,7 +118,7 @@ export class MediaService {
     });
     const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
     if (!response.ok || !result.secure_url) {
-      throw new Error(`Cloudinary upload thất bại: ${result.error?.message || response.statusText}`);
+      throw new HttpError(502, `Cloudinary upload thất bại: ${result.error?.message || response.statusText}`, "STORAGE_UPLOAD_FAILED");
     }
     const photoUrl = result.secure_url;
     const thumbUrl = photoUrl.replace("/upload/", "/upload/c_thumb,w_400,h_400,g_auto,q_auto,f_auto/");
@@ -137,7 +138,7 @@ export class MediaService {
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
     if (!cloudName || !apiKey || !apiSecret) {
-      throw new Error("Cloudinary chua duoc cau hinh");
+      throw new HttpError(503, "Cloudinary chua duoc cau hinh", "STORAGE_UNAVAILABLE");
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
@@ -160,7 +161,7 @@ export class MediaService {
     });
     const result = (await response.json()) as { secure_url?: string; error?: { message?: string } };
     if (!response.ok || !result.secure_url) {
-      throw new Error(`Cloudinary upload that bai: ${result.error?.message || response.statusText}`);
+      throw new HttpError(502, `Cloudinary upload that bai: ${result.error?.message || response.statusText}`, "STORAGE_UPLOAD_FAILED");
     }
 
     const url = result.secure_url;

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -18,6 +18,7 @@ import { AuthService } from "./services/auth.service";
 
 validateRuntimeEnv(process.env);
 
+const isProduction = process.env.NODE_ENV === "production";
 const app = express();
 app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
@@ -33,20 +34,57 @@ app.use(
 );
 app.use(cookieParser());
 
-const defaultOrigins = "https://website-thiep.vercel.app,http://localhost:3000,http://127.0.0.1:3000";
-const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS || defaultOrigins);
+// Production BẮT BUỘC cấu hình ALLOWED_ORIGINS (đã enforce trong validateRuntimeEnv).
+// Danh sách mặc định (có localhost) CHỈ dùng cho dev/test để tránh mở CORS credentialed cho localhost ở prod.
+const devDefaultOrigins = "https://website-thiep.vercel.app,http://localhost:3000,http://127.0.0.1:3000";
+const allowedOrigins = parseAllowedOrigins(
+  process.env.ALLOWED_ORIGINS ?? (isProduction ? "" : devDefaultOrigins)
+);
 
 app.use(cors(createCorsOptions(allowedOrigins)));
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+// -----------------------------------------------------------------------
+// BODY PARSER — giới hạn theo route
+// Mặc định 100kb cho mọi endpoint (đặc biệt endpoint public). Chỉ các route
+// editor đã đăng nhập mới được nâng lên 10MB; chữ ký tay (data URL) 3MB.
+// -----------------------------------------------------------------------
+const smallJson = express.json({ limit: "100kb" });
+const signatureJson = express.json({ limit: "3mb" });
+const largeJson = express.json({ limit: "10mb" });
+
+const LARGE_JSON_ROUTES: readonly RegExp[] = [
+  /^\/api\/cards\/?$/,
+  /^\/api\/cards\/[^/]+\/?$/,
+  /^\/api\/cards\/[^/]+\/elements\/[^/]+\/?$/,
+  /^\/api\/cards\/[^/]+\/(envelope-config|album-3d|google-drive-import)\/?$/,
+  /^\/api\/cards\/[^/]+\/guests\/import\/?$/,
+];
+const SIGNATURE_SUBMIT_ROUTE = /^\/api\/cards\/[^/]+\/signature\/[^/]+\/submit\/?$/;
+
+export function selectJsonParser(req: Request) {
+  const urlPath = (req.originalUrl || req.url || "").split("?")[0];
+  if (SIGNATURE_SUBMIT_ROUTE.test(urlPath)) return signatureJson;
+
+  // Chỉ cho phép body lớn khi request có mang credential (authGuard sẽ verify sau đó).
+  // Request ẩn danh luôn bị giới hạn 100kb để không thể ép server parse 10MB.
+  const hasCredential =
+    Boolean(req.headers.authorization?.startsWith("Bearer ")) || Boolean(req.cookies?.auth_token);
+  if (hasCredential && LARGE_JSON_ROUTES.some((re) => re.test(urlPath))) return largeJson;
+
+  return smallJson;
+}
+
+app.use((req: Request, res: Response, next: NextFunction) => selectJsonParser(req)(req, res, next));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
 
 // Morgan HTTP request logger — pipe vào Pino để format đồng nhất
 app.use(
-  morgan(process.env.NODE_ENV === "production" ? "combined" : "dev", {
+  morgan(isProduction ? "combined" : "dev", {
     stream: {
       write: (message: string) => logger.info(message.trim()),
     },
+    // Health/ready check gọi liên tục — không log để tránh nhiễu
+    skip: (req: Request) => req.path === "/health" || req.path === "/ready",
   })
 );
 
@@ -82,13 +120,14 @@ export const extractUserIdFromReq = (req: Request): string | null => {
   return null;
 };
 
-// Global: 200 requests / 15 phút / IP (bỏ qua public card reads và editor routes vì có limiter riêng)
+// Global: 200 requests / 15 phút / IP (bỏ qua public card reads, editor routes và health check)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: Request) => isPublicCardRoute(req) || isEditorRoute(req),
+  skip: (req: Request) =>
+    req.path === "/health" || req.path === "/ready" || isPublicCardRoute(req) || isEditorRoute(req),
   message: { success: false, error: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
 });
 
@@ -139,47 +178,65 @@ const otpLimiter = rateLimit({
   message: { success: false, error: "Quá nhiều yêu cầu OTP, vui lòng đợi 15 phút." },
 });
 
+// AI chatbot: mỗi request tốn tiền (embedding + LLM) → 20 tin nhắn / 10 phút / IP
+const aiChatLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Bạn nhắn quá nhanh, vui lòng thử lại sau ít phút nhé!" },
+});
+
 app.use(globalLimiter);
 
 // -----------------------------------------------------------------------
-// STATIC FILES & HEALTH CHECK
+// STATIC FILES
 // -----------------------------------------------------------------------
 app.use("/uploads", express.static(path.join(process.cwd(), "public", "uploads")));
 app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
 
-app.get("/health", async (_req: Request, res: Response) => {
-  const checks: { db: "ok" | "error"; redis: "ok" | "error" } = {
-    db: "ok",
-    redis: "ok",
-  };
+// -----------------------------------------------------------------------
+// HEALTH CHECKS
+//  - /health : LIVENESS — chỉ cho biết process còn sống. KHÔNG phụ thuộc DB/Redis,
+//              để Render không restart/fail deploy chỉ vì dependency chập chờn.
+//  - /ready  : READINESS — kiểm tra DB + Redis (dùng cho monitoring/alert).
+// -----------------------------------------------------------------------
+function withTimeout<T>(promise: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timeout`)), ms);
+  });
+  return Promise.race([Promise.resolve(promise), timeout]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
 
-  try {
-    const dbPromise = prisma.$queryRaw`SELECT 1`;
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Database ping timeout")), 1000)
-    );
-    await Promise.race([dbPromise, timeoutPromise]);
-  } catch (err) {
-    logger.warn({ err }, "Health check database failed");
-    checks.db = "error";
-  }
+app.get("/health", (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: "ok",
+    service: "Digital Card Platform API",
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
 
-  try {
-    const redisPromise = redis.ping();
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Redis ping timeout")), 1000)
-    );
-    await Promise.race([redisPromise, timeoutPromise]);
-  } catch (err) {
-    logger.warn({ err }, "Health check redis failed");
-    checks.redis = "error";
-  }
+app.get("/ready", async (_req: Request, res: Response) => {
+  const checks: { db: "ok" | "error"; redis: "ok" | "error" } = { db: "ok", redis: "ok" };
 
-  const isHealthy = checks.db === "ok" && checks.redis === "ok";
-  const statusCode = isHealthy ? 200 : 503;
+  await Promise.all([
+    withTimeout(prisma.$queryRaw`SELECT 1`, 3000, "Database ping").catch((err: unknown) => {
+      logger.warn({ err }, "Readiness check database failed");
+      checks.db = "error";
+    }),
+    withTimeout(redis.ping(), 3000, "Redis ping").catch((err: unknown) => {
+      logger.warn({ err }, "Readiness check redis failed");
+      checks.redis = "error";
+    }),
+  ]);
 
-  res.status(statusCode).json({
-    status: isHealthy ? "ok" : "degraded",
+  const isReady = checks.db === "ok" && checks.redis === "ok";
+  res.status(isReady ? 200 : 503).json({
+    status: isReady ? "ok" : "degraded",
     service: "Digital Card Platform API",
     checks,
     timestamp: new Date().toISOString(),
@@ -193,6 +250,9 @@ app.use("/api/auth/send-otp", otpLimiter);
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
 app.use("/api/auth/verify-otp-register", authLimiter);
+
+// AI chatbot (public, tốn chi phí LLM)
+app.use("/api/ai/chat", aiChatLimiter);
 
 // Public Card Read (by-slug)
 app.use("/api/cards/by-slug", publicCardLimiter);
@@ -251,7 +311,7 @@ if (process.env.NODE_ENV !== "test") {
     setTimeout(() => {
       logger.error("Forced shutdown after timeout.");
       process.exit(1);
-    }, 10_000);
+    }, 10_000).unref();
   };
 
   process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

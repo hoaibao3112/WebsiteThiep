@@ -1,4 +1,9 @@
 import "dotenv/config";
+import { validateWorkerEnv } from "./config/env";
+
+// Fail sớm nếu thiếu DB/Redis/TELEGRAM_BOT_TOKEN thay vì để job rơi vào DLQ
+validateWorkerEnv(process.env);
+
 import { mailWorker } from "./queues/workers/mail.worker";
 import { rsvpWorker, rsvpDlq } from "./queues/workers/rsvp-notification.worker";
 import { mailQueue } from "./queues/mail.queue";

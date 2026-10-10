@@ -94,20 +94,36 @@ export async function optionalAuthGuard(
   }
 }
 
-export function adminGuard(
+/**
+ * Yêu cầu quyền ADMIN. Role được đọc lại từ DB thay vì tin claim trong JWT (hạn 7 ngày),
+ * nên hạ quyền / xóa admin có hiệu lực ngay lập tức.
+ */
+export async function adminGuard(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
-  authGuard(req, res, () => {
-    if (req.user?.role !== "ADMIN") {
+  let authenticated = false;
+  await authGuard(req, res, () => {
+    authenticated = true;
+  });
+  if (!authenticated) return; // authGuard đã trả 401
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId as string },
+      select: { role: true },
+    });
+    if (user?.role !== "ADMIN") {
       return res.status(403).json({
         success: false,
         error: "Bạn không có quyền quản trị viên",
       });
     }
     next();
-  });
+  } catch (error) {
+    next(error);
+  }
 }
 
 /**

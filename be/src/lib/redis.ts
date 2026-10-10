@@ -31,6 +31,7 @@ export const redis = redisUrl
       host: redisHost,
       port: redisPort,
       password: redisPassword,
+      ...(process.env.REDIS_TLS === "true" ? { tls: {} } : {}),
       ...commonOpts,
     });
 

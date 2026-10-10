@@ -15,39 +15,64 @@ const BaseEnvSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
   CLOUDINARY_API_KEY: z.string().min(1).optional(),
   CLOUDINARY_API_SECRET: z.string().min(1).optional(),
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  APP_URL: z.string().optional(),
 });
 
+/**
+ * Validate env cho HTTP server. Ở production, các biến ảnh hưởng trực tiếp
+ * tới bảo mật / thanh toán / hạ tầng là BẮT BUỘC — thiếu thì fail startup
+ * thay vì chạy "mù" rồi trả 503 khi khách thao tác.
+ */
 export function validateRuntimeEnv(input: NodeJS.ProcessEnv) {
   const env = BaseEnvSchema.parse(input);
   if (env.NODE_ENV === "production") {
-    const required = ["JWT_SECRET", "DATABASE_URL"] as const;
-    const missing = required.filter((key) => !env[key]);
+    const required = [
+      "JWT_SECRET",
+      "DATABASE_URL",
+      "ALLOWED_ORIGINS",
+      "BANK_CODE",
+      "BANK_ACCOUNT",
+      "BANK_ACCOUNT_NAME",
+    ] as const;
+    const missing: string[] = required.filter((key) => !env[key]);
+    if (!env.REDIS_URL && !env.REDIS_HOST) missing.push("REDIS_URL (hoặc REDIS_HOST)");
+
     if (missing.length) {
       throw new Error(`Missing production environment variables: ${missing.join(", ")}`);
     }
 
-    // Bank variables required for payment QR generation
-    const bankVars = ["BANK_CODE", "BANK_ACCOUNT", "BANK_ACCOUNT_NAME"] as const;
-    const missingBank = bankVars.filter((key) => !env[key]);
-    if (missingBank.length > 0) {
-      console.warn(`[WARN] Thanh toán VietQR sẽ không hoạt động — thiếu: ${missingBank.join(", ")}`);
-    }
-
     const missingOptional: string[] = [];
-    if (!env.REDIS_URL && !env.REDIS_HOST) missingOptional.push("REDIS_URL (hoặc REDIS_HOST)");
-    if (!env.ALLOWED_ORIGINS) missingOptional.push("ALLOWED_ORIGINS");
     if (!env.CLOUDINARY_CLOUD_NAME) missingOptional.push("CLOUDINARY_CLOUD_NAME");
     if (!env.CLOUDINARY_API_KEY) missingOptional.push("CLOUDINARY_API_KEY");
     if (!env.CLOUDINARY_API_SECRET) missingOptional.push("CLOUDINARY_API_SECRET");
+    if (!env.TELEGRAM_BOT_TOKEN) missingOptional.push("TELEGRAM_BOT_TOKEN");
+    if (!env.APP_URL) missingOptional.push("APP_URL");
 
     if (missingOptional.length > 0) {
-      console.warn(`[WARN] Chú ý: Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
+      console.warn(`[WARN] Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
     }
 
-    if (env.ALLOWED_ORIGINS) {
-      parseAllowedOrigins(env.ALLOWED_ORIGINS);
-    }
+    // Throw sớm nếu ALLOWED_ORIGINS sai định dạng / chứa wildcard
+    parseAllowedOrigins(env.ALLOWED_ORIGINS as string);
   }
   return env;
 }
 
+/**
+ * Validate env cho worker process (BullMQ). Worker không cần JWT/BANK nhưng
+ * BẮT BUỘC có DB + Redis, và cần TELEGRAM_BOT_TOKEN để gửi thông báo RSVP.
+ */
+export function validateWorkerEnv(input: NodeJS.ProcessEnv) {
+  const env = BaseEnvSchema.parse(input);
+  if (env.NODE_ENV === "production") {
+    const missing: string[] = [];
+    if (!env.DATABASE_URL) missing.push("DATABASE_URL");
+    if (!env.REDIS_URL && !env.REDIS_HOST) missing.push("REDIS_URL (hoặc REDIS_HOST)");
+    if (!env.TELEGRAM_BOT_TOKEN) missing.push("TELEGRAM_BOT_TOKEN");
+    if (missing.length) {
+      throw new Error(`Missing worker environment variables: ${missing.join(", ")}`);
+    }
+  }
+  return env;
+}
