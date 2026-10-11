@@ -8,6 +8,7 @@ export interface EventItem {
   eventName: string;
   eventDate: string | Date;
   lunarDate?: string;
+  welcomingTime?: string;
   venueName: string;
   address: string;
   mapUrl?: string;
@@ -76,6 +77,12 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     title: string;
     icon?: string;
   }>;
+  dressCode?: {
+    title?: string;
+    description?: string;
+    colors?: string[];
+    note?: string;
+  };
   events?: EventItem[];
 }
 

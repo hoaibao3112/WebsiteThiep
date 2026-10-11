@@ -1036,4 +1036,159 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     bankingPrimary: { bankCode: "VCB", accountNumber: "001100223344", accountName: "NGUYEN THANH DAT" },
     bankingSecondary: { bankCode: "TCB", accountNumber: "190367889900", accountName: "VU KHANH LY" },
   },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 12. NHUNG ĐỎ HOÀNG GIA - VELVET CRIMSON (HOÀNG LONG & BẢO NGỌC)
+  // ─────────────────────────────────────────────────────────────────────────────
+  "wedding-royal-crimson-velvet": {
+    id: "demo-royal-crimson-velvet",
+    slug: "wedding-royal-crimson-velvet",
+    cardCategory: "WEDDING",
+    status: "ACTIVE",
+    openingEffect: "NONE",
+    fallingEffect: "PETAL",
+    musicUrl: "/music/le-duong.mp3",
+    isAutoPlay: true,
+    primaryColor: "#4A121A",
+    fontFamily: "Playfair Display",
+    greetingMessage:
+      "Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng tôi tại lễ thành hôn và tiệc cưới của Hoàng Long & Bảo Ngọc!",
+    template: { slug: "wedding-royal-crimson-velvet" },
+    categoryData: {
+      cardCategory: "WEDDING",
+      heroSubtitle: "SAVE THE DATE",
+      invitationTitle: "THÔNG TIN LỄ CƯỚI",
+      coverPhotoUrl: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+      greeting: "Trân trọng báo tin Lễ Thành Hôn của con chúng tôi.",
+      groom: {
+        fullName: "Đặng Hoàng Long",
+        shortName: "Hoàng Long",
+        birthOrder: "TRƯỞNG NAM",
+        avatarUrl: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+        address: "Quận 1, TP. Hồ Chí Minh",
+        parents: {
+          fatherName: "Đặng Văn Thắng",
+          motherName: "Bùi Thị Mai",
+          address: "Quận 1, TP. Hồ Chí Minh",
+        },
+        story: "Chàng sĩ quan mạnh mẽ, ấm áp, luôn yêu thương và che chở người bạn đời.",
+      },
+      bride: {
+        fullName: "Vũ Bảo Ngọc",
+        shortName: "Bảo Ngọc",
+        birthOrder: "ÚT NỮ",
+        avatarUrl: "/images/demo/templates/t12-royal-crimson/gallery-1.jpg",
+        address: "Quận 3, TP. Hồ Chí Minh",
+        parents: {
+          fatherName: "Vũ Đức Trung",
+          motherName: "Ngô Thị Hạnh",
+          address: "Quận 3, TP. Hồ Chí Minh",
+        },
+        story: "Nàng tiểu thư dịu dàng, thông minh, mang nụ cười toả nắng sưởi ấm mọi khoảnh khắc.",
+      },
+      dressCode: {
+        title: "DRESS CODE",
+        description: "Trang phục dự tiệc",
+        colors: ["#4A121A", "#8F3B44", "#CCA24C", "#EFE8DE"],
+        note: "Trang phục trang nhã, khuyến khích các gam màu theo bảng màu trên.",
+      },
+      timelineEvents: [
+        { time: "17:00", title: "Đón khách" },
+        { time: "18:00", title: "Khai tiệc" },
+        { time: "18:30", title: "Nghi thức cưới" },
+        { time: "19:00", title: "Cắt bánh & nâng ly" },
+        { time: "20:30", title: "Kết thúc tiệc" },
+      ],
+      loveStory: [
+        {
+          title: "Chạm Ánh Mắt Ban Đầu",
+          date: "14 . 02 . 2022",
+          description: "Khoảnh khắc đầu tiên gặp gỡ, ánh mắt chạm nhau mở đầu cho thiên tình sử.",
+          imageUrl: "/images/demo/templates/t12-royal-crimson/gallery-2.jpg",
+        },
+        {
+          title: "Lời Hứa Trăm Năm",
+          date: "24 . 12 . 2024",
+          description: "Chiếc nhẫn cầu hôn trao tay dưới ánh hoàng hôn rực rỡ và lời đồng ý ngọt ngào.",
+          imageUrl: "/images/demo/templates/t12-royal-crimson/gallery-3.jpg",
+        },
+        {
+          title: "Ngày Về Chung Một Nhà",
+          date: "03 . 01 . 2026",
+          description: "Chính thức nên duyên vợ chồng trước sự chúc phúc của hai bên gia đình và bạn bè.",
+          imageUrl: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+        },
+      ],
+    },
+    events: [
+      {
+        id: "rc-ev-1",
+        eventName: "Lễ Thành Hôn",
+        eventDate: new Date("2026-01-03T09:00:00Z"),
+        lunarDate: "Tức ngày 15 tháng 11 năm Ất Tỵ",
+        venueName: "Cử hành tại Tư Gia",
+        address: "Quận 1, TP. Hồ Chí Minh",
+        welcomingTime: "08:30",
+        mapUrl: "https://maps.google.com/?q=Quận+1+TP+Hồ+Chí+Minh",
+      },
+      {
+        id: "rc-ev-2",
+        eventName: "Tiệc Cưới",
+        eventDate: new Date("2026-01-03T18:00:00Z"),
+        lunarDate: "Tức ngày 15 tháng 11 năm Ất Tỵ",
+        venueName: "Trung Tâm Hội Nghị White Palace",
+        address: "194 Hoàng Văn Thụ, Phường 9, Quận Phú Nhuận, TP. Hồ Chí Minh",
+        welcomingTime: "17:30",
+        mapUrl: "https://maps.google.com/?q=White+Palace+194+Hoàng+Văn+Thụ+Phú+Nhuận",
+      },
+    ],
+    photos: [
+      {
+        id: "rc-p-1",
+        url: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+        caption: "Hoàng Long & Bảo Ngọc",
+        isCover: true,
+      },
+      {
+        id: "rc-p-2",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-1.jpg",
+        caption: "Ánh nhìn yêu thương",
+      },
+      {
+        id: "rc-p-3",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-2.jpg",
+        caption: "Nụ cười rạng rỡ",
+      },
+      {
+        id: "rc-p-4",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-3.jpg",
+        caption: "Bên nhau trọn đời",
+      },
+      {
+        id: "rc-p-5",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-4.jpg",
+        caption: "Lời thề ước trăm năm",
+      },
+      {
+        id: "rc-p-6",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-5.jpg",
+        caption: "Hạnh phúc ngập tràn",
+      },
+      {
+        id: "rc-p-7",
+        url: "/images/demo/templates/t12-royal-crimson/gallery-6.jpg",
+        caption: "Khoảnh khắc thiêng liêng",
+      },
+    ],
+    bankingPrimary: {
+      bankCode: "MB",
+      accountNumber: "999903012026",
+      accountName: "DANG HOANG LONG",
+    },
+    bankingSecondary: {
+      bankCode: "VCB",
+      accountNumber: "888803012026",
+      accountName: "VU BAO NGOC",
+    },
+  },
 };

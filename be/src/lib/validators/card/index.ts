@@ -49,6 +49,7 @@ const DraftEventSchema = z.object({
     z.coerce.date().nullable().optional()
   ),
   lunarDate: z.string().trim().max(100).nullable().optional(),
+  welcomingTime: z.string().trim().max(100).nullable().optional(),
   venueName: z.string().trim().max(200).default(""),
   address: z.string().trim().max(500).default(""),
   mapUrl: z.string().trim().max(2_000).nullable().optional(),
@@ -97,6 +98,12 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
       title: z.string().trim().max(120),
       icon: z.string().trim().max(50).optional(),
     })).max(20).optional().default([]),
+    dressCode: z.object({
+      title: z.string().trim().max(120).optional(),
+      description: z.string().trim().max(200).optional(),
+      colors: z.array(z.string().trim().max(50)).max(10).optional(),
+      note: z.string().trim().max(500).optional(),
+    }).optional(),
     events: z.array(DraftEventSchema).max(10).default([]),
     photos: z.array(PhotoSchema).max(50).optional(),
     canvas: CanvasDocumentSchema.optional(),

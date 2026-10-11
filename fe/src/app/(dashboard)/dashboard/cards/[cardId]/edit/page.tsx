@@ -188,6 +188,15 @@ const TEMPLATE_PRESETS = [
     font: "Playfair Display",
     bg: "/images/templates/cover-11-sage-garden.webp",
   },
+  {
+    id: "wedding-royal-crimson-velvet",
+    name: "Nhung Đỏ Hoàng Gia",
+    category: "WEDDING",
+    tag: "ROYAL",
+    color: "#4A121A",
+    font: "Playfair Display",
+    bg: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+  },
 ];
 
 const MUSIC_OPTIONS = [
@@ -446,6 +455,17 @@ function EditCardContent() {
   const [bankGroomTouched, setBankGroomTouched] = useState(false);
   const [bankBrideTouched, setBankBrideTouched] = useState(false);
 
+  // ── Dress Code (Trang Phục Dự Tiệc) ──
+  const [dressCodeTitle, setDressCodeTitle] = useState("DRESS CODE");
+  const [dressCodeDescription, setDressCodeDescription] = useState("Trang phục dự tiệc");
+  const [dressCodeColors, setDressCodeColors] = useState<string[]>([
+    "#4A121A",
+    "#8F3B44",
+    "#CCA24C",
+    "#EFE8DE",
+  ]);
+  const [dressCodeNote, setDressCodeNote] = useState("");
+
   // ── RSVP ──
   const [isRsvpEnabled, setIsRsvpEnabled] = useState(true);
   const [rsvpDeadline, setRsvpDeadline] = useState("");
@@ -550,8 +570,19 @@ function EditCardContent() {
       if (Array.isArray((card.categoryData as any).timelineEvents) && (card.categoryData as any).timelineEvents.length > 0) {
         setTimelineEvents((card.categoryData as any).timelineEvents);
       }
+      if ((card.categoryData as any).dressCode) {
+        const dc = (card.categoryData as any).dressCode;
+        if (dc.title) setDressCodeTitle(dc.title);
+        if (dc.description) setDressCodeDescription(dc.description);
+        if (Array.isArray(dc.colors)) setDressCodeColors(dc.colors);
+        if (dc.note) setDressCodeNote(dc.note);
+      }
       // Đảm bảo các mẫu thiệp có layout chuyên biệt luôn mở ở chế độ Biểu Mẫu + Live Preview
-      if (card.template?.slug === "wedding-nha-co-hy" || card.template?.slug === "wedding-sage-garden-glass") {
+      if (
+        card.template?.slug === "wedding-nha-co-hy" ||
+        card.template?.slug === "wedding-sage-garden-glass" ||
+        card.template?.slug === "wedding-royal-crimson-velvet"
+      ) {
         setEditorMode("form");
       }
     } else if (card.cardCategory === "BIRTHDAY" && card.categoryData.cardCategory === "BIRTHDAY") {
@@ -1056,6 +1087,12 @@ function EditCardContent() {
             photos,
             events: [],
             elementAnimations,
+            dressCode: {
+              title: dressCodeTitle,
+              description: dressCodeDescription,
+              colors: dressCodeColors,
+              note: dressCodeNote,
+            },
           }
         : category === "BIRTHDAY"
         ? { ...categoryDataRef.current, canvasWidth: 390, canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200, cardCategory: "BIRTHDAY", celebrantName, age, events: [], elementAnimations }
@@ -1111,6 +1148,10 @@ function EditCardContent() {
     brideMother,
     loveStory,
     timelineEvents,
+    dressCodeTitle,
+    dressCodeDescription,
+    dressCodeColors,
+    dressCodeNote,
     videoUrl,
     isReverseOrder,
     headerSubtitle,
@@ -1176,6 +1217,12 @@ function EditCardContent() {
       if (catData.headerDate !== undefined) setHeaderDate(catData.headerDate || "");
       if (Array.isArray(catData.timelineEvents)) setTimelineEvents(catData.timelineEvents);
       if (Array.isArray(catData.loveStory)) setLoveStory(catData.loveStory);
+      if (catData.dressCode) {
+        if (catData.dressCode.title !== undefined) setDressCodeTitle(catData.dressCode.title || "");
+        if (catData.dressCode.description !== undefined) setDressCodeDescription(catData.dressCode.description || "");
+        if (Array.isArray(catData.dressCode.colors)) setDressCodeColors(catData.dressCode.colors);
+        if (catData.dressCode.note !== undefined) setDressCodeNote(catData.dressCode.note || "");
+      }
       if (catData.coverPhotoUrl) {
         setCoverPhotoUrl(catData.coverPhotoUrl);
         setPhotos((prev) => {
@@ -1242,6 +1289,10 @@ function EditCardContent() {
     const snapAccNumBride = accNumBride;
     const snapAccNameBride = accNameBride;
     const snapBankCodeBride = bankCodeBride;
+    const snapDressCodeTitle = dressCodeTitle;
+    const snapDressCodeDescription = dressCodeDescription;
+    const snapDressCodeColors = dressCodeColors;
+    const snapDressCodeNote = dressCodeNote;
     const snapBankGroomTouched = bankGroomTouched;
     const snapBankBrideTouched = bankBrideTouched;
     const snapMusicTouched = musicTouched;
@@ -1318,6 +1369,7 @@ function EditCardContent() {
         venueName: e.venueName?.trim() || "Chưa cập nhật",
         address: e.address?.trim() || "Chưa cập nhật",
         mapUrl: e.mapUrl?.trim() || undefined,
+        welcomingTime: e.welcomingTime?.trim() || undefined,
       };
     });
 
@@ -1435,6 +1487,12 @@ function EditCardContent() {
             })),
             photos: validPhotos,
             timelineEvents: snapTimelineEvents.length > 0 ? snapTimelineEvents : (baseCatData.timelineEvents ?? []),
+            dressCode: {
+              title: snapDressCodeTitle.trim() || undefined,
+              description: snapDressCodeDescription.trim() || undefined,
+              colors: snapDressCodeColors.filter((c) => c.trim().length > 0),
+              note: snapDressCodeNote.trim() || undefined,
+            },
           }
         : category === "BIRTHDAY"
         ? {
@@ -2247,6 +2305,16 @@ function EditCardContent() {
                           <input type="text" value={ev.lunarDate || ""} onChange={(e) => { const u = [...events]; u[idx].lunarDate = e.target.value; setEvents(u); }} placeholder="Ngày 16 Tháng 09 Năm..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
                         </div>
                       </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Giờ Đón Khách (Tùy chọn)</label>
+                          <input type="text" value={ev.welcomingTime || ""} onChange={(e) => { const u = [...events]; u[idx].welcomingTime = e.target.value; setEvents(u); }} placeholder="Ví dụ: 17:30" className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">Link Google Maps (Chỉ đường)</label>
+                          <input type="url" value={ev.mapUrl || ""} onChange={(e) => { const u = [...events]; u[idx].mapUrl = e.target.value; setEvents(u); }} placeholder="https://maps.google.com/..." className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
+                        </div>
+                      </div>
                       <div>
                         <label className="block text-[11px] font-semibold text-stone-600 mb-1">Địa Chỉ Chi Tiết</label>
                         <input type="text" value={ev.address} onChange={(e) => { const u = [...events]; u[idx].address = e.target.value; setEvents(u); }} className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 min-h-[44px] sm:min-h-[38px]" />
@@ -2320,6 +2388,99 @@ function EditCardContent() {
                         )}
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* ── QUY ĐỊNH TRANG PHỤC (DRESS CODE) ── */}
+                <div className="pt-4 border-t border-stone-200/80 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <Palette className="w-3.5 h-3.5 text-[#BE944E]" />
+                        <span>Trang Phục Dự Tiệc (Dress Code)</span>
+                      </h4>
+                      <p className="text-[11px] text-stone-500">Gợi ý tone màu trang phục cho khách mời.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Tiêu Đề</label>
+                      <input
+                        type="text"
+                        value={dressCodeTitle}
+                        onChange={(e) => setDressCodeTitle(e.target.value)}
+                        placeholder="DRESS CODE"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-stone-600 mb-1">Mô Tả Phụ</label>
+                      <input
+                        type="text"
+                        value={dressCodeDescription}
+                        onChange={(e) => setDressCodeDescription(e.target.value)}
+                        placeholder="Trang phục dự tiệc"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-[11px] font-semibold text-stone-600">
+                        Bảng Màu Trang Phục ({dressCodeColors.length} màu)
+                      </label>
+                      {dressCodeColors.length < 6 && (
+                        <button
+                          type="button"
+                          onClick={() => setDressCodeColors([...dressCodeColors, "#BE944E"])}
+                          className="text-xs text-[#BE944E] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                          Thêm màu
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {dressCodeColors.map((col, cIdx) => (
+                        <div
+                          key={cIdx}
+                          className="flex items-center gap-1.5 p-1.5 rounded-xl bg-stone-50 border border-stone-200"
+                        >
+                          <input
+                            type="color"
+                            value={col}
+                            onChange={(e) => {
+                              const updated = [...dressCodeColors];
+                              updated[cIdx] = e.target.value;
+                              setDressCodeColors(updated);
+                            }}
+                            className="w-7 h-7 rounded-lg cursor-pointer border border-stone-300 p-0.5"
+                          />
+                          <input
+                            type="text"
+                            value={col}
+                            onChange={(e) => {
+                              const updated = [...dressCodeColors];
+                              updated[cIdx] = e.target.value;
+                              setDressCodeColors(updated);
+                            }}
+                            className="w-20 px-1.5 py-1 text-[11px] font-mono font-bold text-stone-700 bg-white border border-stone-200 rounded"
+                          />
+                          {dressCodeColors.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => setDressCodeColors(dressCodeColors.filter((_, i) => i !== cIdx))}
+                              className="p-1 text-stone-400 hover:text-rose-500 cursor-pointer"
+                              title="Xóa màu này"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

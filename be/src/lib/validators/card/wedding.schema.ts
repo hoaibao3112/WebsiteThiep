@@ -40,6 +40,13 @@ import { CanvasElementSchema, CanvasDocumentSchema } from "./canvas-element.sche
 import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 import { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
 
+export const DressCodeSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  colors: z.array(z.string()).optional(),
+  note: z.string().optional(),
+});
+
 export const TimelineEventSchema = z.object({
   time: z.string(),
   title: z.string(),
@@ -60,6 +67,7 @@ export const WeddingDataSchema = z.object({
   greeting: z.string().nullable().optional(),
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
   timelineEvents: z.array(TimelineEventSchema).optional().default([]),
+  dressCode: DressCodeSchema.optional(),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
   canvas: CanvasDocumentSchema.optional(),
@@ -75,8 +83,8 @@ export const WeddingDataSchema = z.object({
   showWishButton: z.boolean().optional(),
   showGiftQR: z.boolean().optional(),
   showRSVP: z.boolean().optional(),
-  fieldPositions: z.record(z.any()).optional(),
-  fieldScales: z.record(z.any()).optional(),
+  fieldPositions: z.record(z.unknown()).optional(),
+  fieldScales: z.record(z.unknown()).optional(),
 }).passthrough();
 
 export type WeddingData = z.infer<typeof WeddingDataSchema>;

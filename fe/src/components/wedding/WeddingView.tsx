@@ -17,6 +17,7 @@ import { getWeddingScene } from "@/lib/editor/wedding-scene";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
 import { Template10NhaCoHy } from "./templates/Template10NhaCoHy";
 import { Template11SageGardenGlass } from "./templates/Template11SageGardenGlass";
+import { Template12RoyalCrimson } from "./templates/Template12RoyalCrimson";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
 import { Album3DConfig } from "@/types/album-3d.types";
@@ -175,6 +176,17 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           />
         ) : effectiveSlug === "wedding-sage-garden-glass" ? (
           <Template11SageGardenGlass
+            card={card}
+            data={data}
+            primaryColor={primaryColor}
+            guestName={activeGuestName}
+            onOpenRsvp={() => setShowRsvp(true)}
+            onOpenGift={() => setShowGift(true)}
+            onSelectPhoto={(url) => setSelectedPhoto(url)}
+            isPreview={isPreview}
+          />
+        ) : effectiveSlug === "wedding-royal-crimson-velvet" ? (
+          <Template12RoyalCrimson
             card={card}
             data={data}
             primaryColor={primaryColor}

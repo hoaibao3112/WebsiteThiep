@@ -16,6 +16,7 @@ export type TemplateVariant =
   | "wedding-crimson-arch-editorial"
   | "wedding-nha-co-hy"
   | "wedding-sage-garden-glass"
+  | "wedding-royal-crimson-velvet"
   | "glow-party"
   | "little-prince"
   | "sweet-angel";
@@ -151,6 +152,15 @@ export const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
     defaultPrimaryColor: "#3B523B",
     defaultFontFamily: "Playfair Display",
     sections: ["hero", "ceremony", "gallery", "reception", "calendar", "timeline", "venue", "guestbook", "gift", "farewell"],
+  },
+  "wedding-royal-crimson-velvet": {
+    slug: "wedding-royal-crimson-velvet",
+    category: "WEDDING",
+    variant: "wedding-royal-crimson-velvet",
+    label: "Nhung Đỏ Hoàng Gia (Velvet Crimson)",
+    defaultPrimaryColor: "#4A121A",
+    defaultFontFamily: "Playfair Display",
+    sections: ["hero", "ceremony", "gallery", "reception", "calendar", "venue", "dress-code", "timeline", "guestbook", "gift", "farewell"],
   },
 
   // ── MẪU CŨ ĐỂ TƯƠNG THÍCH NGƯỢC (BACKWARD COMPATIBILITY) ──
