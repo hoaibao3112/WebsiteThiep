@@ -10,6 +10,7 @@ import { apiRouter } from "./routes/api.router";
 import { logger } from "./lib/logger";
 import { createCorsOptions, parseAllowedOrigins } from "./config/security";
 import { errorHandler } from "./middlewares/error.middleware";
+import { correlationMiddleware } from "./middlewares/correlation.middleware";
 import { validateRuntimeEnv } from "./config/env";
 import { prisma } from "./lib/prisma";
 import { redis } from "./lib/redis";
@@ -27,6 +28,7 @@ const PORT = process.env.PORT || 5000;
 // -----------------------------------------------------------------------
 // MIDDLEWARES — Security & Observability
 // -----------------------------------------------------------------------
+app.use(correlationMiddleware);
 app.use(
   helmet({
     crossOriginResourcePolicy: false,

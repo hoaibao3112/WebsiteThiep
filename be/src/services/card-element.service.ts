@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
-import { CanvasElementSchema } from "../lib/validators/card";
+import { CanvasElementSchema, CanvasElement } from "../lib/validators/card";
 import type { PatchElementBodySchema } from "../controllers/card-element.controller";
 import { assertCardEditable } from "./card.service";
 import { AccountEntitlementService } from "./account-entitlement.service";
@@ -36,24 +36,28 @@ export class CardElementService {
 
     assertCardEditable(card, effectivePlan);
 
-    let categoryData = (card.categoryData as Record<string, any>) || {};
+    let categoryData = (card.categoryData as Record<string, unknown>) || {};
     if (card.template?.category === "WEDDING" || card.cardCategory === "WEDDING") {
       categoryData = ensureWeddingSceneData(
         card.template?.slug || "wedding-heritage-crimson-gold",
         categoryData,
-      ) as Record<string, any>;
+      );
     }
 
-    let elements: any[] = [];
+    const canvasDoc = categoryData.canvasDocument as { elements?: CanvasElement[] } | undefined;
+    const canvasElements = categoryData.canvasElements as CanvasElement[] | undefined;
+    const canvas = categoryData.canvas as { elements?: CanvasElement[] } | undefined;
+
+    let elements: CanvasElement[] = [];
     let isWeddingScene = false;
 
-    if (categoryData.canvasDocument && Array.isArray(categoryData.canvasDocument.elements)) {
-      elements = categoryData.canvasDocument.elements;
+    if (canvasDoc && Array.isArray(canvasDoc.elements)) {
+      elements = canvasDoc.elements;
       isWeddingScene = true;
-    } else if (Array.isArray(categoryData.canvasElements)) {
-      elements = categoryData.canvasElements;
-    } else if (categoryData.canvas && Array.isArray(categoryData.canvas.elements)) {
-      elements = categoryData.canvas.elements;
+    } else if (Array.isArray(canvasElements)) {
+      elements = canvasElements;
+    } else if (canvas && Array.isArray(canvas.elements)) {
+      elements = canvas.elements;
     } else {
       throw new HttpError(400, "Thiệp chưa có dữ liệu phần tử canvas", "NO_CANVAS_ELEMENTS");
     }
@@ -102,20 +106,21 @@ export class CardElementService {
 
     // B4(c): nếu categoryData.canvasElements tồn tại thì cập nhật cùng element đó để không lệch
     if (Array.isArray(categoryData.canvasElements)) {
-      const legacyIdx = categoryData.canvasElements.findIndex(
-        (el: any) => String(el.id) === String(elementId)
+      const legacyElements = categoryData.canvasElements as CanvasElement[];
+      const legacyIdx = legacyElements.findIndex(
+        (el: CanvasElement) => String(el.id) === String(elementId)
       );
       if (legacyIdx !== -1) {
-        categoryData.canvasElements[legacyIdx] = updatedEl;
+        legacyElements[legacyIdx] = updatedEl;
       }
     }
 
-    let updatedCategoryData: Record<string, any>;
+    let updatedCategoryData: Record<string, unknown>;
     if (isWeddingScene) {
       updatedCategoryData = {
         ...categoryData,
         canvasDocument: {
-          ...categoryData.canvasDocument,
+          ...((categoryData.canvasDocument as Record<string, unknown>) || {}),
           elements,
         },
       };
@@ -128,7 +133,7 @@ export class CardElementService {
       updatedCategoryData = {
         ...categoryData,
         canvas: {
-          ...(categoryData.canvas || {}),
+          ...((categoryData.canvas as Record<string, unknown>) || {}),
           elements,
         },
       };
@@ -185,21 +190,25 @@ export class CardElementService {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập", "CARD_NOT_FOUND");
     }
 
-    let categoryData = (card.categoryData as Record<string, any>) || {};
+    let categoryData = (card.categoryData as Record<string, unknown>) || {};
     if (card.template?.category === "WEDDING" || card.cardCategory === "WEDDING") {
       categoryData = ensureWeddingSceneData(
         card.template?.slug || "wedding-heritage-crimson-gold",
         categoryData,
-      ) as Record<string, any>;
+      );
     }
 
-    const elements: any[] =
-      categoryData.canvasDocument?.elements ||
-      categoryData.canvasElements ||
-      categoryData.canvas?.elements ||
+    const canvasDoc = categoryData.canvasDocument as { elements?: CanvasElement[] } | undefined;
+    const canvasElements = categoryData.canvasElements as CanvasElement[] | undefined;
+    const canvas = categoryData.canvas as { elements?: CanvasElement[] } | undefined;
+
+    const elements: CanvasElement[] =
+      canvasDoc?.elements ||
+      canvasElements ||
+      canvas?.elements ||
       [];
 
-    const element = elements.find((el) => String(el.id) === String(elementId));
+    const element = elements.find((el: CanvasElement) => String(el.id) === String(elementId));
     if (!element) {
       throw new HttpError(404, "Không tìm thấy phần tử trong thiệp", "ELEMENT_NOT_FOUND");
     }

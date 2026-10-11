@@ -4,7 +4,7 @@ import {
   RSVP_NOTIFICATION_QUEUE_NAME,
   RSVP_NOTIFICATION_DLQ_NAME,
 } from "../../src/queues/rsvp-notification.queue";
-import { MAIL_QUEUE_NAME } from "../../src/queues/mail.queue";
+import { MAIL_QUEUE_NAME, MAIL_DLQ_NAME } from "../../src/queues/mail.queue";
 
 import { EventEmitter } from "events";
 
@@ -31,6 +31,7 @@ describe("BullMQ Worker and Queue naming / startup", () => {
     expect(RSVP_NOTIFICATION_DLQ_NAME).not.toContain(":");
     expect(MAIL_QUEUE_NAME).not.toContain(":");
     expect(RSVP_NOTIFICATION_DLQ_NAME).toBe("rsvp-notification-queue-dlq");
+    expect(MAIL_DLQ_NAME).toBe("mail-notification-queue-dlq");
   });
 
   it("allows constructing DLQ with RSVP_NOTIFICATION_DLQ_NAME without naming errors", async () => {
@@ -88,12 +89,13 @@ describe("BullMQ Worker and Queue naming / startup", () => {
     );
   });
 
-  it("shutdown closes all 5 queue/worker entities including DLQ", async () => {
+  it("shutdown closes all 6 queue/worker entities including DLQs", async () => {
     const mockMailWorker = { close: vi.fn().mockResolvedValue(undefined) };
     const mockRsvpWorker = { close: vi.fn().mockResolvedValue(undefined) };
     const mockMailQueue = { close: vi.fn().mockResolvedValue(undefined) };
     const mockRsvpQueue = { close: vi.fn().mockResolvedValue(undefined) };
     const mockRsvpDlq = { close: vi.fn().mockResolvedValue(undefined) };
+    const mockMailDlq = { close: vi.fn().mockResolvedValue(undefined) };
 
     await Promise.allSettled([
       mockMailWorker.close(),
@@ -101,6 +103,7 @@ describe("BullMQ Worker and Queue naming / startup", () => {
       mockMailQueue.close(),
       mockRsvpQueue.close(),
       mockRsvpDlq.close(),
+      mockMailDlq.close(),
     ]);
 
     expect(mockMailWorker.close).toHaveBeenCalledOnce();
@@ -108,5 +111,6 @@ describe("BullMQ Worker and Queue naming / startup", () => {
     expect(mockMailQueue.close).toHaveBeenCalledOnce();
     expect(mockRsvpQueue.close).toHaveBeenCalledOnce();
     expect(mockRsvpDlq.close).toHaveBeenCalledOnce();
+    expect(mockMailDlq.close).toHaveBeenCalledOnce();
   });
 });

@@ -1,8 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { prisma } from "../lib/prisma";
+import type { Guest } from "@prisma/client";
 import type { CreateGuestInput, GuestDeliveryStatusInput, ImportGuestsInput, ListGuestsQuery, UpdateGuestInput } from "../lib/validators/guest";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
+
+export type GuestImportResultItem = Guest & { customUrl: string };
 
 const normalize = (value: string) => value.normalize("NFKC").trim().replace(/\s+/g, " ");
 const normalizePhone = (value?: string) => value ? value.replace(/[\s.-]/g, "").replace(/^\+84/, "0") : null;
@@ -168,7 +171,7 @@ export class GuestService {
       let updated = 0;
       let skipped = 0;
       const errors: { index: number; row: number; error: string }[] = [];
-      const items: any[] = [];
+      const items: GuestImportResultItem[] = [];
 
       for (let i = 0; i < input.guests.length; i++) {
         const guestInput = input.guests[i];

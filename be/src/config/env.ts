@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseAllowedOrigins } from "./security";
+import { logger } from "../lib/logger";
 
 const BaseEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -51,7 +52,7 @@ export function validateRuntimeEnv(input: NodeJS.ProcessEnv) {
     if (!env.APP_URL) missingOptional.push("APP_URL");
 
     if (missingOptional.length > 0) {
-      console.warn(`[WARN] Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
+      logger.warn({ missingOptional }, `Chưa cấu hình các biến môi trường tùy chọn: ${missingOptional.join(", ")}`);
     }
 
     // Throw sớm nếu ALLOWED_ORIGINS sai định dạng / chứa wildcard

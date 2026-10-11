@@ -134,8 +134,8 @@ export class CardService {
               ? (input.bankingSecondary as Prisma.InputJsonValue)
               : undefined;
 
-            (input.data as any).events = input.events;
-            (input.data as any).photos = input.photos;
+            (input.data as Record<string, unknown>).events = input.events;
+            (input.data as Record<string, unknown>).photos = input.photos;
 
             const card = await tx.card.create({
               data: {
@@ -509,8 +509,8 @@ export class CardService {
       ? (input.backgroundVideoConfig as Prisma.InputJsonValue)
       : undefined;
 
-    (input.data as any).events = input.events;
-    (input.data as any).photos = input.photos;
+    (input.data as Record<string, unknown>).events = input.events;
+    (input.data as Record<string, unknown>).photos = input.photos;
 
     // Item 3: Concurrency handling (expectedUpdatedAt hoặc clientVersion)
     const clientVersion = typeof input.version === "number" ? input.version : undefined;
@@ -722,8 +722,11 @@ export class CardService {
       );
     }
 
-    const categoryEvents = (card.categoryData as any)?.events;
-    if (Array.isArray(categoryEvents)) {
+    const categoryData = card.categoryData as Record<string, unknown> | null;
+    const categoryEvents = Array.isArray(categoryData?.events)
+      ? (categoryData?.events as Array<{ eventDate?: unknown }>)
+      : null;
+    if (categoryEvents) {
       for (const ev of categoryEvents) {
         if (!ev.eventDate || (typeof ev.eventDate === "string" && !ev.eventDate.trim())) {
           throw new HttpError(400, "Vui lòng chọn ngày giờ tổ chức cho sự kiện trước khi xuất bản", "EVENT_DATE_REQUIRED");

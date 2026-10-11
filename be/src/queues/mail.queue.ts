@@ -7,6 +7,7 @@ export interface MailJobData {
 }
 
 export const MAIL_QUEUE_NAME = "mail-notification-queue";
+export const MAIL_DLQ_NAME = "mail-notification-queue-dlq";
 
 export const mailQueue = new Queue<MailJobData>(MAIL_QUEUE_NAME, {
   connection: redisConnectionOptions,

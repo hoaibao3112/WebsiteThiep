@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
 import { Album3DConfig, Album3DConfigSchema } from "../schemas/album-3d.schema";
 import { GoogleDriveService } from "./google-drive.service";
@@ -60,7 +61,7 @@ export class Album3DService {
     await prisma.card.update({
       where: { id: cardId },
       data: {
-        categoryData: updatedCatData as any,
+        categoryData: updatedCatData as Prisma.InputJsonValue,
       },
     });
 

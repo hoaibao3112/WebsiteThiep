@@ -396,9 +396,7 @@ export default function CardViteHomePage() {
     } else {
       audioRef.current.play().then(() => {
         setIsPlaying(true);
-      }).catch((err) => {
-        console.log("Audio playback error:", err);
-      });
+      }).catch(() => {});
     }
   };
 
@@ -414,9 +412,7 @@ export default function CardViteHomePage() {
       audioRef.current.currentTime = 0;
       audioRef.current.play().then(() => {
         setIsPlaying(true);
-      }).catch((err) => {
-        console.log("Audio playback error:", err);
-      });
+      }).catch(() => {});
     }
   };
 
@@ -433,7 +429,7 @@ export default function CardViteHomePage() {
       audioRef.current.src = nextTrack.audioSrc;
       audioRef.current.currentTime = 0;
       if (isPlaying) {
-        audioRef.current.play().catch((err) => console.log("Play error:", err));
+        audioRef.current.play().catch(() => {});
       }
     }
   };
@@ -446,7 +442,7 @@ export default function CardViteHomePage() {
       audioRef.current.src = prevTrack.audioSrc;
       audioRef.current.currentTime = 0;
       if (isPlaying) {
-        audioRef.current.play().catch((err) => console.log("Play error:", err));
+        audioRef.current.play().catch(() => {});
       }
     }
   };
@@ -467,7 +463,7 @@ export default function CardViteHomePage() {
     if (isRepeat) {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
-        audioRef.current.play().catch((err) => console.log("Play error:", err));
+        audioRef.current.play().catch(() => {});
       }
     } else {
       handleNextTrack();

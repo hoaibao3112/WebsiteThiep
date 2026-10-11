@@ -20,6 +20,22 @@ const cspHeader = `
 
 const nextConfig = {
   transpilePackages: ["framer-motion"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
   async rewrites() {
     const backendOrigin =
       process.env.BACKEND_ORIGIN ||

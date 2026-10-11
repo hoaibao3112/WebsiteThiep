@@ -62,7 +62,7 @@ export interface RagContextArticle {
   title: string;
   category: string;
   content: string;
-  metadata?: any;
+  metadata?: Record<string, unknown> | null;
 }
 
 export interface ChatAnswerResult {
@@ -161,8 +161,9 @@ ${userMessage}
         const response = await chat.sendMessage(promptWithContext);
         rawAnswer = response.response.text();
         if (rawAnswer) break;
-      } catch (err: any) {
-        logger.warn({ modelName, attempt, err: err?.message }, 'Gemini model attempt failed');
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        logger.warn({ modelName, attempt, err: errorMessage }, 'Gemini model attempt failed');
         if (attempt < modelsToTry.length - 1) {
           // Nghỉ 800ms để tránh spike demand rate-limit từ Google Free Tier
           await new Promise((res) => setTimeout(res, 300));

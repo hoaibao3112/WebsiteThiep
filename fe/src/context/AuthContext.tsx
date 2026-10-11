@@ -38,6 +38,27 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
 }
 
+export interface RawAuthUserResponse {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  avatar?: string;
+  role: "USER" | "ADMIN";
+  emailVerified: boolean;
+  hasPassword: boolean;
+  googleId?: string;
+  telegramId?: string;
+  account?: {
+    id: string;
+    role: AccountMemberRole;
+    entitlement: EffectivePlanSummary;
+  };
+  accountId?: string;
+  accountMemberRole?: AccountMemberRole;
+  effectivePlan?: EffectivePlanSummary;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -55,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthModalOpen(false);
   }, []);
 
-  const normalizeAuthUser = (raw: any): AuthUser => {
+  const normalizeAuthUser = (raw: RawAuthUserResponse): AuthUser => {
     return {
       id: raw.id,
       email: raw.email,
@@ -70,14 +91,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       account: raw.account || (raw.accountId ? {
         id: raw.accountId,
         role: raw.accountMemberRole || "MEMBER",
-        entitlement: raw.effectivePlan,
+        entitlement: raw.effectivePlan as EffectivePlanSummary,
       } : undefined),
     };
   };
 
   const refreshUser = async () => {
     try {
-      const res = await ApiClient.request<any>("/auth/me");
+      const res = await ApiClient.request<RawAuthUserResponse>("/auth/me");
       if (res.success && res.data) {
         setUser(normalizeAuthUser(res.data));
       } else {
@@ -107,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const registerWithOtp = async (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => {
-    const res = await ApiClient.request<{ user: any }>("/auth/verify-otp-register", {
+    const res = await ApiClient.request<{ user: RawAuthUserResponse }>("/auth/verify-otp-register", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -121,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const res = await ApiClient.request<{ user: any }>("/auth/login", {
+    const res = await ApiClient.request<{ user: RawAuthUserResponse }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     });
@@ -135,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const googleLogin = async (idToken: string) => {
-    const res = await ApiClient.request<{ user: any }>("/auth/google", {
+    const res = await ApiClient.request<{ user: RawAuthUserResponse }>("/auth/google", {
       method: "POST",
       body: JSON.stringify({ idToken }),
     });

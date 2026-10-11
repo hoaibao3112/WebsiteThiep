@@ -104,7 +104,7 @@ export async function searchRelevantArticles(query: string, limit = 4): Promise<
       title: item.article.title,
       category: item.article.category,
       content: item.article.content,
-      metadata: item.article.metadata,
+      metadata: (item.article.metadata as Record<string, unknown> | null) ?? null,
     }));
   } catch (error) {
     logger.error({ error }, 'Failed to search knowledge base');

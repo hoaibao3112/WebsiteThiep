@@ -4,7 +4,7 @@ import { validateWorkerEnv } from "./config/env";
 // Fail sớm nếu thiếu DB/Redis/TELEGRAM_BOT_TOKEN thay vì để job rơi vào DLQ
 validateWorkerEnv(process.env);
 
-import { mailWorker } from "./queues/workers/mail.worker";
+import { mailWorker, mailDlq } from "./queues/workers/mail.worker";
 import { rsvpWorker, rsvpDlq } from "./queues/workers/rsvp-notification.worker";
 import { mailQueue } from "./queues/mail.queue";
 import { rsvpNotificationQueue } from "./queues/rsvp-notification.queue";
@@ -23,6 +23,7 @@ export async function shutdownWorker(signal: string, exitProcess = true) {
     mailQueue.close(),
     rsvpNotificationQueue.close(),
     rsvpDlq.close(),
+    mailDlq.close(),
   ]);
   await Promise.allSettled([prisma.$disconnect(), redis.quit()]);
   logger.info("Worker shutdown complete");
