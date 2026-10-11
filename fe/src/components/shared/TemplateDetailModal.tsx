@@ -239,6 +239,24 @@ const TEMPLATE_REFERENCE_PARTS: Record<
       },
     ],
   },
+  "wedding-royal-crimson-velvet": {
+    groom: "Hoàng Long",
+    bride: "Bảo Ngọc",
+    date: "03.01.2026",
+    venue: "Trung Tâm Hội Nghị White Palace, TP. Hồ Chí Minh",
+    parts: [
+      {
+        label: "Phần 1: Bìa Nhung Đỏ & Photobook 3D",
+        url: "/images/templates/cover-12-royal-crimson.webp",
+        desc: "Sắc đỏ nhung quý tộc kết hợp mạ vàng hoàng gia, Photobook 3D lật trang da hạt tương tác chân thực.",
+      },
+      {
+        label: "Phần 2: Lễ Cưới & Dress Code",
+        url: "/images/demo/templates/t12-royal-crimson/cover.jpg",
+        desc: "Lễ thành hôn & tiệc cưới trang trọng, bảng màu Dress Code 4 tone chuẩn mực và bản đồ chỉ đường.",
+      },
+    ],
+  },
 };
 
 export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({

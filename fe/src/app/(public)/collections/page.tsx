@@ -244,7 +244,7 @@ export default function CollectionsPage() {
   const TEMPLATES = MASTER_TEMPLATES;
 
   const styles = [
-    { id: "ALL", label: t("styleAll") || "Tất Cả Mẫu Cưới (9)" },
+    { id: "ALL", label: `Tất Cả Mẫu Cưới (${TEMPLATES.length})` },
     { id: "Cổ Điển Hoàng Gia", label: t("styleRoyalClassic") || "Cổ Điển Hoàng Gia" },
     { id: "Minimalist Luxury", label: t("styleMinimalistLuxury") || "Tối Giản Sang Trọng" },
     { id: "Floral Romance", label: t("styleFloralRomance") || "Hoa Cỏ Lãng Mạn" },

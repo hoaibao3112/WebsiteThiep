@@ -333,6 +333,25 @@ async function run() {
       venue: 'TRUNG TÂM TIỆC CƯỚI HOÀNG GIA',
       outputFile: 'public/images/templates/cover-09-dragon.webp'
     },
+    // 12. HOÀNG GIA NHUNG ĐỎ RƯỢU (Royal Crimson Velvet)
+    {
+      id: '12',
+      bgPath: 'public/images/backgrounds/bg-imperial-crimson-velvet.jpg',
+      couplePath: 'public/images/demo/templates/t12-royal-crimson/cover.jpg',
+      portraitW: 340,
+      portraitH: 430,
+      topOffset: 230,
+      topCurve: 140,
+      isLightBg: false,
+      goldColors: ['#FFF8ED', '#EAC57C', '#D0A045', '#986D1E'],
+      headerTop: 'HOÀNG GIA NHUNG ĐỎ &#8226; ROYAL VELVET',
+      monogram: 'L &#38; N',
+      subtitle: 'Trọn vẹn lời thề trăm năm',
+      names: 'Hoàng Long &#38; Bảo Ngọc',
+      date: '03 . 01 . 2026',
+      venue: 'WHITE PALACE CONVENTION &#8226; TP. HỒ CHÍ MINH',
+      outputFile: 'public/images/templates/cover-12-royal-crimson.webp'
+    },
   ];
 
   for (const cfg of configs) {

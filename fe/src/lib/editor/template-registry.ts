@@ -70,6 +70,9 @@ const REGISTRY: Record<string, readonly EditorField[]> = {
   "wedding-cinematic-editorial": WEDDING_FIELDS,
   "wedding-alpine-lake-romance": WEDDING_FIELDS,
   "wedding-imperial-dragon-crimson": WEDDING_FIELDS,
+  "wedding-nha-co-hy": WEDDING_FIELDS,
+  "wedding-sage-garden-glass": WEDDING_FIELDS,
+  "wedding-royal-crimson-velvet": WEDDING_FIELDS,
   // CÁC MẪU CŨ VÀ KHÁC
   "wedding-minimalist-gold": WEDDING_FIELDS,
   "wedding-hong-xanh-luxury": WEDDING_FIELDS,
