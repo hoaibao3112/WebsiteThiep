@@ -9,6 +9,7 @@ import { CardDetail } from "@/types/card.types";
 import { DEMO_TEMPLATES_MAP } from "./demo-templates-data";
 import { DemoActionBarWrapper } from "./DemoActionBarWrapper";
 import { MASTER_TEMPLATES } from "@/lib/templates-data";
+import { DesktopMobileQrWidget } from "@/components/shared/DesktopMobileQrWidget";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -218,8 +219,11 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
     typeof card.categoryData === "object" &&
     "elements" in (card.categoryData as unknown as Record<string, unknown>);
 
+  // RENDER VIEW THEO CARD CATEGORY
+  let content: React.ReactNode = <div>Danh mục thiệp không xác định</div>;
+
   if (hasCanvasData) {
-    return (
+    content = (
       <CanvasCardView
         card={card}
         guestName={guestName}
@@ -227,11 +231,8 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
         guestCode={guestCode}
       />
     );
-  }
-
-  // RENDER VIEW THEO CARD CATEGORY
-  if (card.cardCategory === "WEDDING") {
-    return (
+  } else if (card.cardCategory === "WEDDING") {
+    content = (
       <>
         <WeddingView
           card={card}
@@ -251,10 +252,8 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
         )}
       </>
     );
-  }
-
-  if (card.cardCategory === "BIRTHDAY") {
-    return (
+  } else if (card.cardCategory === "BIRTHDAY") {
+    content = (
       <>
         <BirthdayView
           card={card}
@@ -273,10 +272,8 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
         )}
       </>
     );
-  }
-
-  if (card.cardCategory === "NEWBORN") {
-    return (
+  } else if (card.cardCategory === "NEWBORN") {
+    content = (
       <>
         <NewbornView
           card={card}
@@ -297,5 +294,12 @@ export default async function CardPublicPage({ params, searchParams }: PageProps
     );
   }
 
-  return <div>Danh mục thiệp không xác định</div>;
+  const isLiveDisplay = searchParamsResolved?.mode === "live-display";
+
+  return (
+    <>
+      {content}
+      {!isLiveDisplay && <DesktopMobileQrWidget />}
+    </>
+  );
 }
