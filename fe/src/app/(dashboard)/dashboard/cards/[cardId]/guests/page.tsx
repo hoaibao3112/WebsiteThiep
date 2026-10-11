@@ -22,6 +22,8 @@ import {
   MessageCircle,
   Plus,
   Search,
+  Download,
+  Image as ImageIcon,
   Send,
   Settings,
   Sparkles,
@@ -44,6 +46,7 @@ import {
   formatExactDateTime,
   formatRelativeTime,
 } from "@/lib/guests/format-relative-time";
+import { downloadImage } from "@/lib/utils/download-image";
 
 type DeliveryStatus = "NOT_SENT" | "OPENED_ZALO" | "CONFIRMED_SENT" | "FAILED";
 type StatusFilter = "all" | "not_sent" | "sent_unopened" | "viewed" | "responded";
@@ -172,8 +175,37 @@ export default function GuestsPage() {
     await load();
   }
 
+  const [previewGuest, setPreviewGuest] = useState<Guest | null>(null);
+  const [isDownloadingOg, setIsDownloadingOg] = useState(false);
+
   function guestUrl(guest: Guest) {
     return new URL(guest.customUrl, window.location.origin).toString();
+  }
+
+  function getOgImageUrl(guest: Guest) {
+    if (typeof window === "undefined") return "";
+    try {
+      const url = new URL(guest.customUrl, window.location.origin);
+      const pathParts = url.pathname.split("/thiep/");
+      const slug = pathParts[1] || "";
+      const guestCode = url.searchParams.get("g") || guest.guestToken;
+      const guestDisplayName = `${guest.salutation ? guest.salutation + " " : ""}${guest.fullName}`.trim();
+      return `${window.location.origin}/api/og/card?slug=${encodeURIComponent(slug)}&g=${encodeURIComponent(guestCode)}&guest=${encodeURIComponent(guestDisplayName)}`;
+    } catch {
+      return `${window.location.origin}/api/og/card?guest=${encodeURIComponent(guest.fullName)}`;
+    }
+  }
+
+  async function handleDownloadOgImage(guest: Guest) {
+    setIsDownloadingOg(true);
+    try {
+      const ogUrl = getOgImageUrl(guest);
+      const cleanName = guest.fullName.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      await downloadImage(ogUrl, `thiep-zalo-${cleanName || "khach-moi"}.png`);
+      setNotice(`Đã tải ảnh thiệp Zalo cho ${guest.salutation} ${guest.fullName}`);
+    } finally {
+      setIsDownloadingOg(false);
+    }
   }
 
   /**
@@ -768,6 +800,17 @@ export default function GuestsPage() {
 
                         {/* 5. Nút Hành động */}
                         <div className="flex flex-wrap items-center gap-1.5">
+                          {/* Nút Xem trước ảnh Zalo */}
+                          <button
+                            type="button"
+                            onClick={() => setPreviewGuest(guest)}
+                            title={`Xem trước ảnh thiệp Zalo in tên ${guest.fullName}`}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#D4AF37]/50 bg-[#FDF9F0] hover:bg-[#F9F0DF] px-3 py-1.5 text-xs font-semibold text-[#8C6D15] shadow-2xs hover:shadow-xs active:scale-95 transition cursor-pointer"
+                          >
+                            <ImageIcon className="w-3.5 h-3.5 text-[#C5A059]" />
+                            <span className="hidden sm:inline">Ảnh Zalo</span>
+                          </button>
+
                           {/* Nút 1-Click Gửi Zalo */}
                           <button
                             type="button"
@@ -997,6 +1040,87 @@ export default function GuestsPage() {
               </button>
             </div>
           </section>
+        </div>
+      )}
+
+      {/* MODAL XEM TRƯỚC ẢNH THIỆP ZALO / MESSENGER */}
+      {previewGuest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto"
+          onClick={() => setPreviewGuest(null)}
+        >
+          <div
+            className="relative w-full max-w-xl bg-gradient-to-b from-[#FDFBF7] via-[#FAF6EE] to-[#F5EFE4] rounded-3xl p-5 sm:p-6 shadow-2xl border border-[#E8DAC6] overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header modal */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-[#EADDCC]">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-full bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#B89628]">
+                  <ImageIcon className="size-4.5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-serif text-[#2D1F15]">
+                    Ảnh Thiệp Zalo Cá Nhân Hóa
+                  </h3>
+                  <p className="text-xs text-[#7A6D60]">
+                    Dành riêng cho: <strong className="text-[#8C6D15]">{previewGuest.salutation} {previewGuest.fullName}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewGuest(null)}
+                className="size-8 rounded-full bg-[#EFE6D8] text-[#6E5948] hover:bg-[#E3D5C0] flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Khung mô phỏng ảnh OG 1200x630 (tỉ lệ 1.91:1) */}
+            <div className="mt-4">
+              <div className="relative aspect-[1200/630] w-full rounded-2xl overflow-hidden border-2 border-[#D4AF37]/60 shadow-lg bg-stone-900 flex items-center justify-center">
+                {/* Ảnh render từ route /api/og/card */}
+                <img
+                  src={getOgImageUrl(previewGuest)}
+                  alt={`Ảnh thiệp Zalo gửi ${previewGuest.fullName}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-[11px] text-[#7A6D60] mt-2.5 text-center leading-relaxed">
+                ✨ Ảnh này sẽ tự động xuất hiện trên bong bóng tin nhắn khi bạn gửi link qua Zalo hoặc Messenger/Facebook.
+              </p>
+            </div>
+
+            {/* Các nút hành động trong modal */}
+            <div className="mt-5 flex flex-wrap items-center justify-end gap-2.5 pt-3.5 border-t border-[#EADDCC]">
+              <button
+                type="button"
+                onClick={() => handleDownloadOgImage(previewGuest)}
+                disabled={isDownloadingOg}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#D4AF37] bg-[#FDF9F0] hover:bg-[#F9F0DF] px-4 py-2 text-xs font-bold text-[#8C6D15] shadow-2xs transition cursor-pointer disabled:opacity-50"
+              >
+                {isDownloadingOg ? (
+                  <Loader2 className="size-4 animate-spin text-[#8C6D15]" />
+                ) : (
+                  <Download className="size-4 text-[#8C6D15]" />
+                )}
+                <span>Tải ảnh về máy</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  share(previewGuest);
+                  setPreviewGuest(null);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0068FF] hover:bg-[#0055D4] px-4.5 py-2 text-xs font-bold text-white shadow-xs transition cursor-pointer"
+              >
+                <MessageCircle className="size-4" />
+                <span>Gửi Zalo ngay</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

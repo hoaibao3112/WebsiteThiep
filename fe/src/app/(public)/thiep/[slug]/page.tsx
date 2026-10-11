@@ -122,12 +122,33 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     description = `Bạn được mời đến buổi tiệc thôi nôi của bé ${babyName}. ${description}`;
   }
 
-  // Fallback OG image mặc định khi card.photos rỗng (thiệp canvas thường rỗng photos)
+  // Cá nhân hóa Title & Description khi có thông tin khách mời
+  const guestInfo = data.guestInfo as { salutation?: string; fullName?: string } | undefined;
+  if (guestInfo?.fullName) {
+    const salutation = guestInfo.salutation ? `${guestInfo.salutation} ` : "";
+    const guestDisplayName = `${salutation}${guestInfo.fullName}`.trim();
+    if (card.cardCategory === "WEDDING") {
+      const groomName = (categoryData.groom as Record<string, string>)?.fullName || "";
+      const brideName = (categoryData.bride as Record<string, string>)?.fullName || "";
+      title = `Trân trọng kính mời: ${guestDisplayName} đến dự Lễ Thành Hôn ${groomName} & ${brideName}`;
+      description = `${guestDisplayName} ơi, sự hiện diện của bạn là niềm vinh hạnh to lớn của chúng mình. Bấm để xem thiệp cưới và xác nhận tham dự nhé!`;
+    } else {
+      title = `Trân trọng kính mời: ${guestDisplayName} tham dự buổi tiệc`;
+    }
+  }
+
+  // OG image: Nếu là thiệp cưới, trỏ tới dynamic OG route /api/og/card để render ảnh có in tên khách mời
   const defaultOgImage = `${appUrl}/images/wedding_card_sample.jpg`;
-  const ogImage = card.photos?.[0]?.url || defaultOgImage;
+  let ogImage = card.photos?.[0]?.url || defaultOgImage;
+  if (card.cardCategory === "WEDDING") {
+    ogImage = `${appUrl}/api/og/card?slug=${encodeURIComponent(slug)}${
+      guestCode ? `&g=${encodeURIComponent(guestCode)}` : ""
+    }`;
+  }
 
   // Trang có ?g= hoặc live-display: robots noindex để tránh lộ thông tin khách mời
   const shouldNoIndex = hasGuest || isLiveDisplay;
+  const canonicalUrl = guestCode ? `${appUrl}/thiep/${slug}?g=${guestCode}` : `${appUrl}/thiep/${slug}`;
 
   return {
     referrer: "no-referrer",
@@ -140,7 +161,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     openGraph: {
       title,
       description,
-      url: `${appUrl}/thiep/${slug}`,
+      url: canonicalUrl,
       siteName: "CardVite",
       locale: "vi_VN",
       type: "website",
@@ -153,7 +174,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       images: [ogImage],
     },
     alternates: {
-      canonical: `${appUrl}/thiep/${slug}`,
+      canonical: canonicalUrl,
     },
   };
 }

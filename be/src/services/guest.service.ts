@@ -95,7 +95,7 @@ export class GuestService {
     const data = { ...input, ...(input.fullName ? { fullName: normalize(input.fullName), normalizedName: normalize(input.fullName).toLocaleLowerCase("vi") } : {}),
       ...(input.phone !== undefined ? { phone: normalizePhone(input.phone), normalizedPhone: normalizePhone(input.phone) } : {}) };
     const result = await prisma.guest.updateMany({ where: { id: guestId, accountId, cardId }, data });
-    if (!result.count) throw new Error("Không tìm thấy khách mời");
+    if (!result.count) throw new HttpError(404, "Không tìm thấy khách mời", "GUEST_NOT_FOUND");
     return result;
   }
 
@@ -111,7 +111,7 @@ export class GuestService {
       deliveryStatus: status, shareOpenedAt: status === "OPENED_ZALO" ? now : undefined,
       sentAt: status === "CONFIRMED_SENT" ? now : null,
     }});
-    if (!result.count) throw new Error("Không tìm thấy khách mời");
+    if (!result.count) throw new HttpError(404, "Không tìm thấy khách mời", "GUEST_NOT_FOUND");
     return result;
   }
 

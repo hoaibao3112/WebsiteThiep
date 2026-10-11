@@ -14,6 +14,7 @@ import {
 import { WeddingProfileInput } from "../lib/validators/wedding-profile.schema";
 import { OtpService } from "./otp.service";
 import { HttpError } from "../lib/http-error";
+import { AccountEntitlementService } from "./account-entitlement.service";
 
 // [SECURITY FIX] Không cho fallback hardcode — nếu thiếu JWT_SECRET thì fail sớm ngay lúc khởi động
 // thay vì âm thầm chạy với secret công khai trong source code.
@@ -365,8 +366,6 @@ export class AuthService {
 
     if (!user) throw new HttpError(404, "Người dùng không tồn tại", "USER_NOT_FOUND");
 
-    // Import here to avoid circular dependency at module level
-    const { AccountEntitlementService } = await import("./account-entitlement.service");
     let effectivePlan = null;
     try {
       effectivePlan = await AccountEntitlementService.getEffectivePlan(accountId);

@@ -44,7 +44,7 @@ export class WishService {
       throw new HttpError(404, "Thiệp không tồn tại", "CARD_NOT_FOUND");
     }
 
-    if (card.status !== "ACTIVE" && card.status !== "DRAFT") {
+    if (card.status !== "ACTIVE") {
       throw new HttpError(400, "Thiệp đã hết hạn hoặc tạm dừng nhận lời chúc", "CARD_INACTIVE_OR_EXPIRED");
     }
 

@@ -13,6 +13,7 @@ import { errorHandler } from "./middlewares/error.middleware";
 import { validateRuntimeEnv } from "./config/env";
 import { prisma } from "./lib/prisma";
 import { redis } from "./lib/redis";
+import { rsvpNotificationQueue } from "./queues/rsvp-notification.queue";
 
 import { AuthService } from "./services/auth.service";
 
@@ -286,6 +287,14 @@ if (process.env.NODE_ENV !== "test") {
 
     server.close(async () => {
       logger.info("HTTP server closed.");
+
+      // Đóng BullMQ Queue
+      try {
+        await rsvpNotificationQueue.close();
+        logger.info("BullMQ queue closed.");
+      } catch (err) {
+        logger.warn({ err }, "BullMQ queue close warning");
+      }
 
       // Đóng kết nối Database
       try {

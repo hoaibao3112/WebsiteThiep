@@ -94,11 +94,12 @@ export class BillingService {
    * Account billing summary: effective plan + active order + ownership.
    */
   static async getBillingSummary(accountId: string, userId?: string): Promise<BillingSummary> {
-    // 1. Opportunistically expire stale orders for this account
+    // 1. Opportunistically expire stale PENDING orders for this account
+    // Chỉ expire PENDING — không expire AWAITING_REVIEW đang chờ admin duyệt
     await prisma.order.updateMany({
       where: {
         accountId,
-        status: { in: ["PENDING", "AWAITING_REVIEW"] },
+        status: "PENDING",
         expiredAt: { lte: new Date() },
       },
       data: { status: "EXPIRED" },

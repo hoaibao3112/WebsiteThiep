@@ -132,79 +132,75 @@ export class OrderService {
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        const runTx = typeof prisma.$transaction === "function"
-          ? (cb: (tx: any) => Promise<any>) =>
-              prisma.$transaction(cb, {
-                isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-              })
-          : (cb: (tx: any) => Promise<any>) => cb(prisma);
-
-        orderResult = await runTx(async (tx: any) => {
-          // Check raced OrderRequest mapping inside transaction
-          const racedRequest = await tx.orderRequest.findUnique({
-            where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
-            include: { order: { include: { plan: true } } },
-          });
-          if (racedRequest) {
-            if (racedRequest.planCode !== input.planCode) {
-              throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+        orderResult = await prisma.$transaction(
+          async (tx) => {
+            // Check raced OrderRequest mapping inside transaction
+            const racedRequest = await tx.orderRequest.findUnique({
+              where: { accountId_idempotencyKey: { accountId, idempotencyKey } },
+              include: { order: { include: { plan: true } } },
+            });
+            if (racedRequest) {
+              if (racedRequest.planCode !== input.planCode) {
+                throw new HttpError(409, "Idempotency-Key đã được dùng cho yêu cầu khác", "IDEMPOTENCY_CONFLICT");
+              }
+              return { order: racedRequest.order, isReplay: true, pollingToken: null };
             }
-            return { order: racedRequest.order, isReplay: true, pollingToken: null };
-          }
 
-          // Check active order for same plan to reuse
-          const activeOrder = await tx.order.findFirst({
-            where: {
-              accountId,
-              planId: targetPlan.id,
-              status: { in: ["PENDING", "AWAITING_REVIEW"] },
-              expiredAt: { gt: new Date() },
-            },
-            include: { plan: true },
-          });
-
-          let targetOrder = activeOrder;
-          let isReplay = false;
-          let pollingToken: string | null = null;
-
-          if (!targetOrder) {
-            const orderCode = generateOrderCode();
-            pollingToken = crypto.randomBytes(32).toString("base64url");
-            const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
-            const expiredAt = new Date(Date.now() + this.ORDER_EXPIRY_MS);
-
-            targetOrder = await tx.order.create({
-              data: {
+            // Check active order for same plan to reuse
+            const activeOrder = await tx.order.findFirst({
+              where: {
                 accountId,
-                idempotencyKey,
-                pollingTokenHash,
-                orderCode,
-                userId,
-                cardId: null,
                 planId: targetPlan.id,
-                amount: targetPlan.price,
-                status: "PENDING",
-                paymentGateway: "MANUAL",
-                expiredAt,
+                status: { in: ["PENDING", "AWAITING_REVIEW"] },
+                expiredAt: { gt: new Date() },
               },
               include: { plan: true },
             });
-          } else {
-            isReplay = true;
-          }
 
-          // Persist the request-to-order mapping
-          await tx.orderRequest.create({
-            data: {
-              accountId,
-              idempotencyKey,
-              planCode: input.planCode,
-              orderId: targetOrder.id,
-            },
-          });
+            let targetOrder = activeOrder;
+            let isReplay = false;
+            let pollingToken: string | null = null;
 
-          return { order: targetOrder, isReplay, pollingToken };
-        });
+            if (!targetOrder) {
+              const orderCode = generateOrderCode();
+              pollingToken = crypto.randomBytes(32).toString("base64url");
+              const pollingTokenHash = crypto.createHash("sha256").update(pollingToken).digest("hex");
+              const expiredAt = new Date(Date.now() + this.ORDER_EXPIRY_MS);
+
+              targetOrder = await tx.order.create({
+                data: {
+                  accountId,
+                  idempotencyKey,
+                  pollingTokenHash,
+                  orderCode,
+                  userId,
+                  cardId: null,
+                  planId: targetPlan.id,
+                  amount: targetPlan.price,
+                  status: "PENDING",
+                  paymentGateway: "MANUAL",
+                  expiredAt,
+                },
+                include: { plan: true },
+              });
+            } else {
+              isReplay = true;
+            }
+
+            // Persist the request-to-order mapping
+            await tx.orderRequest.create({
+              data: {
+                accountId,
+                idempotencyKey,
+                planCode: input.planCode,
+                orderId: targetOrder.id,
+              },
+            });
+
+            return { order: targetOrder, isReplay, pollingToken };
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        );
 
         break;
       } catch (err: unknown) {

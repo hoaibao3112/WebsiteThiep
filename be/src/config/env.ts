@@ -3,6 +3,7 @@ import { parseAllowedOrigins } from "./security";
 
 const BaseEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  // JWT_SECRET: bắt buộc tối thiểu 32 ký tự — auth.service.ts đã throw nếu thiếu, đồng bộ validation sớm hơn ở đây
   JWT_SECRET: z.string().min(32).optional(),
   DATABASE_URL: z.string().min(1).optional(),
   REDIS_URL: z.string().optional(),

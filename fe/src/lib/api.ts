@@ -1,10 +1,9 @@
+// Trên browser: luôn dùng "/api" (proxy qua Next.js rewrites — không expose backend URL)
+// Trên server (SSR/SSG): dùng internal URL trực tiếp đến backend
 const API_BASE_URL =
   typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_API_URL?.startsWith("http") && !process.env.NEXT_PUBLIC_API_URL.includes("localhost")
-        ? process.env.NEXT_PUBLIC_API_URL
-        : "/api")
-    : (process.env.NEXT_PUBLIC_API_URL ||
-       `${process.env.BACKEND_INTERNAL_URL || process.env.BACKEND_ORIGIN || "http://localhost:5000"}/api`);
+    ? "/api"
+    : `${process.env.BACKEND_INTERNAL_URL || process.env.BACKEND_ORIGIN || "http://localhost:5000"}/api`;
 
 let memoryCsrfToken: string | null = null;
 

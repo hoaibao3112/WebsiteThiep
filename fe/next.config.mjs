@@ -1,4 +1,9 @@
 /** @type {import('next').NextConfig} */
+// Backend origin cho CSP — cấu hình qua env var, tránh hardcode domain production
+const backendCspOrigin = process.env.NEXT_PUBLIC_BACKEND_CSP_ORIGIN ||
+  process.env.BACKEND_ORIGIN ||
+  "https://websitethiep.onrender.com";
+
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.google.com https://*.googleapis.com https://accounts.google.com https://apis.google.com;
@@ -6,7 +11,7 @@ const cspHeader = `
   img-src 'self' https: data: blob: res.cloudinary.com https://*.googleusercontent.com https://*.google.com;
   font-src 'self' https://fonts.gstatic.com data:;
   media-src 'self' https: data: blob: res.cloudinary.com;
-  connect-src 'self' https: wss: https://accounts.google.com https://websitethiep.onrender.com;
+  connect-src 'self' https: wss: https://accounts.google.com ${backendCspOrigin};
   frame-src 'self' https://accounts.google.com https://*.google.com https://www.google.com https://recaptcha.google.com https://*.youtube.com https://youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://maps.google.com https://www.google.com/maps;
   object-src 'none';
   base-uri 'self';
@@ -51,6 +56,10 @@ const nextConfig = {
           {
             key: "Referrer-Policy",
             value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains",
           },
         ],
       },
