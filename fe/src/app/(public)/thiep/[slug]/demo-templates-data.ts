@@ -876,6 +876,7 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     template: { slug: "wedding-nha-co-hy" },
     categoryData: {
       cardCategory: "WEDDING",
+      canvasHeight: 5200,
       heroSubtitle: "NHÀ CÓ HỶ",
       invitationTitle: "THÔNG TIN LỄ CƯỚI",
       coverPhotoUrl: "/images/templates/cover-10-nha-co-hy.webp",
@@ -960,9 +961,10 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     template: { slug: "wedding-sage-garden-glass" },
     categoryData: {
       cardCategory: "WEDDING",
+      canvasHeight: 4800,
       heroSubtitle: "SAVE OUR DATE",
       invitationTitle: "THÔNG TIN LỄ CƯỚI",
-      coverPhotoUrl: "/images/templates/cover-11-sage-garden.webp",
+      coverPhotoUrl: "/images/demo/templates/t11-sage-garden/cover.jpg",
       greeting: "Trân trọng báo tin Lễ Thành Hôn của con chúng tôi.",
       groom: {
         fullName: "Nguyễn Thành Đạt",
@@ -1024,7 +1026,7 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
       },
     ],
     photos: [
-      { id: "sg-p-1", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop", caption: "Ánh mắt đầu tiên", isCover: true },
+      { id: "sg-p-1", url: "/images/demo/templates/t11-sage-garden/cover.jpg", caption: "Ánh mắt đầu tiên", isCover: true },
       { id: "sg-p-2", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop", caption: "Niềm vui ngập tràn" },
       { id: "sg-p-3", url: "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&auto=format&fit=crop", caption: "Nắm chặt bàn tay" },
       { id: "sg-p-4", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop", caption: "Mãi mãi bên nhau" },
@@ -1056,6 +1058,7 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     template: { slug: "wedding-royal-crimson-velvet" },
     categoryData: {
       cardCategory: "WEDDING",
+      canvasHeight: 5500,
       heroSubtitle: "SAVE THE DATE",
       invitationTitle: "THÔNG TIN LỄ CƯỚI",
       coverPhotoUrl: "/images/demo/templates/t12-royal-crimson/cover.jpg",

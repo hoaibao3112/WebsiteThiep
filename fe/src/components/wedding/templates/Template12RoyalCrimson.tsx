@@ -351,6 +351,8 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               animate={{ y: -18, rotate: -2 }}
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
               onClick={() => onSelectPhoto?.(coverPhoto)}
+              data-editable-field="cover-photo"
+              data-editable-type="image"
               className="relative z-20 w-[78%] bg-[#FFFDF9] p-2.5 pb-7 rounded-sm shadow-[0_16px_36px_rgba(0,0,0,0.35)] cursor-pointer transform -rotate-2 hover:rotate-0 transition-transform duration-500"
             >
               <div className="relative aspect-[3/4] w-full overflow-hidden bg-stone-100 rounded-xs">
@@ -398,13 +400,21 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             <span className="absolute left-1/2 -top-6 -translate-x-1/2 text-7xl font-serif italic text-[#4A121A]/10 pointer-events-none select-none">
               &
             </span>
-            <h1 className="text-3xl md:text-4xl font-serif text-[#4A121A] tracking-wide font-normal leading-tight">
+            <h1
+              data-editable-field="groom-short"
+              data-editable-type="text"
+              className="text-3xl md:text-4xl font-serif text-[#4A121A] tracking-wide font-normal leading-tight"
+            >
               {groomShort}
             </h1>
             <p className="my-0.5 text-2xl font-serif italic text-[#8F3B44] font-light">
               &
             </p>
-            <h2 className="text-3xl md:text-4xl font-serif text-[#4A121A] tracking-wide font-normal leading-tight">
+            <h2
+              data-editable-field="bride-short"
+              data-editable-type="text"
+              className="text-3xl md:text-4xl font-serif text-[#4A121A] tracking-wide font-normal leading-tight"
+            >
               {brideShort}
             </h2>
           </motion.div>
@@ -451,10 +461,18 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   <p className="text-[11px] text-[#D8B48D] italic font-light">
                     Ông Bà
                   </p>
-                  <p className="font-bold text-sm text-[#FFFDF9] mt-0.5">
+                  <p
+                    data-editable-field="groom-father"
+                    data-editable-type="text"
+                    className="font-bold text-sm text-[#FFFDF9] mt-0.5"
+                  >
                     {groomFather}
                   </p>
-                  <p className="font-bold text-sm text-[#FFFDF9]">
+                  <p
+                    data-editable-field="groom-mother"
+                    data-editable-type="text"
+                    className="font-bold text-sm text-[#FFFDF9]"
+                  >
                     {groomMother}
                   </p>
                   <p className="text-[11px] text-[#E0D0C5] mt-1 line-clamp-1 font-sans">
@@ -467,10 +485,18 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   <p className="text-[11px] text-[#D8B48D] italic font-light">
                     Ông Bà
                   </p>
-                  <p className="font-bold text-sm text-[#FFFDF9] mt-0.5">
+                  <p
+                    data-editable-field="bride-father"
+                    data-editable-type="text"
+                    className="font-bold text-sm text-[#FFFDF9] mt-0.5"
+                  >
                     {brideFather}
                   </p>
-                  <p className="font-bold text-sm text-[#FFFDF9]">
+                  <p
+                    data-editable-field="bride-mother"
+                    data-editable-type="text"
+                    className="font-bold text-sm text-[#FFFDF9]"
+                  >
                     {brideMother}
                   </p>
                   <p className="text-[11px] text-[#E0D0C5] mt-1 line-clamp-1 font-sans">
@@ -491,10 +517,18 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
 
               {/* Main Names */}
               <div className="space-y-1 py-1">
-                <p className="text-2xl md:text-3xl font-serif text-[#FFFDF9] font-normal tracking-wide">
+                <p
+                  data-editable-field="groom-name"
+                  data-editable-type="text"
+                  className="text-2xl md:text-3xl font-serif text-[#FFFDF9] font-normal tracking-wide"
+                >
                   {groomName}
                 </p>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#D8B48D]">
+                <p
+                  data-editable-field="groom-birth-order"
+                  data-editable-type="text"
+                  className="text-[10px] uppercase tracking-[0.3em] text-[#D8B48D]"
+                >
                   {groomBirthOrder}
                 </p>
 
@@ -502,10 +536,18 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   &
                 </p>
 
-                <p className="text-2xl md:text-3xl font-serif text-[#FFFDF9] font-normal tracking-wide">
+                <p
+                  data-editable-field="bride-name"
+                  data-editable-type="text"
+                  className="text-2xl md:text-3xl font-serif text-[#FFFDF9] font-normal tracking-wide"
+                >
                   {brideName}
                 </p>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-[#D8B48D]">
+                <p
+                  data-editable-field="bride-birth-order"
+                  data-editable-type="text"
+                  className="text-[10px] uppercase tracking-[0.3em] text-[#D8B48D]"
+                >
                   {brideBirthOrder}
                 </p>
               </div>
@@ -1083,8 +1125,12 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
         {/* FOOTER FAREWELL                                            */}
         {/* ────────────────────────────────────────────────────────── */}
         <footer className="pt-8 pb-12 text-center text-xs font-serif text-stone-500 space-y-1">
-          <p className="italic text-stone-600 font-normal">
-            “Cảm ơn bạn đã luôn hiện diện trong những khoảnh khắc hạnh phúc nhất của chúng tôi.”
+          <p
+            data-editable-field="greeting"
+            data-editable-type="text"
+            className="italic text-stone-600 font-normal max-w-xs mx-auto px-4"
+          >
+            {card.greetingMessage || data.greeting || "“Cảm ơn bạn đã luôn hiện diện trong những khoảnh khắc hạnh phúc nhất của chúng tôi.”"}
           </p>
           <p className="font-bold tracking-widest uppercase text-[#4A121A] pt-1">
             {groomShort} & {brideShort}

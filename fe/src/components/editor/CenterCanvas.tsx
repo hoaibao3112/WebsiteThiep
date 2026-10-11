@@ -254,6 +254,7 @@ function TemplateFieldBoundingBox({
 
 export function CenterCanvas({ children }: CenterCanvasProps) {
   const {
+    templateSlug,
     draft,
     saveState,
     zoomLevel,
@@ -292,7 +293,23 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const templateLayerRef = useRef<HTMLDivElement>(null);
   const [inlineEditingId, setInlineEditingId] = useState<string | null>(null);
+
+  // Auto-fit canvas height to rich template content if it exceeds canvasHeight
+  useEffect(() => {
+    if (!templateLayerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const measuredHeight = Math.ceil(entry.contentRect.height);
+        if (measuredHeight > 800 && measuredHeight > canvasHeight) {
+          setCanvasHeight(measuredHeight + 40);
+        }
+      }
+    });
+    observer.observe(templateLayerRef.current);
+    return () => observer.disconnect();
+  }, [canvasHeight, setCanvasHeight]);
   const [activeDraggingId, setActiveDraggingId] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isResizingHeight, setIsResizingHeight] = useState(false);
@@ -712,7 +729,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                 !canvasBackgroundColor.startsWith("/") &&
                 !canvasBackgroundColor.startsWith("data:")
                   ? canvasBackgroundColor
-                  : ((draft as any)?.categoryData?.canvasDocument?.background?.color || "#FFFFFF"),
+                  : ((draft as any)?.categoryData?.canvasDocument?.background?.color || ((draft as any)?.primaryColor || (templateSlug === "wedding-royal-crimson-velvet" ? "#4A121A" : "#FFFFFF"))),
               backgroundImage:
                 canvasBackgroundColor &&
                 (canvasBackgroundColor.startsWith("http") ||
@@ -736,12 +753,16 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
             {/* ── TEMPLATE VIEW LAYER (Hiển thị đầy đủ giao diện thiệp mẫu) ── */}
             {(() => {
-              const currentTemplateSlug = (draft as any)?.template?.slug || (draft as any)?.templateSlug;
-              const isRichTemplate = currentTemplateSlug === "wedding-nha-co-hy" || currentTemplateSlug === "wedding-sage-garden-glass";
+              const currentTemplateSlug = templateSlug || (draft as any)?.template?.slug || (draft as any)?.templateSlug;
+              const isRichTemplate =
+                currentTemplateSlug === "wedding-royal-crimson-velvet" ||
+                currentTemplateSlug === "wedding-nha-co-hy" ||
+                currentTemplateSlug === "wedding-sage-garden-glass";
               const isHidden = !isRichTemplate && Boolean((draft as any)?.categoryData?.canvasDocument);
 
               return (
                 <div
+                  ref={templateLayerRef}
                   className={`relative z-0 w-full overflow-hidden ${isHidden ? "hidden" : ""}`}
                   style={{ pointerEvents: "none", minHeight: 0 }}
                 >

@@ -38,6 +38,7 @@ const TEMPLATE_SECTIONS: Record<string, WeddingSceneSectionType[]> = {
   "wedding-crimson-arch-editorial": ["hero", "invitation", "story-collage", "countdown-arch", "ceremony", "venue", "gallery", "gift", "rsvp", "farewell"],
   "wedding-nha-co-hy": ["hero", "ceremony", "venue", "calendar", "gallery", "rsvp", "gift", "farewell"],
   "wedding-sage-garden-glass": ["hero", "ceremony", "gallery", "venue", "calendar", "timeline", "guestbook", "gift", "farewell"],
+  "wedding-royal-crimson-velvet": ["hero", "ceremony", "gallery", "events", "calendar", "venue", "timeline", "guestbook", "gift", "farewell"],
 };
 
 const TOKENS: Record<string, JsonRecord> = {
@@ -54,6 +55,7 @@ const TOKENS: Record<string, JsonRecord> = {
   "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-nha-co-hy": { primary: "#B22222", secondary: "#FBF7EF", accent: "#C89B3C", surface: "#FCF9F2", text: "#2B1416", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-sage-garden-glass": { primary: "#3B523B", secondary: "#EDF3EC", accent: "#8FB38D", surface: "#F7FAF6", text: "#203322", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "airy" },
+  "wedding-royal-crimson-velvet": { primary: "#4A121A", secondary: "#F2D8D5", accent: "#CCA24C", surface: "#3B0E14", text: "#FAF6F0", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "comfortable" },
 };
 
 const TEMPLATE_MOTIFS: Record<string, string> = {
@@ -70,6 +72,7 @@ const TEMPLATE_MOTIFS: Record<string, string> = {
   "wedding-crimson-arch-editorial": "❧",
   "wedding-nha-co-hy": "囍",
   "wedding-sage-garden-glass": "🌿",
+  "wedding-royal-crimson-velvet": "⚜",
 };
 
 type WidgetType = "calendar" | "countdown" | "map" | "contact" | "rsvp" | "album" | "guest-name" | "gift" | "envelope";
@@ -117,6 +120,18 @@ function buildElements(data: JsonRecord, slug: string, sections: WeddingSceneSec
     if (blankSection) {
       blankSection.elementIds = [];
     }
+    return {
+      elements: [],
+      bindings: {},
+    };
+  }
+
+  const isComponentSlug =
+    slug === "wedding-royal-crimson-velvet" ||
+    slug === "wedding-nha-co-hy" ||
+    slug === "wedding-sage-garden-glass";
+
+  if (isComponentSlug) {
     return {
       elements: [],
       bindings: {},

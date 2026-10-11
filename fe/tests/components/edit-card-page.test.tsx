@@ -57,13 +57,17 @@ describe("EditCardPage owner flow", () => {
   });
 
   it("saves changes through the owner endpoint", async () => {
-    vi.mocked(ApiClient.request).mockImplementation(async (_endpoint, options) =>
-      options?.method === "PUT" ? { success: true, data: TEST_CARD } : { success: true, data: TEST_CARD });
+    vi.mocked(ApiClient.request).mockImplementation(async (endpoint, options) => {
+      if (typeof endpoint === "string" && endpoint.includes("slug-availability")) {
+        return { success: true, data: { available: true } };
+      }
+      return options?.method === "PUT" ? { success: true, data: TEST_CARD } : { success: true, data: TEST_CARD };
+    });
     await renderPage();
     await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
     await waitFor(() => expect(ApiClient.request).toHaveBeenCalledWith(
       "/cards/demo-card-1", expect.objectContaining({ method: "PUT" })
-    ));
+    ), { timeout: 4000 });
   });
 
   it("does not display false success when saving fails", async () => {

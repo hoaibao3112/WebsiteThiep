@@ -96,9 +96,15 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
   const ceremonyTime = parseDateDetails(eventCeremony.eventDate);
   const partyTime = parseDateDetails(eventParty.eventDate);
 
-  // ── 3. ALBUM ẢNH (LƯỚI 4 ẢNH 2x2) ──
+  // ── 3. ẢNH BÌA & ALBUM ẢNH (LƯỚI 4 ẢNH 2x2) ──
+  const coverPhoto =
+    data.coverPhotoUrl ||
+    card.photos?.find((p) => p.isCover)?.url ||
+    card.photos?.[0]?.url ||
+    "/images/demo/templates/t11-sage-garden/cover.jpg";
+
   const defaultPhotos = [
-    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800&auto=format&fit=crop",
+    coverPhoto,
     "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&auto=format&fit=crop",
@@ -241,43 +247,62 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
       {/* ── NỘI DUNG CHÍNH (CONTAINER DẠNG MOBILE-FIRST 480PX HOẶC TABLET NHƯ ẢNH MẪU) ── */}
       <div className="relative z-10 max-w-[460px] mx-auto min-h-screen px-4 py-6 space-y-8 pb-32">
         {/* ══════════════════════════════════════════════════════════════
-            1. HERO: MÁI VÒM KÍNH MỜ (FROSTED GLASS ARCH)
+            1. HERO: MÁI VÒM KÍNH MỜ CÙNG ẢNH CÔ DÂU CHÚ RỂ (FROSTED GLASS ARCH)
         ══════════════════════════════════════════════════════════════ */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9 }}
-          className="pt-16 pb-8"
+          className="pt-14 pb-6 space-y-4 text-center"
         >
-          <div className="w-full max-w-[340px] mx-auto h-[380px] rounded-t-[170px] rounded-b-[40px] bg-white/40 backdrop-blur-md border border-white/60 shadow-[0_8px_32px_rgba(40,65,40,0.12)] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
-            {/* Soft inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-[#DDE8DA]/30 pointer-events-none" />
+          {/* Vòm kính mờ chứa ảnh cưới chân dung */}
+          <div
+            onClick={() => onSelectPhoto(coverPhoto)}
+            className="w-full max-w-[320px] mx-auto aspect-[3/4] rounded-t-[160px] rounded-b-[36px] overflow-hidden p-2 bg-white/45 backdrop-blur-md border border-white/70 shadow-[0_14px_40px_rgba(40,65,40,0.16)] cursor-pointer group relative"
+          >
+            <div className="relative w-full h-full rounded-t-[152px] rounded-b-[28px] overflow-hidden bg-stone-100">
+              <motion.img
+                src={coverPhoto}
+                alt={`${groomShort} & ${brideShort}`}
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+                className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md text-[#223522] text-[10px] font-medium shadow flex items-center gap-1.5">
+                <Sparkles className="w-2.5 h-2.5 text-emerald-700" />
+                <span>Chạm để xem ảnh</span>
+              </div>
+            </div>
+          </div>
 
-            {/* Couple Names */}
+          {/* Khung kính mờ tên cô dâu chú rể & ngày cưới */}
+          <div className="w-full max-w-[340px] mx-auto rounded-[32px] bg-white/50 backdrop-blur-md border border-white/70 shadow-[0_8px_32px_rgba(40,65,40,0.1)] p-5 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-[#DDE8DA]/30 pointer-events-none" />
+            <p className="text-[10px] font-serif uppercase tracking-[0.28em] text-[#556D55] mb-2 font-medium">
+              Save Our Date
+            </p>
             <motion.h1
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="text-3xl sm:text-4xl font-serif tracking-[0.18em] uppercase text-[#2B402B] font-bold"
+              className="text-2xl sm:text-3xl font-serif tracking-[0.16em] uppercase text-[#2B402B] font-bold"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               {groomShort}
             </motion.h1>
-
-            <span className="my-3 font-serif italic text-2xl text-[#587358]">&</span>
-
+            <span className="my-1.5 inline-block font-serif italic text-lg text-[#587358]">&</span>
             <motion.h1
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="text-3xl sm:text-4xl font-serif tracking-[0.18em] uppercase text-[#2B402B] font-bold"
+              className="text-2xl sm:text-3xl font-serif tracking-[0.16em] uppercase text-[#2B402B] font-bold"
               style={{ fontFamily: "'Playfair Display', serif" }}
             >
               {brideShort}
             </motion.h1>
-
-            <p className="mt-5 text-[11px] uppercase tracking-[0.3em] text-[#4A644A] font-medium">
-              Save Our Date • {partyTime.year}
+            <p className="mt-3 text-[10.5px] uppercase tracking-[0.25em] text-[#4A644A] font-medium">
+              Pan Pacific Hotel • {partyTime.year}
             </p>
           </div>
         </motion.div>

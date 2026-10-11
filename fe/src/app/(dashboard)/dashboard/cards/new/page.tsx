@@ -119,15 +119,37 @@ function CardBuilderContent() {
   const initialDemoCard = DEMO_TEMPLATES_MAP[initialTemplate];
   const initialTemplateConfig = getTemplateConfig(initialTemplate, initialCategory);
 
+  const isInitialComponentTemplate =
+    initialCategory === "WEDDING" &&
+    (initialTemplate === "wedding-royal-crimson-velvet" ||
+      initialTemplate === "wedding-nha-co-hy" ||
+      initialTemplate === "wedding-sage-garden-glass");
+
+  const initialComponentScene =
+    isInitialComponentTemplate && initialDemoCard?.categoryData
+      ? createWeddingSceneFromWeddingData(
+          initialDemoCard.categoryData as WeddingDataPayload,
+          initialTemplate
+        )
+      : null;
+
   const [category, setCategory] = useState<CardCategory>(initialCategory);
   const [templateSlug, setTemplateSlug] = useState<string>(initialTemplate);
-  const [weddingScene, setWeddingScene] = useState<WeddingSceneDocument | null>(null);
+  const [weddingScene, setWeddingScene] = useState<WeddingSceneDocument | null>(initialComponentScene);
   const [slug, setSlug] = useState(`thiep-${Math.floor(100000 + Math.random() * 900000)}`);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const categoryDataRef = useRef<Record<string, any>>(initialDemoCard?.categoryData || {});
+  const categoryDataRef = useRef<Record<string, any>>({
+    ...(initialDemoCard?.categoryData || {}),
+    ...(initialComponentScene
+      ? {
+          canvasDocument: initialComponentScene,
+          canvasHeight: initialComponentScene.height,
+        }
+      : {}),
+  });
 
   // Smart Auth Gate: flag để tự động tiếp tục xuất bản sau khi đăng nhập thành công
   const pendingPublishRef = useRef(false);
@@ -193,6 +215,21 @@ function CardBuilderContent() {
       categoryDataRef.current = {
         ...categoryDataRef.current,
         canvasDocument: blankScene,
+      };
+      return;
+    }
+    const isComponentTemplate =
+      templateSlug === "wedding-royal-crimson-velvet" ||
+      templateSlug === "wedding-nha-co-hy" ||
+      templateSlug === "wedding-sage-garden-glass";
+
+    if (isComponentTemplate) {
+      const componentScene = createWeddingSceneFromWeddingData(weddingData, templateSlug);
+      setWeddingScene(componentScene);
+      categoryDataRef.current = {
+        ...categoryDataRef.current,
+        canvasDocument: componentScene,
+        canvasHeight: componentScene.height,
       };
       return;
     }
@@ -551,6 +588,22 @@ function CardBuilderContent() {
       if (demoCard.photos && demoCard.photos.length > 0) {
         setCustomPhotos(demoCard.photos);
       }
+      const isComponent =
+        slugKey === "wedding-royal-crimson-velvet" ||
+        slugKey === "wedding-nha-co-hy" ||
+        slugKey === "wedding-sage-garden-glass";
+      if (isComponent) {
+        const compScene = createWeddingSceneFromWeddingData(
+          demoCard.categoryData as WeddingDataPayload,
+          slugKey
+        );
+        setWeddingScene(compScene);
+        categoryDataRef.current = {
+          ...demoCard.categoryData,
+          canvasDocument: compScene,
+          canvasHeight: compScene.height,
+        };
+      }
     } else {
       const cfg = TEMPLATE_CONFIGS[slugKey];
       if (cfg) {
@@ -565,6 +618,7 @@ function CardBuilderContent() {
     id: "draft-new-card",
     slug,
     cardCategory: category,
+    template: { slug: templateSlug },
     status: "ACTIVE",
     openingEffect: "NONE", // Tắt mở phong bì trong preview để xem trực tiếp
     fallingEffect,
@@ -587,7 +641,18 @@ function CardBuilderContent() {
       coverPhotoUrl: (customPhotos.find((p) => p.isCover)?.url || customPhotos[0]?.url) || categoryDataRef.current?.coverPhotoUrl || (category === "WEDDING" ? weddingData.coverPhotoUrl : undefined),
       ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
       canvasWidth: 390,
-      canvasHeight: categoryDataRef.current?.canvasHeight ?? (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
+      canvasHeight:
+        categoryDataRef.current?.canvasHeight ??
+        (category === "WEDDING"
+          ? weddingScene?.height ||
+            (templateSlug === "wedding-royal-crimson-velvet"
+              ? 5500
+              : templateSlug === "wedding-nha-co-hy"
+              ? 5200
+              : templateSlug === "wedding-sage-garden-glass"
+              ? 4800
+              : weddingData.canvasHeight ?? 1200)
+          : (category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200),
     } as CardDetail["categoryData"],
   };
 

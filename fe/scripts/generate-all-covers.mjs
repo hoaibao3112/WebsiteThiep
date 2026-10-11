@@ -333,6 +333,31 @@ async function run() {
       venue: 'TRUNG TÂM TIỆC CƯỚI HOÀNG GIA',
       outputFile: 'public/images/templates/cover-09-dragon.webp'
     },
+    // 11. VƯỜN BẠCH HOA KÍNH MỜ (Sage Botanical Glass)
+    {
+      id: '11',
+      bgPath: 'public/images/templates/t11-sage-garden/hero-bg.jpg',
+      couplePath: 'public/images/demo/templates/t11-sage-garden/cover.jpg',
+      portraitW: 340,
+      portraitH: 430,
+      topOffset: 230,
+      topCurve: 140,
+      isLightBg: true,
+      strokeColor: '#587A5B',
+      headerTopColor: '#3B523B',
+      monogramColor: '#243B25',
+      subtitleColor: '#4A684C',
+      nameColor: '#1F3321',
+      dateColor: '#365038',
+      venueColor: '#4F6651',
+      headerTop: 'SAGE BOTANICAL GLASS &#8226; VƯỜN BẠCH HOA',
+      monogram: 'Đ &#38; L',
+      subtitle: 'A lifetime of sweet harmony',
+      names: 'Thành Đạt &#38; Khánh Ly',
+      date: '02 . 08 . 2026',
+      venue: 'KHÁCH SẠN PAN PACIFIC &#8226; HÀ NỘI',
+      outputFile: 'public/images/templates/cover-11-sage-garden.webp'
+    },
     // 12. HOÀNG GIA NHUNG ĐỎ RƯỢU (Royal Crimson Velvet)
     {
       id: '12',

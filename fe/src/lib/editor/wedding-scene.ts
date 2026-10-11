@@ -32,6 +32,11 @@ const SECTION_ALIASES: Record<string, WeddingSceneSectionId> = {
   "songhy-illustration": "gallery",
   "lake-gallery": "gallery",
   "unified-events": "events",
+  "ceremony": "events",
+  "ceremonies": "events",
+  "reception": "events",
+  "venue": "map",
+  "timeline": "events",
 };
 
 const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
@@ -48,6 +53,7 @@ const DEFAULT_TOKENS: Record<string, WeddingSceneTokens> = {
   "wedding-crimson-arch-editorial": { primary: "#7A121D", secondary: "#F9F6F0", accent: "#A3242E", surface: "#FCFAF7", text: "#1F1B1C", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-nha-co-hy": { primary: "#B22222", secondary: "#FBF7EF", accent: "#C89B3C", surface: "#FCF9F2", text: "#2B1416", headingFont: "Playfair Display", bodyFont: "Inter", radius: "md", density: "comfortable" },
   "wedding-sage-garden-glass": { primary: "#3B523B", secondary: "#EDF3EC", accent: "#8FB38D", surface: "#F7FAF6", text: "#203322", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "airy" },
+  "wedding-royal-crimson-velvet": { primary: "#4A121A", secondary: "#F2D8D5", accent: "#CCA24C", surface: "#4A121A", text: "#FAF6F0", headingFont: "Playfair Display", bodyFont: "Inter", radius: "lg", density: "comfortable" },
 };
 
 function asWeddingData(card: CardDetail): WeddingDataPayload {
@@ -416,6 +422,40 @@ export function createWeddingSceneFromWeddingData(data: WeddingDataPayload, temp
       background: { color: tokens.surface },
       tokens,
       sections: [{ id: "section-hero-0", type: "hero", label: "hero", visible: true, order: 0, elementIds: [] }],
+      elements: [],
+      bindings: {},
+    };
+  }
+
+  const isComponentTemplate =
+    slug === "wedding-royal-crimson-velvet" ||
+    slug === "wedding-nha-co-hy" ||
+    slug === "wedding-sage-garden-glass";
+
+  if (isComponentTemplate) {
+    const tokens = DEFAULT_TOKENS[slug] || DEFAULT_TOKENS["wedding-royal-crimson-velvet"];
+    const templateHeight =
+      slug === "wedding-royal-crimson-velvet"
+        ? 5500
+        : slug === "wedding-nha-co-hy"
+        ? 5200
+        : 4800;
+
+    return {
+      schemaVersion: WEDDING_SCENE_VERSION,
+      templateSlug: slug,
+      width: 390,
+      height: templateHeight,
+      background: { color: tokens.surface || (slug === "wedding-royal-crimson-velvet" ? "#4A121A" : "#FFFFFF") },
+      tokens,
+      sections: (config?.sections || ["hero", "ceremony", "gallery", "events", "calendar", "venue", "rsvp", "gift"]).map((rawId, index) => ({
+        id: `section-${rawId}-${index}`,
+        type: (SECTION_ALIASES[rawId] || (rawId as WeddingSceneSectionId)),
+        label: rawId,
+        visible: true,
+        order: index,
+        elementIds: [],
+      })),
       elements: [],
       bindings: {},
     };
