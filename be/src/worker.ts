@@ -34,12 +34,12 @@ export async function shutdownWorker(signal: string, exitProcess = true) {
 process.on("SIGTERM", () => void shutdownWorker("SIGTERM"));
 process.on("SIGINT", () => void shutdownWorker("SIGINT"));
 
-process.on("uncaughtException", (error) => {
+process.on("uncaughtException", (error: Error) => {
   logger.fatal({ err: error }, "[Worker] Uncaught exception during worker execution");
   void shutdownWorker("uncaughtException").finally(() => process.exit(1));
 });
 
-process.on("unhandledRejection", (reason) => {
+process.on("unhandledRejection", (reason: unknown) => {
   logger.error({ reason: String(reason) }, "[Worker] Unhandled rejection during worker execution");
 });
 
