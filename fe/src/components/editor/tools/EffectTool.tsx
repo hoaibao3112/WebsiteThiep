@@ -196,8 +196,8 @@ export function EffectTool() {
         onClose={() => setIsEnvelopeModalOpen(false)}
         cardId={cardId}
         initialConfig={currentEnvelopeConfig}
-        initialGroomName={groomName || "Minh Khôi"}
-        initialBrideName={brideName || "Ngọc Hân"}
+        initialGroomName={groomName || "Hoàng Long"}
+        initialBrideName={brideName || "Bảo Ngọc"}
         onSaveSuccess={(savedConfig) => {
           updateFieldById("opening-effect", "WAX_SEAL");
           // Đồng bộ vào draft data

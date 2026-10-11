@@ -75,7 +75,7 @@ async function createCover1() {
       <!-- Bottom Card Metadata: Couple Names -->
       <g filter="url(#textGlow)">
         <text x="${width/2}" y="715" text-anchor="middle" font-family="serif" font-size="24" font-weight="bold" letter-spacing="1" fill="#FFFFFF">
-          Minh Khôi &#38; Ngọc Hân
+          Hoàng Long &#38; Bảo Ngọc
         </text>
 
         <!-- Floral divider -->

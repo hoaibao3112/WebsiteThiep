@@ -93,11 +93,11 @@ function WeddingGiftLuxuryCard({
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
 
   const custom = el.customData || {};
-  const groomName = custom.groomName || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
+  const groomName = custom.groomName || (typeof data.groom?.fullName === "string" ? data.groom.fullName : "") || "Hoàng Long";
   const groomBank = custom.groomBank || (typeof data.bankingPrimary?.bankCode === "string" ? data.bankingPrimary.bankCode : "") || "Vietcombank";
   const groomAccount = custom.groomAccount || (typeof data.bankingPrimary?.accountNumber === "string" ? data.bankingPrimary.accountNumber : "") || "0123 456 789";
 
-  const brideName = custom.brideName || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
+  const brideName = custom.brideName || (typeof data.bride?.fullName === "string" ? data.bride.fullName : "") || "Bảo Ngọc";
   const brideBank = custom.brideBank || (typeof data.bankingSecondary?.bankCode === "string" ? data.bankingSecondary.bankCode : "") || "Techcombank";
   const brideAccount = custom.brideAccount || (typeof data.bankingSecondary?.accountNumber === "string" ? data.bankingSecondary.accountNumber : "") || "9876 543 210";
 
@@ -3873,8 +3873,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
     if (el.presetId === "p-envelope-songhy" || el.content === "envelope-songhy") {
       const photoUrl = el.customData?.photoUrl || el.imageUrl || data.coverPhotoUrl;
       const hasCustomPhoto = Boolean(photoUrl && photoUrl !== "/images/presets/envelope-songhy-luxury.jpg");
-      const groom = el.customData?.groomName || (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Minh Khôi";
-      const bride = el.customData?.brideName || (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Ngọc Hân";
+      const groom = el.customData?.groomName || (typeof data.groom.shortName === "string" ? data.groom.shortName : "") || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Hoàng Long";
+      const bride = el.customData?.brideName || (typeof data.bride.shortName === "string" ? data.bride.shortName : "") || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Bảo Ngọc";
       const events = Array.isArray(data.events) ? data.events : [];
       const evDate = parseEventDate((events[0] as Record<string, unknown>) || null);
       const dateStr = el.customData?.dateStr || (evDate ? `${evDate.getDate()} • ${evDate.getMonth() + 1} • ${evDate.getFullYear()}` : "28 • 12 • 2026");
@@ -4136,8 +4136,8 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
 
     // 7. Groom & Bride Duo (Cặp ảnh Chú rể & Cô dâu)
     if (el.presetId === "p-groom-bride-duo") {
-      const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Nguyễn Minh Khôi";
-      const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Lê Ngọc Hân";
+      const groom = el.customData?.groomName || (typeof data.groom.fullName === "string" ? data.groom.fullName : "") || "Nguyễn Hoàng Long";
+      const bride = el.customData?.brideName || (typeof data.bride.fullName === "string" ? data.bride.fullName : "") || "Lê Bảo Ngọc";
       const groomPhoto = el.customData?.groomPhoto || el.imageUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80";
       const bridePhoto = el.customData?.bridePhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80";
       const groomLabel = el.customData?.groomLabel || "GROOM";

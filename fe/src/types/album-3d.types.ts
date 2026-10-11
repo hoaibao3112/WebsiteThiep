@@ -13,6 +13,7 @@ export interface Album3DConfig {
   title: string;              // "Album Kỷ Niệm Ngày Chung Đôi"
   coverTitle?: string;         // Tên in bìa: "HOÀNG NAM & MAI LAN"
   coverSubtitle?: string;      // "Our Wedding Album - 2026"
+  coverMonogram?: string;      // Chữ lồng monogram bìa, vd "L & N"
   coverTheme: AlbumCoverTheme; // Màu bìa sách
   soundEnabled: boolean;       // Bật tiếng lật giấy mỹ thuật
   autoPlayInterval?: number;   // Số giây tự lật (0 = tắt)

@@ -227,6 +227,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
             coverTheme: rawAlbum?.coverTheme || "leather-burgundy",
             soundEnabled: rawAlbum?.soundEnabled ?? true,
             pages: rawAlbum?.pages && rawAlbum.pages.length > 0 ? rawAlbum.pages : fallbackPages,
+            coverMonogram: rawAlbum?.coverMonogram,
           };
 
           if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;

@@ -86,6 +86,20 @@ export function Wedding3DFlipbook({
   const themeKey: AlbumCoverTheme = config?.coverTheme || "leather-burgundy";
   const theme = THEME_STYLES[themeKey] || THEME_STYLES["leather-burgundy"];
 
+  // Trích xuất chữ cái đầu của Tên chính tiếng Việt (Ví dụ: "Hoàng Long" -> "Long" -> "L", "Bảo Ngọc" -> "Ngọc" -> "N")
+  const getGivenNameInitial = (name?: string): string => {
+    if (!name) return "";
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    const mainWord = words[words.length - 1];
+    return mainWord ? mainWord.charAt(0).toUpperCase() : "";
+  };
+
+  const groomInitial = getGivenNameInitial(groomName) || groomName.charAt(0).toUpperCase();
+  const brideInitial = getGivenNameInitial(brideName) || brideName.charAt(0).toUpperCase();
+  const displayMonogram =
+    config?.coverMonogram ||
+    (groomInitial && brideInitial ? `${groomInitial} & ${brideInitial}` : "♥");
+
   // State lật trang:
   // Trang 0: Bìa trước (Cover)
   // Trang 1 -> N: Các trang ảnh bên trong
@@ -303,9 +317,9 @@ export function Wedding3DFlipbook({
 
               {/* Tên cặp đôi in nhũ mạ vàng dập nổi */}
               <div className="relative z-10 my-auto px-4">
-                <div className="size-16 sm:size-20 mx-auto rounded-full border-2 border-white/30 flex items-center justify-center mb-6 shadow-inner bg-black/10 backdrop-blur-xs">
-                  <span className="font-serif text-xl sm:text-2xl font-bold tracking-widest text-white/90">
-                    {groomName.charAt(0)} &amp; {brideName.charAt(0)}
+                <div className="size-16 sm:size-20 mx-auto rounded-full border-2 border-white/30 flex items-center justify-center mb-6 shadow-inner bg-black/10 backdrop-blur-xs px-2">
+                  <span className="font-serif text-base sm:text-lg font-bold tracking-wide text-white/95 whitespace-nowrap flex items-center justify-center gap-1.5">
+                    {displayMonogram}
                   </span>
                 </div>
                 <h3

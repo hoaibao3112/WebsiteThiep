@@ -40,10 +40,10 @@ export const Template01Heritage: React.FC<WeddingTemplateProps> = ({
   const mainEvent = card.events[0];
   const targetDate = mainEvent ? mainEvent.eventDate : new Date("2026-11-20T18:00:00Z");
 
-  const groomName = data.groom?.fullName || "Nguyễn Minh Khôi";
-  const groomShort = data.groom?.shortName || "Minh Khôi";
-  const brideName = data.bride?.fullName || "Lê Ngọc Hân";
-  const brideShort = data.bride?.shortName || "Ngọc Hân";
+  const groomName = data.groom?.fullName || "Nguyễn Hoàng Long";
+  const groomShort = data.groom?.shortName || "Hoàng Long";
+  const brideName = data.bride?.fullName || "Lê Bảo Ngọc";
+  const brideShort = data.bride?.shortName || "Bảo Ngọc";
 
   const coverPhoto =
     data.coverPhotoUrl ||

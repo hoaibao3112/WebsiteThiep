@@ -63,7 +63,7 @@ Tài liệu này tổng hợp chi tiết thông số UI/UX, bảng màu, bố c�
    - Khung cửa sổ vòm cổ điển (Vintage rounded arch window) bo góc mềm mại, viền vàng 3D nổi bật.
    - Cặp đôi diện Áo Dài truyền thống nền nã.
 3. **Typography Tên & Dòng Dõi Gia Tộc:**
-   - Tên cô dâu - chú rể: *"Minh Khôi & Ngọc Hân"* dùng font chữ thư pháp cọ vàng ánh kim (Classic Brush Script).
+   - Tên cô dâu - chú rể: *"Hoàng Long & Bảo Ngọc"* dùng font chữ thư pháp cọ vàng ánh kim (Classic Brush Script).
    - Khối chữ nhỏ phía dưới: *"Ancestral family line"* - ghi rõ quê quán, thứ bậc hai bên dòng họ.
 4. **Auspicious Countdown Display (Bộ đếm ngược hoàng gia):**
    - 3 huy hiệu hình hoa sen / bát giác viền chỉ vàng sang trọng:

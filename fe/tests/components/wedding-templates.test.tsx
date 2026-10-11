@@ -28,8 +28,8 @@ const MOCK_CARD: CardDetail = {
   categoryData: {
     cardCategory: "WEDDING",
     groom: {
-      fullName: "Nguyễn Minh Khôi",
-      shortName: "Minh Khôi",
+      fullName: "Nguyễn Hoàng Long",
+      shortName: "Hoàng Long",
       avatarUrl: "/images/demo/groom-avatar.png",
       birthOrder: "Trưởng nam",
       parents: {
@@ -38,8 +38,8 @@ const MOCK_CARD: CardDetail = {
       },
     },
     bride: {
-      fullName: "Lê Ngọc Hân",
-      shortName: "Ngọc Hân",
+      fullName: "Lê Bảo Ngọc",
+      shortName: "Bảo Ngọc",
       avatarUrl: "/images/demo/bride-avatar.png",
       birthOrder: "Út nữ",
       parents: {
@@ -87,8 +87,8 @@ const defaultProps = {
 describe("9 Wedding Templates Suite", () => {
   it("renders Template01Heritage with AuspiciousMedallions and ScrollUnfurl", () => {
     const { container } = render(<Template01Heritage {...defaultProps} />);
-    expect(container.textContent).toContain("Minh Khôi");
-    expect(container.textContent).toContain("Ngọc Hân");
+    expect(container.textContent).toContain("Hoàng Long");
+    expect(container.textContent).toContain("Bảo Ngọc");
     expect(container.textContent).toContain("LỊCH KHẮC THIÊN DUYÊN");
     expect(container.textContent).toContain("Sổ Lưu Bút Hoàng Gia");
   });

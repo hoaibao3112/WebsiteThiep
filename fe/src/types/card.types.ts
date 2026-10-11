@@ -83,6 +83,7 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     colors?: string[];
     note?: string;
   };
+  album3d?: Partial<import("./album-3d.types").Album3DConfig>;
   events?: EventItem[];
 }
 

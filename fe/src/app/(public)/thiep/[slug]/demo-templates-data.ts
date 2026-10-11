@@ -2,7 +2,7 @@ import { CardDetail } from "@/types/card.types";
 
 export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
   // ─────────────────────────────────────────────────────────────────────────────
-  // 01. Á ĐÔNG CUNG ĐÌNH SƠN MÀI HOÀNG GIA (MINH KHÔI & NGỌC HÂN)
+  // 01. Á ĐÔNG CUNG ĐÌNH SƠN MÀI HOÀNG GIA (HOÀNG LONG & BẢO NGỌC)
   // ─────────────────────────────────────────────────────────────────────────────
   "wedding-heritage-crimson-gold": {
     id: "demo-heritage-crimson-gold",
@@ -24,16 +24,16 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
       coverPhotoUrl: "/images/demo/templates/t01-heritage/cover.jpg",
       greeting: "“Trăm năm tình viên mãn — Bạc đầu nghĩa phu thê”",
       groom: {
-        fullName: "Nguyễn Minh Khôi",
-        shortName: "Minh Khôi",
+        fullName: "Nguyễn Hoàng Long",
+        shortName: "Hoàng Long",
         birthOrder: "Trưởng nam",
         avatarUrl: "/images/demo/templates/t01-heritage/groom.jpg",
         parents: { fatherName: "Nguyễn Văn Hùng", motherName: "Trần Thị Mai" },
         story: "Chàng trai yêu nghệ thuật truyền thống, ấm áp và luôn trân trọng gia đình.",
       },
       bride: {
-        fullName: "Lê Ngọc Hân",
-        shortName: "Ngọc Hân",
+        fullName: "Lê Bảo Ngọc",
+        shortName: "Bảo Ngọc",
         birthOrder: "Út nữ",
         avatarUrl: "/images/demo/templates/t01-heritage/bride.jpg",
         parents: { fatherName: "Lê Quốc Bảo", motherName: "Phạm Thu Cúc" },
@@ -1119,6 +1119,13 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
           imageUrl: "/images/demo/templates/t12-royal-crimson/cover.jpg",
         },
       ],
+      album3d: {
+        enabled: true,
+        coverTitle: "HOÀNG LONG & BẢO NGỌC",
+        coverSubtitle: "Our Wedding Photobook • 2026",
+        coverTheme: "leather-burgundy",
+        coverMonogram: "L & N",
+      },
     },
     events: [
       {

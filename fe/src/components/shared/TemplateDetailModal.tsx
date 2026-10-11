@@ -48,8 +48,8 @@ const TEMPLATE_REFERENCE_PARTS: Record<
   }
 > = {
   "wedding-heritage-crimson-gold": {
-    groom: "Minh Khôi",
-    bride: "Ngọc Hân",
+    groom: "Hoàng Long",
+    bride: "Bảo Ngọc",
     date: "20.11.2026",
     venue: "Trung Tâm Tiệc Cưới Hoàng Gia",
     parts: [
@@ -336,8 +336,8 @@ export const TemplateDetailModal: React.FC<TemplateDetailModalProps> = ({
 
   const currentPart = parts[Math.min(activePartIndex, parts.length - 1)];
 
-  const groomName = refData?.groom || "Minh Khôi";
-  const brideName = refData?.bride || "Ngọc Hân";
+  const groomName = refData?.groom || "Hoàng Long";
+  const brideName = refData?.bride || "Bảo Ngọc";
   const weddingDate = refData?.date || "20.12.2026";
   const venueName = refData?.venue || "Trung Tâm Tiệc Cưới";
 

@@ -150,9 +150,9 @@ async function run() {
       topCurve: 140,
       isLightBg: false,
       headerTop: 'THE WEDDING OF',
-      monogram: 'M &#38; H',
+      monogram: 'L &#38; N',
       subtitle: 'Save our special day',
-      names: 'Minh Khôi &#38; Ngọc Hân',
+      names: 'Hoàng Long &#38; Bảo Ngọc',
       date: '20 . 11 . 2026',
       venue: 'HOÀNG GIA CONVENTION &#8226; TP. HỒ CHÍ MINH',
       outputFile: 'public/images/templates/cover-01-heritage.webp'

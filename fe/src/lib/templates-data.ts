@@ -28,7 +28,7 @@ export const MASTER_TEMPLATES: MasterTemplateItem[] = [
     envelopeColor: "#8B1E2D",
     musicTitle: "Lễ Đường Tình Yêu (Nhạc cụ truyền thống)",
     musicUrl: "/music/le-duong.mp3",
-    coupleText: "Minh Khôi & Ngọc Hân",
+    coupleText: "Hoàng Long & Bảo Ngọc",
     eventDateText: "20.11.2026",
     venueText: "Tư gia & Trung tâm Hội nghị Hoàng Gia",
     rating: 5,

@@ -7,11 +7,11 @@ import { resolveCoverTheme } from "@/components/wedding/opening/cover-themes";
 describe("WeddingCoverOpening & Dynamic Themes", () => {
   it("resolves cover theme with template fallback", () => {
     const theme = resolveCoverTheme("wedding-heritage-crimson-gold", undefined, {
-      groom: { fullName: "Minh Khôi" },
-      bride: { fullName: "Ngọc Hân" },
+      groom: { fullName: "Hoàng Long" },
+      bride: { fullName: "Bảo Ngọc" },
     });
 
-    expect(theme.coupleNames).toBe("Minh Khôi & Ngọc Hân");
+    expect(theme.coupleNames).toBe("Hoàng Long & Bảo Ngọc");
     expect(theme.ornamentType).toBe("heritage-crimson");
     expect(theme.title).toBe("THIỆP MỜI CƯỚI");
     expect(theme.buttonText).toBe("Mở thiệp");

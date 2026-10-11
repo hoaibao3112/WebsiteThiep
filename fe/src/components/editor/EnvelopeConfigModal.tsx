@@ -172,7 +172,7 @@ function extractMonogram(name1: string, name2: string): string {
   if (l1 && l2) return `${l1}${l2}`;
   if (l1) return l1;
   if (l2) return l2;
-  return "ML";
+  return "LN";
 }
 
 export function EnvelopeConfigModal({
@@ -180,8 +180,8 @@ export function EnvelopeConfigModal({
   onClose,
   cardId,
   initialConfig,
-  initialGroomName = "Minh Khôi",
-  initialBrideName = "Ngọc Hân",
+  initialGroomName = "Hoàng Long",
+  initialBrideName = "Bảo Ngọc",
   onSaveSuccess,
 }: EnvelopeConfigModalProps) {
   const [styles, setStyles] = useState<EnvelopeStyle[]>(FALLBACK_STYLES);
@@ -262,8 +262,8 @@ export function EnvelopeConfigModal({
       if (initialConfig?.enabled !== undefined) setEnabled(initialConfig.enabled);
       if (initialConfig?.styleId) setSelectedStyleId(initialConfig.styleId);
       
-      const g = initialConfig?.groomName || initialGroomName || "Minh Khôi";
-      const b = initialConfig?.brideName || initialBrideName || "Ngọc Hân";
+      const g = initialConfig?.groomName || initialGroomName || "Hoàng Long";
+      const b = initialConfig?.brideName || initialBrideName || "Bảo Ngọc";
       setGroomName(g);
       setBrideName(b);
 
@@ -293,7 +293,7 @@ export function EnvelopeConfigModal({
     const g = groomName.trim();
     const b = brideName.trim();
     if (g && b) return `${g} & ${b}`;
-    return g || b || `${initialGroomName || "Minh Khôi"} & ${initialBrideName || "Ngọc Hân"}`;
+    return g || b || `${initialGroomName || "Hoàng Long"} & ${initialBrideName || "Bảo Ngọc"}`;
   }, [groomName, brideName, initialGroomName, initialBrideName]);
 
   // Xử lý lưu cấu hình (Gọi Backend API nếu đã tạo thiệp, lưu local state nếu là thiệp mới)
@@ -301,8 +301,8 @@ export function EnvelopeConfigModal({
     setIsSaving(true);
     setErrorMessage(null);
 
-    const finalGroom = groomName.trim() || initialGroomName || "Minh Khôi";
-    const finalBride = brideName.trim() || initialBrideName || "Ngọc Hân";
+    const finalGroom = groomName.trim() || initialGroomName || "Hoàng Long";
+    const finalBride = brideName.trim() || initialBrideName || "Bảo Ngọc";
 
     const configToSave: EnvelopeConfig = {
       enabled,
@@ -540,7 +540,7 @@ export function EnvelopeConfigModal({
                     type="text"
                     value={groomName}
                     onChange={(e) => setGroomName(e.target.value)}
-                    placeholder="Minh Khôi"
+                    placeholder="Hoàng Long"
                     className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                   />
                 </div>
@@ -552,7 +552,7 @@ export function EnvelopeConfigModal({
                     type="text"
                     value={brideName}
                     onChange={(e) => setBrideName(e.target.value)}
-                    placeholder="Ngọc Hân"
+                    placeholder="Bảo Ngọc"
                     className="w-full px-3 py-2 text-xs font-semibold text-stone-900 rounded-xl border border-stone-300 focus:outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 bg-white placeholder:text-stone-400 shadow-2xs transition"
                   />
                 </div>

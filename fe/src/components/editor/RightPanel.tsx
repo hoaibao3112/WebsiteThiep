@@ -1189,7 +1189,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               </span>
               <input
                 type="text"
-                placeholder="Tên chú rể (VD: Minh Khôi)"
+                placeholder="Tên chú rể (VD: Hoàng Long)"
                 value={element.customData?.groomName ?? ""}
                 onChange={(e) => updateCustomData({ groomName: e.target.value })}
                 className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"
@@ -1219,7 +1219,7 @@ function CanvasElementInspector({ element }: { element: CanvasElement }) {
               </span>
               <input
                 type="text"
-                placeholder="Tên cô dâu (VD: Ngọc Hân)"
+                placeholder="Tên cô dâu (VD: Bảo Ngọc)"
                 value={element.customData?.brideName ?? ""}
                 onChange={(e) => updateCustomData({ brideName: e.target.value })}
                 className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 focus:outline-blue-500 bg-stone-50/50"

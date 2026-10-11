@@ -347,7 +347,7 @@ export const DICTIONARY = {
 
     // Carousel Cards & Tags
     carouselCard1Title: "Thiệp Cổ Điển",
-    carouselCard1Couple: "Quang Đạt & Minh Khôi",
+    carouselCard1Couple: "Quang Đạt & Hoàng Long",
     carouselCard1Tag: "Cổ Điển",
     carouselCard2Title: "Hoa Lụa Nâu",
     carouselCard2Couple: "Văn Long & Thu Hà",
