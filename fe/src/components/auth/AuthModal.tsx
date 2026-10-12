@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,8 +13,6 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
-  KeyRound,
-  ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -35,35 +33,18 @@ export function AuthModal() {
     closeAuthModal,
     login,
     register,
-    registerWithOtp,
-    sendRegisterOtp,
     googleLogin,
   } = useAuth();
 
-
   // Tab chính: "login" | "register"
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-
-  // Phương thức đăng ký: "direct" (Email + Mật khẩu trực tiếp không phụ thuộc SMTP) | "otp" (Xác thực qua Gmail)
-  const [registerMode, setRegisterMode] = useState<"direct" | "otp">("direct");
-
-  // Luồng 3 bước của ĐĂNG KÝ OTP (nếu chọn chế độ OTP):
-  // Step 1: "email" (Chỉ nhập Email để lấy mã OTP)
-  // Step 2: "otp" (Nhập 6 số OTP gửi về Gmail)
-  // Step 3: "password" (Sau khi có OTP, nhập Mật khẩu muốn tạo)
-  const [registerStep, setRegisterStep] = useState<"email" | "otp" | "password">("email");
 
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  // OTP 6-digits state
-  const [otpValues, setOtpValues] = useState<string[]>(["", "", "", "", "", ""]);
-  const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Timer & loading states
-  const [countdown, setCountdown] = useState(0);
+  // Status & loading states
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -73,12 +54,9 @@ export function AuthModal() {
 
   useEffect(() => {
     setActiveTab(authModalTab || "login");
-    setRegisterMode("direct");
-    setRegisterStep("email");
     setErrorMessage(null);
     setSuccessMessage(null);
     setPassword("");
-    setOtpValues(["", "", "", "", "", ""]);
     setGoogleBtnRendered(false);
   }, [authModalTab, isAuthModalOpen]);
 
@@ -164,51 +142,43 @@ export function AuthModal() {
     };
   }, [googleClientId, isAuthModalOpen, activeTab]);
 
-  // Countdown timer effect
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
-  // Xử lý OTP box input
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otpValues];
-    newOtp[index] = value.slice(-1);
-    setOtpValues(newOtp);
-
-    // Tự động focus sang ô kế tiếp
-    if (value && index < 5) {
-      otpInputsRef.current[index + 1]?.focus();
+  // Fallback Google Login qua popup
+  const triggerGoogleFallback = () => {
+    if (typeof window === "undefined" || !googleClientId) {
+      setErrorMessage("Hệ thống Google OAuth chưa được kích hoạt");
+      return;
     }
+    const redirectUri = `${window.location.origin}/auth/google/callback`;
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&response_type=token&scope=openid%20email%20profile&prompt=select_account`;
 
-    // Khi đã nhập đủ 6 số -> tự động chuyển sang bước 3 (nhập mật khẩu)
-    if (value && index === 5 && newOtp.every((d) => d !== "")) {
-      setErrorMessage(null);
-      setSuccessMessage("Mã OTP hợp lệ! Hãy tạo mật khẩu cho tài khoản của bạn.");
-      setRegisterStep("password");
-    }
-  };
+    const width = 500;
+    const height = 600;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const popup = window.open(
+      googleAuthUrl,
+      "google_login_popup",
+      `width=${width},height=${height},left=${left},top=${top},status=no,resizable=yes`
+    );
 
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpValues[index] && index > 0) {
-      otpInputsRef.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").trim();
-    if (/^\d{6}$/.test(pastedData)) {
-      const digits = pastedData.split("");
-      setOtpValues(digits);
-      setErrorMessage(null);
-      setSuccessMessage("Mã OTP hợp lệ! Hãy tạo mật khẩu cho tài khoản của bạn.");
-      setRegisterStep("password");
-    }
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type === "GOOGLE_AUTH_SUCCESS" && event.data?.token) {
+        window.removeEventListener("message", handleMessage);
+        popup?.close();
+        setLoading(true);
+        const res = await googleLogin(event.data.token);
+        setLoading(false);
+        if (res.success) {
+          handleAuthSuccess();
+        } else {
+          setErrorMessage(res.error || "Đăng nhập Google thất bại");
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
   };
 
   // =============================================================
@@ -230,7 +200,7 @@ export function AuthModal() {
   };
 
   // =============================================================
-  // 1.5. ĐĂNG KÝ TRỰC TIẾP VỚI EMAIL + MẬT KHẨU (Nhanh gọn, không phụ thuộc SMTP)
+  // 2. ĐĂNG KÝ TÀI KHOẢN (Email + Mật khẩu trực tiếp - Nhanh gọn, không phụ thuộc SMTP)
   // =============================================================
   const handleRegisterWithPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,134 +218,26 @@ export function AuthModal() {
 
     setLoading(true);
     try {
+      const defaultName = trimmedEmail.split("@")[0] || "Khách hàng";
+      const validName = defaultName.length >= 2 ? defaultName : `${defaultName}User`;
       const res = await register({
         email: trimmedEmail,
         password,
-        name: trimmedEmail.split("@")[0],
+        name: validName,
       });
       if (res.success) {
         handleAuthSuccess();
       } else {
-        setErrorMessage(res.error || "Đăng ký không thành công");
-      }
-    } catch {
-      setErrorMessage("Lỗi kết nối máy chủ khi đăng ký");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // =============================================================
-  // 2. ĐĂNG KÝ - BƯỚC 1: NHẬP EMAIL -> GỬI MÃ OTP
-  // =============================================================
-  const handleSendRegisterOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail || !trimmedEmail.includes("@")) {
-      setErrorMessage("Vui lòng nhập địa chỉ Email/Gmail hợp lệ.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await sendRegisterOtp(trimmedEmail);
-      if (res.success) {
-        setRegisterStep("otp");
-        setCountdown(res.cooldown || 60);
-        setSuccessMessage(`Mã xác thực 6 số đã được gửi tới ${trimmedEmail}`);
-        setTimeout(() => otpInputsRef.current[0]?.focus(), 150);
-      } else {
-        const err = res.error || "Không thể gửi mã OTP";
-        if (err.includes("Không thể gửi") || err.includes("thời gian chờ")) {
-          setErrorMessage(`${err} Bạn có thể bấm nút Google bên dưới để tạo tài khoản ngay lập tức!`);
+        if (res.error?.includes("Email này đã được sử dụng") || res.error?.includes("đã tồn tại")) {
+          setErrorMessage("Email này đã được đăng ký trước đó. Bạn vui lòng chuyển sang tab 'Đăng Nhập' để đăng nhập nhé!");
         } else {
-          setErrorMessage(err);
+          setErrorMessage(res.error || "Đăng ký không thành công");
         }
       }
     } catch {
-      setErrorMessage("Lỗi kết nối khi gửi mã OTP. Bạn có thể sử dụng nút Google bên dưới để đăng ký ngay!");
+      setErrorMessage("Lỗi kết nối máy chủ khi đăng ký. Bạn có thể sử dụng nút Google bên dưới để vào ngay!");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // =============================================================
-  // 3. ĐĂNG KÝ - BƯỚC 2: TIẾP TỤC SAU KHI NHẬP OTP
-  // =============================================================
-  const handleOtpStepSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const otpCode = otpValues.join("");
-    if (otpCode.length !== 6) {
-      setErrorMessage("Vui lòng nhập đủ 6 chữ số mã OTP.");
-      return;
-    }
-    setErrorMessage(null);
-    setRegisterStep("password");
-  };
-
-  // =============================================================
-  // 4. ĐĂNG KÝ - BƯỚC 3: NHẬP MẬT KHẨU VÀ HOÀN TẤT
-  // =============================================================
-  const handleFinishRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    if (password.length < 6) {
-      setErrorMessage("Mật khẩu phải có ít nhất 6 ký tự.");
-      return;
-    }
-
-    const otpCode = otpValues.join("");
-    if (otpCode.length !== 6) {
-      setErrorMessage("Thiếu mã xác thực OTP. Vui lòng quay lại bước trước.");
-      setRegisterStep("otp");
-      return;
-    }
-
-    setLoading(true);
-    const res = await registerWithOtp({
-      email: email.trim(),
-      password: password,
-      otp: otpCode,
-    });
-    setLoading(false);
-
-    if (res.success) {
-      handleAuthSuccess();
-    } else {
-      setErrorMessage(res.error || "Mã OTP không đúng hoặc đã hết hạn");
-      setRegisterStep("otp");
-    }
-  };
-
-  // Gửi lại mã OTP
-  const handleResendOtp = async () => {
-    if (countdown > 0) return;
-    setErrorMessage(null);
-    setLoading(true);
-    try {
-      const res = await sendRegisterOtp(email.trim());
-      if (res.success) {
-        setCountdown(res.cooldown || 60);
-        setSuccessMessage("Đã gửi lại mã OTP mới vào hộp thư của bạn.");
-        setOtpValues(["", "", "", "", "", ""]);
-        otpInputsRef.current[0]?.focus();
-      } else {
-        setErrorMessage(res.error || "Không thể gửi lại mã OTP");
-      }
-    } catch {
-      setErrorMessage("Không thể gửi lại mã OTP lúc này.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Trigger Google Fallback
-  const triggerGoogleFallback = () => {
-    if (window.google?.accounts?.id) {
-      window.google.accounts.id.prompt();
     }
   };
 
@@ -409,7 +271,7 @@ export function AuthModal() {
             <p className="text-xs text-stone-500">
               {activeTab === "login"
                 ? (t("authModalLoginSubtitle") || "Đăng nhập để quản lý thiệp cưới của bạn")
-                : (t("authModalRegisterSubtitle") || "Tạo thiệp cưới cao cấp nhanh chóng")}
+                : (t("authModalRegisterSubtitle") || "Bắt đầu tạo thiệp cưới số sang trọng chỉ trong vài phút")}
             </p>
           </div>
 
@@ -432,7 +294,6 @@ export function AuthModal() {
             <button
               onClick={() => {
                 setActiveTab("register");
-                setRegisterStep("email");
                 setErrorMessage(null);
                 setSuccessMessage(null);
               }}
@@ -509,7 +370,7 @@ export function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -572,9 +433,9 @@ export function AuthModal() {
           )}
 
           {/* ============================================================= */}
-          {/* TAB 2 - CHẾ ĐỘ 1: ĐĂNG KÝ TRỰC TIẾP VỚI MẬT KHẨU (NHANH CHÓNG, KHÔNG PHỤ THUỘC SMTP) */}
+          {/* TAB 2: GIAO DIỆN ĐĂNG KÝ (EMAIL + MẬT KHẨU TRỰC TIẾP) */}
           {/* ============================================================= */}
-          {activeTab === "register" && registerMode === "direct" && (
+          {activeTab === "register" && (
             <form onSubmit={handleRegisterWithPassword} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1">
@@ -611,7 +472,7 @@ export function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -676,248 +537,6 @@ export function AuthModal() {
                     <span>Google</span>
                   </button>
                 )}
-              </div>
-
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegisterMode("otp");
-                    setRegisterStep("email");
-                    setErrorMessage(null);
-                  }}
-                  className="text-[11px] text-[#8C6424] hover:underline cursor-pointer font-medium"
-                >
-                  ✉️ Hoặc xác thực bằng mã OTP qua Gmail
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* ============================================================= */}
-          {/* TAB 2 - CHẾ ĐỘ 2: ĐĂNG KÝ BẰNG MÃ OTP (BƯỚC 1: NHẬP EMAIL) */}
-          {/* ============================================================= */}
-          {activeTab === "register" && registerMode === "otp" && registerStep === "email" && (
-            <form onSubmit={handleSendRegisterOtp} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
-                  {t("authFieldEmail") || "Địa chỉ Email của bạn"}
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    autoFocus
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t("authFieldEmailPlaceholder") || "vidu@gmail.com"}
-                    className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-              >
-                {loading ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <>
-                    <span>{t("authBtnGetOtp") || "NHẬN MÃ OTP ĐĂNG KÝ"}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
-
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegisterMode("direct");
-                    setErrorMessage(null);
-                  }}
-                  className="text-[11px] text-[#8C6424] hover:underline cursor-pointer font-medium"
-                >
-                  🔑 Tạo tài khoản trực tiếp với Mật khẩu
-                </button>
-              </div>
-
-              {/* DIVIDER */}
-              <div className="relative my-3">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-stone-200/90" />
-                </div>
-                <div className="relative flex justify-center text-[10px] uppercase">
-                  <span className="bg-[#FAF7F2] px-3 text-stone-400 font-bold tracking-wider">
-                    {t("authOrGoogle") || "Hoặc tiếp tục với Google"}
-                  </span>
-                </div>
-              </div>
-
-              {/* DUY NHẤT 1 NÚT GOOGLE */}
-              <div className="flex justify-center w-full">
-                <div id="google-btn-container" className="w-full flex justify-center min-h-[44px]" />
-
-                {!googleBtnRendered && (
-                  <button
-                    type="button"
-                    onClick={triggerGoogleFallback}
-                    className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold border border-stone-300 shadow-2xs transition flex items-center justify-center gap-2.5 cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                      />
-                    </svg>
-                    <span>Google</span>
-                  </button>
-                )}
-              </div>
-            </form>
-          )}
-
-          {/* ============================================================= */}
-          {/* TAB 2 - BƯỚC 2: NHẬP 6 SỐ OTP ĐĂNG KÝ */}
-          {/* ============================================================= */}
-          {activeTab === "register" && registerStep === "otp" && (
-            <form onSubmit={handleOtpStepSubmit} className="space-y-4">
-              <div className="text-center space-y-1">
-                <span className="text-xs text-stone-500 block">
-                  {t("authOtpTitle") || "Nhập mã xác thực 6 số gửi về Gmail:"}
-                </span>
-                <span className="text-xs font-bold text-[#8C6424] block font-mono bg-amber-50/80 px-3 py-1 rounded-full mx-auto max-w-xs truncate border border-amber-200/50">
-                  {email}
-                </span>
-              </div>
-
-              {/* 6 OTP DIGIT BOXES */}
-              <div className="flex justify-center gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
-                {otpValues.map((val, idx) => (
-                  <input
-                    key={idx}
-                    ref={(el) => {
-                      otpInputsRef.current[idx] = el;
-                    }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={val}
-                    onChange={(e) => handleOtpChange(idx, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
-                    className="w-10 h-11 sm:w-11 sm:h-12 text-center text-lg font-bold rounded-xl bg-white border border-[#E5DACE] focus:border-[#BE944E] focus:ring-2 focus:ring-[#BE944E]/30 focus:outline-none text-stone-900 shadow-2xs transition"
-                  />
-                ))}
-              </div>
-
-              <button
-                type="submit"
-                disabled={otpValues.some((d) => !d)}
-                className="w-full py-3 rounded-xl bg-[#181716] hover:bg-black text-white text-xs font-bold uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                <span>{t("authBtnGetOtp") ? "TIẾP TỤC →" : "TIẾP TỤC TẠO MẬT KHẨU →"}</span>
-              </button>
-
-              <div className="flex items-center justify-between text-[11px] pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRegisterStep("email");
-                    setErrorMessage(null);
-                    setSuccessMessage(null);
-                  }}
-                  className="text-stone-500 hover:text-stone-800 transition cursor-pointer"
-                >
-                  ← Đổi email
-                </button>
-
-                <button
-                  type="button"
-                  disabled={countdown > 0 || loading}
-                  onClick={handleResendOtp}
-                  className="text-[#8C6424] font-bold hover:underline disabled:text-stone-400 disabled:no-underline cursor-pointer"
-                >
-                  {countdown > 0 ? `${t("authResendIn") || "Gửi lại sau"} ${countdown}s` : (t("authResendOtp") || "Gửi lại OTP")}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* ============================================================= */}
-          {/* TAB 2 - BƯỚC 3: TẠO MẬT KHẨU CHO TÀI KHOẢN */}
-          {/* ============================================================= */}
-          {activeTab === "register" && registerStep === "password" && (
-            <form onSubmit={handleFinishRegister} className="space-y-4">
-              <div className="text-center space-y-1">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>Xác thực OTP thành công</span>
-                </div>
-                <p className="text-xs text-stone-600">
-                  {t("authCreatePasswordTitle") || "Tạo mật khẩu cho tài khoản"} <strong>{email}</strong>
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-1">
-                  {t("authPasswordRule") || "Mật khẩu mới (tối thiểu 6 ký tự)"}
-                </label>
-                <div className="relative">
-                  <KeyRound className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    autoFocus
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t("authFieldPasswordPlaceholder") || "Nhập mật khẩu của bạn..."}
-                    className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading || password.length < 6}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-xs font-bold uppercase tracking-wider shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {loading ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <span>{t("authBtnCompleteRegister") || "HOÀN TẤT ĐĂNG KÝ & BẮT ĐẦU"}</span>
-                )}
-              </button>
-
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setRegisterStep("otp")}
-                  className="text-[11px] text-stone-500 hover:text-stone-800 transition cursor-pointer"
-                >
-                  ← Nhập lại mã OTP
-                </button>
               </div>
             </form>
           )}
