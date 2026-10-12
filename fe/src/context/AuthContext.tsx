@@ -32,6 +32,7 @@ interface AuthContextType {
   closeAuthModal: () => void;
   sendRegisterOtp: (email: string) => Promise<{ success: boolean; error?: string; cooldown?: number }>;
   registerWithOtp: (payload: { email: string; otp: string; name?: string; password?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
+  register: (payload: { email: string; password: string; name?: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   googleLogin: (idToken: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -141,6 +142,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: false, error: res.error || "Đăng ký không thành công" };
   };
 
+  const register = async (payload: { email: string; password: string; name?: string; phone?: string }) => {
+    const res = await ApiClient.request<{ user: RawAuthUserResponse }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    if (res.success && res.data) {
+      setUser(normalizeAuthUser(res.data.user));
+      closeAuthModal();
+      return { success: true };
+    }
+    return { success: false, error: res.error || "Đăng ký không thành công" };
+  };
+
   const login = async (email: string, password: string) => {
     const res = await ApiClient.request<{ user: RawAuthUserResponse }>("/auth/login", {
       method: "POST",
@@ -175,7 +190,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, []);
 
-
   return (
     <AuthContext.Provider
       value={{
@@ -188,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         closeAuthModal,
         sendRegisterOtp,
         registerWithOtp,
+        register,
         login,
         googleLogin,
         logout,
@@ -209,6 +224,7 @@ const DEFAULT_AUTH_CONTEXT: AuthContextType = {
   closeAuthModal: () => {},
   sendRegisterOtp: async () => ({ success: false, error: "No AuthProvider" }),
   registerWithOtp: async () => ({ success: false, error: "No AuthProvider" }),
+  register: async () => ({ success: false, error: "No AuthProvider" }),
   login: async () => ({ success: false, error: "No AuthProvider" }),
   googleLogin: async () => ({ success: false, error: "No AuthProvider" }),
   logout: async () => {},

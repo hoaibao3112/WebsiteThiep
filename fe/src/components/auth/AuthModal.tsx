@@ -34,6 +34,7 @@ export function AuthModal() {
     authModalTab,
     closeAuthModal,
     login,
+    register,
     registerWithOtp,
     sendRegisterOtp,
     googleLogin,
@@ -43,7 +44,10 @@ export function AuthModal() {
   // Tab chính: "login" | "register"
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
-  // Luồng 3 bước của ĐĂNG KÝ:
+  // Phương thức đăng ký: "direct" (Email + Mật khẩu trực tiếp không phụ thuộc SMTP) | "otp" (Xác thực qua Gmail)
+  const [registerMode, setRegisterMode] = useState<"direct" | "otp">("direct");
+
+  // Luồng 3 bước của ĐĂNG KÝ OTP (nếu chọn chế độ OTP):
   // Step 1: "email" (Chỉ nhập Email để lấy mã OTP)
   // Step 2: "otp" (Nhập 6 số OTP gửi về Gmail)
   // Step 3: "password" (Sau khi có OTP, nhập Mật khẩu muốn tạo)
@@ -69,6 +73,7 @@ export function AuthModal() {
 
   useEffect(() => {
     setActiveTab(authModalTab || "login");
+    setRegisterMode("direct");
     setRegisterStep("email");
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -221,6 +226,42 @@ export function AuthModal() {
       handleAuthSuccess();
     } else {
       setErrorMessage(res.error || "Email hoặc mật khẩu không chính xác");
+    }
+  };
+
+  // =============================================================
+  // 1.5. ĐĂNG KÝ TRỰC TIẾP VỚI EMAIL + MẬT KHẨU (Nhanh gọn, không phụ thuộc SMTP)
+  // =============================================================
+  const handleRegisterWithPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setErrorMessage("Vui lòng nhập địa chỉ Email/Gmail hợp lệ.");
+      return;
+    }
+    if (password.length < 6) {
+      setErrorMessage("Mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await register({
+        email: trimmedEmail,
+        password,
+        name: trimmedEmail.split("@")[0],
+      });
+      if (res.success) {
+        handleAuthSuccess();
+      } else {
+        setErrorMessage(res.error || "Đăng ký không thành công");
+      }
+    } catch {
+      setErrorMessage("Lỗi kết nối máy chủ khi đăng ký");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -531,9 +572,132 @@ export function AuthModal() {
           )}
 
           {/* ============================================================= */}
-          {/* TAB 2 - BƯỚC 1: ĐĂNG KÝ CHỈ NHẬP ĐÚNG 1 Ô EMAIL */}
+          {/* TAB 2 - CHẾ ĐỘ 1: ĐĂNG KÝ TRỰC TIẾP VỚI MẬT KHẨU (NHANH CHÓNG, KHÔNG PHỤ THUỘC SMTP) */}
           {/* ============================================================= */}
-          {activeTab === "register" && registerStep === "email" && (
+          {activeTab === "register" && registerMode === "direct" && (
+            <form onSubmit={handleRegisterWithPassword} className="space-y-3.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                  {t("authFieldEmail") || "Địa chỉ Email"}
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("authFieldEmailPlaceholder") || "vidu@gmail.com"}
+                    className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                  {t("authFieldPassword") || "Tạo mật khẩu (tối thiểu 6 ký tự)"}
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Nhập mật khẩu..."
+                    className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white border border-[#E5DACE] focus:border-[#C59E58] focus:ring-2 focus:ring-[#C59E58]/20 focus:outline-none text-stone-900 font-medium shadow-2xs transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                {loading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>ĐĂNG KÝ TÀI KHOẢN</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+
+              {/* DIVIDER */}
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-stone-200/90" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase">
+                  <span className="bg-[#FAF7F2] px-3 text-stone-400 font-bold tracking-wider">
+                    {t("authOrGoogle") || "Hoặc tiếp tục với Google"}
+                  </span>
+                </div>
+              </div>
+
+              {/* DUY NHẤT 1 NÚT GOOGLE */}
+              <div className="flex justify-center w-full">
+                <div id="google-btn-container" className="w-full flex justify-center min-h-[44px]" />
+
+                {!googleBtnRendered && (
+                  <button
+                    type="button"
+                    onClick={triggerGoogleFallback}
+                    className="w-full py-2.5 px-4 rounded-full bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold border border-stone-300 shadow-2xs transition flex items-center justify-center gap-2.5 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 10.04 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                      />
+                    </svg>
+                    <span>Google</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegisterMode("otp");
+                    setRegisterStep("email");
+                    setErrorMessage(null);
+                  }}
+                  className="text-[11px] text-[#8C6424] hover:underline cursor-pointer font-medium"
+                >
+                  ✉️ Hoặc xác thực bằng mã OTP qua Gmail
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ============================================================= */}
+          {/* TAB 2 - CHẾ ĐỘ 2: ĐĂNG KÝ BẰNG MÃ OTP (BƯỚC 1: NHẬP EMAIL) */}
+          {/* ============================================================= */}
+          {activeTab === "register" && registerMode === "otp" && registerStep === "email" && (
             <form onSubmit={handleSendRegisterOtp} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-semibold text-stone-600 mb-1.5">
@@ -568,8 +732,21 @@ export function AuthModal() {
                 )}
               </button>
 
+              <div className="text-center pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegisterMode("direct");
+                    setErrorMessage(null);
+                  }}
+                  className="text-[11px] text-[#8C6424] hover:underline cursor-pointer font-medium"
+                >
+                  🔑 Tạo tài khoản trực tiếp với Mật khẩu
+                </button>
+              </div>
+
               {/* DIVIDER */}
-              <div className="relative my-3.5">
+              <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-stone-200/90" />
                 </div>

@@ -130,7 +130,7 @@ export class OtpService {
       memoryCooldownMap.delete(normalizedEmail);
       throw new HttpError(
         500,
-        "Không thể gửi mã xác thực tới Gmail của bạn lúc này. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau!",
+        "Không thể gửi mã OTP tới email lúc này (máy chủ cloud đang hạn chế cổng gửi thư SMTP). Bạn vui lòng Đăng ký trực tiếp bằng Mật khẩu hoặc nhấn nút Google bên dưới để vào ngay!",
         "MAIL_SEND_FAILED"
       );
     }
