@@ -123,14 +123,22 @@ export const extractUserIdFromReq = (req: Request): string | null => {
   return null;
 };
 
-// Global: 200 requests / 15 phút / IP (bỏ qua public card reads, editor routes và health check)
+const isLocalhost = (ip?: string) =>
+  ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1" || ip === "localhost";
+
+// Global: 1000 requests / 15 phút (bỏ qua localhost/dev, public card reads, editor routes và health check)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: isProduction ? 1000 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req: Request) =>
-    req.path === "/health" || req.path === "/ready" || isPublicCardRoute(req) || isEditorRoute(req),
+    !isProduction ||
+    isLocalhost(req.ip) ||
+    req.path === "/health" ||
+    req.path === "/ready" ||
+    isPublicCardRoute(req) ||
+    isEditorRoute(req),
   message: { success: false, error: "Quá nhiều yêu cầu, vui lòng thử lại sau." },
 });
 
@@ -163,21 +171,23 @@ const editorLimiter = rateLimit({
   message: { success: false, error: "Bạn thao tác chỉnh sửa quá nhanh, vui lòng chờ trong giây lát." },
 });
 
-// Auth routes: 15 requests / 15 phút / IP (chống brute-force)
+// Auth routes: 60 requests / 15 phút / IP (bỏ qua localhost / môi trường phát triển)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 15,
+  max: isProduction ? 60 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req: Request) => !isProduction || isLocalhost(req.ip),
   message: { success: false, error: "Quá nhiều lần thử đăng nhập, vui lòng thử lại sau 15 phút." },
 });
 
-// OTP: 5 requests / 15 phút / IP (chống spam OTP)
+// OTP: 30 requests / 15 phút / IP (bỏ qua localhost / môi trường phát triển)
 const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: isProduction ? 30 : 500,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req: Request) => !isProduction || isLocalhost(req.ip),
   message: { success: false, error: "Quá nhiều yêu cầu OTP, vui lòng đợi 15 phút." },
 });
 

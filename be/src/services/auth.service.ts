@@ -220,14 +220,17 @@ export class AuthService {
    * Đăng ký truyền thống (Fallback)
    */
   static async register(input: RegisterInput, clientIp?: string) {
+    const isProd = process.env.NODE_ENV === "production";
+    const isLocal = clientIp === "127.0.0.1" || clientIp === "::1" || clientIp?.includes("127.0.0.1");
+
     // [SECURITY FIX] Rate limit theo IP để chống spam tạo tài khoản hàng loạt
-    if (clientIp) {
+    if (clientIp && isProd && !isLocal) {
       await checkRateLimit(
         `ratelimit:register:ip:${clientIp}`,
         MAX_REGISTER_ATTEMPTS_PER_IP,
         REGISTER_WINDOW_SECONDS,
         "Địa chỉ IP của bạn đã đăng ký quá nhiều lần. Vui lòng thử lại sau!",
-        { failClosed: true }
+        { failClosed: false }
       );
     }
 
@@ -279,24 +282,28 @@ export class AuthService {
    */
   static async login(input: LoginInput, clientIp?: string) {
     const normalizedEmail = input.email.toLowerCase().trim();
+    const isProd = process.env.NODE_ENV === "production";
+    const isLocal = clientIp === "127.0.0.1" || clientIp === "::1" || clientIp?.includes("127.0.0.1");
 
     // [SECURITY FIX] Rate limit theo IP + theo email để chống brute-force mật khẩu
-    if (clientIp) {
+    if (clientIp && isProd && !isLocal) {
       await checkRateLimit(
         `ratelimit:login:ip:${clientIp}`,
         MAX_LOGIN_ATTEMPTS_PER_IP,
         LOGIN_WINDOW_SECONDS,
         "Địa chỉ IP của bạn đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!",
-        { failClosed: true }
+        { failClosed: false }
       );
     }
-    await checkRateLimit(
-      `ratelimit:login:email:${normalizedEmail}`,
-      MAX_LOGIN_ATTEMPTS_PER_EMAIL,
-      LOGIN_WINDOW_SECONDS,
-      "Tài khoản này đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!",
-      { failClosed: true }
-    );
+    if (isProd) {
+      await checkRateLimit(
+        `ratelimit:login:email:${normalizedEmail}`,
+        MAX_LOGIN_ATTEMPTS_PER_EMAIL,
+        LOGIN_WINDOW_SECONDS,
+        "Tài khoản này đã đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ít phút!",
+        { failClosed: false }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },

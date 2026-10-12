@@ -21,7 +21,6 @@ import {
   Infinity as InfinityIcon,
   RotateCcw,
   Pencil,
-  Camera,
 } from "lucide-react";
 import {
   Album3DConfig,
@@ -365,81 +364,6 @@ export function Wedding3DFlipbook({
           </p>
         </div>
       )}
-
-      {/* ── BỘ ĐIỀU HƯỚNG NHANH CÁC PHÂN ĐOẠN (BÌA TRƯỚC | TRANG TRONG | BÌA SAU) ── */}
-      <div
-        className="flex flex-wrap items-center justify-center gap-2 mb-6 pointer-events-auto z-20"
-        data-pointer-interactive="true"
-      >
-        <div className="bg-stone-900/85 backdrop-blur-md p-1 rounded-full border border-stone-700/60 shadow-lg flex items-center gap-1 text-xs">
-          <button
-            type="button"
-            data-pointer-interactive="true"
-            onClick={() => {
-              setTurnDirection("prev");
-              playSound();
-              setCurrentSpread(0);
-            }}
-            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
-              isFrontCover
-                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                : "text-stone-300 hover:text-white hover:bg-stone-800"
-            }`}
-          >
-            📖 Bìa trước
-          </button>
-          <button
-            type="button"
-            data-pointer-interactive="true"
-            onClick={() => {
-              setTurnDirection(currentSpread === 0 ? "next" : "prev");
-              playSound();
-              setCurrentSpread(Math.max(1, Math.min(totalSpreads - 2, 1)));
-            }}
-            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
-              !isFrontCover && !isBackCover
-                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                : "text-stone-300 hover:text-white hover:bg-stone-800"
-            }`}
-          >
-            🖼️ Trang trong ({pages.length} ảnh)
-          </button>
-          <button
-            type="button"
-            data-pointer-interactive="true"
-            onClick={() => {
-              setTurnDirection("next");
-              playSound();
-              setCurrentSpread(totalSpreads - 1);
-            }}
-            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
-              isBackCover
-                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
-                : "text-stone-300 hover:text-white hover:bg-stone-800"
-            }`}
-          >
-            💌 Bìa sau (Màn kết)
-          </button>
-
-          {/* Nút Quản lý ảnh & Drive dành riêng cho Host/Editor */}
-          {isPreview && (
-            <button
-              type="button"
-              data-pointer-interactive="true"
-              onClick={() => {
-                window.dispatchEvent(
-                  new CustomEvent("open-album-3d-editor", { detail: { tab: "drive" } })
-                );
-              }}
-              className="px-3 py-1 rounded-full font-semibold transition cursor-pointer text-amber-400 hover:text-amber-300 hover:bg-stone-800 flex items-center gap-1.5 border-l border-stone-700/80 ml-0.5"
-              title="Quản lý ảnh cưới & liên kết Google Drive"
-            >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Quản lý ảnh</span>
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* ───────────────────────────────────────────────────────── */}
       {/* CUỐN ALBUM 3D CHÍNH (THE 3D PHOTOBOOK)                    */}
