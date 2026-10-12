@@ -54,12 +54,18 @@ export class ApiClient {
       headers["X-CSRF-Token"] = token;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const signal = options.signal || controller.signal;
+
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
+        signal,
         headers,
         credentials: "include",
       });
+      clearTimeout(timeoutId);
       const responseCsrf =
         response.headers?.get?.("X-CSRF-Token") ??
         response.headers?.get?.("x-csrf-token") ??
@@ -86,6 +92,13 @@ export class ApiClient {
       }
       return { ...payload, success: true, status: response.status };
     } catch (error: unknown) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError")) {
+        return {
+          success: false,
+          error: "Yêu cầu phản hồi quá lâu (hết thời gian chờ). Vui lòng thử lại!",
+        };
+      }
       return { success: false, error: error instanceof Error ? error.message : "Lỗi kết nối máy chủ" };
     }
   }

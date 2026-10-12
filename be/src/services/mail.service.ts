@@ -19,21 +19,25 @@ if (isProduction && (!SMTP_HOST || !SMTP_USER || !SMTP_PASS)) {
 }
 
 function getTransporter() {
-  const host = process.env.SMTP_HOST;
+  const host = process.env.SMTP_HOST || "";
   const port = parseInt(process.env.SMTP_PORT || "587", 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
   if (host && user && pass) {
+    const isGmail = host.toLowerCase().includes("gmail") || (user && user.toLowerCase().includes("gmail"));
     return nodemailer.createTransport({
-      service: host.includes("gmail") ? "gmail" : undefined,
-      host: host.includes("gmail") ? undefined : host,
-      port: host.includes("gmail") ? undefined : port,
-      secure: port === 465,
+      service: isGmail ? "gmail" : undefined,
+      host: isGmail ? undefined : host,
+      port: isGmail ? 465 : port,
+      secure: isGmail ? true : port === 465,
       auth: {
         user,
         pass,
       },
+      connectionTimeout: 6000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
     });
   }
   return null;

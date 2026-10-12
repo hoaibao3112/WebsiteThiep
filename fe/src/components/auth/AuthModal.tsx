@@ -238,16 +238,25 @@ export function AuthModal() {
     }
 
     setLoading(true);
-    const res = await sendRegisterOtp(trimmedEmail);
-    setLoading(false);
-
-    if (res.success) {
-      setRegisterStep("otp");
-      setCountdown(res.cooldown || 60);
-      setSuccessMessage(`Mã xác thực 6 số đã được gửi tới ${trimmedEmail}`);
-      setTimeout(() => otpInputsRef.current[0]?.focus(), 150);
-    } else {
-      setErrorMessage(res.error || "Không thể gửi mã OTP");
+    try {
+      const res = await sendRegisterOtp(trimmedEmail);
+      if (res.success) {
+        setRegisterStep("otp");
+        setCountdown(res.cooldown || 60);
+        setSuccessMessage(`Mã xác thực 6 số đã được gửi tới ${trimmedEmail}`);
+        setTimeout(() => otpInputsRef.current[0]?.focus(), 150);
+      } else {
+        const err = res.error || "Không thể gửi mã OTP";
+        if (err.includes("Không thể gửi") || err.includes("thời gian chờ")) {
+          setErrorMessage(`${err} Bạn có thể bấm nút Google bên dưới để tạo tài khoản ngay lập tức!`);
+        } else {
+          setErrorMessage(err);
+        }
+      }
+    } catch {
+      setErrorMessage("Lỗi kết nối khi gửi mã OTP. Bạn có thể sử dụng nút Google bên dưới để đăng ký ngay!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -305,15 +314,20 @@ export function AuthModal() {
     if (countdown > 0) return;
     setErrorMessage(null);
     setLoading(true);
-    const res = await sendRegisterOtp(email.trim());
-    setLoading(false);
-    if (res.success) {
-      setCountdown(res.cooldown || 60);
-      setSuccessMessage("Đã gửi lại mã OTP mới vào hộp thư của bạn.");
-      setOtpValues(["", "", "", "", "", ""]);
-      otpInputsRef.current[0]?.focus();
-    } else {
-      setErrorMessage(res.error || "Không thể gửi lại mã OTP");
+    try {
+      const res = await sendRegisterOtp(email.trim());
+      if (res.success) {
+        setCountdown(res.cooldown || 60);
+        setSuccessMessage("Đã gửi lại mã OTP mới vào hộp thư của bạn.");
+        setOtpValues(["", "", "", "", "", ""]);
+        otpInputsRef.current[0]?.focus();
+      } else {
+        setErrorMessage(res.error || "Không thể gửi lại mã OTP");
+      }
+    } catch {
+      setErrorMessage("Không thể gửi lại mã OTP lúc này.");
+    } finally {
+      setLoading(false);
     }
   };
 

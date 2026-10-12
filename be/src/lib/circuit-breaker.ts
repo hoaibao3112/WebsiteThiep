@@ -114,7 +114,7 @@ export const mailCircuit = new CircuitBreaker({
   name: "SMTP-Mail",
   failureThreshold: 3,
   successThreshold: 2,
-  timeout: 120_000, // 2 phút
+  timeout: 15_000, // 15 giây tự phục hồi thử lại
 });
 
 export const sePayCircuit = new CircuitBreaker({
