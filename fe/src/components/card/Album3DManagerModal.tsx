@@ -242,12 +242,14 @@ export function Album3DManagerModal({
     }
   };
 
+  const isTempDraft = !cardId || cardId === "draft-new-card" || cardId.startsWith("draft-");
+
   // Load config ban đầu từ backend nếu chưa có
   useEffect(() => {
-    if (isOpen && cardId) {
+    if (isOpen) {
       if (initialConfig) {
         setConfig(initialConfig);
-      } else {
+      } else if (!isTempDraft && cardId) {
         ApiClient.request<Album3DConfig>(`/cards/${cardId}/album-3d`)
           .then((res) => {
             if (res.success && res.data) {
@@ -257,7 +259,7 @@ export function Album3DManagerModal({
           .catch(() => {});
       }
     }
-  }, [isOpen, cardId, initialConfig]);
+  }, [isOpen, cardId, initialConfig, isTempDraft]);
 
   if (!isOpen) return null;
 
@@ -275,11 +277,15 @@ export function Album3DManagerModal({
     try {
       const folderId = extractGoogleDriveFolderId(trimmed);
 
-      // Thử gọi backend để quét folder hoặc phân tích
+      // Gọi backend để quét folder hoặc phân tích (chọn endpoint phù hợp theo bản nháp / thiệp thật)
+      const importEndpoint = isTempDraft
+        ? "/album-3d/google-drive-import"
+        : `/cards/${cardId}/google-drive-import`;
+
       const res = await ApiClient.request<{
         type: "folder" | "links";
         photos: Array<{ fileId: string; directUrl: string }>;
-      }>(`/cards/${cardId}/google-drive-import`, {
+      }>(importEndpoint, {
         method: "POST",
         body: JSON.stringify({ input: trimmed }),
       });
@@ -418,6 +424,12 @@ export function Album3DManagerModal({
 
   // 3. Lưu cấu hình Album 3D vào Backend
   const handleSave = async () => {
+    if (isTempDraft) {
+      onSaved?.(config);
+      onClose();
+      return;
+    }
+
     setIsSaving(true);
     try {
       const res = await ApiClient.request<Album3DConfig>(`/cards/${cardId}/album-3d`, {

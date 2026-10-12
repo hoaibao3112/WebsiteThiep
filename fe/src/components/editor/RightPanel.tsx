@@ -37,6 +37,7 @@ import {
   ArrowDownUp,
   BookOpen,
   Pencil,
+  Camera,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -334,6 +335,16 @@ function DefaultInspector() {
               Bìa Trước
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "drive" } }));
+            }}
+            className="w-full py-1.5 px-2 rounded-xl bg-stone-900 hover:bg-black text-amber-300 text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+          >
+            <Camera className="size-3 text-amber-400" />
+            <span>Quản Lý Ảnh &amp; Drive</span>
+          </button>
         </div>
 
         {/* Bottom Toolbar Toggles */}

@@ -352,9 +352,13 @@ function EditCardContent() {
   const [album3DUpdateTick, setAlbum3DUpdateTick] = useState(0);
   const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
 
-  // Lắng nghe sự kiện mở modal Album 3D từ các thành phần con
+  const editorModeRef = useRef<"canvas" | "form">("form");
+
+  // Lắng nghe sự kiện mở modal Album 3D từ các thành phần con khi ở chế độ biểu mẫu
   useEffect(() => {
     const handleOpen = (e: Event) => {
+      // Khi ở chế độ Canvas WYSIWYG, VisualCardEditor sẽ xử lý modal riêng để tránh mở đúp 2 modal
+      if (editorModeRef.current === "canvas") return;
       const ce = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
       if (ce.detail?.tab) {
         setFormAlbum3DTab(ce.detail.tab);
@@ -415,6 +419,9 @@ function EditCardContent() {
 
   // ── Editor Mode ("form" = Biểu Mẫu 2 cột Live Preview, "canvas" = WYSIWYG Studio) ──
   const [editorMode, setEditorMode] = useState<"canvas" | "form">("form");
+  useEffect(() => {
+    editorModeRef.current = editorMode;
+  }, [editorMode]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // ── Timeline events (Lịch trình tiệc cưới chi tiết) ──
@@ -1076,7 +1083,11 @@ function EditCardContent() {
             ...categoryDataRef.current,
             album3d: (categoryDataRef.current as any)?.album3d,
             canvasWidth: 390,
-            canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
+            canvasHeight:
+              categoryDataRef.current?.canvasHeight ??
+              (categoryDataRef.current?.canvasDocument?.height ? categoryDataRef.current.canvasDocument.height + 750 : undefined) ??
+              categoryDataRef.current?.canvas?.height ??
+              6138,
             cardCategory: "WEDDING",
             headerSubtitle: headerSubtitle || (categoryDataRef.current as any)?.headerSubtitle,
             headerDate: headerDate || (categoryDataRef.current as any)?.headerDate,
@@ -1460,6 +1471,7 @@ function EditCardContent() {
       showRSVP: baseCatData.showRSVP ?? true,
       envelopeConfig: baseCatData.envelopeConfig || (draftSnapshot as any)?.envelopeConfig || undefined,
       elementAnimations,
+      album3d: (categoryDataRef.current as any)?.album3d || (draftSnapshot as any)?.categoryData?.album3d || baseCatData.album3d || undefined,
       ...(category === "WEDDING"
         ? {
             coverPhotoUrl: snapCoverPhotoUrl || baseCatData.coverPhotoUrl || validPhotos.find((p) => p.isCover)?.url || validPhotos[0]?.url,

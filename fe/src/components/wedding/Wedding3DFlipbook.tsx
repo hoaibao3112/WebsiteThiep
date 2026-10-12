@@ -20,6 +20,8 @@ import {
   Heart,
   Infinity as InfinityIcon,
   RotateCcw,
+  Pencil,
+  Camera,
 } from "lucide-react";
 import {
   Album3DConfig,
@@ -112,6 +114,15 @@ const THEME_STYLES: Record<
   },
 };
 
+const DEFAULT_PREVIEW_PAGES: Album3DPage[] = [
+  { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
+  { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
+  { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
+  { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
+  { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
+  { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
+];
+
 export function Wedding3DFlipbook({
   config,
   groomName = "Chú Rể",
@@ -121,7 +132,9 @@ export function Wedding3DFlipbook({
   isPreview = false,
   onOpenAlbumEditor,
 }: Wedding3DFlipbookProps) {
-  const pages: Album3DPage[] = config?.pages || [];
+  const rawPages: Album3DPage[] = config?.pages || [];
+  const pages: Album3DPage[] =
+    rawPages.length > 0 ? rawPages : isPreview ? DEFAULT_PREVIEW_PAGES : [];
   const frontCoverConfig: AlbumFrontCoverConfig = config?.frontCover || DEFAULT_ALBUM_FRONT_COVER;
   const themeKey: AlbumCoverTheme = frontCoverConfig.theme || config?.coverTheme || "leather-burgundy";
   const theme = THEME_STYLES[themeKey] || THEME_STYLES["leather-burgundy"];
@@ -361,6 +374,7 @@ export function Wedding3DFlipbook({
         <div className="bg-stone-900/85 backdrop-blur-md p-1 rounded-full border border-stone-700/60 shadow-lg flex items-center gap-1 text-xs">
           <button
             type="button"
+            data-pointer-interactive="true"
             onClick={() => {
               setTurnDirection("prev");
               playSound();
@@ -376,6 +390,7 @@ export function Wedding3DFlipbook({
           </button>
           <button
             type="button"
+            data-pointer-interactive="true"
             onClick={() => {
               setTurnDirection(currentSpread === 0 ? "next" : "prev");
               playSound();
@@ -391,6 +406,7 @@ export function Wedding3DFlipbook({
           </button>
           <button
             type="button"
+            data-pointer-interactive="true"
             onClick={() => {
               setTurnDirection("next");
               playSound();
@@ -404,6 +420,24 @@ export function Wedding3DFlipbook({
           >
             💌 Bìa sau (Màn kết)
           </button>
+
+          {/* Nút Quản lý ảnh & Drive dành riêng cho Host/Editor */}
+          {isPreview && (
+            <button
+              type="button"
+              data-pointer-interactive="true"
+              onClick={() => {
+                window.dispatchEvent(
+                  new CustomEvent("open-album-3d-editor", { detail: { tab: "drive" } })
+                );
+              }}
+              className="px-3 py-1 rounded-full font-semibold transition cursor-pointer text-amber-400 hover:text-amber-300 hover:bg-stone-800 flex items-center gap-1.5 border-l border-stone-700/80 ml-0.5"
+              title="Quản lý ảnh cưới & liên kết Google Drive"
+            >
+              <Camera className="w-3.5 h-3.5" />
+              <span>Quản lý ảnh</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -416,6 +450,7 @@ export function Wedding3DFlipbook({
           {isFrontCover && (
             <motion.div
               key="front-cover"
+              data-pointer-interactive="true"
               initial={{ rotateY: turnDirection === "next" ? -30 : 30, opacity: 0 }}
               animate={{ rotateY: 0, opacity: 1 }}
               exit={{ rotateY: -75, opacity: 0 }}
@@ -423,6 +458,25 @@ export function Wedding3DFlipbook({
               onClick={goNext}
               className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-5 sm:p-7 flex flex-col justify-between items-center text-center ${theme.bg} ${theme.border} ${theme.emboss} transform-gpu hover:scale-[1.01] transition-transform overflow-hidden`}
             >
+              {/* Nút Chỉnh Bìa Trước nổi trên góc (Chỉ hiện trong Editor) */}
+              {isPreview && (
+                <button
+                  type="button"
+                  data-pointer-interactive="true"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(
+                      new CustomEvent("open-album-3d-editor", { detail: { tab: "frontCover" } })
+                    );
+                    onOpenAlbumEditor?.("front");
+                  }}
+                  className="absolute top-3.5 right-3.5 z-30 px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                  title="Chỉnh sửa thiết kế & khung ảnh Bìa Trước"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  <span>Chỉnh Bìa Trước</span>
+                </button>
+              )}
               {/* Ảnh bìa tràn viền (Full Bleed Layout) */}
               {frameShape === "full" && coverPhotoUrl && (
                 <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden pointer-events-none">
@@ -697,21 +751,44 @@ export function Wedding3DFlipbook({
             return (
               <motion.div
                 key="back-cover"
-                data-editable-field="albumBackCover"
+                {...(isPreview ? { "data-editable-field": "albumBackCover" } : {})}
                 data-pointer-interactive="true"
                 initial={{ rotateY: 30, opacity: 0 }}
                 animate={{ rotateY: 0, opacity: 1 }}
                 exit={{ rotateY: 30, opacity: 0 }}
                 transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
                 onClick={() => {
-                  window.dispatchEvent(
-                    new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
-                  );
-                  onOpenAlbumEditor?.("back");
+                  if (isPreview) {
+                    window.dispatchEvent(
+                      new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
+                    );
+                    onOpenAlbumEditor?.("back");
+                  }
                 }}
                 style={customBgStyle}
-                className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${bgClass} ${theme.border} ${theme.emboss} transform-gpu overflow-hidden hover:ring-2 hover:ring-amber-400/80 transition-all`}
+                className={`relative w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${bgClass} ${theme.border} ${theme.emboss} transform-gpu overflow-hidden transition-all ${
+                  isPreview ? "cursor-pointer hover:ring-2 hover:ring-amber-400/80" : ""
+                }`}
               >
+                {/* Nút Chỉnh Bìa Sau nổi trên góc (Chỉ hiện trong Editor) */}
+                {isPreview && (
+                  <button
+                    type="button"
+                    data-pointer-interactive="true"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.dispatchEvent(
+                        new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
+                      );
+                      onOpenAlbumEditor?.("back");
+                    }}
+                    className="absolute top-3.5 right-3.5 z-30 px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold shadow-lg flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                    title="Chỉnh sửa thiết kế & nội dung Bìa Sau"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>Chỉnh Bìa Sau</span>
+                  </button>
+                )}
                 {/* ── CÁC KIỂU ĐƯỜNG VIỀN BÌA KẾT ── */}
                 {borderStyle === "stitched-dashed" && (
                   <div className="absolute inset-3 sm:inset-4 border border-dashed border-white/20 rounded-xl sm:rounded-2xl pointer-events-none" />
@@ -812,17 +889,21 @@ export function Wedding3DFlipbook({
                   )}
 
                   <span
-                    data-editable-field="backCoverTitle"
+                    {...(isPreview ? { "data-editable-field": "backCoverTitle" } : {})}
                     style={customTextStyle}
-                    className="font-serif text-3xl sm:text-4xl text-white/90 drop-shadow-sm block font-normal hover:opacity-90 transition-opacity"
+                    className={`font-serif text-3xl sm:text-4xl text-white/90 drop-shadow-sm block font-normal transition-opacity ${
+                      isPreview ? "hover:opacity-90" : ""
+                    }`}
                   >
                     {title}
                   </span>
 
                   <p
-                    data-editable-field="backCoverSubtitle"
+                    {...(isPreview ? { "data-editable-field": "backCoverSubtitle" } : {})}
                     style={customTextStyle}
-                    className="text-xs sm:text-sm text-white/75 font-light leading-relaxed max-w-xs mx-auto hover:opacity-90 transition-opacity"
+                    className={`text-xs sm:text-sm text-white/75 font-light leading-relaxed max-w-xs mx-auto transition-opacity ${
+                      isPreview ? "hover:opacity-90" : ""
+                    }`}
                   >
                     {subtitle}
                   </p>

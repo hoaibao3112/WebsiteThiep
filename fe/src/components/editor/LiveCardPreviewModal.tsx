@@ -659,9 +659,9 @@ function CardRenderContent({
       {/* 2. FALLING PARTICLES EFFECT */}
       <CanvasFallingEffect effect={canvasFallingEffect} />
 
-      {/* 3. TEMPLATE LAYER (WHEN NO CANVAS DOCUMENT OR HYBRID) */}
-      {(!isCanvasDocument || !hasCanvasElements) && children && (
-        <div className="relative z-0 w-full overflow-hidden">
+      {/* 3. TEMPLATE LAYER (WHEN NO CANVAS DOCUMENT OR HYBRID, HOẶC ALBUM 3D) */}
+      {children && (
+        <div className="relative z-0 w-full">
           {children}
         </div>
       )}

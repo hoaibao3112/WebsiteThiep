@@ -752,29 +752,19 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
 
             {/* ── TEMPLATE VIEW LAYER (Hiển thị đầy đủ giao diện thiệp mẫu) ── */}
-            {(() => {
-              const currentTemplateSlug = templateSlug || (draft as any)?.template?.slug || (draft as any)?.templateSlug;
-              const isRichTemplate =
-                currentTemplateSlug === "wedding-royal-crimson-velvet" ||
-                currentTemplateSlug === "wedding-nha-co-hy" ||
-                currentTemplateSlug === "wedding-sage-garden-glass";
-              const isHidden = !isRichTemplate && Boolean((draft as any)?.categoryData?.canvasDocument);
-
-              return (
-                <div
-                  ref={templateLayerRef}
-                  className={`relative z-0 w-full overflow-hidden ${isHidden ? "hidden" : ""}`}
-                  style={{ pointerEvents: "none", minHeight: 0 }}
-                >
-                  <div
-                    className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer [&_[data-pointer-interactive]]:pointer-events-auto [&_[data-pointer-interactive]_button]:pointer-events-auto [&_[data-pointer-interactive]_button]:cursor-pointer"
-                    style={{ minHeight: 0 }}
-                  >
-                    {children}
-                  </div>
-                </div>
-              );
-            })()}
+            {/* ── TEMPLATE VIEW LAYER (Hiển thị đầy đủ giao diện thiệp mẫu & Album 3D) ── */}
+            <div
+              ref={templateLayerRef}
+              className="relative z-0 w-full"
+              style={{ pointerEvents: "none", minHeight: 0 }}
+            >
+              <div
+                className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer [&_[data-pointer-interactive]]:pointer-events-auto [&_[data-pointer-interactive]_button]:pointer-events-auto [&_[data-pointer-interactive]_button]:cursor-pointer"
+                style={{ minHeight: 0 }}
+              >
+                {children}
+              </div>
+            </div>
 
             {/* ── FREE CANVAS ELEMENTS LAYER ── */}
             {canvasElements.map((el) => {

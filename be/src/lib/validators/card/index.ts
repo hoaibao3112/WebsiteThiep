@@ -14,6 +14,8 @@ import { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 export { WeddingSceneDocumentSchema } from "./wedding-scene.schema";
 import { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
 export { EnvelopeConfigSchema } from "../../../schemas/envelope.schema";
+import { Album3DConfigSchema } from "../../../schemas/album-3d.schema";
+export { Album3DConfigSchema } from "../../../schemas/album-3d.schema";
 
 export const CategoryDataSchema = z.discriminatedUnion("cardCategory", [
   WeddingDataSchema,
@@ -106,6 +108,7 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
     }).optional(),
     events: z.array(DraftEventSchema).max(10).default([]),
     photos: z.array(PhotoSchema).max(50).optional(),
+    album3d: Album3DConfigSchema.optional(),
     canvas: CanvasDocumentSchema.optional(),
     canvasElements: z.array(CanvasElementSchema).max(300).optional(),
     canvasDocument: WeddingSceneDocumentSchema.optional(),

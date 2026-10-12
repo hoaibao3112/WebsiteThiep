@@ -645,14 +645,14 @@ function CardBuilderContent() {
       canvasHeight:
         categoryDataRef.current?.canvasHeight ??
         (category === "WEDDING"
-          ? weddingScene?.height ||
+          ? (weddingScene?.height ? weddingScene.height + 750 : undefined) ||
             (templateSlug === "wedding-royal-crimson-velvet"
-              ? 5500
+              ? 6250
               : templateSlug === "wedding-nha-co-hy"
-              ? 5200
+              ? 5950
               : templateSlug === "wedding-sage-garden-glass"
-              ? 4800
-              : weddingData.canvasHeight ?? 1200)
+              ? 5550
+              : (weddingData.canvasHeight ?? 5388) + 750)
           : (category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200),
     } as CardDetail["categoryData"],
   };

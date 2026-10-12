@@ -94,9 +94,11 @@ apiRouter.get("/envelope-styles", EnvelopeController.getStyles); // Danh mục m
 apiRouter.get("/cards/:cardId/envelope-config", authGuard, EnvelopeController.getCardConfig); // Đọc cấu hình phong bì
 apiRouter.patch("/cards/:cardId/envelope-config", authGuard, EnvelopeController.updateCardConfig); // Cập nhật cấu hình phong bì mở đầu
 apiRouter.get("/cards/:cardId/album-3d/presets", authGuard, Album3DController.getPresets); // Danh mục mẫu thiết kế Bìa Kết Album 3D
+apiRouter.get("/album-3d/presets", Album3DController.getPresets); // Danh mục mẫu thiết kế Bìa Kết Album 3D (Toàn cục)
 apiRouter.get("/cards/:cardId/album-3d", authGuard, Album3DController.getConfig); // Đọc cấu hình Album 3D
 apiRouter.put("/cards/:cardId/album-3d", authGuard, Album3DController.updateConfig); // Cập nhật cấu hình Album 3D
-apiRouter.post("/cards/:cardId/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive
+apiRouter.post("/cards/:cardId/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive theo cardId
+apiRouter.post("/album-3d/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive (Toàn cục / Tạo thiệp mới)
 apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xuất bản thiệp
 apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP

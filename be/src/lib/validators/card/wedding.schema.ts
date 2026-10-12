@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { EventSchema } from "./event.schema";
+import { Album3DConfigSchema } from "../../../schemas/album-3d.schema";
 
 const ParentInfoSchema = z.object({
   fatherName: z.string().nullable().optional(),
@@ -70,6 +71,7 @@ export const WeddingDataSchema = z.object({
   dressCode: DressCodeSchema.optional(),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
+  album3d: Album3DConfigSchema.optional(),
   canvas: CanvasDocumentSchema.optional(),
   canvasElements: z.array(CanvasElementSchema).optional(),
   canvasDocument: WeddingSceneDocumentSchema.optional(),
