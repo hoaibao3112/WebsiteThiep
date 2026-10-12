@@ -45,6 +45,7 @@ interface Album3DManagerModalProps {
   onClose: () => void;
   cardId: string;
   initialConfig?: Album3DConfig;
+  initialTab?: "drive" | "upload" | "settings" | "frontCover" | "backCover";
   onSaved?: (updatedConfig: Album3DConfig) => void;
 }
 
@@ -111,17 +112,41 @@ export function Album3DManagerModal({
   onClose,
   cardId,
   initialConfig,
+  initialTab = "backCover",
   onSaved,
 }: Album3DManagerModalProps) {
-  const [activeTab, setActiveTab] = useState<"drive" | "upload" | "settings">("drive");
+  const [activeTab, setActiveTab] = useState<"drive" | "upload" | "settings">(
+    initialTab === "backCover" || initialTab === "frontCover"
+      ? "settings"
+      : initialTab === "drive" || initialTab === "upload" || initialTab === "settings"
+      ? initialTab
+      : "settings"
+  );
   const [config, setConfig] = useState<Album3DConfig>(initialConfig || DEFAULT_ALBUM_3D_CONFIG);
   const [driveInput, setDriveInput] = useState("");
   const [isScanningDrive, setIsScanningDrive] = useState(false);
   const [scanMessage, setScanMessage] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLocal, setIsUploadingLocal] = useState(false);
-  const [settingsSubTab, setSettingsSubTab] = useState<"front" | "back">("back");
+  const [settingsSubTab, setSettingsSubTab] = useState<"front" | "back">(
+    initialTab === "frontCover" ? "front" : "back"
+  );
   const [isUploadingBackPhoto, setIsUploadingBackPhoto] = useState(false);
+
+  // Đồng bộ tab khi modal được mở với initialTab chỉ định
+  useEffect(() => {
+    if (isOpen) {
+      if (initialTab === "backCover") {
+        setActiveTab("settings");
+        setSettingsSubTab("back");
+      } else if (initialTab === "frontCover") {
+        setActiveTab("settings");
+        setSettingsSubTab("front");
+      } else if (initialTab === "drive" || initialTab === "upload" || initialTab === "settings") {
+        setActiveTab(initialTab);
+      }
+    }
+  }, [isOpen, initialTab]);
 
   const backCoverConfig: AlbumBackCoverConfig = config.backCover || DEFAULT_ALBUM_BACK_COVER;
 

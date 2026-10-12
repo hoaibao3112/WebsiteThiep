@@ -16,6 +16,7 @@ import { ApplyProfileModal, WeddingSectionKey } from "@/components/card/ApplyPro
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { ElementAnimationsStudio } from "@/components/card/ElementAnimationsStudio";
 import { LiveCardPreviewModal } from "@/components/editor/LiveCardPreviewModal";
+import { Album3DManagerModal } from "@/components/card/Album3DManagerModal";
 import { useAuth } from "@/context/AuthContext";
 import {
   Heart,
@@ -234,6 +235,7 @@ const EDIT_TABS = [
   { key: "story", label: "Câu Chuyện", icon: BookOpen },
   { key: "events", label: "Lịch Trình", icon: Calendar },
   { key: "gallery", label: "Album Ảnh", icon: ImageIcon },
+  { key: "album3d", label: "Album 3D & Bìa", icon: BookOpen },
   { key: "music", label: "Nhạc Nền", icon: Music },
   { key: "banking", label: "Mừng Cưới", icon: Gift },
   { key: "rsvp", label: "RSVP", icon: Users },
@@ -345,7 +347,25 @@ function EditCardContent() {
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
   const [mobileViewMode, setMobileViewMode] = useState<"edit" | "preview">("edit");
   const [showFullscreenPreviewModal, setShowFullscreenPreviewModal] = useState(false);
+  const [showFormAlbum3DModal, setShowFormAlbum3DModal] = useState(false);
+  const [formAlbum3DTab, setFormAlbum3DTab] = useState<"frontCover" | "backCover" | "drive">("backCover");
+  const [album3DUpdateTick, setAlbum3DUpdateTick] = useState(0);
   const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
+
+  // Lắng nghe sự kiện mở modal Album 3D từ các thành phần con
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const ce = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
+      if (ce.detail?.tab) {
+        setFormAlbum3DTab(ce.detail.tab);
+      } else {
+        setFormAlbum3DTab("backCover");
+      }
+      setShowFormAlbum3DModal(true);
+    };
+    window.addEventListener("open-album-3d-editor", handleOpen);
+    return () => window.removeEventListener("open-album-3d-editor", handleOpen);
+  }, []);
 
   // ── Base config ──
   const [category, setCategory] = useState<CardCategory>("WEDDING");
@@ -1054,6 +1074,7 @@ function EditCardContent() {
       category === "WEDDING"
         ? {
             ...categoryDataRef.current,
+            album3d: (categoryDataRef.current as any)?.album3d,
             canvasWidth: 390,
             canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200,
             cardCategory: "WEDDING",
@@ -1165,6 +1186,7 @@ function EditCardContent() {
     weight,
     height,
     ceremonyType,
+    album3DUpdateTick,
   ]);
 
   // Sync edits from VisualCardEditor back to local state hooks
@@ -2499,6 +2521,51 @@ function EditCardContent() {
                   </p>
                 </div>
 
+                {/* BANNER ALBUM 3D & BÌA SAU (FOREVER & ALWAYS) */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50/70 border border-amber-200/90 shadow-2xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="size-8 rounded-xl bg-amber-500 text-stone-950 flex items-center justify-center font-bold shadow-2xs">
+                        <BookOpen className="size-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-stone-900 text-xs">Cuốn Album 3D &amp; Bìa Màn Kết</h4>
+                        <span className="text-[10px] text-amber-700 font-medium">Lật trang chân thực · VIP</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-stone-950 shadow-2xs">
+                      FOREVER &amp; ALWAYS
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-600 leading-relaxed font-light">
+                    Tùy biến màn kết &ldquo;Forever &amp; Always&rdquo;, lời cảm ơn khách mời, hiệu ứng cánh hoa đào rơi và nhập ảnh hàng loạt từ Google Drive.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormAlbum3DTab("backCover");
+                        setShowFormAlbum3DModal(true);
+                      }}
+                      className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <Pencil className="size-3.5" />
+                      <span>Chỉnh Bìa Sau</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormAlbum3DTab("frontCover");
+                        setShowFormAlbum3DModal(true);
+                      }}
+                      className="py-2 px-3 rounded-xl bg-white hover:bg-stone-50 border border-amber-200 text-stone-800 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <BookOpen className="size-3.5 text-amber-600" />
+                      <span>Chỉnh Bìa Trước</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* UPLOAD ZONE */}
                 <div
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
@@ -2661,6 +2728,82 @@ function EditCardContent() {
                     placeholder="https://www.youtube.com/watch?v=..."
                     className="w-full px-3 py-2.5 sm:py-2 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-mono text-stone-700 min-h-[44px] sm:min-h-[38px]"
                   />
+                </div>
+              </div>
+            )}
+
+            {/* ══ TAB 6.1: ALBUM ẢNH CƯỚI 3D & BÌA MÀN KẾT ══ */}
+            {activeTab === "album3d" && (
+              <div className="space-y-5 sm:space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
+                    <BookOpen className="w-4 h-4 text-[#BE944E]" />
+                    <span>Album 3D &amp; Bìa Màn Kết (Forever &amp; Always)</span>
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Tùy biến màn kết &ldquo;Forever &amp; Always&rdquo;, lời cảm ơn và cuốn album lật trang 3D.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50/70 border border-amber-200/90 shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="size-8 rounded-xl bg-amber-500 text-stone-950 flex items-center justify-center font-bold shadow-2xs">
+                        <BookOpen className="size-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-stone-900 text-xs">Màn Kết Thúc Thiệp &amp; Album 3D</h4>
+                        <span className="text-[10px] text-amber-700 font-medium">Bìa sau &amp; Lật trang</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-stone-950 shadow-2xs">
+                      FOREVER &amp; ALWAYS
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-stone-600 leading-relaxed font-light">
+                    Màn kết xuất hiện ở cuối album thiệp cưới với tiêu đề tùy chỉnh, lời cảm ơn sâu sắc gửi tới khách mời và hiệu ứng cánh hoa bay lãng mạn.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormAlbum3DTab("backCover");
+                        setShowFormAlbum3DModal(true);
+                      }}
+                      className="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <Pencil className="size-3.5" />
+                      <span>Chỉnh Bìa Sau (Màn Kết)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormAlbum3DTab("frontCover");
+                        setShowFormAlbum3DModal(true);
+                      }}
+                      className="py-2.5 px-3 rounded-xl bg-white hover:bg-stone-50 border border-amber-200 text-stone-800 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <BookOpen className="size-3.5 text-amber-600" />
+                      <span>Chỉnh Bìa Trước</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between">
+                    <span className="text-xs text-stone-600 font-medium">Nhập ảnh từ Google Drive:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormAlbum3DTab("drive");
+                        setShowFormAlbum3DModal(true);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-white hover:bg-amber-100/70 text-amber-900 border border-amber-300 font-bold text-xs transition cursor-pointer flex items-center gap-1"
+                    >
+                      <Upload className="size-3 text-amber-700" />
+                      <span>Quét Google Drive</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -3293,6 +3436,25 @@ function EditCardContent() {
           <NewbornView card={previewCard} templateSlug={templateSlug || selectedTemplate} isPreview={true} />
         )}
       </LiveCardPreviewModal>
+
+      {/* ── MODAL QUẢN LÝ ALBUM 3D & BÌA SAU TRONG CHẾ ĐỘ BIỂU MẪU ── */}
+      {cardId && (
+        <Album3DManagerModal
+          isOpen={showFormAlbum3DModal}
+          onClose={() => setShowFormAlbum3DModal(false)}
+          cardId={cardId}
+          initialTab={formAlbum3DTab}
+          initialConfig={(categoryDataRef.current as any)?.album3d}
+          onSaved={(savedConfig) => {
+            categoryDataRef.current = {
+              ...(categoryDataRef.current as any),
+              album3d: savedConfig,
+            };
+            setHasUnsavedChanges(true);
+            setAlbum3DUpdateTick((t) => t + 1);
+          }}
+        />
+      )}
     </div>
   );
 }

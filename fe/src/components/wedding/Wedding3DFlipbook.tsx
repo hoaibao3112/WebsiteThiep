@@ -20,6 +20,7 @@ import {
   Heart,
   Infinity as InfinityIcon,
   RotateCcw,
+  Pencil,
 } from "lucide-react";
 import {
   Album3DConfig,
@@ -37,6 +38,8 @@ interface Wedding3DFlipbookProps {
   brideName?: string;
   weddingDate?: string;
   className?: string;
+  isPreview?: boolean;
+  onOpenAlbumEditor?: (tab?: "front" | "back") => void;
 }
 
 const THEME_STYLES: Record<
@@ -114,6 +117,8 @@ export function Wedding3DFlipbook({
   brideName = "Cô Dâu",
   weddingDate = "2026",
   className = "",
+  isPreview = false,
+  onOpenAlbumEditor,
 }: Wedding3DFlipbookProps) {
   const pages: Album3DPage[] = config?.pages || [];
   const themeKey: AlbumCoverTheme = config?.coverTheme || "leather-burgundy";
@@ -259,6 +264,27 @@ export function Wedding3DFlipbook({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [goNext, goPrev, isFullscreen]);
 
+  // Lắng nghe sự kiện nhảy trang từ thanh công cụ (Canvas / Sidebar)
+  useEffect(() => {
+    const handleJump = (e: Event) => {
+      const ce = e as CustomEvent<{ target: "front" | "back" | number }>;
+      if (ce.detail?.target === "back") {
+        setTurnDirection("next");
+        playSound();
+        setCurrentSpread(totalSpreads - 1);
+      } else if (ce.detail?.target === "front") {
+        setTurnDirection("prev");
+        playSound();
+        setCurrentSpread(0);
+      } else if (typeof ce.detail?.target === "number") {
+        playSound();
+        setCurrentSpread(ce.detail.target);
+      }
+    };
+    window.addEventListener("jump-flipbook-spread", handleJump);
+    return () => window.removeEventListener("jump-flipbook-spread", handleJump);
+  }, [totalSpreads, playSound]);
+
   if (pages.length === 0) {
     return (
       <div className={`w-full py-16 text-center ${className}`}>
@@ -301,13 +327,14 @@ export function Wedding3DFlipbook({
   return (
     <section
       ref={containerRef}
+      data-pointer-interactive="true"
       className={`relative w-full py-12 px-3 sm:px-6 md:px-10 flex flex-col items-center select-none overflow-hidden ${
         isFullscreen ? "fixed inset-0 z-50 bg-[#0F0E0D] py-4" : ""
       } ${className}`}
     >
       {/* TIÊU ĐỀ KHU VỰC ALBUM 3D */}
       {!isFullscreen && (
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-900 text-[11px] font-semibold tracking-widest uppercase mb-2">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
             <span>Interactive Photobook 3D</span>
@@ -315,11 +342,83 @@ export function Wedding3DFlipbook({
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-stone-900 tracking-tight">
             {config?.title || "Album Kỷ Niệm Ngày Chung Đôi"}
           </h2>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1.5 font-light">
-            Chạm vào góc trang hoặc bấm mũi tên để lật xem từng trang kỷ niệm
+          <p className="text-xs sm:text-sm text-stone-500 mt-1 font-light">
+            Chạm vào góc trang hoặc bấm nút điều hướng để xem chi tiết
           </p>
         </div>
       )}
+
+      {/* ── BỘ ĐIỀU HƯỚNG NHANH CÁC PHÂN ĐOẠN (BÌA TRƯỚC | TRANG TRONG | BÌA SAU) ── */}
+      <div
+        className="flex flex-wrap items-center justify-center gap-2 mb-6 pointer-events-auto z-20"
+        data-pointer-interactive="true"
+      >
+        <div className="bg-stone-900/85 backdrop-blur-md p-1 rounded-full border border-stone-700/60 shadow-lg flex items-center gap-1 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setTurnDirection("prev");
+              playSound();
+              setCurrentSpread(0);
+            }}
+            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
+              isFrontCover
+                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
+                : "text-stone-300 hover:text-white hover:bg-stone-800"
+            }`}
+          >
+            📖 Bìa trước
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTurnDirection(currentSpread === 0 ? "next" : "prev");
+              playSound();
+              setCurrentSpread(Math.max(1, Math.min(totalSpreads - 2, 1)));
+            }}
+            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
+              !isFrontCover && !isBackCover
+                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
+                : "text-stone-300 hover:text-white hover:bg-stone-800"
+            }`}
+          >
+            🖼️ Trang trong ({pages.length} ảnh)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setTurnDirection("next");
+              playSound();
+              setCurrentSpread(totalSpreads - 1);
+            }}
+            className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
+              isBackCover
+                ? "bg-amber-500 text-stone-950 font-bold shadow-xs"
+                : "text-stone-300 hover:text-white hover:bg-stone-800"
+            }`}
+          >
+            💌 Bìa sau (Màn kết)
+          </button>
+        </div>
+
+        {/* NÚT CHỈNH SỬA TRỰC TIẾP */}
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(
+              new CustomEvent("open-album-3d-editor", {
+                detail: { tab: isBackCover ? "backCover" : "frontCover" },
+              })
+            );
+            onOpenAlbumEditor?.(isBackCover ? "back" : "front");
+          }}
+          className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95 border border-amber-300"
+          title="Mở bảng chỉnh sửa trang bìa"
+        >
+          <Pencil className="size-3" />
+          <span>{isBackCover ? "Chỉnh sửa Bìa Sau" : "Chỉnh sửa Bìa Trước"}</span>
+        </button>
+      </div>
 
       {/* ───────────────────────────────────────────────────────── */}
       {/* CUỐN ALBUM 3D CHÍNH (THE 3D PHOTOBOOK)                    */}
@@ -526,16 +625,20 @@ export function Wedding3DFlipbook({
             return (
               <motion.div
                 key="back-cover"
+                data-editable-field="albumBackCover"
+                data-pointer-interactive="true"
                 initial={{ rotateY: 30, opacity: 0 }}
                 animate={{ rotateY: 0, opacity: 1 }}
                 exit={{ rotateY: 30, opacity: 0 }}
                 transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
                 onClick={() => {
-                  setCurrentSpread(0);
-                  playSound();
+                  window.dispatchEvent(
+                    new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
+                  );
+                  onOpenAlbumEditor?.("back");
                 }}
                 style={customBgStyle}
-                className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${bgClass} ${theme.border} ${theme.emboss} transform-gpu overflow-hidden`}
+                className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${bgClass} ${theme.border} ${theme.emboss} transform-gpu overflow-hidden hover:ring-2 hover:ring-amber-400/80 transition-all`}
               >
                 {/* ── CÁC KIỂU ĐƯỜNG VIỀN BÌA KẾT ── */}
                 {borderStyle === "stitched-dashed" && (
@@ -637,15 +740,17 @@ export function Wedding3DFlipbook({
                   )}
 
                   <span
+                    data-editable-field="backCoverTitle"
                     style={customTextStyle}
-                    className="font-serif text-3xl sm:text-4xl text-white/90 drop-shadow-sm block font-normal"
+                    className="font-serif text-3xl sm:text-4xl text-white/90 drop-shadow-sm block font-normal hover:opacity-90 transition-opacity"
                   >
                     {title}
                   </span>
 
                   <p
+                    data-editable-field="backCoverSubtitle"
                     style={customTextStyle}
-                    className="text-xs sm:text-sm text-white/75 font-light leading-relaxed max-w-xs mx-auto"
+                    className="text-xs sm:text-sm text-white/75 font-light leading-relaxed max-w-xs mx-auto hover:opacity-90 transition-opacity"
                   >
                     {subtitle}
                   </p>
@@ -661,10 +766,20 @@ export function Wedding3DFlipbook({
                 </div>
 
                 {/* ── NÚT ĐIỀU HƯỚNG QUAY LẠI TRANG ĐẦU ── */}
-                <div className="relative z-10 flex items-center gap-1.5 text-white/80 text-xs font-medium bg-black/25 hover:bg-black/40 px-4 py-1.5 rounded-full backdrop-blur-xs transition border border-white/10 shadow-xs">
+                <button
+                  type="button"
+                  data-pointer-interactive="true"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTurnDirection("prev");
+                    setCurrentSpread(0);
+                    playSound();
+                  }}
+                  className="relative z-10 flex items-center gap-1.5 text-white/80 text-xs font-medium bg-black/25 hover:bg-black/45 px-4 py-1.5 rounded-full backdrop-blur-xs transition border border-white/10 shadow-xs cursor-pointer active:scale-95"
+                >
                   <RotateCcw className="size-3.5 text-white/70" />
                   <span>{buttonText}</span>
-                </div>
+                </button>
               </motion.div>
             );
           })()}
@@ -674,7 +789,10 @@ export function Wedding3DFlipbook({
       {/* ───────────────────────────────────────────────────────── */}
       {/* THANH ĐIỀU KHIỂN DƯỚI (BOTTOM CONTROLS BAR)               */}
       {/* ───────────────────────────────────────────────────────── */}
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 z-20">
+      <div
+        data-pointer-interactive="true"
+        className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 z-20 pointer-events-auto"
+      >
         {/* NÚT LÙI TRANG */}
         <button
           type="button"

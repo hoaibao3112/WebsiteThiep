@@ -228,6 +228,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
             soundEnabled: rawAlbum?.soundEnabled ?? true,
             pages: rawAlbum?.pages && rawAlbum.pages.length > 0 ? rawAlbum.pages : fallbackPages,
             coverMonogram: rawAlbum?.coverMonogram,
+            backCover: rawAlbum?.backCover,
           };
 
           if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;
@@ -243,6 +244,7 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
               groomName={groomShortName}
               brideName={brideShortName}
               weddingDate={displayWeddingDate}
+              isPreview={isPreview}
             />
           );
         })()}

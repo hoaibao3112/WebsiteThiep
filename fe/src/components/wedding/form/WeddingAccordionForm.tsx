@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Check,
   Loader2,
+  Pencil,
   ChevronDown,
   ChevronUp,
   Plus,
@@ -130,6 +131,9 @@ interface WeddingAccordionFormProps {
   onSaveToProfile?: () => void;
   isSavingProfile?: boolean;
   saveProfileSuccess?: boolean;
+
+  // Album 3D Modal Integration
+  onOpenAlbum3DModal?: (tab?: "frontCover" | "backCover") => void;
 }
 
 export function WeddingAccordionForm(props: WeddingAccordionFormProps) {
@@ -776,6 +780,51 @@ export function WeddingAccordionForm(props: WeddingAccordionFormProps) {
             defaultValue="Xin cam đoan, dù cả thế giới là mùa đông&#10;Tình yêu của chúng con vẫn ấm như mùa xuân&#10;Và đôi khi, nồng nàn như mùa hè."
             className="w-full p-2.5 rounded-xl border border-stone-200 bg-white text-xs font-serif italic text-stone-700"
           />
+          <PaddingSelector />
+        </div>
+      </AccordionItem>
+
+      {/* 17.1. ALBUM ẢNH CƯỚI 3D & BÌA MÀN KẾT */}
+      <AccordionItem
+        id="album3d"
+        title="Album Ảnh Cưới 3D & Bìa Màn Kết"
+        badge="VIP Flipbook"
+        isComplete={true}
+      >
+        <div className="space-y-3.5">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50/70 border border-amber-200/90 space-y-2.5 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-amber-800" />
+              <span className="font-bold text-stone-900 text-xs">Cuốn Album Lật Trang 3D &amp; Bìa Màn Kết</span>
+            </div>
+            <p className="text-[11px] text-stone-600 leading-relaxed font-light">
+              Tùy biến trang bìa kết &ldquo;Forever &amp; Always&rdquo;, lời cảm ơn khách mời, hiệu ứng cánh hoa đào rơi và nhập ảnh hàng loạt từ Google Drive.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  props.onOpenAlbum3DModal?.("backCover");
+                  window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } }));
+                }}
+                className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>Chỉnh Bìa Sau</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  props.onOpenAlbum3DModal?.("frontCover");
+                  window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "frontCover" } }));
+                }}
+                className="py-2 px-3 rounded-xl bg-white hover:bg-stone-50 border border-amber-200 text-stone-800 font-semibold text-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                <span>Chỉnh Bìa Trước</span>
+              </button>
+            </div>
+          </div>
           <PaddingSelector />
         </div>
       </AccordionItem>

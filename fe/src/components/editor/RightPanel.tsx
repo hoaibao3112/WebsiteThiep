@@ -35,6 +35,8 @@ import {
   Minus,
   QrCode,
   ArrowDownUp,
+  BookOpen,
+  Pencil,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -294,6 +296,43 @@ function DefaultInspector() {
           </p>
           <div className="flex items-center gap-1 text-[11px] font-mono font-semibold text-amber-800 bg-white px-2 py-1.5 rounded-lg border border-amber-200 truncate">
             /thiep/{cardSlug || "..."}
+          </div>
+        </div>
+
+        {/* Album 3D & Bìa Sau (Màn Kết) */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-50/90 to-rose-50/70 border border-amber-200/90 space-y-2.5 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="size-4 text-amber-800" />
+              <span className="text-xs font-bold text-amber-950">Album 3D &amp; Bìa Sau</span>
+            </div>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-full">
+              VIP Màn Kết
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-600 leading-relaxed font-light">
+            Tùy biến màn kết &ldquo;Forever &amp; Always&rdquo;, lời cảm ơn, mẫu viền, và album lật trang 3D.
+          </p>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } }));
+              }}
+              className="py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold shadow-2xs transition flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            >
+              <Pencil className="size-3" />
+              <span>Chỉnh Bìa Sau</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "frontCover" } }));
+              }}
+              className="py-1.5 px-2 rounded-xl bg-white hover:bg-stone-50 border border-amber-200 text-stone-800 text-xs font-semibold transition cursor-pointer"
+            >
+              Bìa Trước
+            </button>
           </div>
         </div>
 

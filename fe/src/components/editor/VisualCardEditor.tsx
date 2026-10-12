@@ -215,10 +215,27 @@ function CanvasTopBar({
   onSwitchToForm,
   onOpenPreview,
 }: CanvasTopBarProps) {
-  const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
+  const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave, updateAlbum3D } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
   const [showAlbum3DModal, setShowAlbum3DModal] = useState(false);
+  const [album3DInitialTab, setAlbum3DInitialTab] = useState<"frontCover" | "backCover" | "drive">("backCover");
   const cardId = (draft as any)?.id || (draft as any)?._id;
+
+  // Lắng nghe sự kiện mở modal Album 3D từ Canvas hoặc Sidebar
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
+      if (customEvent.detail?.tab) {
+        setAlbum3DInitialTab(customEvent.detail.tab);
+      } else {
+        setAlbum3DInitialTab("backCover");
+      }
+      setShowAlbum3DModal(true);
+    };
+
+    window.addEventListener("open-album-3d-editor", handleOpen);
+    return () => window.removeEventListener("open-album-3d-editor", handleOpen);
+  }, []);
 
   const handleSaveClick = async () => {
     setInternalSaving(true);
@@ -310,12 +327,16 @@ function CanvasTopBar({
         {cardId && (
           <button
             type="button"
-            onClick={() => setShowAlbum3DModal(true)}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/60 text-amber-900 text-xs font-semibold hover:bg-amber-200/70 transition shadow-2xs cursor-pointer"
-            title="Quản lý Album Ảnh Cưới 3D & Nhập Google Drive"
+            onClick={() => {
+              setAlbum3DInitialTab("backCover");
+              setShowAlbum3DModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/90 hover:bg-amber-200 text-amber-950 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
+            title="Chỉnh sửa Trang Bìa Sau (Màn Kết) & Album 3D"
           >
-            <BookOpen className="size-3.5 text-amber-700" />
-            <span>Album 3D</span>
+            <BookOpen className="size-3.5 text-amber-800" />
+            <span className="hidden sm:inline">Album 3D &amp; Bìa Sau</span>
+            <span className="sm:hidden">Bìa Sau</span>
           </button>
         )}
 
@@ -370,14 +391,16 @@ function CanvasTopBar({
         </motion.button>
       </div>
 
-      {/* MODAL QUẢN LÝ ALBUM ẢNH CƯỚI 3D & NHẬP GOOGLE DRIVE */}
+      {/* MODAL QUẢN LÝ ALBUM ẢNH CƯỚI 3D & BÌA SAU */}
       {cardId && (
         <Album3DManagerModal
           isOpen={showAlbum3DModal}
           onClose={() => setShowAlbum3DModal(false)}
           cardId={cardId}
-          onSaved={() => {
-            // refresh hoặc trigger state
+          initialTab={album3DInitialTab}
+          initialConfig={(draft as any)?.categoryData?.album3d}
+          onSaved={(savedConfig) => {
+            updateAlbum3D(savedConfig);
           }}
         />
       )}

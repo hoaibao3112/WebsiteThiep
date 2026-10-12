@@ -767,7 +767,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                   style={{ pointerEvents: "none", minHeight: 0 }}
                 >
                   <div
-                    className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer"
+                    className="[&_a]:pointer-events-none [&_button]:pointer-events-none [&_[data-editable-field]]:pointer-events-auto [&_[data-editable-field]]:cursor-pointer [&_[data-pointer-interactive]]:pointer-events-auto [&_[data-pointer-interactive]_button]:pointer-events-auto [&_[data-pointer-interactive]_button]:cursor-pointer"
                     style={{ minHeight: 0 }}
                   >
                     {children}

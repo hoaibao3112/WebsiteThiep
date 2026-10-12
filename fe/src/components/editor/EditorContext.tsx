@@ -6,11 +6,13 @@ import { EditorField, getTemplateFields } from "@/lib/editor/template-registry";
 import { applyDraftPatch, readDraftPath } from "@/lib/editor/patch-draft";
 import { STOCK_CATALOG } from "@/config/stock-catalog";
 import type { CanvasElement, WidgetType, ShapeType } from "@/types/canvas.types";
+import type { Album3DConfig } from "@/types/album-3d.types";
 export type { CanvasElement, WidgetType, WidgetConfig, ShapeType } from "@/types/canvas.types";
 
 export type ToolCategory =
   | "text"
   | "image"
+  | "album3d"
   | "stock"
   | "background"
   | "music"
@@ -112,6 +114,10 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   setShowRSVP: (val: boolean | ((prev: boolean) => boolean)) => void;
   showBottomToolbar: boolean;
   setShowBottomToolbar: (val: boolean | ((prev: boolean) => boolean)) => void;
+
+  // Album 3D & Back Cover
+  updateAlbum3D: (albumConfig: Album3DConfig) => void;
+  openAlbum3DEditor: (tab?: "frontCover" | "backCover" | "drive") => void;
 }
 
 const EditorContext = createContext<EditorContextValue<any> | null>(null);
@@ -2236,6 +2242,29 @@ export function EditorProvider<T extends object>({
     return () => window.clearTimeout(timer);
   }, [dirtyTick, Boolean(onSave), triggerSave]);
 
+  const updateAlbum3D = useCallback(
+    (albumConfig: Album3DConfig) => {
+      const currentCategory = ((draft as any)?.categoryData || {}) as Record<string, any>;
+      const nextCategory = {
+        ...currentCategory,
+        album3d: albumConfig,
+      };
+      const next = applyDraftPatch(draft, "categoryData", nextCategory);
+      if (!interactionDraftRef.current) setPast((items) => [...items.slice(-19), draft]);
+      setFuture([]);
+      onDraftChange(next);
+      setDirtyTick((t) => t + 1);
+      setSaveState("dirty");
+    },
+    [draft, onDraftChange]
+  );
+
+  const openAlbum3DEditor = useCallback((tab: "frontCover" | "backCover" | "drive" = "backCover") => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab } }));
+    }
+  }, []);
+
   const value: EditorContextValue<T> = {
     draft,
     templateSlug,
@@ -2311,6 +2340,8 @@ export function EditorProvider<T extends object>({
     setShowGiftQR,
     showRSVP,
     setShowRSVP,
+    updateAlbum3D,
+    openAlbum3DEditor,
   };
 
   return <EditorContext.Provider value={value}>{children}</EditorContext.Provider>;

@@ -14,10 +14,12 @@ import {
   Columns,
   Sparkles,
   ChevronLeft,
+  BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TextTool } from "./tools/TextTool";
 import { ImageTool } from "./tools/ImageTool";
+import { Album3DTool } from "./tools/Album3DTool";
 import { StockTool } from "./tools/StockTool";
 import { BackgroundTool } from "./tools/BackgroundTool";
 import { MusicTool } from "./tools/MusicTool";
@@ -38,6 +40,7 @@ interface NavItem {
 const TOOLS: NavItem[] = [
   { id: "text", label: "Văn bản", drawerTitle: "Văn bản", icon: Type },
   { id: "image", label: "Hình ảnh", drawerTitle: "Hình ảnh", icon: ImageIcon },
+  { id: "album3d", label: "Album 3D", drawerTitle: "Album 3D & Bìa Màn Kết", icon: BookOpen },
   { id: "stock", label: "Stock", drawerTitle: "Thư viện Stock", icon: Layers },
   { id: "background", label: "Nền", drawerTitle: "Nền thiệp", icon: Palette },
   { id: "music", label: "Nhạc", drawerTitle: "Nhạc nền", icon: Music },
@@ -75,6 +78,8 @@ export function LeftSidebar() {
         return <TextTool />;
       case "image":
         return <ImageTool />;
+      case "album3d":
+        return <Album3DTool />;
       case "stock":
         return <StockTool />;
       case "background":
