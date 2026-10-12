@@ -20,7 +20,6 @@ import {
   Heart,
   Infinity as InfinityIcon,
   RotateCcw,
-  Pencil,
 } from "lucide-react";
 import {
   Album3DConfig,
@@ -400,24 +399,6 @@ export function Wedding3DFlipbook({
             💌 Bìa sau (Màn kết)
           </button>
         </div>
-
-        {/* NÚT CHỈNH SỬA TRỰC TIẾP */}
-        <button
-          type="button"
-          onClick={() => {
-            window.dispatchEvent(
-              new CustomEvent("open-album-3d-editor", {
-                detail: { tab: isBackCover ? "backCover" : "frontCover" },
-              })
-            );
-            onOpenAlbumEditor?.(isBackCover ? "back" : "front");
-          }}
-          className="px-3.5 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95 border border-amber-300"
-          title="Mở bảng chỉnh sửa trang bìa"
-        >
-          <Pencil className="size-3" />
-          <span>{isBackCover ? "Chỉnh sửa Bìa Sau" : "Chỉnh sửa Bìa Trước"}</span>
-        </button>
       </div>
 
       {/* ───────────────────────────────────────────────────────── */}

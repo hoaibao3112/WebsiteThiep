@@ -145,6 +145,26 @@ function VisualCardEditorInner({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const [showAlbum3DModal, setShowAlbum3DModal] = useState(false);
+  const [album3DInitialTab, setAlbum3DInitialTab] = useState<"frontCover" | "backCover" | "drive">("backCover");
+  const { updateAlbum3D } = useEditor();
+
+  // Lắng nghe sự kiện mở modal Album 3D từ Canvas, RightPanel hoặc LeftSidebar
+  useEffect(() => {
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
+      if (customEvent.detail?.tab) {
+        setAlbum3DInitialTab(customEvent.detail.tab);
+      } else {
+        setAlbum3DInitialTab("backCover");
+      }
+      setShowAlbum3DModal(true);
+    };
+
+    window.addEventListener("open-album-3d-editor", handleOpen);
+    return () => window.removeEventListener("open-album-3d-editor", handleOpen);
+  }, []);
+
   return (
     <div className={`flex flex-col ${showTopBar ? "h-screen" : "h-full"} w-full overflow-hidden bg-white select-none`}>
       {/* 0. TOP BAR - MATCHING NGAYCHUNGDOI.COM/CARD/CREATE/CANVAS */}
@@ -192,6 +212,18 @@ function VisualCardEditorInner({
       >
         {children}
       </LiveCardPreviewModal>
+
+      {/* 4. MODAL QUẢN LÝ ALBUM ẢNH CƯỚI 3D & BÌA SAU (DÙNG CHUNG CHO TẤT CẢ CHẾ ĐỘ) */}
+      <Album3DManagerModal
+        isOpen={showAlbum3DModal}
+        onClose={() => setShowAlbum3DModal(false)}
+        cardId={(draft as any)?.id || (draft as any)?._id || "draft-new-card"}
+        initialTab={album3DInitialTab}
+        initialConfig={(draft as any)?.categoryData?.album3d}
+        onSaved={(savedConfig) => {
+          updateAlbum3D(savedConfig);
+        }}
+      />
     </div>
   );
 }
@@ -215,27 +247,9 @@ function CanvasTopBar({
   onSwitchToForm,
   onOpenPreview,
 }: CanvasTopBarProps) {
-  const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave, updateAlbum3D } = useEditor();
+  const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
-  const [showAlbum3DModal, setShowAlbum3DModal] = useState(false);
-  const [album3DInitialTab, setAlbum3DInitialTab] = useState<"frontCover" | "backCover" | "drive">("backCover");
   const cardId = (draft as any)?.id || (draft as any)?._id;
-
-  // Lắng nghe sự kiện mở modal Album 3D từ Canvas hoặc Sidebar
-  useEffect(() => {
-    const handleOpen = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
-      if (customEvent.detail?.tab) {
-        setAlbum3DInitialTab(customEvent.detail.tab);
-      } else {
-        setAlbum3DInitialTab("backCover");
-      }
-      setShowAlbum3DModal(true);
-    };
-
-    window.addEventListener("open-album-3d-editor", handleOpen);
-    return () => window.removeEventListener("open-album-3d-editor", handleOpen);
-  }, []);
 
   const handleSaveClick = async () => {
     setInternalSaving(true);
@@ -324,21 +338,20 @@ function CanvasTopBar({
           </Link>
         )}
 
-        {cardId && (
-          <button
-            type="button"
-            onClick={() => {
-              setAlbum3DInitialTab("backCover");
-              setShowAlbum3DModal(true);
-            }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/90 hover:bg-amber-200 text-amber-950 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
-            title="Chỉnh sửa Trang Bìa Sau (Màn Kết) & Album 3D"
-          >
-            <BookOpen className="size-3.5 text-amber-800" />
-            <span className="hidden sm:inline">Album 3D &amp; Bìa Sau</span>
-            <span className="sm:hidden">Bìa Sau</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            window.dispatchEvent(
+              new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
+            );
+          }}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/90 hover:bg-amber-200 text-amber-950 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
+          title="Chỉnh sửa Trang Bìa Sau (Màn Kết) & Album 3D"
+        >
+          <BookOpen className="size-3.5 text-amber-800" />
+          <span className="hidden sm:inline">Album 3D &amp; Bìa Sau</span>
+          <span className="sm:hidden">Bìa Sau</span>
+        </button>
 
         {/* NÚT XEM TRƯỚC TRỰC TIẾP (LIVE PREVIEW MODAL) */}
         {onOpenPreview && (
@@ -390,20 +403,6 @@ function CanvasTopBar({
           <span>{isSavingActive ? "Đang lưu..." : "Lưu thiệp"}</span>
         </motion.button>
       </div>
-
-      {/* MODAL QUẢN LÝ ALBUM ẢNH CƯỚI 3D & BÌA SAU */}
-      {cardId && (
-        <Album3DManagerModal
-          isOpen={showAlbum3DModal}
-          onClose={() => setShowAlbum3DModal(false)}
-          cardId={cardId}
-          initialTab={album3DInitialTab}
-          initialConfig={(draft as any)?.categoryData?.album3d}
-          onSaved={(savedConfig) => {
-            updateAlbum3D(savedConfig);
-          }}
-        />
-      )}
     </header>
   );
 }

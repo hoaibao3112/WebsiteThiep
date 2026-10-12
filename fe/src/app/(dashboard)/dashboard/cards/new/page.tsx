@@ -639,6 +639,7 @@ function CardBuilderContent() {
       ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
       photos: customPhotos,
       coverPhotoUrl: (customPhotos.find((p) => p.isCover)?.url || customPhotos[0]?.url) || categoryDataRef.current?.coverPhotoUrl || (category === "WEDDING" ? weddingData.coverPhotoUrl : undefined),
+      album3d: categoryDataRef.current?.album3d || (weddingData as any)?.album3d,
       ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
       canvasWidth: 390,
       canvasHeight:
@@ -736,6 +737,7 @@ function CardBuilderContent() {
       const payloadData = {
         ...categoryDataRef.current,
         ...(category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData),
+        album3d: categoryDataRef.current?.album3d || (weddingData as any)?.album3d,
         ...(category === "WEDDING" && weddingScene ? { canvasDocument: weddingScene } : {}),
         canvasWidth: 390,
         canvasHeight: categoryDataRef.current?.canvasHeight ?? (category === "WEDDING" ? weddingData : category === "BIRTHDAY" ? birthdayData : newbornData).canvasHeight ?? 1200,
