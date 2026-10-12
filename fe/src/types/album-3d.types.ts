@@ -15,6 +15,178 @@ export type AlbumCoverTheme =
   | "oriental-crimson"
   | "polaroid-kraft";
 
+// ── CÁC PHONG CÁCH THIẾT KẾ BÌA TRƯỚC NGHỆ THUẬT (FRONT COVER) ──
+export type AlbumFrontCoverPreset =
+  | "photo-arch-gold" // Khung vòm hoàng gia dát vàng có ảnh cưới cô dâu chú rể
+  | "photo-oval-floral" // Khung oval hoa hồng cổ điển lồng ảnh cưới
+  | "photo-full-bleed" // Ảnh bìa tràn viền điện ảnh nghệ thuật (Cinematic)
+  | "photo-polaroid-stitched" // Polaroid thủ công kẹp trên bìa da may chỉ
+  | "photo-magazine-editorial" // Tạp chí Hàn Quốc Editorial ảnh lớn
+  | "classic-leather-monogram" // Da thuộc cổ điển dập Monogram
+  | "oriental-crimson-frame"; // Á Đông hoàng cung khung son dát vàng
+
+export type AlbumFrontCoverFrameShape =
+  | "arch"
+  | "oval"
+  | "rect"
+  | "polaroid"
+  | "circle"
+  | "full"
+  | "none";
+
+export interface AlbumFrontCoverConfig {
+  enabled: boolean;
+  designPreset: AlbumFrontCoverPreset;
+  photoUrl?: string;
+  title: string;
+  subtitle: string;
+  monogram?: string;
+  badgeText?: string;
+  frameShape: AlbumFrontCoverFrameShape;
+  theme: AlbumCoverTheme;
+  customBgColor?: string;
+  customTextColor?: string;
+}
+
+export interface AlbumFrontCoverPresetMeta {
+  id: AlbumFrontCoverPreset;
+  name: string;
+  description: string;
+  defaultTitle: string;
+  defaultSubtitle: string;
+  defaultBadgeText: string;
+  frameShape: AlbumFrontCoverFrameShape;
+  theme: AlbumCoverTheme;
+  accentColor: string;
+  textColor: string;
+  bgHex: string;
+  bgGradient: string;
+  hasPhotoFrame: boolean;
+}
+
+export const ALBUM_FRONT_COVER_PRESET_CATALOG: Record<
+  AlbumFrontCoverPreset,
+  AlbumFrontCoverPresetMeta
+> = {
+  "photo-arch-gold": {
+    id: "photo-arch-gold",
+    name: "Khung Vòm Hoàng Gia Dát Vàng",
+    description: "Khung vòm cung đình dát vàng lồng ảnh cưới cô dâu chú rể, tên nhũ mạ vàng và monogram dập nổi",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "OUR WEDDING PHOTOBOOK • 2026",
+    defaultBadgeText: "WEDDING COLLECTION",
+    frameShape: "arch",
+    theme: "leather-burgundy",
+    accentColor: "#D4AF37",
+    textColor: "#FFFDF9",
+    bgHex: "#4A0E17",
+    bgGradient: "bg-gradient-to-br from-[#4A0E17] via-[#5C1D27] to-[#360810]",
+    hasPhotoFrame: true,
+  },
+  "photo-oval-floral": {
+    id: "photo-oval-floral",
+    name: "Khung Oval Hoa Hồng Cổ Điển",
+    description: "Khung oval baroque mạ vàng với hoa văn dây leo phương Tây ôm trọn ảnh cưới cặp đôi",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "THE WEDDING DAY • 2026",
+    defaultBadgeText: "FOREVER IN LOVE",
+    frameShape: "oval",
+    theme: "linen-cream",
+    accentColor: "#C5A059",
+    textColor: "#2E241E",
+    bgHex: "#F5F2EB",
+    bgGradient: "bg-gradient-to-br from-[#F5F2EB] via-[#EFE9DC] to-[#E3DAC8]",
+    hasPhotoFrame: true,
+  },
+  "photo-full-bleed": {
+    id: "photo-full-bleed",
+    name: "Ảnh Bìa Tràn Viền Điện Ảnh",
+    description: "Ảnh cưới chân dung toàn bìa kết hợp lớp phủ mờ sang trọng và typography tối giản hiện đại",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "SAVE THE DATE • 2026",
+    defaultBadgeText: "JUST MARRIED",
+    frameShape: "full",
+    theme: "minimalist-dark",
+    accentColor: "#FFFFFF",
+    textColor: "#FFFFFF",
+    bgHex: "#141414",
+    bgGradient: "bg-gradient-to-t from-black/90 via-black/40 to-black/20",
+    hasPhotoFrame: true,
+  },
+  "photo-polaroid-stitched": {
+    id: "photo-polaroid-stitched",
+    name: "Polaroid Thủ Công Chỉ Khâu",
+    description: "Ảnh cưới phong cách tấm ảnh Polaroid hoài niệm gắn trên bìa da bò thủ công dập chỉ may",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "SWEET MOMENTS • 2026",
+    defaultBadgeText: "PHOTO ALBUM",
+    frameShape: "polaroid",
+    theme: "polaroid-kraft",
+    accentColor: "#A67C52",
+    textColor: "#3A291A",
+    bgHex: "#E6D7C3",
+    bgGradient: "bg-gradient-to-br from-[#E6D7C3] via-[#DDD0BC] to-[#CFBFA7]",
+    hasPhotoFrame: true,
+  },
+  "photo-magazine-editorial": {
+    id: "photo-magazine-editorial",
+    name: "Tạp Chí Hàn Quốc Editorial",
+    description: "Bố cục tạp chí cưới nghệ thuật studio Hàn Quốc, ảnh chân dung nổi bật cùng typography cao cấp",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "SPECIAL WEDDING EDITION • 2026",
+    defaultBadgeText: "EDITORIAL VOGUE",
+    frameShape: "rect",
+    theme: "minimalist-dark",
+    accentColor: "#CCA24C",
+    textColor: "#F7F5F0",
+    bgHex: "#1C1C1C",
+    bgGradient: "bg-gradient-to-br from-[#262626] via-[#1A1A1A] to-[#111111]",
+    hasPhotoFrame: true,
+  },
+  "classic-leather-monogram": {
+    id: "classic-leather-monogram",
+    name: "Da Thuộc Cổ Điển Monogram",
+    description: "Vân da đỏ rượu truyền thống hoàng gia với vòng tròn Monogram chữ lồng và chữ nhũ dập chìm",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "OUR WEDDING PHOTOBOOK • 2026",
+    defaultBadgeText: "WEDDING COLLECTION",
+    frameShape: "none",
+    theme: "leather-burgundy",
+    accentColor: "#D4AF37",
+    textColor: "#FFFDF9",
+    bgHex: "#4A0E17",
+    bgGradient: "bg-gradient-to-br from-[#4A0E17] via-[#5C1D27] to-[#360810]",
+    hasPhotoFrame: false,
+  },
+  "oriental-crimson-frame": {
+    id: "oriental-crimson-frame",
+    name: "Á Đông Hoàng Cung Khung Son",
+    description: "Khung son đỏ hoa văn cung đình truyền thống lồng ảnh cưới cô dâu chú rể trong trang phục cưới",
+    defaultTitle: "HOÀNG LONG & BẢO NGỌC",
+    defaultSubtitle: "LỄ THÀNH HÔN • 2026",
+    defaultBadgeText: "TRĂM NĂM HẠNH PHÚC",
+    frameShape: "arch",
+    theme: "oriental-crimson",
+    accentColor: "#F4C430",
+    textColor: "#FFFDF6",
+    bgHex: "#80121D",
+    bgGradient: "bg-gradient-to-br from-[#80121D] via-[#941A26] to-[#630B13]",
+    hasPhotoFrame: true,
+  },
+};
+
+export const DEFAULT_ALBUM_FRONT_COVER: AlbumFrontCoverConfig = {
+  enabled: true,
+  designPreset: "photo-arch-gold",
+  photoUrl: "",
+  title: "HOÀNG LONG & BẢO NGỌC",
+  subtitle: "OUR WEDDING PHOTOBOOK • 2026",
+  monogram: "L & N",
+  badgeText: "WEDDING COLLECTION",
+  frameShape: "arch",
+  theme: "leather-burgundy",
+};
+
 // ── CÁC PHONG CÁCH THIẾT KẾ BÌA KẾT NGHỆ THUẬT (BACK COVER) ──
 export type AlbumCoverDesignPreset =
   | "velvet-stitched" // Nhung đỏ hoàng gia chỉ khâu (như mẫu trong ảnh)
@@ -121,52 +293,52 @@ export const ALBUM_BACK_COVER_PRESET_CATALOG: Record<
   },
   "botanical-sage-glass": {
     id: "botanical-sage-glass",
-    name: "Kính Mờ Thảo Mộc Sage",
-    description: "Nền xanh thảo mộc nhẹ nhàng kết hợp hiệu ứng kính mờ glassmorphism và lá cây",
-    defaultTitle: "Tình Yêu Đơm Hoa",
-    defaultSubtitle: "Cảm ơn bạn đã luôn đồng hành và tưới mát cho tình yêu của chúng mình.",
-    defaultButtonText: "Về trang đầu",
+    name: "Xanh Sage Thảo Mộc Kính Mờ",
+    description: "Phong cách châu Âu hiện đại với lá bạch đàn thảo mộc và tấm thẻ kính mờ sang trọng",
+    defaultTitle: "Thank You For Everything",
+    defaultSubtitle: "Cảm ơn vì đã là một phần tươi đẹp trong câu chuyện tình yêu của chúng mình.",
+    defaultButtonText: "Xem lại album",
     borderStyle: "minimal-solid",
     badgeIcon: "heart",
     showPetals: true,
-    bgGradient: "bg-gradient-to-br from-[#2C3E2D] via-[#374C38] to-[#1F2E20]",
-    accentColor: "#A3C2A1",
-    textColor: "#F5FAF5",
-    bgHex: "#2C3E2D",
+    bgGradient: "bg-gradient-to-br from-[#28382B] via-[#354838] to-[#1D291F]",
+    accentColor: "#A3C9A8",
+    textColor: "#F4F7F4",
+    bgHex: "#28382B",
   },
   "minimal-monochrome": {
     id: "minimal-monochrome",
-    name: "Tối Giản Chuẩn Studio Hàn Quốc",
-    description: "Đen tuyền obsidian lịch lãm cùng typography thanh thoát và chữ ký cặp đôi",
-    defaultTitle: "Our Beginning",
-    defaultSubtitle: "Trân trọng từng khoảnh khắc được sẻ chia cùng những người thân yêu nhất.",
-    defaultButtonText: "Xem lại album",
+    name: "Studio Hàn Quốc Tối Giản",
+    description: "Đen tuyền tối giản chuẩn studio Hàn Quốc, tập trung vào cảm xúc và sự tinh tế",
+    defaultTitle: "Always & Forever",
+    defaultSubtitle: "Hôm nay, ngày mai và mãi mãi về sau.",
+    defaultButtonText: "Quay lại trang đầu",
     borderStyle: "minimal-solid",
     badgeIcon: "none",
     showPetals: false,
-    bgGradient: "bg-gradient-to-br from-[#1C1C1F] via-[#141416] to-[#0D0D0E]",
+    bgGradient: "bg-gradient-to-br from-[#1A1A1A] via-[#242424] to-[#121212]",
     accentColor: "#E0E0E0",
     textColor: "#FFFFFF",
-    bgHex: "#1C1C1F",
+    bgHex: "#1A1A1A",
   },
   "polaroid-farewell": {
     id: "polaroid-farewell",
-    name: "Ảnh Kỷ Niệm Polaroid",
-    description: "Khung ảnh cưới kỷ niệm đính kèm lời cảm ơn viết tay ấm áp",
-    defaultTitle: "Mãi Mãi Bên Nhau",
-    defaultSubtitle: "Cảm ơn bạn đã là một phần đẹp đẽ trong câu chuyện tình yêu của chúng mình!",
-    defaultButtonText: "Quay lại trang bìa",
+    name: "Kỷ Niệm Polaroid & Chữ Ký",
+    description: "Khung ảnh polaroid hoài niệm kết hợp lời cảm ơn viết tay ấm áp",
+    defaultTitle: "Just Married",
+    defaultSubtitle: "Những khoảnh khắc đẹp nhất khi có bạn cùng sẻ chia.",
+    defaultButtonText: "Mở lại album",
     borderStyle: "stitched-dashed",
     badgeIcon: "heart",
     showPetals: true,
-    bgGradient: "bg-gradient-to-br from-[#382622] via-[#45302C] to-[#291B18]",
-    accentColor: "#E8B4A2",
-    textColor: "#FFF9F7",
-    bgHex: "#382622",
+    bgGradient: "bg-gradient-to-br from-[#402B20] via-[#52382B] to-[#301F16]",
+    accentColor: "#DDB892",
+    textColor: "#FAF6F0",
+    bgHex: "#402B20",
   },
   "oriental-red-songhy": {
     id: "oriental-red-songhy",
-    name: "Hỷ Sự Á Đông Truyền Thống",
+    name: "Á Đông Song Hỷ Dát Vàng",
     description: "Sắc đỏ son may mắn cùng chữ Song Hỷ dát vàng chúc phúc trăm năm hòa hợp",
     defaultTitle: "Trăm Năm Tình Viên Mãn",
     defaultSubtitle: "Tạ ơn trời đất tác hợp, cảm ơn quan viên hai họ và quý quan khách đã đến chung vui.",
@@ -201,6 +373,7 @@ export interface Album3DConfig {
   coverSubtitle?: string; // "Our Wedding Album - 2026"
   coverMonogram?: string; // Chữ lồng monogram bìa, vd "L & N"
   coverTheme: AlbumCoverTheme; // Màu bìa sách
+  frontCover?: AlbumFrontCoverConfig;
   soundEnabled: boolean; // Bật tiếng lật giấy mỹ thuật
   autoPlayInterval?: number; // Số giây tự lật (0 = tắt)
   pages: Album3DPage[];
@@ -213,6 +386,7 @@ export const DEFAULT_ALBUM_3D_CONFIG: Album3DConfig = {
   coverTitle: "KỶ NIỆM NGÀY CHUNG ĐÔI",
   coverSubtitle: "Our Wedding Photobook",
   coverTheme: "leather-burgundy",
+  frontCover: DEFAULT_ALBUM_FRONT_COVER,
   soundEnabled: true,
   autoPlayInterval: 0,
   pages: [],
@@ -269,18 +443,20 @@ export function extractGoogleDriveFolderId(input: string): string | null {
 }
 
 /**
- * Tạo URL xem ảnh trực tiếp từ Google Drive File ID
+ * Tạo link ảnh trực tiếp (direct URL) từ File ID Google Drive
  */
-export function buildGoogleDriveDirectUrl(fileId: string): string {
+export function getGoogleDriveDirectUrl(fileId: string): string {
   return `https://lh3.googleusercontent.com/d/${fileId}`;
 }
 
+export const buildGoogleDriveDirectUrl = getGoogleDriveDirectUrl;
+
 /**
- * Phân tích danh sách link Google Drive
+ * Phân tích danh sách link Google Drive nhiều dòng
  */
 export function parseMultipleGoogleDriveLinks(text: string): Array<{ fileId: string; directUrl: string }> {
   if (!text) return [];
-  const lines = text.split(/[\n,;]+/);
+  const lines = text.split(/[\r\n,;]+/).map((l) => l.trim()).filter(Boolean);
   const seen = new Set<string>();
   const results: Array<{ fileId: string; directUrl: string }> = [];
 
@@ -290,7 +466,7 @@ export function parseMultipleGoogleDriveLinks(text: string): Array<{ fileId: str
       seen.add(fileId);
       results.push({
         fileId,
-        directUrl: buildGoogleDriveDirectUrl(fileId),
+        directUrl: getGoogleDriveDirectUrl(fileId),
       });
     }
   }

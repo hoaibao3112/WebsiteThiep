@@ -1,7 +1,12 @@
 import { prisma } from "../lib/prisma";
 import { Prisma } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
-import { Album3DConfig, Album3DConfigSchema, ALBUM_BACK_COVER_PRESET_CATALOG } from "../schemas/album-3d.schema";
+import {
+  Album3DConfig,
+  Album3DConfigSchema,
+  ALBUM_FRONT_COVER_PRESET_CATALOG,
+  ALBUM_BACK_COVER_PRESET_CATALOG,
+} from "../schemas/album-3d.schema";
 import { GoogleDriveService } from "./google-drive.service";
 
 export class Album3DService {
@@ -9,6 +14,20 @@ export class Album3DService {
    * Lấy danh mục các preset mẫu thiết kế bìa kết từ backend
    */
   static getPresets() {
+    return ALBUM_BACK_COVER_PRESET_CATALOG;
+  }
+
+  /**
+   * Lấy danh mục các preset mẫu thiết kế bìa trước có khung ảnh từ backend
+   */
+  static getFrontCoverPresets() {
+    return ALBUM_FRONT_COVER_PRESET_CATALOG;
+  }
+
+  /**
+   * Lấy danh mục các preset mẫu thiết kế bìa sau từ backend
+   */
+  static getBackCoverPresets() {
     return ALBUM_BACK_COVER_PRESET_CATALOG;
   }
   /**

@@ -22,6 +22,7 @@ import {
   RotateCcw,
   Image as ImageIcon,
   SlidersHorizontal,
+  ChevronRight,
 } from "lucide-react";
 import {
   Album3DConfig,
@@ -31,6 +32,11 @@ import {
   AlbumCoverDesignPreset,
   AlbumBackCoverBorderStyle,
   AlbumBackCoverBadgeIcon,
+  AlbumFrontCoverConfig,
+  AlbumFrontCoverPreset,
+  AlbumFrontCoverFrameShape,
+  ALBUM_FRONT_COVER_PRESET_CATALOG,
+  DEFAULT_ALBUM_FRONT_COVER,
   ALBUM_BACK_COVER_PRESET_CATALOG,
   DEFAULT_ALBUM_BACK_COVER,
   DEFAULT_ALBUM_3D_CONFIG,
@@ -185,6 +191,54 @@ export function Album3DManagerModal({
       // ignore
     } finally {
       setIsUploadingBackPhoto(false);
+    }
+  };
+
+  const frontCoverConfig: AlbumFrontCoverConfig = config.frontCover || DEFAULT_ALBUM_FRONT_COVER;
+
+  const updateFrontCover = (patch: Partial<AlbumFrontCoverConfig>) => {
+    setConfig((prev) => ({
+      ...prev,
+      frontCover: {
+        ...(prev.frontCover || DEFAULT_ALBUM_FRONT_COVER),
+        ...patch,
+      },
+    }));
+  };
+
+  const selectFrontCoverPreset = (presetId: AlbumFrontCoverPreset) => {
+    const meta = ALBUM_FRONT_COVER_PRESET_CATALOG[presetId];
+    if (!meta) return;
+    updateFrontCover({
+      designPreset: presetId,
+      frameShape: meta.frameShape,
+      theme: meta.theme,
+      badgeText: meta.defaultBadgeText,
+      title: frontCoverConfig.title || meta.defaultTitle,
+      subtitle: frontCoverConfig.subtitle || meta.defaultSubtitle,
+    });
+    setConfig((prev) => ({
+      ...prev,
+      coverTheme: meta.theme,
+    }));
+  };
+
+  const [isUploadingFrontPhoto, setIsUploadingFrontPhoto] = useState(false);
+
+  const handleUploadFrontCoverPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingFrontPhoto(true);
+    try {
+      const uploadedUrl = await uploadSingleImage(file);
+      updateFrontCover({
+        photoUrl: uploadedUrl,
+        frameShape: frontCoverConfig.frameShape === "none" ? "arch" : frontCoverConfig.frameShape,
+      });
+    } catch {
+      // ignore
+    } finally {
+      setIsUploadingFrontPhoto(false);
     }
   };
 
@@ -916,91 +970,356 @@ export function Album3DManagerModal({
               )}
 
               {/* ───────────────────────────────────────────────────────── */}
-              {/* SUBTAB 2: BÌA TRƯỚC PHOTOBOOK (FRONT COVER)               */}
+              {/* SUBTAB 2: BÌA TRƯỚC PHOTOBOOK (FRONT COVER NGHỆ THUẬT)    */}
               {/* ───────────────────────────────────────────────────────── */}
               {settingsSubTab === "front" && (
                 <div className="space-y-6 animate-in fade-in">
-                  {/* Chọn màu bìa Photobook */}
+                  {/* CHỌN MẪU THIẾT KẾ BÌA TRƯỚC NGHỆ THUẬT */}
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-3">
-                      Chọn phong cách Bìa Album Mỹ Thuật (Bìa Trước)
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {THEME_OPTIONS.map((theme) => {
-                        const isSelected = config.coverTheme === theme.id;
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
+                        Chọn Phong Cách Thiết Kế Bìa Trước
+                      </label>
+                      <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        7 Mẫu Bìa Có Khung Ảnh
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 mb-3 font-light">
+                      Trang bìa đầu tiên khi khách mở photobook 3D, tích hợp khung ảnh cặp đôi nghệ thuật và nhũ vàng dập nổi.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {(Object.keys(ALBUM_FRONT_COVER_PRESET_CATALOG) as AlbumFrontCoverPreset[]).map(
+                        (presetKey) => {
+                          const meta = ALBUM_FRONT_COVER_PRESET_CATALOG[presetKey];
+                          const isSelected = frontCoverConfig.designPreset === presetKey;
+
+                          return (
+                            <div
+                              key={presetKey}
+                              onClick={() => selectFrontCoverPreset(presetKey)}
+                              className={`p-3.5 rounded-2xl border-2 cursor-pointer flex flex-col justify-between transition group ${
+                                isSelected
+                                  ? "border-amber-500 bg-amber-50/40 shadow-sm ring-1 ring-amber-500/30"
+                                  : "border-stone-200 hover:border-stone-300 bg-white"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div
+                                  className={`size-8 rounded-xl ${meta.bgGradient} border border-white/20 shadow-inner shrink-0 flex items-center justify-center text-xs font-bold text-white/90`}
+                                >
+                                  {meta.frameShape === "arch" && "∩"}
+                                  {meta.frameShape === "oval" && "○"}
+                                  {meta.frameShape === "polaroid" && "□"}
+                                  {meta.frameShape === "rect" && "▭"}
+                                  {meta.frameShape === "circle" && "●"}
+                                  {meta.frameShape === "full" && "■"}
+                                  {meta.frameShape === "none" && "囍"}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-stone-900 truncate">
+                                      {meta.name}
+                                    </span>
+                                    {isSelected && <Check className="size-4 text-amber-600 shrink-0" />}
+                                  </div>
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
+                                {meta.description}
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+
+                  {/* KHU VỰC TÙY CHỈNH CHI TIẾT & MINI PREVIEW BÌA TRƯỚC */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2 border-t border-stone-200">
+                    {/* CỘT TRÁI (FORM NHẬP LIỆU BÌA TRƯỚC) */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+                        Chi Tiết Bìa Trước
+                      </span>
+
+                      {/* ẢNH BÌA TRƯỚC */}
+                      <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="size-4 text-amber-700" />
+                            <span className="text-xs font-bold text-stone-800">
+                              Ảnh Bìa Cặp Đôi
+                            </span>
+                          </div>
+                          {frontCoverConfig.photoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateFrontCover({ photoUrl: "", frameShape: "none" })}
+                              className="text-[11px] text-red-600 hover:underline"
+                            >
+                              Gỡ ảnh bìa
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={frontCoverConfig.photoUrl || ""}
+                            onChange={(e) => updateFrontCover({ photoUrl: e.target.value })}
+                            placeholder="Dán link ảnh hoặc tải ảnh lên..."
+                            className="flex-1 px-3 py-2 rounded-lg border border-stone-300 text-xs outline-hidden focus:border-amber-500 bg-white"
+                          />
+                          <label className="px-3 py-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold cursor-pointer shrink-0 transition flex items-center gap-1.5">
+                            {isUploadingFrontPhoto ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <Upload className="size-3.5" />
+                            )}
+                            <span>Tải ảnh</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleUploadFrontCoverPhoto}
+                              disabled={isUploadingFrontPhoto}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* KIỂU DÁNG KHUNG ẢNH */}
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">
+                          Kiểu Dáng Khung Ảnh Bìa
+                        </label>
+                        <select
+                          value={frontCoverConfig.frameShape}
+                          onChange={(e) =>
+                            updateFrontCover({ frameShape: e.target.value as AlbumFrontCoverFrameShape })
+                          }
+                          className="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white cursor-pointer"
+                        >
+                          <option value="arch">Khung Cổng Vòm (Arch) - Dát vàng hoàng gia</option>
+                          <option value="oval">Khung Oval (Baroque) - Hoa văn cổ điển</option>
+                          <option value="polaroid">Khung Polaroid - Vintage dập chỉ may</option>
+                          <option value="rect">Khung Chữ Nhật Nghệ Thuật</option>
+                          <option value="circle">Khung Tròn - Huy hiệu hoàng cung</option>
+                          <option value="full">Tràn Viền (Full Bleed) - Tạp chí lookbook</option>
+                          <option value="none">Không khung ảnh (Chỉ hiển thị Monogram &amp; Tên)</option>
+                        </select>
+                      </div>
+
+                      {/* TÊN CẶP ĐÔI */}
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">
+                          Tên in nhũ trên bìa sách
+                        </label>
+                        <input
+                          type="text"
+                          value={frontCoverConfig.title || config.coverTitle || ""}
+                          onChange={(e) => {
+                            updateFrontCover({ title: e.target.value });
+                            setConfig((prev) => ({ ...prev, coverTitle: e.target.value }));
+                          }}
+                          placeholder="HOÀNG LONG & BẢO NGỌC"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white uppercase font-bold"
+                        />
+                      </div>
+
+                      {/* CHỮ LỒNG MONOGRAM & HUY HIỆU */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Chữ lồng Monogram
+                          </label>
+                          <input
+                            type="text"
+                            value={frontCoverConfig.monogram || config.coverMonogram || ""}
+                            onChange={(e) => {
+                              updateFrontCover({ monogram: e.target.value });
+                              setConfig((prev) => ({ ...prev, coverMonogram: e.target.value }));
+                            }}
+                            placeholder="L & N"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white uppercase font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Dòng chữ huy hiệu đầu bìa
+                          </label>
+                          <input
+                            type="text"
+                            value={frontCoverConfig.badgeText || "WEDDING COLLECTION"}
+                            onChange={(e) => updateFrontCover({ badgeText: e.target.value })}
+                            placeholder="WEDDING COLLECTION"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white uppercase"
+                          />
+                        </div>
+                      </div>
+
+                      {/* TIÊU ĐỀ PHỤ / NĂM CƯỚI */}
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">
+                          Tiêu đề phụ / Năm cưới
+                        </label>
+                        <input
+                          type="text"
+                          value={frontCoverConfig.subtitle || config.coverSubtitle || ""}
+                          onChange={(e) => {
+                            updateFrontCover({ subtitle: e.target.value });
+                            setConfig((prev) => ({ ...prev, coverSubtitle: e.target.value }));
+                          }}
+                          placeholder="OUR WEDDING PHOTOBOOK • 2026"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                        />
+                      </div>
+
+                      {/* CHẤT LIỆU BÌA DA */}
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-2">
+                          Màu sắc &amp; Chất liệu bìa da
+                        </label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {THEME_OPTIONS.map((theme) => {
+                            const isSelected = (frontCoverConfig.theme || config.coverTheme) === theme.id;
+                            return (
+                              <button
+                                key={theme.id}
+                                type="button"
+                                onClick={() => {
+                                  updateFrontCover({ theme: theme.id });
+                                  setConfig((prev) => ({ ...prev, coverTheme: theme.id }));
+                                }}
+                                className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition ${
+                                  isSelected
+                                    ? "border-amber-500 bg-amber-50/50 ring-1 ring-amber-500"
+                                    : "border-stone-200 hover:border-stone-300 bg-white"
+                                }`}
+                              >
+                                <div className={`size-6 rounded-full border shadow-inner ${theme.colorClass}`} />
+                                <span className="text-xs font-medium text-stone-800 truncate">{theme.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* ÂM THANH LẬT GIẤY */}
+                      <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800">
+                            {config.soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-stone-900 block">
+                              Âm thanh lật giấy mỹ thuật
+                            </span>
+                            <span className="text-[11px] text-stone-500 font-light">
+                              Mô phỏng tiếng lật trang chân thực
+                            </span>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={config.soundEnabled}
+                          onChange={(e) => setConfig((prev) => ({ ...prev, soundEnabled: e.target.checked }))}
+                          className="size-4.5 accent-amber-600 rounded cursor-pointer"
+                        />
+                      </div>
+                    </div>
+
+                    {/* CỘT PHẢI (LIVE MINI PREVIEW BÌA TRƯỚC) */}
+                    <div className="lg:col-span-5 flex flex-col items-center justify-start bg-stone-100/70 p-4 sm:p-5 rounded-2xl border border-stone-200">
+                      <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-3">
+                        Xem Trước Bìa Trước (Live Preview)
+                      </span>
+
+                      {/* THẺ BÌA TRƯỚC THU NHỎ */}
+                      {(() => {
+                        const meta =
+                          ALBUM_FRONT_COVER_PRESET_CATALOG[frontCoverConfig.designPreset] ||
+                          ALBUM_FRONT_COVER_PRESET_CATALOG["photo-arch-gold"];
+                        const shape = frontCoverConfig.frameShape || meta.frameShape;
+                        const photo = frontCoverConfig.photoUrl || config.pages?.[0]?.url;
+
                         return (
                           <div
-                            key={theme.id}
-                            onClick={() => setConfig((prev) => ({ ...prev, coverTheme: theme.id }))}
-                            className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center gap-3.5 transition ${
-                              isSelected
-                                ? "border-amber-500 bg-amber-50/40 shadow-sm"
-                                : "border-stone-200 hover:border-stone-300 bg-white"
-                            }`}
+                            className={`relative w-full max-w-[240px] aspect-[1/1.38] rounded-2xl p-4 flex flex-col justify-between items-center text-center shadow-lg border border-white/20 ${meta.bgGradient} overflow-hidden select-none`}
                           >
-                            <div className={`size-10 rounded-xl border ${theme.colorClass} shadow-inner shrink-0`} />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs sm:text-sm font-bold text-stone-900">{theme.name}</span>
-                                {isSelected && <Check className="size-4 text-amber-600" />}
+                            {/* Tràn viền */}
+                            {shape === "full" && photo && (
+                              <div className="absolute inset-0 pointer-events-none">
+                                <img src={photo} alt="Cover" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/20" />
                               </div>
-                              <p className="text-[11px] text-stone-500 truncate mt-0.5">{theme.desc}</p>
+                            )}
+
+                            {/* Chỉ khâu viền */}
+                            <div className="absolute inset-2 border border-dashed border-white/25 rounded-xl pointer-events-none z-10" />
+
+                            {/* Huy hiệu trên */}
+                            <div className="relative z-20 pt-1">
+                              <span className="text-[9px] font-mono tracking-[0.2em] text-white/80 uppercase">
+                                {frontCoverConfig.badgeText || meta.defaultBadgeText}
+                              </span>
+                            </div>
+
+                            {/* Khung ảnh ở giữa */}
+                            <div className="relative z-20 my-auto w-full flex flex-col items-center justify-center">
+                              {photo && shape !== "none" && shape !== "full" ? (
+                                <>
+                                  {shape === "arch" && (
+                                    <div className="w-[120px] aspect-[3/3.8] rounded-t-full rounded-b-lg overflow-hidden border-2 border-[#D4AF37] shadow-md bg-black/20">
+                                      <img src={photo} alt="Bìa" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {shape === "oval" && (
+                                    <div className="w-[115px] aspect-[3/3.8] rounded-[50%] overflow-hidden border-2 border-[#D4AF37] shadow-md bg-black/20">
+                                      <img src={photo} alt="Bìa" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {shape === "polaroid" && (
+                                    <div className="w-[120px] bg-white p-1.5 pb-4 rounded-md shadow-md -rotate-1 border border-stone-200">
+                                      <img src={photo} alt="Bìa" className="w-full aspect-[4/4.2] object-cover rounded-xs" />
+                                    </div>
+                                  )}
+                                  {shape === "rect" && (
+                                    <div className="w-[125px] aspect-[4/4.8] rounded-lg overflow-hidden border-2 border-white/40 shadow-md bg-black/20">
+                                      <img src={photo} alt="Bìa" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {shape === "circle" && (
+                                    <div className="size-24 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-md bg-black/20">
+                                      <img src={photo} alt="Bìa" className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <div className="size-14 rounded-full border-2 border-[#D4AF37] flex items-center justify-center my-1 bg-black/15 shadow-inner">
+                                  <span className="font-serif text-sm font-bold text-[#F5E6BE]">
+                                    {frontCoverConfig.monogram || config.coverMonogram || "囍"}
+                                  </span>
+                                </div>
+                              )}
+
+                              <p className="font-serif text-xs font-bold text-white/95 uppercase mt-2 tracking-wide px-1 truncate w-full">
+                                {frontCoverConfig.title || config.coverTitle || meta.defaultTitle}
+                              </p>
+                              <p className="text-[9px] text-white/70 uppercase tracking-wider truncate w-full px-1">
+                                {frontCoverConfig.subtitle || config.coverSubtitle || meta.defaultSubtitle}
+                              </p>
+                            </div>
+
+                            {/* Gợi ý mở */}
+                            <div className="relative z-20 flex items-center gap-1 text-white/80 text-[9px] font-medium bg-black/30 px-2 py-0.5 rounded-full border border-white/10">
+                              <span>Chạm để mở photobook</span>
+                              <ChevronRight className="size-2.5" />
                             </div>
                           </div>
                         );
-                      })}
+                      })()}
                     </div>
-                  </div>
-
-                  {/* Tùy chỉnh chữ trên bìa trước */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                        Tiêu đề Album (Hiển thị đầu mục)
-                      </label>
-                      <input
-                        type="text"
-                        value={config.title}
-                        onChange={(e) => setConfig((prev) => ({ ...prev, title: e.target.value }))}
-                        placeholder="Album Kỷ Niệm Ngày Chung Đôi"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                        Tên in nhũ trên bìa sách
-                      </label>
-                      <input
-                        type="text"
-                        value={config.coverTitle || ""}
-                        onChange={(e) => setConfig((prev) => ({ ...prev, coverTitle: e.target.value }))}
-                        placeholder="HOÀNG NAM & MAI LAN"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Tùy chọn Âm thanh lật giấy */}
-                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="size-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
-                        {config.soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
-                      </div>
-                      <div>
-                        <span className="text-xs sm:text-sm font-bold text-stone-900 block">
-                          Âm thanh sột soạt lật giấy mỹ thuật
-                        </span>
-                        <span className="text-[11px] text-stone-500 font-light">
-                          Mô phỏng tiếng lật trang chân thực khi khách vuốt lật album
-                        </span>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={config.soundEnabled}
-                      onChange={(e) => setConfig((prev) => ({ ...prev, soundEnabled: e.target.checked }))}
-                      className="size-5 accent-amber-600 rounded cursor-pointer"
-                    />
                   </div>
                 </div>
               )}

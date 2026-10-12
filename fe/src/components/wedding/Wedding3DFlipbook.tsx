@@ -25,8 +25,10 @@ import {
   Album3DConfig,
   AlbumCoverTheme,
   Album3DPage,
+  AlbumFrontCoverConfig,
   ALBUM_BACK_COVER_PRESET_CATALOG,
   DEFAULT_ALBUM_BACK_COVER,
+  DEFAULT_ALBUM_FRONT_COVER,
 } from "@/types/album-3d.types";
 import { playPageFlipSound } from "@/lib/audio/page-flip-sound";
 import { downloadImage } from "@/lib/utils/download-image";
@@ -120,8 +122,11 @@ export function Wedding3DFlipbook({
   onOpenAlbumEditor,
 }: Wedding3DFlipbookProps) {
   const pages: Album3DPage[] = config?.pages || [];
-  const themeKey: AlbumCoverTheme = config?.coverTheme || "leather-burgundy";
+  const frontCoverConfig: AlbumFrontCoverConfig = config?.frontCover || DEFAULT_ALBUM_FRONT_COVER;
+  const themeKey: AlbumCoverTheme = frontCoverConfig.theme || config?.coverTheme || "leather-burgundy";
   const theme = THEME_STYLES[themeKey] || THEME_STYLES["leather-burgundy"];
+  const coverPhotoUrl = frontCoverConfig.photoUrl || (pages.length > 0 ? pages[0].url : undefined);
+  const frameShape = frontCoverConfig.frameShape || (coverPhotoUrl ? "arch" : "none");
 
   // Trích xuất chữ cái đầu của Tên chính tiếng Việt (Ví dụ: "Hoàng Long" -> "Long" -> "L", "Bảo Ngọc" -> "Ngọc" -> "N")
   const getGivenNameInitial = (name?: string): string => {
@@ -134,6 +139,7 @@ export function Wedding3DFlipbook({
   const groomInitial = getGivenNameInitial(groomName) || groomName.charAt(0).toUpperCase();
   const brideInitial = getGivenNameInitial(brideName) || brideName.charAt(0).toUpperCase();
   const displayMonogram =
+    frontCoverConfig.monogram ||
     config?.coverMonogram ||
     (groomInitial && brideInitial ? `${groomInitial} & ${brideInitial}` : "♥");
 
@@ -406,7 +412,7 @@ export function Wedding3DFlipbook({
       {/* ───────────────────────────────────────────────────────── */}
       <div className="relative w-full max-w-5xl flex items-center justify-center perspective-[2000px] my-auto">
         <AnimatePresence mode="wait">
-          {/* 1. BÌA TRƯỚC (FRONT COVER) */}
+          {/* 1. BÌA TRƯỚC (FRONT COVER NGHỆ THUẬT VỚI KHUNG ẢNH & THIẾT KẾ RIÊNG) */}
           {isFrontCover && (
             <motion.div
               key="front-cover"
@@ -415,40 +421,125 @@ export function Wedding3DFlipbook({
               exit={{ rotateY: -75, opacity: 0 }}
               transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
               onClick={goNext}
-              className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${theme.bg} ${theme.border} ${theme.emboss} transform-gpu hover:scale-[1.01] transition-transform`}
+              className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-5 sm:p-7 flex flex-col justify-between items-center text-center ${theme.bg} ${theme.border} ${theme.emboss} transform-gpu hover:scale-[1.01] transition-transform overflow-hidden`}
             >
-              {/* Chỉ khâu viền giả da sang trọng */}
-              <div className="absolute inset-3 sm:inset-4 border border-dashed border-white/20 rounded-xl sm:rounded-2xl pointer-events-none" />
+              {/* Ảnh bìa tràn viền (Full Bleed Layout) */}
+              {frameShape === "full" && coverPhotoUrl && (
+                <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden pointer-events-none">
+                  <img
+                    src={coverPhotoUrl}
+                    alt="Bìa Album"
+                    className="w-full h-full object-cover object-top"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/35" />
+                </div>
+              )}
 
-              {/* Họa tiết dập chìm đầu bìa */}
-              <div className="relative z-10 flex flex-col items-center">
-                <span className="text-[10px] sm:text-xs font-mono tracking-[0.25em] text-white/60 uppercase">
-                  Wedding Collection
+              {/* Chỉ khâu viền giả da sang trọng */}
+              <div className="absolute inset-3 sm:inset-4 border border-dashed border-white/20 rounded-xl sm:rounded-2xl pointer-events-none z-10" />
+
+              {/* Họa tiết dập chìm đầu bìa & Huy hiệu */}
+              <div className="relative z-20 flex flex-col items-center">
+                <span className="text-[10px] sm:text-xs font-mono tracking-[0.25em] text-white/75 uppercase drop-shadow-sm font-semibold">
+                  {frontCoverConfig.badgeText || "Wedding Collection"}
                 </span>
-                <div className="w-12 h-px bg-white/30 my-3" />
+                <div className="w-12 h-px bg-white/30 my-2" />
               </div>
 
-              {/* Tên cặp đôi in nhũ mạ vàng dập nổi */}
-              <div className="relative z-10 my-auto px-4">
-                <div className="size-16 sm:size-20 mx-auto rounded-full border-2 border-white/30 flex items-center justify-center mb-6 shadow-inner bg-black/10 backdrop-blur-xs px-2">
-                  <span className="font-serif text-base sm:text-lg font-bold tracking-wide text-white/95 whitespace-nowrap flex items-center justify-center gap-1.5">
-                    {displayMonogram}
-                  </span>
-                </div>
+              {/* ── KHU VỰC KHUNG ẢNH BÌA HOẶC MONOGRAM CHÍNH GIỮA ── */}
+              <div className="relative z-20 my-auto w-full flex flex-col items-center justify-center">
+                {coverPhotoUrl && frameShape !== "none" && frameShape !== "full" ? (
+                  <div className="my-1 flex items-center justify-center w-full">
+                    {/* Khung Vòm (Arch) */}
+                    {frameShape === "arch" && (
+                      <div className="relative w-[190px] sm:w-[230px] aspect-[3/3.8] rounded-t-full rounded-b-2xl overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.55)] border-2 border-[#D4AF37] ring-2 ring-[#D4AF37]/35 bg-black/20 group">
+                        <img
+                          src={coverPhotoUrl}
+                          alt="Bìa Album"
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 border border-white/20 rounded-t-full rounded-b-xl pointer-events-none" />
+                      </div>
+                    )}
+
+                    {/* Khung Oval (Baroque) */}
+                    {frameShape === "oval" && (
+                      <div className="relative w-[185px] sm:w-[220px] aspect-[3/3.8] rounded-[50%] overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.55)] border-3 border-[#D4AF37] ring-2 ring-[#D4AF37]/35 bg-black/20 group">
+                        <img
+                          src={coverPhotoUrl}
+                          alt="Bìa Album"
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 border border-white/20 rounded-[50%] pointer-events-none" />
+                      </div>
+                    )}
+
+                    {/* Khung Polaroid (Vintage Chic) */}
+                    {frameShape === "polaroid" && (
+                      <div className="relative w-[195px] sm:w-[230px] bg-white p-2.5 pb-6 sm:pb-7 rounded-xl shadow-[0_18px_42px_rgba(0,0,0,0.6)] -rotate-1 border border-stone-200/90 group">
+                        <div className="relative w-full aspect-[4/4.3] overflow-hidden rounded-lg bg-stone-100">
+                          <img
+                            src={coverPhotoUrl}
+                            alt="Bìa Album"
+                            className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                          />
+                        </div>
+                        <p className="mt-1.5 text-center font-serif text-[11px] sm:text-xs text-stone-700 italic tracking-wide truncate px-1">
+                          {frontCoverConfig.title || `${groomName} & ${brideName}`}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Khung Chữ Nhật Nghệ Thuật (Rect) */}
+                    {frameShape === "rect" && (
+                      <div className="relative w-[195px] sm:w-[235px] aspect-[4/4.8] rounded-2xl overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.55)] border-2 border-white/50 ring-1 ring-[#D4AF37]/45 bg-black/20 group">
+                        <img
+                          src={coverPhotoUrl}
+                          alt="Bìa Album"
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-1.5 border border-white/20 rounded-xl pointer-events-none" />
+                      </div>
+                    )}
+
+                    {/* Khung Tròn Hoàng Gia (Circle) */}
+                    {frameShape === "circle" && (
+                      <div className="relative size-44 sm:size-52 rounded-full overflow-hidden shadow-[0_16px_36px_rgba(0,0,0,0.55)] border-3 border-[#D4AF37] ring-2 ring-[#D4AF37]/35 bg-black/20 group">
+                        <img
+                          src={coverPhotoUrl}
+                          alt="Bìa Album"
+                          className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-1 border border-white/20 rounded-full pointer-events-none" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Huy hiệu Monogram truyền thống dập nổi */
+                  <div className="size-18 sm:size-22 mx-auto rounded-full border-2 border-[#D4AF37] flex items-center justify-center my-3 shadow-inner bg-black/15 backdrop-blur-xs px-2 ring-2 ring-[#D4AF37]/30">
+                    <span className="font-serif text-lg sm:text-2xl font-bold tracking-widest text-[#F5E6BE] drop-shadow-md">
+                      {displayMonogram}
+                    </span>
+                  </div>
+                )}
+
+                {/* Tên cặp đôi in nhũ mạ vàng dập nổi */}
                 <h3
-                  className={`font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider leading-snug drop-shadow-md ${theme.textTitle}`}
+                  className={`font-serif ${
+                    frameShape === "polaroid" ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+                  } font-bold tracking-wider leading-snug drop-shadow-md ${theme.textTitle} mt-2.5 px-2`}
                 >
-                  {config?.coverTitle || `${groomName.toUpperCase()} & ${brideName.toUpperCase()}`}
+                  {frontCoverConfig.title || config?.coverTitle || `${groomName.toUpperCase()} & ${brideName.toUpperCase()}`}
                 </h3>
-                <p className={`text-xs sm:text-sm tracking-widest uppercase mt-3 font-medium ${theme.textSub}`}>
-                  {config?.coverSubtitle || `Our Wedding Photobook • ${weddingDate}`}
+                <p className={`text-[11px] sm:text-xs tracking-widest uppercase mt-1.5 font-medium ${theme.textSub} px-2`}>
+                  {frontCoverConfig.subtitle || config?.coverSubtitle || `Our Wedding Photobook • ${weddingDate}`}
                 </p>
               </div>
 
               {/* Nhắc nhở bấm mở */}
-              <div className="relative z-10 flex items-center gap-2 text-white/70 text-xs font-medium bg-black/20 px-4 py-1.5 rounded-full backdrop-blur-xs">
+              <div className="relative z-20 flex items-center gap-2 text-white/80 text-[11px] sm:text-xs font-medium bg-black/35 hover:bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/10 shadow-sm transition">
                 <span>Chạm để mở trang đầu tiên</span>
-                <ChevronRight className="w-4 h-4 animate-pulse" />
+                <ChevronRight className="w-3.5 h-3.5 animate-pulse text-amber-300" />
               </div>
             </motion.div>
           )}

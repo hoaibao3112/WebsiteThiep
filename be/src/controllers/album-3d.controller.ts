@@ -12,7 +12,11 @@ export class Album3DController {
   static async getPresets(_req: Request, res: Response) {
     return res.status(200).json({
       success: true,
-      data: Album3DService.getPresets(),
+      data: {
+        frontCoverPresets: Album3DService.getFrontCoverPresets(),
+        backCoverPresets: Album3DService.getBackCoverPresets(),
+        ...Album3DService.getPresets(),
+      },
     });
   }
 

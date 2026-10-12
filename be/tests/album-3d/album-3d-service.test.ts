@@ -136,6 +136,19 @@ describe("Album3DService & GoogleDriveService", () => {
       expect(presets["polaroid-farewell"]).toBeDefined();
       expect(presets["oriental-red-songhy"]).toBeDefined();
     });
+
+    it("serves front cover presets catalog with all 7 front cover presets with photo frame support", () => {
+      const frontPresets = Album3DService.getFrontCoverPresets();
+      expect(Object.keys(frontPresets).length).toBe(7);
+      expect(frontPresets["photo-arch-gold"]).toBeDefined();
+      expect(frontPresets["photo-arch-gold"].hasPhotoFrame).toBe(true);
+      expect(frontPresets["photo-oval-floral"]).toBeDefined();
+      expect(frontPresets["photo-full-bleed"]).toBeDefined();
+      expect(frontPresets["photo-polaroid-stitched"]).toBeDefined();
+      expect(frontPresets["photo-magazine-editorial"]).toBeDefined();
+      expect(frontPresets["classic-leather-monogram"]).toBeDefined();
+      expect(frontPresets["oriental-crimson-frame"]).toBeDefined();
+    });
   });
 
   describe("getAlbumConfig", () => {
