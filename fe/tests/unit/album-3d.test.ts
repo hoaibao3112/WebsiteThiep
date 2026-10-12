@@ -66,11 +66,19 @@ describe("Album 3D & Google Drive Utilities (Frontend)", () => {
     });
   });
 
-  describe("DEFAULT_ALBUM_3D_CONFIG", () => {
-    it("has soundEnabled true and valid theme", () => {
+  describe("DEFAULT_ALBUM_3D_CONFIG & Back Cover", () => {
+    it("has soundEnabled true, valid theme, and default backCover config", () => {
       expect(DEFAULT_ALBUM_3D_CONFIG.enabled).toBe(true);
       expect(DEFAULT_ALBUM_3D_CONFIG.soundEnabled).toBe(true);
       expect(DEFAULT_ALBUM_3D_CONFIG.coverTheme).toBe("leather-burgundy");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover).toBeDefined();
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.designPreset).toBe("velvet-stitched");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.title).toBe("Forever & Always");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.buttonText).toBe("Quay lại trang bìa");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.borderStyle).toBe("stitched-dashed");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.badgeIcon).toBe("heart");
+      expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.showPetals).toBe(true);
     });
   });
 });
+

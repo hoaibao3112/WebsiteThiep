@@ -71,4 +71,31 @@ describe("Wedding3DFlipbook image download functionality", () => {
     expect(result).toBe(true);
     expect(appendChildSpy).toHaveBeenCalled();
   });
+
+  it("renders dynamic customizable back cover when navigating to the end", async () => {
+    const customConfig: Album3DConfig = {
+      ...mockConfig,
+      backCover: {
+        enabled: true,
+        designPreset: "gold-foil-floral",
+        title: "With Love & Gratitude",
+        subtitle: "Lời cảm ơn tùy chỉnh từ backend",
+        buttonText: "Xem lại từ đầu",
+        showPetals: false,
+        borderStyle: "gold-double",
+        badgeIcon: "infinity",
+      },
+    };
+    render(<Wedding3DFlipbook config={customConfig} />);
+    const nextBtn = screen.getByTitle("Trang kế tiếp");
+    // Go from front cover to inside spread
+    fireEvent.click(nextBtn);
+    // Go from inside spread to back cover
+    fireEvent.click(nextBtn);
+
+    expect(screen.getByText("With Love & Gratitude")).toBeDefined();
+    expect(screen.getByText("Lời cảm ơn tùy chỉnh từ backend")).toBeDefined();
+    expect(screen.getByText("Xem lại từ đầu")).toBeDefined();
+  });
 });
+

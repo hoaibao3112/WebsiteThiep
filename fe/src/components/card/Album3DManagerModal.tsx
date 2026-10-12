@@ -17,11 +17,22 @@ import {
   Loader2,
   AlertCircle,
   HelpCircle,
+  Heart,
+  Infinity as InfinityIcon,
+  RotateCcw,
+  Image as ImageIcon,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   Album3DConfig,
   Album3DPage,
   AlbumCoverTheme,
+  AlbumBackCoverConfig,
+  AlbumCoverDesignPreset,
+  AlbumBackCoverBorderStyle,
+  AlbumBackCoverBadgeIcon,
+  ALBUM_BACK_COVER_PRESET_CATALOG,
+  DEFAULT_ALBUM_BACK_COVER,
   DEFAULT_ALBUM_3D_CONFIG,
   parseMultipleGoogleDriveLinks,
   extractGoogleDriveFolderId,
@@ -72,6 +83,27 @@ const THEME_OPTIONS: Array<{
     colorClass: "bg-[#1A1A1E] border-stone-600",
     bgHex: "#1A1A1E",
   },
+  {
+    id: "botanical-sage",
+    name: "Xanh Thảo Mộc Sage",
+    desc: "Thanh lịch nhẹ nhàng phong cách Eco Botanical",
+    colorClass: "bg-[#2C3E2D] border-[#8FB38D]",
+    bgHex: "#2C3E2D",
+  },
+  {
+    id: "oriental-crimson",
+    name: "Hỷ Sự Son Đỏ",
+    desc: "Đỏ son may mắn phong cách Á Đông truyền thống",
+    colorClass: "bg-[#80121D] border-[#D4AF37]",
+    bgHex: "#80121D",
+  },
+  {
+    id: "polaroid-kraft",
+    name: "Giấy Kraft Vintage",
+    desc: "Cổ điển mộc mạc tông nâu ấm áp",
+    colorClass: "bg-[#382622] border-[#C9A45C]",
+    bgHex: "#382622",
+  },
 ];
 
 export function Album3DManagerModal({
@@ -88,6 +120,48 @@ export function Album3DManagerModal({
   const [scanMessage, setScanMessage] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingLocal, setIsUploadingLocal] = useState(false);
+  const [settingsSubTab, setSettingsSubTab] = useState<"front" | "back">("back");
+  const [isUploadingBackPhoto, setIsUploadingBackPhoto] = useState(false);
+
+  const backCoverConfig: AlbumBackCoverConfig = config.backCover || DEFAULT_ALBUM_BACK_COVER;
+
+  const updateBackCover = (patch: Partial<AlbumBackCoverConfig>) => {
+    setConfig((prev) => ({
+      ...prev,
+      backCover: {
+        ...(prev.backCover || DEFAULT_ALBUM_BACK_COVER),
+        ...patch,
+      },
+    }));
+  };
+
+  const selectBackCoverPreset = (presetId: AlbumCoverDesignPreset) => {
+    const meta = ALBUM_BACK_COVER_PRESET_CATALOG[presetId];
+    if (!meta) return;
+    updateBackCover({
+      designPreset: presetId,
+      borderStyle: meta.borderStyle,
+      badgeIcon: meta.badgeIcon,
+      showPetals: meta.showPetals,
+      title: meta.defaultTitle,
+      subtitle: meta.defaultSubtitle,
+      buttonText: meta.defaultButtonText,
+    });
+  };
+
+  const handleUploadBackCoverPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingBackPhoto(true);
+    try {
+      const uploadedUrl = await uploadSingleImage(file);
+      updateBackCover({ photoUrl: uploadedUrl });
+    } catch {
+      // ignore
+    } finally {
+      setIsUploadingBackPhoto(false);
+    }
+  };
 
   // Load config ban đầu từ backend nếu chưa có
   useEffect(() => {
@@ -450,88 +524,461 @@ export function Album3DManagerModal({
           {/* TAB 3: SETTINGS BÌA ALBUM & HIỆU ỨNG */}
           {activeTab === "settings" && (
             <div className="space-y-6 animate-in fade-in">
-              {/* Chọn màu bìa Photobook */}
-              <div>
-                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-3">
-                  Chọn phong cách Bìa Album Mỹ Thuật
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {THEME_OPTIONS.map((theme) => {
-                    const isSelected = config.coverTheme === theme.id;
-                    return (
-                      <div
-                        key={theme.id}
-                        onClick={() => setConfig((prev) => ({ ...prev, coverTheme: theme.id }))}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center gap-3.5 transition ${
-                          isSelected
-                            ? "border-amber-500 bg-amber-50/40 shadow-sm"
-                            : "border-stone-200 hover:border-stone-300 bg-white"
-                        }`}
-                      >
-                        <div className={`size-10 rounded-xl border ${theme.colorClass} shadow-inner shrink-0`} />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs sm:text-sm font-bold text-stone-900">{theme.name}</span>
-                            {isSelected && <Check className="size-4 text-amber-600" />}
-                          </div>
-                          <p className="text-[11px] text-stone-500 truncate mt-0.5">{theme.desc}</p>
+              {/* SUB-TABS: CHUYỂN ĐỔI BÌA TRƯỚC VÀ BÌA KẾT */}
+              <div className="flex items-center gap-2 p-1 bg-stone-100 rounded-2xl w-fit">
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab("back")}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer ${
+                    settingsSubTab === "back"
+                      ? "bg-white text-stone-900 shadow-xs"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  <Sparkles className="size-4 text-amber-600" />
+                  <span>Trang Bìa Sau (Màn Kết)</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-normal">
+                    Mới
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab("front")}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition cursor-pointer ${
+                    settingsSubTab === "front"
+                      ? "bg-white text-stone-900 shadow-xs"
+                      : "text-stone-500 hover:text-stone-800"
+                  }`}
+                >
+                  <BookOpen className="size-4 text-stone-600" />
+                  <span>Bìa Trước Photobook</span>
+                </button>
+              </div>
+
+              {/* ───────────────────────────────────────────────────────── */}
+              {/* SUBTAB 1: TRANG BÌA KẾT / BÌA SAU (BACK COVER)            */}
+              {/* ───────────────────────────────────────────────────────── */}
+              {settingsSubTab === "back" && (
+                <div className="space-y-6 animate-in fade-in">
+                  {/* CHỌN MẪU THIẾT KẾ BÌA KẾT NGHỆ THUẬT TỪ BACKEND */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold text-stone-800 uppercase tracking-wider">
+                        Chọn Phong Cách Thiết Kế Bìa Sau
+                      </label>
+                      <span className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        7 Mẫu Thiết Kế Sẵn
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 mb-3 font-light">
+                      Màn hình hiển thị khi khách lật đến trang cuối của album để gửi lời cảm ơn và tạm biệt.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {(Object.keys(ALBUM_BACK_COVER_PRESET_CATALOG) as AlbumCoverDesignPreset[]).map(
+                        (presetKey) => {
+                          const meta = ALBUM_BACK_COVER_PRESET_CATALOG[presetKey];
+                          const isSelected = backCoverConfig.designPreset === presetKey;
+
+                          return (
+                            <div
+                              key={presetKey}
+                              onClick={() => selectBackCoverPreset(presetKey)}
+                              className={`p-3.5 rounded-2xl border-2 cursor-pointer flex flex-col justify-between transition group ${
+                                isSelected
+                                  ? "border-amber-500 bg-amber-50/40 shadow-sm ring-1 ring-amber-500/30"
+                                  : "border-stone-200 hover:border-stone-300 bg-white"
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 mb-2">
+                                <div
+                                  className={`size-8 rounded-xl ${meta.bgGradient} border border-white/20 shadow-inner shrink-0`}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-stone-900 truncate">
+                                      {meta.name}
+                                    </span>
+                                    {isSelected && <Check className="size-4 text-amber-600 shrink-0" />}
+                                  </div>
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-stone-500 line-clamp-2 leading-relaxed">
+                                {meta.description}
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+
+                  {/* KHU VỰC TÙY CHỈNH CHI TIẾT & MINI PREVIEW THỜI GIAN THỰC */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2 border-t border-stone-200">
+                    {/* CỘT TRÁI (FORM NHẬP LIỆU) */}
+                    <div className="lg:col-span-7 space-y-4">
+                      <span className="text-xs font-bold text-stone-800 uppercase tracking-wider block">
+                        Chi Tiết Nội Dung Bìa Sau
+                      </span>
+
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">
+                          Tiêu đề chính (vd: Forever & Always)
+                        </label>
+                        <input
+                          type="text"
+                          value={backCoverConfig.title}
+                          onChange={(e) => updateBackCover({ title: e.target.value })}
+                          placeholder="Forever & Always"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">
+                          Thông điệp / Lời cảm ơn
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={backCoverConfig.subtitle}
+                          onChange={(e) => updateBackCover({ subtitle: e.target.value })}
+                          placeholder="Cảm ơn bạn đã dõi theo và sẻ chia những khoảnh khắc hạnh phúc cùng chúng mình!"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white leading-relaxed resize-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Chữ ký / Tên cặp đôi
+                          </label>
+                          <input
+                            type="text"
+                            value={backCoverConfig.signatureText || ""}
+                            onChange={(e) => updateBackCover({ signatureText: e.target.value })}
+                            placeholder="Hoàng Long & Bảo Ngọc"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Nhãn nút quay lại
+                          </label>
+                          <input
+                            type="text"
+                            value={backCoverConfig.buttonText}
+                            onChange={(e) => updateBackCover({ buttonText: e.target.value })}
+                            placeholder="Quay lại trang bìa"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                          />
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
 
-              {/* Tùy chỉnh chữ trên bìa */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    Tiêu đề Album (Hiển thị đầu mục)
-                  </label>
-                  <input
-                    type="text"
-                    value={config.title}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="Album Kỷ Niệm Ngày Chung Đôi"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                    Tên in nhũ trên bìa sách
-                  </label>
-                  <input
-                    type="text"
-                    value={config.coverTitle || ""}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, coverTitle: e.target.value }))}
-                    placeholder="HOÀNG NAM & MAI LAN"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500"
-                  />
-                </div>
-              </div>
+                      {/* TÙY CHỌN VIỀN & ICON */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Kiểu đường viền
+                          </label>
+                          <select
+                            value={backCoverConfig.borderStyle}
+                            onChange={(e) =>
+                              updateBackCover({ borderStyle: e.target.value as AlbumBackCoverBorderStyle })
+                            }
+                            className="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white cursor-pointer"
+                          >
+                            <option value="stitched-dashed">Đường chỉ may khâu đứt nét (Ảnh mẫu)</option>
+                            <option value="gold-double">Viền đôi nhũ vàng hoàng gia</option>
+                            <option value="ornate-corners">Hoa văn nghệ thuật 4 góc</option>
+                            <option value="minimal-solid">Viền trơn thanh mảnh</option>
+                            <option value="none">Trơn không viền</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">
+                            Biểu tượng huy hiệu
+                          </label>
+                          <select
+                            value={backCoverConfig.badgeIcon}
+                            onChange={(e) =>
+                              updateBackCover({ badgeIcon: e.target.value as AlbumBackCoverBadgeIcon })
+                            }
+                            className="w-full px-3 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white cursor-pointer"
+                          >
+                            <option value="heart">Biểu tượng Trái tim (Heart)</option>
+                            <option value="wax-seal">Con dấu sáp đỏ 3D hoàng gia</option>
+                            <option value="song-hy">Chữ Song Hỷ (囍) mạ vàng</option>
+                            <option value="infinity">Biểu tượng Vô cực (Infinity)</option>
+                            <option value="none">Không hiển thị biểu tượng</option>
+                          </select>
+                        </div>
+                      </div>
 
-              {/* Tùy chọn Âm thanh lật giấy */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
-                    {config.soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+                      {/* HIỆU ỨNG CÁNH HOA BAY */}
+                      <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <Sparkles className="size-4 text-pink-600" />
+                          <div>
+                            <span className="text-xs font-bold text-stone-900 block">
+                              Hiệu ứng cánh hoa bay lãng mạn
+                            </span>
+                            <span className="text-[11px] text-stone-500 font-light">
+                              Mô phỏng các cánh hoa hồng rơi nhẹ quanh tấm bìa
+                            </span>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={backCoverConfig.showPetals}
+                          onChange={(e) => updateBackCover({ showPetals: e.target.checked })}
+                          className="size-4.5 accent-pink-600 rounded cursor-pointer"
+                        />
+                      </div>
+
+                      {/* ĐÍNH KÈM ẢNH KỶ NIỆM (POLAROID) */}
+                      <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <ImageIcon className="size-4 text-amber-700" />
+                            <span className="text-xs font-bold text-stone-800">
+                              Đính kèm ảnh kỷ niệm Polaroid (Tùy chọn)
+                            </span>
+                          </div>
+                          {backCoverConfig.photoUrl && (
+                            <button
+                              type="button"
+                              onClick={() => updateBackCover({ photoUrl: "" })}
+                              className="text-[11px] text-red-600 hover:underline"
+                            >
+                              Gỡ ảnh
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={backCoverConfig.photoUrl || ""}
+                            onChange={(e) => updateBackCover({ photoUrl: e.target.value })}
+                            placeholder="Dán link ảnh hoặc tải ảnh lên..."
+                            className="flex-1 px-3 py-2 rounded-lg border border-stone-300 text-xs outline-hidden focus:border-amber-500 bg-white"
+                          />
+                          <label className="px-3 py-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold cursor-pointer shrink-0 transition flex items-center gap-1.5">
+                            {isUploadingBackPhoto ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <Upload className="size-3.5" />
+                            )}
+                            <span>Tải ảnh</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleUploadBackCoverPhoto}
+                              disabled={isUploadingBackPhoto}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CỘT PHẢI (LIVE MINI PREVIEW TRỰC TIẾP) */}
+                    <div className="lg:col-span-5 flex flex-col items-center justify-start bg-stone-100/70 p-4 sm:p-5 rounded-2xl border border-stone-200">
+                      <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-3">
+                        Xem Trước Bìa Sau (Live Preview)
+                      </span>
+
+                      {/* THẺ BÌA SAU THU NHỎ */}
+                      {(() => {
+                        const meta =
+                          ALBUM_BACK_COVER_PRESET_CATALOG[backCoverConfig.designPreset] ||
+                          ALBUM_BACK_COVER_PRESET_CATALOG["velvet-stitched"];
+
+                        return (
+                          <div
+                            className={`relative w-full max-w-[240px] aspect-[1/1.38] rounded-2xl p-4 flex flex-col justify-between items-center text-center shadow-lg border border-white/10 ${meta.bgGradient} overflow-hidden select-none`}
+                          >
+                            {/* Viền */}
+                            {backCoverConfig.borderStyle === "stitched-dashed" && (
+                              <div className="absolute inset-2 border border-dashed border-white/25 rounded-xl pointer-events-none" />
+                            )}
+                            {backCoverConfig.borderStyle === "gold-double" && (
+                              <div className="absolute inset-2 border-2 border-[#D4AF37]/60 rounded-xl pointer-events-none">
+                                <div className="absolute inset-0.5 border border-[#D4AF37]/35 rounded-lg pointer-events-none" />
+                              </div>
+                            )}
+                            {backCoverConfig.borderStyle === "ornate-corners" && (
+                              <div className="absolute inset-2 border border-[#D4AF37]/30 rounded-xl pointer-events-none">
+                                <div className="absolute top-0.5 left-0.5 size-3 border-t-2 border-l-2 border-[#D4AF37]" />
+                                <div className="absolute top-0.5 right-0.5 size-3 border-t-2 border-r-2 border-[#D4AF37]" />
+                                <div className="absolute bottom-0.5 left-0.5 size-3 border-b-2 border-l-2 border-[#D4AF37]" />
+                                <div className="absolute bottom-0.5 right-0.5 size-3 border-b-2 border-r-2 border-[#D4AF37]" />
+                              </div>
+                            )}
+                            {backCoverConfig.borderStyle === "minimal-solid" && (
+                              <div className="absolute inset-2 border border-white/20 rounded-xl pointer-events-none" />
+                            )}
+
+                            {/* Cánh hoa bay giả lập */}
+                            {backCoverConfig.showPetals && (
+                              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                                <div className="absolute top-3 left-4 w-2 h-2.5 bg-pink-300/60 rounded-full blur-[0.2px]" />
+                                <div className="absolute top-10 right-4 w-2 h-2.5 bg-rose-400/50 rounded-full blur-[0.2px]" />
+                                <div className="absolute bottom-12 left-3 w-2.5 h-3 bg-pink-300/50 rounded-full blur-[0.2px]" />
+                                <div className="absolute bottom-6 right-5 w-2 h-2.5 bg-rose-300/60 rounded-full blur-[0.2px]" />
+                              </div>
+                            )}
+
+                            {/* Icon badge */}
+                            <div className="relative z-10 pt-1">
+                              {backCoverConfig.badgeIcon === "heart" && (
+                                <div className="size-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto shadow-inner">
+                                  <Heart className="size-3.5 fill-white/80 text-white/90" />
+                                </div>
+                              )}
+                              {backCoverConfig.badgeIcon === "wax-seal" && (
+                                <div className="size-8 rounded-full bg-gradient-to-br from-[#8A1422] to-[#45050C] border border-[#D4AF37] flex items-center justify-center mx-auto shadow-sm">
+                                  <span className="font-serif text-[11px] text-[#F5E6BE] font-bold">囍</span>
+                                </div>
+                              )}
+                              {backCoverConfig.badgeIcon === "song-hy" && (
+                                <div className="size-7 rounded-full bg-amber-500/15 border border-[#D4AF37]/60 flex items-center justify-center mx-auto">
+                                  <span className="font-serif text-sm text-[#E8C568] font-bold">囍</span>
+                                </div>
+                              )}
+                              {backCoverConfig.badgeIcon === "infinity" && (
+                                <div className="size-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto shadow-inner">
+                                  <InfinityIcon className="size-3.5 text-[#D4AF37]" />
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Nội dung */}
+                            <div className="relative z-10 my-auto px-1 space-y-1.5">
+                              {backCoverConfig.photoUrl && (
+                                <div className="mx-auto mb-1.5 p-1 pb-2 bg-white rounded-md shadow-md -rotate-2 max-w-[90px]">
+                                  <img
+                                    src={backCoverConfig.photoUrl}
+                                    alt="Polaroid"
+                                    className="w-full aspect-[4/3] object-cover rounded-xs"
+                                  />
+                                </div>
+                              )}
+
+                              <p className="font-serif text-base text-white/95 font-medium leading-tight">
+                                {backCoverConfig.title || meta.defaultTitle}
+                              </p>
+                              <p className="text-[10px] text-white/75 font-light line-clamp-3 leading-snug px-1">
+                                {backCoverConfig.subtitle || meta.defaultSubtitle}
+                              </p>
+                              {backCoverConfig.signatureText && (
+                                <p className="font-serif text-[10px] italic text-white/80 tracking-wider">
+                                  {backCoverConfig.signatureText}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Nút quay lại */}
+                            <div className="relative z-10 flex items-center gap-1 text-white/80 text-[10px] font-medium bg-black/25 px-2.5 py-1 rounded-full backdrop-blur-xs border border-white/10">
+                              <RotateCcw className="size-2.5 text-white/70" />
+                              <span>{backCoverConfig.buttonText || "Quay lại trang bìa"}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
+                </div>
+              )}
+
+              {/* ───────────────────────────────────────────────────────── */}
+              {/* SUBTAB 2: BÌA TRƯỚC PHOTOBOOK (FRONT COVER)               */}
+              {/* ───────────────────────────────────────────────────────── */}
+              {settingsSubTab === "front" && (
+                <div className="space-y-6 animate-in fade-in">
+                  {/* Chọn màu bìa Photobook */}
                   <div>
-                    <span className="text-xs sm:text-sm font-bold text-stone-900 block">
-                      Âm thanh sột soạt lật giấy mỹ thuật
-                    </span>
-                    <span className="text-[11px] text-stone-500 font-light">
-                      Mô phỏng tiếng lật trang chân thực khi khách vuốt lật album
-                    </span>
+                    <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-3">
+                      Chọn phong cách Bìa Album Mỹ Thuật (Bìa Trước)
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {THEME_OPTIONS.map((theme) => {
+                        const isSelected = config.coverTheme === theme.id;
+                        return (
+                          <div
+                            key={theme.id}
+                            onClick={() => setConfig((prev) => ({ ...prev, coverTheme: theme.id }))}
+                            className={`p-4 rounded-2xl border-2 cursor-pointer flex items-center gap-3.5 transition ${
+                              isSelected
+                                ? "border-amber-500 bg-amber-50/40 shadow-sm"
+                                : "border-stone-200 hover:border-stone-300 bg-white"
+                            }`}
+                          >
+                            <div className={`size-10 rounded-xl border ${theme.colorClass} shadow-inner shrink-0`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs sm:text-sm font-bold text-stone-900">{theme.name}</span>
+                                {isSelected && <Check className="size-4 text-amber-600" />}
+                              </div>
+                              <p className="text-[11px] text-stone-500 truncate mt-0.5">{theme.desc}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Tùy chỉnh chữ trên bìa trước */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                        Tiêu đề Album (Hiển thị đầu mục)
+                      </label>
+                      <input
+                        type="text"
+                        value={config.title}
+                        onChange={(e) => setConfig((prev) => ({ ...prev, title: e.target.value }))}
+                        placeholder="Album Kỷ Niệm Ngày Chung Đôi"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                        Tên in nhũ trên bìa sách
+                      </label>
+                      <input
+                        type="text"
+                        value={config.coverTitle || ""}
+                        onChange={(e) => setConfig((prev) => ({ ...prev, coverTitle: e.target.value }))}
+                        placeholder="HOÀNG NAM & MAI LAN"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs sm:text-sm outline-hidden focus:border-amber-500 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Tùy chọn Âm thanh lật giấy */}
+                  <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="size-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-800">
+                        {config.soundEnabled ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
+                      </div>
+                      <div>
+                        <span className="text-xs sm:text-sm font-bold text-stone-900 block">
+                          Âm thanh sột soạt lật giấy mỹ thuật
+                        </span>
+                        <span className="text-[11px] text-stone-500 font-light">
+                          Mô phỏng tiếng lật trang chân thực khi khách vuốt lật album
+                        </span>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={config.soundEnabled}
+                      onChange={(e) => setConfig((prev) => ({ ...prev, soundEnabled: e.target.checked }))}
+                      className="size-5 accent-amber-600 rounded cursor-pointer"
+                    />
                   </div>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={config.soundEnabled}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, soundEnabled: e.target.checked }))}
-                  className="size-5 accent-amber-600 rounded cursor-pointer"
-                />
-              </div>
+              )}
             </div>
           )}
 

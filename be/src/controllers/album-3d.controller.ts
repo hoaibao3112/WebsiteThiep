@@ -6,6 +6,17 @@ import { z } from "zod";
 
 export class Album3DController {
   /**
+   * GET /api/cards/:cardId/album-3d/presets
+   * Trả về danh mục các mẫu thiết kế Bìa Kết có sẵn từ backend
+   */
+  static async getPresets(_req: Request, res: Response) {
+    return res.status(200).json({
+      success: true,
+      data: Album3DService.getPresets(),
+    });
+  }
+
+  /**
    * GET /api/cards/:cardId/album-3d
    */
   static async getConfig(req: AuthenticatedRequest, res: Response, next: NextFunction) {

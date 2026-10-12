@@ -17,8 +17,17 @@ import {
   Download,
   Check,
   Loader2,
+  Heart,
+  Infinity as InfinityIcon,
+  RotateCcw,
 } from "lucide-react";
-import { Album3DConfig, AlbumCoverTheme, Album3DPage } from "@/types/album-3d.types";
+import {
+  Album3DConfig,
+  AlbumCoverTheme,
+  Album3DPage,
+  ALBUM_BACK_COVER_PRESET_CATALOG,
+  DEFAULT_ALBUM_BACK_COVER,
+} from "@/types/album-3d.types";
 import { playPageFlipSound } from "@/lib/audio/page-flip-sound";
 import { downloadImage } from "@/lib/utils/download-image";
 
@@ -72,6 +81,30 @@ const THEME_STYLES: Record<
     textSub: "text-stone-400",
     emboss: "shadow-[inset_0_2px_8px_rgba(255,255,255,0.05),0_12px_36px_rgba(0,0,0,0.6)]",
     accent: "#A8A29E",
+  },
+  "botanical-sage": {
+    bg: "bg-gradient-to-br from-[#2C3E2D] via-[#374C38] to-[#1F2E20]",
+    border: "border-[#8FB38D]/50 ring-1 ring-[#8FB38D]/30",
+    textTitle: "text-[#F5FAF5]",
+    textSub: "text-[#A3C2A1]",
+    emboss: "shadow-[inset_0_2px_8px_rgba(0,0,0,0.4),0_12px_36px_rgba(0,0,0,0.45)]",
+    accent: "#8FB38D",
+  },
+  "oriental-crimson": {
+    bg: "bg-gradient-to-br from-[#80121D] via-[#941A26] to-[#630B13]",
+    border: "border-[#D4AF37]/60 ring-1 ring-[#D4AF37]/40",
+    textTitle: "text-[#FFFDF6]",
+    textSub: "text-[#F4C430]",
+    emboss: "shadow-[inset_0_2px_8px_rgba(0,0,0,0.6),0_12px_36px_rgba(0,0,0,0.5)]",
+    accent: "#F4C430",
+  },
+  "polaroid-kraft": {
+    bg: "bg-gradient-to-br from-[#382622] via-[#45302C] to-[#291B18]",
+    border: "border-[#C9A45C]/50 ring-1 ring-[#C9A45C]/30",
+    textTitle: "text-[#FFF9F7]",
+    textSub: "text-[#E8B4A2]",
+    emboss: "shadow-[inset_0_2px_8px_rgba(0,0,0,0.5),0_12px_36px_rgba(0,0,0,0.45)]",
+    accent: "#C9A45C",
   },
 };
 
@@ -472,34 +505,169 @@ export function Wedding3DFlipbook({
             </motion.div>
           )}
 
-          {/* 3. BÌA SAU (BACK COVER) */}
-          {isBackCover && (
-            <motion.div
-              key="back-cover"
-              initial={{ rotateY: 30, opacity: 0 }}
-              animate={{ rotateY: 0, opacity: 1 }}
-              exit={{ rotateY: 30, opacity: 0 }}
-              transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
-              onClick={() => {
-                setCurrentSpread(0);
-                playSound();
-              }}
-              className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${theme.bg} ${theme.border} ${theme.emboss} transform-gpu`}
-            >
-              <div className="absolute inset-3 sm:inset-4 border border-dashed border-white/20 rounded-xl sm:rounded-2xl pointer-events-none" />
+          {/* 3. BÌA SAU (BACK COVER) - ĐỘNG TỪ BACKEND CONFIG */}
+          {isBackCover && (() => {
+            const backCover = config?.backCover || DEFAULT_ALBUM_BACK_COVER;
+            const preset =
+              ALBUM_BACK_COVER_PRESET_CATALOG[backCover.designPreset] ||
+              ALBUM_BACK_COVER_PRESET_CATALOG["velvet-stitched"];
 
-              <div className="my-auto px-4">
-                <span className="font-serif text-3xl sm:text-4xl text-white/90">Forever &amp; Always</span>
-                <p className="text-xs sm:text-sm text-white/70 mt-3 font-light">
-                  Cảm ơn bạn đã dõi theo và sẻ chia những khoảnh khắc hạnh phúc cùng chúng mình!
-                </p>
-              </div>
+            const title = backCover.title || preset.defaultTitle;
+            const subtitle = backCover.subtitle || preset.defaultSubtitle;
+            const buttonText = backCover.buttonText || preset.defaultButtonText;
+            const signature = backCover.signatureText || `${groomName} & ${brideName}`;
+            const borderStyle = backCover.borderStyle || preset.borderStyle;
+            const badgeIcon = backCover.badgeIcon || preset.badgeIcon;
+            const showPetals = backCover.showPetals ?? preset.showPetals;
+            const bgClass = backCover.customBgColor ? "" : (preset.bgGradient || theme.bg);
+            const customBgStyle = backCover.customBgColor ? { backgroundColor: backCover.customBgColor } : {};
+            const customTextStyle = backCover.customTextColor ? { color: backCover.customTextColor } : {};
 
-              <div className="flex items-center gap-1.5 text-white/80 text-xs font-medium bg-black/20 px-4 py-1.5 rounded-full backdrop-blur-xs">
-                <span>Quay lại trang bìa</span>
-              </div>
-            </motion.div>
-          )}
+            return (
+              <motion.div
+                key="back-cover"
+                initial={{ rotateY: 30, opacity: 0 }}
+                animate={{ rotateY: 0, opacity: 1 }}
+                exit={{ rotateY: 30, opacity: 0 }}
+                transition={{ duration: 0.65, ease: [0.25, 1, 0.5, 1] }}
+                onClick={() => {
+                  setCurrentSpread(0);
+                  playSound();
+                }}
+                style={customBgStyle}
+                className={`relative cursor-pointer w-full max-w-[340px] sm:max-w-[420px] md:max-w-[460px] aspect-[1/1.38] rounded-2xl sm:rounded-3xl p-6 sm:p-10 flex flex-col justify-between items-center text-center ${bgClass} ${theme.border} ${theme.emboss} transform-gpu overflow-hidden`}
+              >
+                {/* ── CÁC KIỂU ĐƯỜNG VIỀN BÌA KẾT ── */}
+                {borderStyle === "stitched-dashed" && (
+                  <div className="absolute inset-3 sm:inset-4 border border-dashed border-white/20 rounded-xl sm:rounded-2xl pointer-events-none" />
+                )}
+                {borderStyle === "gold-double" && (
+                  <div className="absolute inset-2.5 sm:inset-3.5 border-2 border-[#D4AF37]/60 rounded-xl sm:rounded-2xl pointer-events-none">
+                    <div className="absolute inset-1 sm:inset-1.5 border border-[#D4AF37]/35 rounded-lg sm:rounded-xl pointer-events-none" />
+                  </div>
+                )}
+                {borderStyle === "ornate-corners" && (
+                  <div className="absolute inset-3 sm:inset-4 border border-[#D4AF37]/30 rounded-xl sm:rounded-2xl pointer-events-none">
+                    {/* Góc trang trí mạ vàng 4 góc */}
+                    <div className="absolute top-1 left-1 size-5 border-t-2 border-l-2 border-[#D4AF37]" />
+                    <div className="absolute top-1 right-1 size-5 border-t-2 border-r-2 border-[#D4AF37]" />
+                    <div className="absolute bottom-1 left-1 size-5 border-b-2 border-l-2 border-[#D4AF37]" />
+                    <div className="absolute bottom-1 right-1 size-5 border-b-2 border-r-2 border-[#D4AF37]" />
+                  </div>
+                )}
+                {borderStyle === "minimal-solid" && (
+                  <div className="absolute inset-3 sm:inset-4 border border-white/15 rounded-xl sm:rounded-2xl pointer-events-none" />
+                )}
+
+                {/* ── HIỆU ỨNG CÁNH HOA BAY LÃNG MẠN ── */}
+                {showPetals && (
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl sm:rounded-3xl">
+                    {[
+                      { top: "10%", left: "15%", delay: 0, rotate: 12 },
+                      { top: "25%", right: "12%", delay: 1.2, rotate: -25 },
+                      { top: "60%", left: "8%", delay: 0.6, rotate: 40 },
+                      { bottom: "20%", right: "14%", delay: 1.8, rotate: -15 },
+                      { top: "45%", right: "22%", delay: 2.4, rotate: 30 },
+                      { bottom: "10%", left: "20%", delay: 1.5, rotate: -35 },
+                    ].map((petal, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0.35, y: -6 }}
+                        animate={{
+                          opacity: [0.35, 0.75, 0.35],
+                          y: [0, 8, 0],
+                          rotate: [petal.rotate, petal.rotate + 10, petal.rotate],
+                        }}
+                        transition={{
+                          duration: 4.5,
+                          repeat: Infinity,
+                          delay: petal.delay,
+                          ease: "easeInOut",
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: petal.top,
+                          left: petal.left,
+                          right: petal.right,
+                          bottom: petal.bottom,
+                        }}
+                        className="w-3.5 h-4.5 bg-gradient-to-br from-pink-300/60 to-rose-400/40 rounded-full blur-[0.4px] shadow-xs transform-gpu"
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* ── BIỂU TƯỢNG HUY HIỆU TRUNG TÂM (BADGE ICON) ── */}
+                <div className="relative z-10 pt-2">
+                  {badgeIcon === "heart" && (
+                    <div className="size-10 sm:size-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto shadow-inner backdrop-blur-xs">
+                      <Heart className="size-5 fill-white/70 text-white/90" />
+                    </div>
+                  )}
+                  {badgeIcon === "wax-seal" && (
+                    <div className="size-11 sm:size-12 rounded-full bg-gradient-to-br from-[#8A1422] via-[#6B0E19] to-[#45050C] border-2 border-[#D4AF37]/80 flex items-center justify-center mx-auto shadow-[0_4px_12px_rgba(0,0,0,0.4),inset_0_2px_4px_rgba(255,255,255,0.3)]">
+                      <span className="font-serif text-base text-[#F5E6BE] font-bold">囍</span>
+                    </div>
+                  )}
+                  {badgeIcon === "song-hy" && (
+                    <div className="size-10 sm:size-11 rounded-full bg-amber-500/15 border border-[#D4AF37]/60 flex items-center justify-center mx-auto backdrop-blur-xs">
+                      <span className="font-serif text-lg text-[#E8C568] font-bold">囍</span>
+                    </div>
+                  )}
+                  {badgeIcon === "infinity" && (
+                    <div className="size-10 sm:size-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto backdrop-blur-xs shadow-inner">
+                      <InfinityIcon className="size-5 text-[#D4AF37]" />
+                    </div>
+                  )}
+                </div>
+
+                {/* ── NỘI DUNG CHÍNH (ẢNH POLAROID NẾU CÓ, TIÊU ĐỀ & LỜI CẢM ƠN) ── */}
+                <div className="relative z-10 my-auto px-3 sm:px-4 space-y-2.5 max-w-sm">
+                  {backCover.photoUrl && (
+                    <div className="mx-auto mb-3 p-1.5 pb-3.5 bg-white/95 rounded-lg shadow-xl -rotate-2 max-w-[150px] sm:max-w-[175px] border border-stone-200">
+                      <img
+                        src={backCover.photoUrl}
+                        alt="Ảnh kỷ niệm bìa kết"
+                        className="w-full aspect-[4/3] object-cover rounded-xs"
+                      />
+                      <p className="font-serif text-[9px] text-stone-600 text-center mt-1 italic font-light truncate">
+                        {signature}
+                      </p>
+                    </div>
+                  )}
+
+                  <span
+                    style={customTextStyle}
+                    className="font-serif text-3xl sm:text-4xl text-white/90 drop-shadow-sm block font-normal"
+                  >
+                    {title}
+                  </span>
+
+                  <p
+                    style={customTextStyle}
+                    className="text-xs sm:text-sm text-white/75 font-light leading-relaxed max-w-xs mx-auto"
+                  >
+                    {subtitle}
+                  </p>
+
+                  {signature && !backCover.photoUrl && (
+                    <p
+                      style={customTextStyle}
+                      className="font-serif text-xs sm:text-sm italic tracking-widest uppercase text-white/80 pt-1"
+                    >
+                      {signature}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── NÚT ĐIỀU HƯỚNG QUAY LẠI TRANG ĐẦU ── */}
+                <div className="relative z-10 flex items-center gap-1.5 text-white/80 text-xs font-medium bg-black/25 hover:bg-black/40 px-4 py-1.5 rounded-full backdrop-blur-xs transition border border-white/10 shadow-xs">
+                  <RotateCcw className="size-3.5 text-white/70" />
+                  <span>{buttonText}</span>
+                </div>
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </div>
 

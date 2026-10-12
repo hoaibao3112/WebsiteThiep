@@ -70,6 +70,51 @@ describe("Album3DService & GoogleDriveService", () => {
       expect(parsed.coverTheme).toBe("royal-gold");
       expect(parsed.soundEnabled).toBe(true);
       expect(parsed.pages.length).toBe(1);
+      expect(parsed.backCover).toBeDefined();
+      expect(parsed.backCover?.designPreset).toBe("velvet-stitched");
+      expect(parsed.backCover?.title).toBe("Forever & Always");
+      expect(parsed.backCover?.borderStyle).toBe("stitched-dashed");
+      expect(parsed.backCover?.showPetals).toBe(true);
+      expect(parsed.backCover?.buttonText).toBe("Quay lại trang bìa");
+    });
+
+    it("validates and accepts custom backCover settings", () => {
+      const parsed = Album3DConfigSchema.parse({
+        title: "Album Cưới",
+        coverTheme: "leather-burgundy",
+        pages: [],
+        backCover: {
+          enabled: true,
+          designPreset: "vintage-leather-wax",
+          title: "Happy Ending",
+          subtitle: "Cảm ơn bạn rất nhiều!",
+          signatureText: "Hoàng Long & Bảo Ngọc",
+          buttonText: "Xem lại từ đầu",
+          photoUrl: "https://example.com/polaroid.jpg",
+          showPetals: false,
+          borderStyle: "gold-double",
+          badgeIcon: "wax-seal",
+          customBgColor: "#3D2314",
+        },
+      });
+
+      expect(parsed.backCover.designPreset).toBe("vintage-leather-wax");
+      expect(parsed.backCover.title).toBe("Happy Ending");
+      expect(parsed.backCover.signatureText).toBe("Hoàng Long & Bảo Ngọc");
+      expect(parsed.backCover.badgeIcon).toBe("wax-seal");
+      expect(parsed.backCover.customBgColor).toBe("#3D2314");
+    });
+
+    it("rejects invalid customBgColor hex format", () => {
+      expect(() =>
+        Album3DConfigSchema.parse({
+          title: "Album Cưới",
+          pages: [],
+          backCover: {
+            customBgColor: "not-a-hex",
+          },
+        })
+      ).toThrow();
     });
 
     it("rejects invalid coverTheme", () => {
@@ -78,6 +123,18 @@ describe("Album3DService & GoogleDriveService", () => {
           coverTheme: "neon-pink" as any,
         })
       ).toThrow();
+    });
+
+    it("serves presets catalog with all 7 back cover presets", () => {
+      const presets = Album3DService.getPresets();
+      expect(Object.keys(presets).length).toBe(7);
+      expect(presets["velvet-stitched"]).toBeDefined();
+      expect(presets["gold-foil-floral"]).toBeDefined();
+      expect(presets["vintage-leather-wax"]).toBeDefined();
+      expect(presets["botanical-sage-glass"]).toBeDefined();
+      expect(presets["minimal-monochrome"]).toBeDefined();
+      expect(presets["polaroid-farewell"]).toBeDefined();
+      expect(presets["oriental-red-songhy"]).toBeDefined();
     });
   });
 

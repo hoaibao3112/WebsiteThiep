@@ -93,6 +93,7 @@ apiRouter.patch("/cards/:cardId/elements/:elementId", authGuard, CardElementCont
 apiRouter.get("/envelope-styles", EnvelopeController.getStyles); // Danh mục mẫu phong bì từ Backend
 apiRouter.get("/cards/:cardId/envelope-config", authGuard, EnvelopeController.getCardConfig); // Đọc cấu hình phong bì
 apiRouter.patch("/cards/:cardId/envelope-config", authGuard, EnvelopeController.updateCardConfig); // Cập nhật cấu hình phong bì mở đầu
+apiRouter.get("/cards/:cardId/album-3d/presets", authGuard, Album3DController.getPresets); // Danh mục mẫu thiết kế Bìa Kết Album 3D
 apiRouter.get("/cards/:cardId/album-3d", authGuard, Album3DController.getConfig); // Đọc cấu hình Album 3D
 apiRouter.put("/cards/:cardId/album-3d", authGuard, Album3DController.updateConfig); // Cập nhật cấu hình Album 3D
 apiRouter.post("/cards/:cardId/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive
