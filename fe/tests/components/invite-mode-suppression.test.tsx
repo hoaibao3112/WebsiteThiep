@@ -40,25 +40,39 @@ describe('Invite Mode & Demo UI Suppression Suite', () => {
       expect(screen.getByLabelText(/Mở khung chat AI tư vấn/i)).toBeInTheDocument();
     });
 
-    it('shows on demo template preview when not in invite mode', () => {
-      mockPathname = '/thiep/wedding-cinematic-editorial';
-      mockSearchParams = new URLSearchParams();
-      render(<AiConsultantWidget />);
-      expect(screen.getByLabelText(/Mở khung chat AI tư vấn/i)).toBeInTheDocument();
+    it('shows on consulting pages (/pricing, /collections, /concierge, /journal)', () => {
+      const consultingPages = ['/pricing', '/collections', '/concierge', '/journal'];
+      for (const page of consultingPages) {
+        mockPathname = page;
+        const { unmount } = render(<AiConsultantWidget />);
+        expect(screen.getByLabelText(/Mở khung chat AI tư vấn/i)).toBeInTheDocument();
+        unmount();
+      }
     });
 
-    it('hides when viewing an invitation sent to relatives (?invite=1)', () => {
+    it('hides on card viewing pages (/thiep/*), even for demo templates', () => {
+      mockPathname = '/thiep/wedding-forest-green-botanical';
+      const { container: c1, unmount: u1 } = render(<AiConsultantWidget />);
+      expect(c1).toBeEmptyDOMElement();
+      u1();
+
+      mockPathname = '/thiep/wedding-cinematic-editorial';
+      const { container: c2, unmount: u2 } = render(<AiConsultantWidget />);
+      expect(c2).toBeEmptyDOMElement();
+      u2();
+    });
+
+    it('hides when viewing an invitation sent to relatives or with guest param', () => {
       mockPathname = '/thiep/wedding-cinematic-editorial';
       mockSearchParams = new URLSearchParams('invite=1');
-      const { container } = render(<AiConsultantWidget />);
-      expect(container).toBeEmptyDOMElement();
-    });
+      const { container: c1, unmount: u1 } = render(<AiConsultantWidget />);
+      expect(c1).toBeEmptyDOMElement();
+      u1();
 
-    it('hides when viewing a guest-specific invitation (?g=GUEST123)', () => {
-      mockPathname = '/thiep/wedding-cinematic-editorial';
       mockSearchParams = new URLSearchParams('g=GUEST123');
-      const { container } = render(<AiConsultantWidget />);
-      expect(container).toBeEmptyDOMElement();
+      const { container: c2, unmount: u2 } = render(<AiConsultantWidget />);
+      expect(c2).toBeEmptyDOMElement();
+      u2();
     });
 
     it('hides when viewing a non-demo real user card', () => {
@@ -68,10 +82,15 @@ describe('Invite Mode & Demo UI Suppression Suite', () => {
       expect(container).toBeEmptyDOMElement();
     });
 
-    it('hides on dashboard pages', () => {
+    it('hides on card editor and dashboard pages', () => {
       mockPathname = '/dashboard/cards';
-      const { container } = render(<AiConsultantWidget />);
-      expect(container).toBeEmptyDOMElement();
+      const { container: c1, unmount: u1 } = render(<AiConsultantWidget />);
+      expect(c1).toBeEmptyDOMElement();
+      u1();
+
+      mockPathname = '/card/demo-card/edit';
+      const { container: c2 } = render(<AiConsultantWidget />);
+      expect(c2).toBeEmptyDOMElement();
     });
   });
 

@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { DEMO_TEMPLATES_MAP } from '@/app/(public)/thiep/[slug]/demo-templates-data';
+import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle,
@@ -36,8 +34,6 @@ const DEFAULT_SUGGESTIONS = [
 
 export function AiConsultantWidget() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const [isSocialInApp, setIsSocialInApp] = useState(false);
@@ -84,26 +80,25 @@ export function AiConsultantWidget() {
     }
   }, [messages, isOpen, isLoading]);
 
-  // 1. Ẩn trên các trang dashboard quản trị
-  const isDashboard = pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin');
+  // 1. Tuyệt đối KHÔNG hiển thị khi đang xem thiệp (/thiep/*), chỉnh sửa thiệp (/card/*), hoặc dashboard/admin
+  const currentPath = pathname ?? '/';
+  const isCardPage = currentPath.startsWith('/thiep') || currentPath.startsWith('/card');
+  const isDashboardOrAdmin = currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin');
 
-  // 2. Trên trang thiệp /thiep/[slug]
-  const isCardPage = pathname?.startsWith('/thiep/');
-  const isInviteMode = Boolean(
-    searchParams?.get('g') ||
-    searchParams?.get('invite') === '1' ||
-    searchParams?.get('invite') === 'true' ||
-    searchParams?.get('share') === '1' ||
-    searchParams?.get('share') === 'true' ||
-    searchParams?.get('mode') === 'invite'
-  );
-  const pathSlug = pathname ? pathname.replace(/^\/thiep\//, '').split('/')[0] : '';
-  const isDemoSlug = Boolean(pathSlug && DEMO_TEMPLATES_MAP[pathSlug]);
+  // 2. Chỉ hiển thị ở trang chủ ('/') hoặc các mục để tư vấn / xem bảng giá / mẫu thiệp:
+  // - Trang chủ: '/'
+  // - Bảng giá các gói: '/pricing'
+  // - Danh mục bộ sưu tập: '/collections'
+  // - Tư vấn dịch vụ riêng: '/concierge'
+  // - Cẩm nang tư vấn cưới: '/journal'
+  const isAllowedConsultingPage =
+    currentPath === '/' ||
+    currentPath.startsWith('/pricing') ||
+    currentPath.startsWith('/collections') ||
+    currentPath.startsWith('/concierge') ||
+    currentPath.startsWith('/journal');
 
-  // Nếu trên trang thiệp: chỉ hiện khi là demo template VÀ người dùng chưa đăng nhập VÀ không phải gửi cho khách
-  const shouldHideOnCard = isCardPage && (isInviteMode || isSocialInApp || !isDemoSlug || isAuthenticated);
-
-  if (!mounted || isDashboard || shouldHideOnCard) {
+  if (!mounted || isSocialInApp || isCardPage || isDashboardOrAdmin || !isAllowedConsultingPage) {
     return null;
   }
 
