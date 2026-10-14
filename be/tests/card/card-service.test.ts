@@ -221,6 +221,41 @@ describe("CardService.createDraft", () => {
     expect(prismaMock.$transaction).toHaveBeenCalledTimes(3);
   });
 
+  it("Fix #1: throws 409 SLUG_TAKEN immediately on P2002 slug conflict without retrying", async () => {
+    prismaMock.$transaction.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("unique constraint violation", {
+        code: "P2002",
+        clientVersion: "5.22.0",
+        meta: { target: ["slug"] },
+      }),
+    );
+
+    await expect(
+      CardService.createDraft("user-1", "account-1", input, "request-slug-conflict"),
+    ).rejects.toMatchObject({
+      status: 409,
+      code: "SLUG_TAKEN",
+    });
+
+    // Chỉ gọi đúng 1 lần, tuyệt đối không retry 3 lần làm treo tài nguyên
+    expect(prismaMock.$transaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("Fix #1: returns existing card when P2002 conflict occurs on createIdempotencyKey race", async () => {
+    const existingRacedCard = { id: "card-raced-1", status: "DRAFT" };
+    prismaMock.$transaction.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("idempotency conflict", {
+        code: "P2002",
+        clientVersion: "5.22.0",
+        meta: { target: ["accountId", "createIdempotencyKey"] },
+      }),
+    );
+    db.card.findFirst.mockResolvedValueOnce(existingRacedCard);
+
+    const result = await CardService.createDraft("user-1", "account-1", input, "request-idempotency-race");
+    expect(result).toEqual(existingRacedCard);
+  });
+
   it("rejects a premium template in the FREE flow", async () => {
     db.template.findUnique.mockResolvedValue({
       id: "premium-id",

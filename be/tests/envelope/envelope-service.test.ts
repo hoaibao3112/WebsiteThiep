@@ -69,7 +69,7 @@ describe("EnvelopeService & EnvelopeConfig", () => {
   });
 
   describe("updateCardEnvelopeConfig", () => {
-    it("updates envelopeConfig in categoryData and enforces WAX_SEAL opening effect", async () => {
+    it("Fix #6: updates envelopeConfig in categoryData without overwriting openingEffect", async () => {
       prismaMock.card.findFirst.mockResolvedValueOnce({
         id: "card-1",
         categoryData: { isReverseOrder: false },
@@ -79,7 +79,7 @@ describe("EnvelopeService & EnvelopeConfig", () => {
       prismaMock.card.update.mockResolvedValueOnce({
         id: "card-1",
         slug: "lan-minh-2026",
-        openingEffect: "WAX_SEAL",
+        openingEffect: "NONE",
         categoryData: {
           isReverseOrder: false,
           envelopeConfig: {
@@ -110,12 +110,12 @@ describe("EnvelopeService & EnvelopeConfig", () => {
       expect(prismaMock.card.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: "card-1", accountId: "account-1" },
-          data: expect.objectContaining({
+          data: expect.not.objectContaining({
             openingEffect: "WAX_SEAL",
           }),
         })
       );
-      expect(result.openingEffect).toBe("WAX_SEAL");
+      expect(result.openingEffect).toBe("NONE");
     });
   });
 

@@ -150,6 +150,9 @@ export class CardElementService {
       where: whereClause,
       data: {
         categoryData: updatedCategoryData as Prisma.InputJsonValue,
+        // Fix #4: tăng version để updateDraft phát hiện được thay đổi từ patchElement.
+        // Nếu sau này cần chặn ghi đè 2 chiều (patch vs patch), thêm expectedVersion vào where.
+        version: { increment: 1 },
       },
     });
 

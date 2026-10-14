@@ -104,6 +104,14 @@ describe("CardElementService", () => {
     });
 
     expect(db.card.updateMany).toHaveBeenCalledTimes(1);
+    // Fix #4: Xác nhận patchElement tăng version để bảo vệ concurrency
+    expect(db.card.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          version: { increment: 1 },
+        }),
+      })
+    );
     expect(result.id).toBe("preset-gift");
     expect(result.customData.groomName).toBe("Nguyễn Văn B");
     expect(result.customData.groomAccount).toBe("88888888");

@@ -50,6 +50,7 @@ describe("GuestService.importGuests", () => {
       id: "card-1",
       accountId: "account-1",
       slug: "wedding-card-1",
+      status: "ACTIVE",
       plan: { code: "VIP" },
     });
   });

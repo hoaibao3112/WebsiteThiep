@@ -104,11 +104,12 @@ export class RsvpService {
 
     // 5. Đẩy Job vào hàng đợi BullMQ để bắn thông báo ngầm (Telegram/Zalo)
     if (card.telegramChatId) {
+      // Fix #7: Gửi resolvedName / resolvedPhone (từ commonData) thay vì raw input
       await rsvpNotificationQueue.add("send-telegram-rsvp", {
         cardSlug: card.slug,
         telegramChatId: card.telegramChatId,
-        fullName,
-        phone: phone || undefined,
+        fullName: commonData.fullName,
+        phone: commonData.phone || undefined,
         status,
         guestCount,
         note: note || undefined,

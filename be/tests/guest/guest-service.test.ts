@@ -30,7 +30,7 @@ describe("GuestService", () => {
         allowPremiumTemplates: true,
       },
     });
-    db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", slug: "minh-lan", plan: { code: "VIP" } });
+    db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", slug: "minh-lan", status: "ACTIVE", plan: { code: "VIP" } });
     db.guest.create.mockImplementation(async ({ data }) => ({ id: "guest-1", ...data }));
   });
 
@@ -38,6 +38,30 @@ describe("GuestService", () => {
     const guest = await GuestService.create("account-1", "card-1", { fullName: "Anh Nam" });
     expect(guest.guestToken).toMatch(/^[A-Za-z0-9_-]{32}$/);
     expect(db.guest.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ accountId: "account-1", cardId: "card-1" }) }));
+  });
+
+  it("Fix #10: từ chối thao tác khách mời nếu thiệp bị ARCHIVED hoặc EXPIRED", async () => {
+    db.card.findFirst.mockResolvedValueOnce({ id: "card-1", accountId: "account-1", slug: "minh-lan", status: "ARCHIVED", plan: { code: "VIP" } });
+    await expect(GuestService.create("account-1", "card-1", { fullName: "Khách 1" })).rejects.toMatchObject({
+      statusCode: 409,
+      code: "CARD_STATE_CONFLICT",
+    });
+
+    db.card.findFirst.mockResolvedValueOnce({ id: "card-1", accountId: "account-1", slug: "minh-lan", status: "EXPIRED", plan: { code: "VIP" } });
+    await expect(GuestService.create("account-1", "card-1", { fullName: "Khách 2" })).rejects.toMatchObject({
+      statusCode: 409,
+      code: "CARD_STATE_CONFLICT",
+    });
+  });
+
+  it("Fix #10: cho phép thao tác khách mời khi thiệp là DRAFT hoặc ACTIVE", async () => {
+    db.card.findFirst.mockResolvedValueOnce({ id: "card-1", accountId: "account-1", slug: "minh-lan", status: "DRAFT", plan: { code: "VIP" } });
+    const draftGuest = await GuestService.create("account-1", "card-1", { fullName: "Khách Draft" });
+    expect(draftGuest.id).toBe("guest-1");
+
+    db.card.findFirst.mockResolvedValueOnce({ id: "card-1", accountId: "account-1", slug: "minh-lan", status: "ACTIVE", plan: { code: "VIP" } });
+    const activeGuest = await GuestService.create("account-1", "card-1", { fullName: "Khách Active" });
+    expect(activeGuest.id).toBe("guest-1");
   });
 
   it("rejects personalized guests for a FREE card", async () => {
@@ -58,7 +82,7 @@ describe("GuestService", () => {
         allowPremiumTemplates: false,
       },
     });
-    db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", plan: { code: "FREE" } });
+    db.card.findFirst.mockResolvedValue({ id: "card-1", accountId: "account-1", status: "ACTIVE", plan: { code: "FREE" } });
     await expect(GuestService.create("account-1", "card-1", { fullName: "Anh Nam" })).rejects.toThrow("VIP");
     expect(db.guest.create).not.toHaveBeenCalled();
   });
@@ -69,9 +93,29 @@ describe("GuestService", () => {
     expect(db.card.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "card-1", accountId: "other-account" } }));
   });
 
-  it("marks opening Zalo without claiming the invitation was sent", async () => {
+  it("marks opening Zalo without resetting sentAt to null (Fix #3)", async () => {
     db.guest.updateMany.mockResolvedValue({ count: 1 });
     await GuestService.setDeliveryStatus("account-1", "card-1", "guest-1", "OPENED_ZALO");
-    expect(db.guest.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ deliveryStatus: "OPENED_ZALO", sentAt: null }) }));
+    expect(db.guest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          deliveryStatus: "OPENED_ZALO",
+          sentAt: undefined,
+        }),
+      })
+    );
+  });
+
+  it("sets sentAt timestamp when status is CONFIRMED_SENT", async () => {
+    db.guest.updateMany.mockResolvedValue({ count: 1 });
+    await GuestService.setDeliveryStatus("account-1", "card-1", "guest-1", "CONFIRMED_SENT");
+    expect(db.guest.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          deliveryStatus: "CONFIRMED_SENT",
+          sentAt: expect.any(Date),
+        }),
+      })
+    );
   });
 });

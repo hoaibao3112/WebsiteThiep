@@ -47,6 +47,7 @@ describe("Guest Tracking and Filter Logic", () => {
       id: "card-1",
       accountId: "account-1",
       slug: "wedding-card",
+      status: "ACTIVE",
       plan: { code: "VIP" },
     });
     db.guest.findMany.mockResolvedValue([]);

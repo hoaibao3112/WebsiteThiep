@@ -212,7 +212,30 @@ export class ManualPaymentReviewService {
       try {
         const result = await prisma.$transaction(
           async (tx) => {
-            // 1. Lock/transition the Order
+            // Fix #5: 1. Đọc Order và kiểm tra trạng thái ban đầu
+            const order = await tx.order.findUnique({
+              where: { id: orderId },
+              include: { plan: true },
+            });
+
+            if (!order || order.status !== "AWAITING_REVIEW") {
+              throw new HttpError(
+                409,
+                "Đơn hàng không ở trạng thái chờ duyệt hoặc đã bị xử lý",
+                "ORDER_NOT_APPROVABLE",
+              );
+            }
+
+            // Fix #5: 2. Validate số tiền nhận được TRƯỚC KHI chuyển trạng thái sang PAID
+            if (receivedAmount < order.amount) {
+              throw new HttpError(
+                422,
+                `Số tiền nhận được (${receivedAmount.toLocaleString("vi-VN")}đ) thấp hơn yêu cầu (${order.amount.toLocaleString("vi-VN")}đ)`,
+                "INSUFFICIENT_AMOUNT",
+              );
+            }
+
+            // 3. Chuyển trạng thái Order sang PAID với updateMany làm concurrency gate (chống 2 admin duyệt song song)
             const transition = await tx.order.updateMany({
               where: {
                 id: orderId,
@@ -232,22 +255,6 @@ export class ManualPaymentReviewService {
                 409,
                 "Đơn hàng không ở trạng thái chờ duyệt hoặc đã bị xử lý",
                 "ORDER_NOT_APPROVABLE",
-              );
-            }
-
-            // 2. Read the Order for details
-            const order = await tx.order.findUniqueOrThrow({
-              where: { id: orderId },
-              include: { plan: true },
-            });
-
-            // 3. Verify received amount
-            if (receivedAmount < order.amount) {
-              // Rollback by throwing — the transition count guard prevents double-approve anyway
-              throw new HttpError(
-                422,
-                `Số tiền nhận được (${receivedAmount.toLocaleString("vi-VN")}đ) thấp hơn yêu cầu (${order.amount.toLocaleString("vi-VN")}đ)`,
-                "INSUFFICIENT_AMOUNT",
               );
             }
 

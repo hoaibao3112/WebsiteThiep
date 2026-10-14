@@ -150,31 +150,6 @@ export class OtpService {
     const otpKey = `otp:register:${normalizedEmail}`;
     const attemptsKey = `otp:attempts:${normalizedEmail}`;
 
-    if (redis.status === "ready") {
-      try {
-        savedHash = await redis.get(otpKey);
-        if (savedHash) {
-          attempts = await redis.incr(attemptsKey);
-          if (attempts === 1) await redis.expire(attemptsKey, OTP_TTL_SECONDS);
-        }
-      } catch {
-        // Fallback to in-memory check below
-      }
-    }
-
-    if (!savedHash) {
-      const mem = memoryOtpMap.get(normalizedEmail);
-      if (mem && mem.expiresAt > now) {
-        savedHash = mem.hash;
-        mem.attempts += 1;
-        attempts = mem.attempts;
-      }
-    }
-
-    if (!savedHash) {
-      throw new HttpError(400, "Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.", "OTP_EXPIRED_OR_NOT_FOUND");
-    }
-
     const lockOut = async () => {
       if (redis.status === "ready") {
         try {
@@ -190,13 +165,42 @@ export class OtpService {
       );
     };
 
-    if (attempts > MAX_VERIFY_ATTEMPTS) {
-      return lockOut();
+    if (redis.status === "ready") {
+      try {
+        // Fix #9: INCR attempts trước để đếm atomic và chặn brute-force ngay cả khi gửi song song
+        attempts = await redis.incr(attemptsKey);
+        if (attempts === 1) await redis.expire(attemptsKey, OTP_TTL_SECONDS);
+
+        if (attempts > MAX_VERIFY_ATTEMPTS) {
+          return await lockOut();
+        }
+
+        savedHash = await redis.get(otpKey);
+      } catch (err) {
+        if (err instanceof HttpError) throw err;
+        // Fallback to in-memory check below
+      }
+    }
+
+    if (!savedHash) {
+      const mem = memoryOtpMap.get(normalizedEmail);
+      if (mem && mem.expiresAt > now) {
+        mem.attempts += 1;
+        attempts = mem.attempts;
+        if (attempts > MAX_VERIFY_ATTEMPTS) {
+          return await lockOut();
+        }
+        savedHash = mem.hash;
+      }
+    }
+
+    if (!savedHash) {
+      throw new HttpError(400, "Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng yêu cầu mã mới.", "OTP_EXPIRED_OR_NOT_FOUND");
     }
 
     if (!safeEqualHex(savedHash, hashOtp(normalizedEmail, otpInput.trim()))) {
       if (attempts >= MAX_VERIFY_ATTEMPTS) {
-        return lockOut();
+        return await lockOut();
       }
       const remaining = MAX_VERIFY_ATTEMPTS - attempts;
       throw new HttpError(400, `Mã OTP không chính xác. Bạn còn ${remaining} lần thử.`, "OTP_INVALID");

@@ -14,9 +14,18 @@ export class GuestService {
   private static async requireVipCard(accountId: string, cardId: string) {
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
-      select: { id: true, slug: true, accountId: true },
+      select: { id: true, slug: true, accountId: true, status: true },
     });
-    if (!card) throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập");
+    if (!card) throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền truy cập", "CARD_NOT_FOUND");
+
+    // Fix #10: Allowlist — chỉ cho phép quản lý khách mời với thiệp DRAFT hoặc ACTIVE
+    if (card.status !== "DRAFT" && card.status !== "ACTIVE") {
+      throw new HttpError(
+        409,
+        `Thiệp đang ở trạng thái ${card.status === "ARCHIVED" ? "lưu trữ" : "hết hạn"}, không thể thao tác khách mời`,
+        "CARD_STATE_CONFLICT"
+      );
+    }
 
     const effective = await AccountEntitlementService.getEffectivePlan(accountId);
     if (effective.planCode !== "VIP") {
@@ -112,7 +121,9 @@ export class GuestService {
     const now = new Date();
     const result = await prisma.guest.updateMany({ where: { id: guestId, accountId, cardId }, data: {
       deliveryStatus: status, shareOpenedAt: status === "OPENED_ZALO" ? now : undefined,
-      sentAt: status === "CONFIRMED_SENT" ? now : null,
+      // Fix #3: dùng undefined thay null — không xóa sentAt khi chuyển sang OPENED_ZALO/FAILED/...
+      // null = ghi đè về null (xóa timestamp), undefined = không đụng field (giữ nguyên giá trị cũ)
+      sentAt: status === "CONFIRMED_SENT" ? now : undefined,
     }});
     if (!result.count) throw new HttpError(404, "Không tìm thấy khách mời", "GUEST_NOT_FOUND");
     return result;

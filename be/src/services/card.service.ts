@@ -51,6 +51,8 @@ export class CardService {
     const maxAttempts = 3;
     input = { ...input, data: ensureWeddingScene(input) };
 
+    // Check slug sớm để trả lỗi sớm cho UX (best-effort, không phải source-of-truth về uniqueness).
+    // Source-of-truth là DB @unique constraint được check bên trong transaction phía dưới.
     const isSlugFree = await this.isSlugAvailable(input.slug);
     if (!isSlugFree) {
       throw new HttpError(409, "Đường dẫn (slug) đã có người sử dụng", "SLUG_TAKEN");
@@ -64,6 +66,16 @@ export class CardService {
               where: { accountId, createIdempotencyKey: idempotencyKey },
             });
             if (existing) return existing;
+
+            // Fix #1: Check slug trong transaction (atomic) — source-of-truth thực sự.
+            // Kiểm tra ngay trước khi create để trả lỗi rõ ràng thay vì để DB throw P2002.
+            const slugConflict = await tx.card.findFirst({
+              where: { slug: input.slug },
+              select: { id: true },
+            });
+            if (slugConflict) {
+              throw new HttpError(409, "Đường dẫn (slug) đã có người sử dụng", "SLUG_TAKEN");
+            }
 
             const [user, effectivePlan] = await Promise.all([
               tx.user.findUnique({
@@ -202,8 +214,36 @@ export class CardService {
           { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
         );
       } catch (error: unknown) {
-        const isRetryable =
-          error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
+        // HttpError (SLUG_TAKEN, TEMPLATE_UNAVAILABLE, v.v.) — bubble up ngay, không retry
+        if (error instanceof HttpError) throw error;
+
+        const isPrismaError = error instanceof Prisma.PrismaClientKnownRequestError;
+
+        if (isPrismaError && error.code === "P2002") {
+          // Fix #1: Phân biệt P2002 theo target để trả đúng lỗi thay vì retry
+          const target = Array.isArray(error.meta?.target)
+            ? (error.meta.target as string[])
+            : [];
+
+          // P2002 trên slug → 409 SLUG_TAKEN (không retry)
+          if (target.includes("slug")) {
+            throw new HttpError(409, "Đường dẫn (slug) đã có người sử dụng", "SLUG_TAKEN");
+          }
+
+          // P2002 trên createIdempotencyKey → idempotent reply
+          if (target.some((t) => t.includes("createIdempotencyKey") || t.includes("idempotency"))) {
+            const raced = await prisma.card.findFirst({
+              where: { accountId, createIdempotencyKey: idempotencyKey },
+            });
+            if (raced) return raced;
+          }
+
+          // P2002 khác — throw tiếp
+          throw error;
+        }
+
+        // P2034 (serialization failure) — retry tối đa 3 lần
+        const isRetryable = isPrismaError && error.code === "P2034";
         if (!isRetryable) throw error;
         if (attempt === maxAttempts) {
           throw new HttpError(
@@ -740,7 +780,9 @@ export class CardService {
     const publishedAt = card.publishedAt || now;
     let expiredAt: Date | null = null;
 
-    if (effectivePlan.isPaid || effectivePlan.planCode === "BASIC" || effectivePlan.planCode === "VIP") {
+    // Fix #2: Dọn code thừa — effectivePlan.isPaid là nguồn sự thật duy nhất
+    // (true cho BASIC còn hạn và VIP; false cho FREE và BASIC hết hạn đã downgrade)
+    if (effectivePlan.isPaid) {
       // Paid BASIC/VIP tại thời điểm publish có expiredAt = null theo spec ngày 23/09
       expiredAt = null;
     } else {

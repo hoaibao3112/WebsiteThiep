@@ -203,7 +203,7 @@ export class EnvelopeService {
     const updatedCard = await prisma.card.update({
       where: { id: cardId, accountId },
       data: {
-        openingEffect: "WAX_SEAL", // Đảm bảo hiệu ứng mở màn là WAX_SEAL khi đã cấu hình phong bì
+        // Fix #6: Không ép openingEffect thành WAX_SEAL để tôn trọng lựa chọn hiệu ứng của host
         categoryData: updatedCatData as Prisma.InputJsonValue,
       },
       select: {

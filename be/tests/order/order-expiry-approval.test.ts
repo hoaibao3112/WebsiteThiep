@@ -81,10 +81,10 @@ describe("Order Expiry & Approval SLA Flow", () => {
       plan: { code: "VIP", name: "VIP Plan", durationDays: null },
     };
 
-    // Bước 1: tx.order.updateMany transition sang PAID thành công (count = 1)
+    // Bước 1: tx.order.findUnique đọc order
+    prismaMock.order.findUnique.mockResolvedValueOnce(orderInDb);
+    // Bước 2: tx.order.updateMany transition sang PAID thành công (count = 1)
     prismaMock.order.updateMany.mockResolvedValueOnce({ count: 1 });
-    // Bước 2: tx.order.findUniqueOrThrow
-    prismaMock.order.findUniqueOrThrow.mockResolvedValueOnce(orderInDb);
     // Bước 3: tx.account.findUniqueOrThrow
     prismaMock.account.findUniqueOrThrow.mockResolvedValueOnce({
       id: "acc-1",
@@ -150,6 +150,55 @@ describe("Order Expiry & Approval SLA Flow", () => {
         status: "PAID",
         reviewedById: "admin-user-id",
       }),
+    });
+  });
+
+  it("Fix #5: từ chối với mã 422 và KHÔNG chuyển trạng thái khi số tiền nhận được thiếu", async () => {
+    const awaitingOrder = {
+      id: "order-underpaid",
+      accountId: "acc-1",
+      orderCode: "THIEP77777",
+      amount: 399000,
+      status: "AWAITING_REVIEW",
+      plan: { code: "VIP" },
+    };
+
+    prismaMock.order.findUnique.mockResolvedValueOnce(awaitingOrder);
+
+    await expect(
+      ManualPaymentReviewService.approveOrder("order-underpaid", "admin-1", {
+        receivedAmount: 200000, // < 399000
+      })
+    ).rejects.toMatchObject({
+      statusCode: 422,
+      code: "INSUFFICIENT_AMOUNT",
+    });
+
+    // Tuyệt đối không gọi updateMany sang PAID khi amount không đủ
+    expect(prismaMock.order.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("Fix #5: concurrency gate chặn 2 admin duyệt cùng lúc (transition.count === 0 trả về 409)", async () => {
+    const awaitingOrder = {
+      id: "order-concurrent",
+      accountId: "acc-1",
+      orderCode: "THIEP88888",
+      amount: 399000,
+      status: "AWAITING_REVIEW",
+      plan: { code: "VIP" },
+    };
+
+    prismaMock.order.findUnique.mockResolvedValue(awaitingOrder);
+    // Giả lập admin khác đã duyệt trước khiến count = 0
+    prismaMock.order.updateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      ManualPaymentReviewService.approveOrder("order-concurrent", "admin-2", {
+        receivedAmount: 399000,
+      })
+    ).rejects.toMatchObject({
+      statusCode: 409,
+      code: "ORDER_NOT_APPROVABLE",
     });
   });
 });

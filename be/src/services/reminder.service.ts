@@ -1,4 +1,4 @@
-﻿import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma";
 import { HttpError } from "../lib/http-error";
 
 interface ReminderConfig {
@@ -21,8 +21,11 @@ export class ReminderService {
   }
 
   private static async resolveConfig(cardId: string, elementId: string): Promise<ReminderConfig> {
-    const card = await prisma.card.findUnique({
-      where: { id: cardId },
+    // Fix #8: Chỉ cho phép truy cập card đang ACTIVE.
+    // Endpoint public này không yêu cầu authGuard nên cần tự lọc status
+    // — trả 404 chung để không lộ trạng thái card DRAFT/ARCHIVED.
+    const card = await prisma.card.findFirst({
+      where: { id: cardId, status: "ACTIVE" },
       select: { id: true, status: true, categoryData: true },
     });
 
