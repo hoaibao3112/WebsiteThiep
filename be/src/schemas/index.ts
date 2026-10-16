@@ -87,4 +87,16 @@ export type {
 
 export * from "./ai.schema";
 
+// -----------------------------------------------------------------------
+// DOMAIN SCHEMAS
+// -----------------------------------------------------------------------
+export {
+  CreateCustomDomainSchema,
+  UpdateCardSlugSchema,
+} from "../lib/validators/domain.validator";
+export type {
+  CreateCustomDomainInput,
+  UpdateCardSlugInput,
+} from "../lib/validators/domain.validator";
+
 

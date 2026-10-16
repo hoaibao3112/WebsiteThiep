@@ -19,6 +19,7 @@ import { AiController } from "../controllers/ai.controller";
 import { CustomFormController } from "../controllers/custom-form.controller";
 import { ReminderController } from "../controllers/reminder.controller";
 import { GuestSignatureController } from "../controllers/guest-signature.controller";
+import { DomainController } from "../controllers/domain.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -34,6 +35,8 @@ import {
   CreateOrderSchema,
   ConciergeSchema,
   AiChatSchema,
+  CreateCustomDomainSchema,
+  UpdateCardSlugSchema,
 } from "../schemas";
 
 const upload = multer({
@@ -167,5 +170,13 @@ apiRouter.get("/cards/:cardId/signature/:elementId/gallery", GuestSignatureContr
 apiRouter.get("/cards/:cardId/signature/:elementId/list", authGuard, GuestSignatureController.getList);
 apiRouter.patch("/cards/:cardId/signature/:elementId/:signatureId/approve", authGuard, GuestSignatureController.toggleApprove);
 apiRouter.delete("/cards/:cardId/signature/:elementId/:signatureId", authGuard, GuestSignatureController.deleteSignature);
+
+// --- CUSTOM DOMAIN & SLUG ROUTES ---
+apiRouter.get("/domains", authGuard, DomainController.list);
+apiRouter.post("/domains", authGuard, validate(CreateCustomDomainSchema), DomainController.create);
+apiRouter.post("/domains/:id/verify", authGuard, DomainController.verify);
+apiRouter.delete("/domains/:id", authGuard, DomainController.remove);
+apiRouter.patch("/cards/:id/slug", authGuard, validate(UpdateCardSlugSchema), DomainController.updateSlug);
+apiRouter.get("/domains/lookup/:domain", DomainController.lookupByDomain);
 
 

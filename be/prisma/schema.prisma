@@ -49,6 +49,7 @@ model Account {
   paymentTransactions PaymentTransaction[]
   customFormSubmissions CustomFormSubmission[]
   guestSignatures     GuestSignature[]
+  customDomains       CustomDomain[]
 
   @@index([currentPlanId])
   @@index([planExpiresAt])
@@ -239,6 +240,7 @@ model Card {
   orders        Order[]
   customFormSubmissions CustomFormSubmission[]
   guestSignatures       GuestSignature[]
+  customDomain          CustomDomain?
 
   @@index([userId])
   @@index([accountId])
@@ -246,6 +248,42 @@ model Card {
   @@index([cardCategory, status])
   @@unique([accountId, createIdempotencyKey])
   @@map("cards")
+}
+
+// ---------------------------------------------------------
+// 4.1 CUSTOM DOMAIN
+// ---------------------------------------------------------
+enum DomainStatus {
+  PENDING_DNS
+  VERIFYING
+  ACTIVE
+  FAILED
+}
+
+model CustomDomain {
+  id              String       @id @default(cuid())
+  accountId       String
+  account         Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cardId          String       @unique
+  card            Card         @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  domain          String       @unique
+  status          DomainStatus @default(PENDING_DNS)
+
+  targetType      String       @default("CNAME")
+  targetValue     String       @default("cname.vercel-dns.com")
+  verificationTxt String?
+
+  sslStatus       String       @default("PENDING")
+  lastCheckedAt   DateTime?
+  errorMessage    String?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([accountId])
+  @@index([domain, status])
+  @@map("custom_domains")
 }
 
 // ---------------------------------------------------------
