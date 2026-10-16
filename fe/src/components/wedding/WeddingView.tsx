@@ -20,6 +20,7 @@ import { Template11SageGardenGlass } from "./templates/Template11SageGardenGlass
 import { Template12RoyalCrimson } from "./templates/Template12RoyalCrimson";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
+import { WeddingPassSection } from "./pass/WeddingPassSection";
 import { Album3DConfig, DEFAULT_ALBUM_FRONT_COVER, DEFAULT_ALBUM_BACK_COVER } from "@/types/album-3d.types";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 
@@ -208,6 +209,19 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
             isPreview={isPreview}
           />
         ) : null}
+
+        {/* 4.0 VÉ CƯỚI & THẺ MỜI DANH DỰ (BOARDING PASS / VINTAGE CINEMA TICKET) */}
+        {Boolean((card.categoryData as any)?.weddingPass?.enabled) && (
+          <WeddingPassSection
+            config={(card.categoryData as any)?.weddingPass}
+            groomName={groomShortName}
+            brideName={brideShortName}
+            eventDate={card.events?.[0]?.eventDate}
+            venueName={card.events?.[0]?.venueName}
+            primaryColor={primaryColor}
+            isPreview={isPreview}
+          />
+        )}
 
         {/* 4.1 ALBUM ẢNH CƯỚI LẬT TRANG 3D CHÂN THỰC */}
         {(() => {

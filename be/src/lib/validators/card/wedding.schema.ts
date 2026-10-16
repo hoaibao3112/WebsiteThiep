@@ -54,6 +54,24 @@ export const TimelineEventSchema = z.object({
   icon: z.string().optional(),
 });
 
+export const WeddingPassSchema = z.object({
+  enabled: z.boolean().default(false),
+  passType: z.enum(["boarding-pass", "cinema-ticket", "vintage-stamp"]).default("boarding-pass"),
+  title: z.string().trim().max(160).optional(),
+  departing: z.string().trim().max(100).optional(),
+  arriving: z.string().trim().max(100).optional(),
+  gate: z.string().trim().max(30).optional(),
+  seat: z.string().trim().max(50).optional(),
+  boardingTime: z.string().trim().max(50).optional(),
+  passengerName: z.string().trim().max(120).optional(),
+  waxSealStyle: z.enum(["dove-rose-gold", "song-hy-red", "gold-royal", "none"]).optional(),
+  ribbonStyle: z.enum(["silk-champagne", "none"]).optional(),
+  flowerCornerStyle: z.enum(["peony-blush", "olive-gold", "none"]).optional(),
+  note: z.string().trim().max(500).optional(),
+});
+
+export type WeddingPassConfig = z.infer<typeof WeddingPassSchema>;
+
 export const WeddingDataSchema = z.object({
   cardCategory: z.literal("WEDDING"),
   heroSubtitle: z.string().nullable().optional(),
@@ -69,6 +87,7 @@ export const WeddingDataSchema = z.object({
   loveStory: z.array(LoveStoryMilestoneSchema).default([]),
   timelineEvents: z.array(TimelineEventSchema).optional().default([]),
   dressCode: DressCodeSchema.optional(),
+  weddingPass: WeddingPassSchema.optional(),
   events: z.array(EventSchema).optional().default([]),
   photos: z.array(WeddingPhotoSchema).optional().default([]),
   album3d: Album3DConfigSchema.optional(),

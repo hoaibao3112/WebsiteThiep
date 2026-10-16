@@ -4,7 +4,7 @@ import {
   DraftCardInput,
   PublishCardDataSchema,
 } from "../lib/validators/card";
-import { Prisma } from "@prisma/client";
+import { Prisma, CardCategory } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
 import { ensureWeddingScene, ensureWeddingSceneData, resolveBinding } from "./wedding-scene.service";
@@ -93,7 +93,7 @@ export class CardService {
                 create: {
                   slug: input.templateSlug,
                   name: input.templateSlug,
-                  category: input.data.cardCategory,
+                  category: input.data.cardCategory as CardCategory,
                   isActive: true,
                   isPremium: false,
                   thumbnailUrl: "/images/demo/couple-cover.png",
@@ -157,7 +157,7 @@ export class CardService {
                 templateId: template.id,
                 createIdempotencyKey: idempotencyKey,
                 slug: input.slug,
-                cardCategory: input.data.cardCategory,
+                cardCategory: input.data.cardCategory as CardCategory,
                 status: "DRAFT",
                 publishedAt: null,
                 expiredAt: null,
@@ -572,7 +572,7 @@ export class CardService {
         data: {
           slug: input.slug,
           templateId: template.id,
-          cardCategory: input.data.cardCategory,
+          cardCategory: input.data.cardCategory as CardCategory,
           openingEffect: input.openingEffect,
           fallingEffect: input.fallingEffect,
           ...(finalMusicUrl !== undefined ? { musicUrl: finalMusicUrl } : {}),

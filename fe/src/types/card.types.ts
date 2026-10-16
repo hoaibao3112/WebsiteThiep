@@ -83,8 +83,25 @@ export interface WeddingDataPayload extends CanvasCategoryData {
     colors?: string[];
     note?: string;
   };
+  weddingPass?: WeddingPassConfig;
   album3d?: Partial<import("./album-3d.types").Album3DConfig>;
   events?: EventItem[];
+}
+
+export interface WeddingPassConfig {
+  enabled?: boolean;
+  passType?: "boarding-pass" | "cinema-ticket" | "vintage-stamp";
+  title?: string;
+  departing?: string;
+  arriving?: string;
+  gate?: string;
+  seat?: string;
+  boardingTime?: string;
+  passengerName?: string;
+  waxSealStyle?: "dove-rose-gold" | "song-hy-red" | "gold-royal" | "none";
+  ribbonStyle?: "silk-champagne" | "none";
+  flowerCornerStyle?: "peony-blush" | "olive-gold" | "none";
+  note?: string;
 }
 
 export interface BirthdayDataPayload extends CanvasCategoryData {

@@ -56,6 +56,10 @@ import {
   ChevronRight,
   AlertCircle,
   Clock,
+  Ticket,
+  Plane,
+  Stamp,
+  Film,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -231,6 +235,7 @@ const COLOR_PRESETS = [
 const EDIT_TABS = [
   { key: "theme", label: "Giao Diện", icon: Palette },
   { key: "animations", label: "Hoạt Ảnh", icon: Sparkles },
+  { key: "tickets", label: "Vé Cưới & Con Dấu", icon: Ticket },
   { key: "couple", label: "Cặp Đôi", icon: Heart },
   { key: "story", label: "Câu Chuyện", icon: BookOpen },
   { key: "events", label: "Lịch Trình", icon: Calendar },
@@ -498,6 +503,20 @@ function EditCardContent() {
   const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [rsvpCustomNote, setRsvpCustomNote] = useState("");
 
+  // ── Wedding Pass (Vé Cưới & Con Dấu) ──
+  const [weddingPassEnabled, setWeddingPassEnabled] = useState(false);
+  const [passType, setPassType] = useState<"boarding-pass" | "cinema-ticket" | "vintage-stamp">("boarding-pass");
+  const [passTitle, setPassTitle] = useState("Boarding Pass to Happily Ever After");
+  const [passDeparting, setPassDeparting] = useState("Single Life");
+  const [passArriving, setPassArriving] = useState("Marriage");
+  const [passGate, setPassGate] = useState("GATE 126");
+  const [passSeat, setPassSeat] = useState("SEAT 01A & 01B");
+  const [passBoardingTime, setPassBoardingTime] = useState("");
+  const [passWaxSealStyle, setPassWaxSealStyle] = useState<"dove-rose-gold" | "song-hy-red" | "gold-royal" | "none">("dove-rose-gold");
+  const [passRibbonStyle, setPassRibbonStyle] = useState<"silk-champagne" | "none">("silk-champagne");
+  const [passFlowerStyle, setPassFlowerStyle] = useState<"peony-blush" | "olive-gold" | "none">("peony-blush");
+  const [passNote, setPassNote] = useState("Vé mời danh dự dành riêng cho quý khách tham dự ngày hạnh phúc viên mãn.");
+
   // ── Slug & Concurrency State ──
   const [cardStatus, setCardStatus] = useState<string>("DRAFT");
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
@@ -603,6 +622,21 @@ function EditCardContent() {
         if (dc.description) setDressCodeDescription(dc.description);
         if (Array.isArray(dc.colors)) setDressCodeColors(dc.colors);
         if (dc.note) setDressCodeNote(dc.note);
+      }
+      if ((card.categoryData as any).weddingPass) {
+        const wp = (card.categoryData as any).weddingPass;
+        setWeddingPassEnabled(Boolean(wp.enabled));
+        if (wp.passType) setPassType(wp.passType);
+        if (wp.title) setPassTitle(wp.title);
+        if (wp.departing) setPassDeparting(wp.departing);
+        if (wp.arriving) setPassArriving(wp.arriving);
+        if (wp.gate) setPassGate(wp.gate);
+        if (wp.seat) setPassSeat(wp.seat);
+        if (wp.boardingTime) setPassBoardingTime(wp.boardingTime);
+        if (wp.waxSealStyle) setPassWaxSealStyle(wp.waxSealStyle);
+        if (wp.ribbonStyle) setPassRibbonStyle(wp.ribbonStyle);
+        if (wp.flowerCornerStyle) setPassFlowerStyle(wp.flowerCornerStyle);
+        if (wp.note) setPassNote(wp.note);
       }
       // Đảm bảo các mẫu thiệp có layout chuyên biệt luôn mở ở chế độ Biểu Mẫu + Live Preview
       if (
@@ -1125,6 +1159,21 @@ function EditCardContent() {
               colors: dressCodeColors,
               note: dressCodeNote,
             },
+            weddingPass: {
+              enabled: weddingPassEnabled,
+              passType,
+              title: passTitle,
+              departing: passDeparting,
+              arriving: passArriving,
+              gate: passGate,
+              seat: passSeat,
+              boardingTime: passBoardingTime || (events[0]?.eventDate ? new Date(events[0].eventDate).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : "17:30"),
+              passengerName: `${groomShort || groomName || "Chú Rể"} & ${brideShort || brideName || "Cô Dâu"}`,
+              waxSealStyle: passWaxSealStyle,
+              ribbonStyle: passRibbonStyle,
+              flowerCornerStyle: passFlowerStyle,
+              note: passNote,
+            },
           }
         : category === "BIRTHDAY"
         ? { ...categoryDataRef.current, canvasWidth: 390, canvasHeight: categoryDataRef.current.canvasHeight ?? categoryDataRef.current.canvas?.height ?? 1200, cardCategory: "BIRTHDAY", celebrantName, age, events: [], elementAnimations }
@@ -1526,6 +1575,21 @@ function EditCardContent() {
               description: snapDressCodeDescription.trim() || undefined,
               colors: snapDressCodeColors.filter((c) => c.trim().length > 0),
               note: snapDressCodeNote.trim() || undefined,
+            },
+            weddingPass: {
+              enabled: weddingPassEnabled,
+              passType,
+              title: passTitle.trim() || undefined,
+              departing: passDeparting.trim() || undefined,
+              arriving: passArriving.trim() || undefined,
+              gate: passGate.trim() || undefined,
+              seat: passSeat.trim() || undefined,
+              boardingTime: passBoardingTime.trim() || undefined,
+              passengerName: `${resolvedGroomName} & ${resolvedBrideName}`,
+              waxSealStyle: passWaxSealStyle,
+              ribbonStyle: passRibbonStyle,
+              flowerCornerStyle: passFlowerStyle,
+              note: passNote.trim() || undefined,
             },
           }
         : category === "BIRTHDAY"
@@ -2133,6 +2197,249 @@ function EditCardContent() {
                 }}
                 primaryColor={primaryColor}
               />
+            )}
+
+            {/* ══ TAB: VÉ CƯỚI & CON DẤU ══ */}
+            {activeTab === "tickets" && (
+              <div className="space-y-5 sm:space-y-6">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2 mb-1">
+                    <Ticket className="w-4 h-4 text-[#BE944E]" />
+                    <span>Vé Mời VIP, Con Dấu & Phụ Kiện</span>
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    Bật thẻ vé máy bay cưới, vé xem phim điện ảnh hoặc con dấu sáp niêm phong hoàng gia.
+                  </p>
+                </div>
+
+                {/* Toggle Enable */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50/80 to-white border border-amber-200/80 flex items-center justify-between gap-3 shadow-xs">
+                  <div>
+                    <span className="text-xs font-bold text-stone-900 block">Kích Hoạt Vé Mời VIP / Boarding Pass</span>
+                    <span className="text-[11px] text-stone-500">Hiển thị thẻ vé máy bay tình yêu hoặc vé xem phim trong thiệp</span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={weddingPassEnabled}
+                      onChange={(e) => {
+                        setWeddingPassEnabled(e.target.checked);
+                        setHasUnsavedChanges(true);
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#BE944E]"></div>
+                  </label>
+                </div>
+
+                {weddingPassEnabled && (
+                  <div className="space-y-4">
+                    {/* Choose Pass Type */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+                        Phong Cách Vé Mời
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {[
+                          {
+                            type: "boarding-pass",
+                            title: "Vé Máy Bay Cưới",
+                            desc: "Boarding Pass First Class",
+                            icon: Plane,
+                          },
+                          {
+                            type: "cinema-ticket",
+                            title: "Vé Xem Phim Cổ Điển",
+                            desc: "Cinema Ticket Vintage",
+                            icon: Film,
+                          },
+                          {
+                            type: "vintage-stamp",
+                            title: "Bưu Thiếp & Tem Thư",
+                            desc: "Love Postage Stamp",
+                            icon: Stamp,
+                          },
+                        ].map((t) => (
+                          <button
+                            key={t.type}
+                            type="button"
+                            onClick={() => {
+                              setPassType(t.type as any);
+                              setHasUnsavedChanges(true);
+                            }}
+                            className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col gap-1 ${
+                              passType === t.type
+                                ? "border-[#BE944E] bg-amber-50/60 ring-2 ring-amber-400/30"
+                                : "border-stone-200 bg-white hover:bg-stone-50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <t.icon className={`w-4 h-4 ${passType === t.type ? "text-[#BE944E]" : "text-stone-500"}`} />
+                              {passType === t.type && <span className="text-[10px] text-amber-700 font-bold">✓ Đang chọn</span>}
+                            </div>
+                            <span className="text-xs font-bold text-stone-800">{t.title}</span>
+                            <span className="text-[10px] text-stone-400">{t.desc}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ticket details form */}
+                    <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3.5">
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">Tiêu Đề Vé Mời</label>
+                        <input
+                          type="text"
+                          value={passTitle}
+                          onChange={(e) => {
+                            setPassTitle(e.target.value);
+                            setHasUnsavedChanges(true);
+                          }}
+                          placeholder="Boarding Pass to Happily Ever After"
+                          className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-medium"
+                        />
+                      </div>
+
+                      {passType === "boarding-pass" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Khởi Hành (Departing)</label>
+                            <input
+                              type="text"
+                              value={passDeparting}
+                              onChange={(e) => {
+                                setPassDeparting(e.target.value);
+                                setHasUnsavedChanges(true);
+                              }}
+                              placeholder="Độc Thân (Single Life)"
+                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Điểm Đến (Arriving)</label>
+                            <input
+                              type="text"
+                              value={passArriving}
+                              onChange={(e) => {
+                                setPassArriving(e.target.value);
+                                setHasUnsavedChanges(true);
+                              }}
+                              placeholder="Hôn Nhân (Marriage)"
+                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 text-amber-900 font-bold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Cửa Khởi Hành (Gate)</label>
+                            <input
+                              type="text"
+                              value={passGate}
+                              onChange={(e) => {
+                                setPassGate(e.target.value);
+                                setHasUnsavedChanges(true);
+                              }}
+                              placeholder="GATE 126"
+                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Hàng Ghế (Seat)</label>
+                            <input
+                              type="text"
+                              value={passSeat}
+                              onChange={(e) => {
+                                setPassSeat(e.target.value);
+                                setHasUnsavedChanges(true);
+                              }}
+                              placeholder="SEAT 01A & 01B"
+                              className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-mono"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Wax Seal Selector */}
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">Con Dấu Sáp Niêm Phong (Wax Seal)</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {[
+                            { id: "dove-rose-gold", label: "Chim Bồ Câu & Ngọc Trai", img: "/images/decor/wax-seal-dove-rose-gold.png" },
+                            { id: "song-hy-red", label: "Chữ Hỷ Đỏ Son", img: "/images/decor/peony-red-envelope.png" },
+                            { id: "none", label: "Không Dùng Dấu Sáp", img: "" },
+                          ].map((ws) => (
+                            <button
+                              key={ws.id}
+                              type="button"
+                              onClick={() => {
+                                setPassWaxSealStyle(ws.id as any);
+                                setHasUnsavedChanges(true);
+                              }}
+                              className={`p-2 rounded-xl border flex items-center gap-2 text-left transition cursor-pointer ${
+                                passWaxSealStyle === ws.id
+                                  ? "border-amber-400 bg-amber-50/70 ring-1 ring-amber-400"
+                                  : "border-stone-200 bg-white hover:bg-stone-50"
+                              }`}
+                            >
+                              {ws.img ? (
+                                <img src={ws.img} alt={ws.label} className="w-8 h-8 object-contain shrink-0" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400 text-[10px]">Tắt</div>
+                              )}
+                              <span className="text-[11px] font-bold text-stone-800 line-clamp-1">{ws.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Accessories: Silk Ribbon & Floral Corner */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">Nơ Lụa Satin Trang Trí</label>
+                          <select
+                            value={passRibbonStyle}
+                            onChange={(e) => {
+                              setPassRibbonStyle(e.target.value as any);
+                              setHasUnsavedChanges(true);
+                            }}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-medium"
+                          >
+                            <option value="silk-champagne">Nơ Lụa Satin Champagne Hoàng Gia</option>
+                            <option value="none">Không Dùng Nơ</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-stone-700 mb-1">Hoa Lá Màu Nước Góc Thiệp</label>
+                          <select
+                            value={passFlowerStyle}
+                            onChange={(e) => {
+                              setPassFlowerStyle(e.target.value as any);
+                              setHasUnsavedChanges(true);
+                            }}
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-white border border-stone-200 font-medium"
+                          >
+                            <option value="peony-blush">Cụm Hoa Mẫu Đơn & Mao Lương</option>
+                            <option value="olive-gold">Cành Ô Liu Viền Nhũ Vàng</option>
+                            <option value="none">Không Dùng Hoa Góc</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1">Thông Điệp / Lời Nhắn Trên Vé</label>
+                        <textarea
+                          rows={2}
+                          value={passNote}
+                          onChange={(e) => {
+                            setPassNote(e.target.value);
+                            setHasUnsavedChanges(true);
+                          }}
+                          placeholder="Vé mời danh dự dành riêng cho quý khách tham dự ngày hạnh phúc viên mãn..."
+                          className="w-full p-2.5 text-xs rounded-xl bg-white border border-stone-200 leading-relaxed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* ══ TAB 2: CẶP ĐÔI ══ */}

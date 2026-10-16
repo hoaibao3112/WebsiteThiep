@@ -13,14 +13,14 @@ import { SafeSvg } from "@/components/shared/SafeSvg";
 
 const PRIMARY_CATEGORY_IDS: StockCategoryId[] = [
   "all",
-  "wedding",
-  "character",
+  "tickets",
   "flower",
-  "hy",
-  "heart",
+  "ribbon",
+  "wedding",
+  "frames",
 ];
 
-const MORE_CATEGORY_IDS: StockCategoryId[] = ["frames", "dividers", "vietnam", "monogram"];
+const MORE_CATEGORY_IDS: StockCategoryId[] = ["hy", "heart", "character", "dividers", "vietnam", "monogram"];
 
 export function StockTool() {
   const [activeTab, setActiveTab] = useState<StockCategoryId>("all");

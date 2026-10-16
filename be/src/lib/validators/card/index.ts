@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { WeddingDataSchema } from "./wedding.schema";
+import { WeddingDataSchema, WeddingPassSchema } from "./wedding.schema";
 import { BirthdayDataSchema } from "./birthday.schema";
 import { NewbornDataSchema } from "./newborn.schema";
 
@@ -106,6 +106,7 @@ const DraftCategoryDataSchema = z.discriminatedUnion("cardCategory", [
       colors: z.array(z.string().trim().max(50)).max(10).optional(),
       note: z.string().trim().max(500).optional(),
     }).optional(),
+    weddingPass: WeddingPassSchema.optional(),
     events: z.array(DraftEventSchema).max(10).default([]),
     photos: z.array(PhotoSchema).max(50).optional(),
     album3d: Album3DConfigSchema.optional(),

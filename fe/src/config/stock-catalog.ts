@@ -1,7 +1,7 @@
 export interface StockItem {
   id: string;
   title: string;
-  cat: "frames" | "dividers" | "wedding" | "character" | "flower" | "hy" | "heart" | "vietnam" | "monogram";
+  cat: "frames" | "dividers" | "wedding" | "character" | "flower" | "hy" | "heart" | "vietnam" | "monogram" | "tickets" | "ribbon";
   svgType?: "frame" | "divider" | "custom";
   icon?: string;
   imageUrl?: string;
@@ -14,12 +14,14 @@ export interface StockItem {
 
 export const STOCK_CATEGORIES = [
   { id: "all", label: "Tất cả" },
+  { id: "tickets", label: "Vé cưới & Tem thư" },
+  { id: "flower", label: "Hoa lá màu nước" },
+  { id: "ribbon", label: "Nơ & Ruy băng" },
   { id: "wedding", label: "Yếu tố đám cưới" },
-  { id: "character", label: "Nhân vật" },
-  { id: "flower", label: "Hoa cưới" },
+  { id: "frames", label: "Khung viền" },
   { id: "hy", label: "Chữ hỷ" },
   { id: "heart", label: "Trái tim" },
-  { id: "frames", label: "Khung viền" },
+  { id: "character", label: "Nhân vật" },
   { id: "dividers", label: "Đường phân cách" },
   { id: "vietnam", label: "Văn hóa Việt" },
   { id: "monogram", label: "Chữ nghệ thuật (Monogram)" },
@@ -28,6 +30,66 @@ export const STOCK_CATEGORIES = [
 export type StockCategoryId = (typeof STOCK_CATEGORIES)[number]["id"];
 
 export const STOCK_CATALOG: StockItem[] = [
+  // ── 0. BỘ SƯU TẬP MỚI: VÉ CƯỚI, TEM THƯ, NƠ SATIN & HOA LÁ CAO CẤP ──
+  {
+    id: "tk-boarding-pass-gold",
+    title: "Vé máy bay cưới Boarding Pass dát vàng",
+    cat: "tickets",
+    imageUrl: "/images/decor/wedding-boarding-pass-gold.png",
+    width: 320,
+    height: 160,
+    isWide: true,
+  },
+  {
+    id: "tk-cinema-tickets-vintage",
+    title: "Cặp vé xem phim cổ điển Happily Ever After",
+    cat: "tickets",
+    imageUrl: "/images/decor/cinema-tickets-vintage-love.png",
+    width: 280,
+    height: 190,
+    isWide: true,
+  },
+  {
+    id: "tk-vintage-stamps-set",
+    title: "Bộ 4 con tem thư vintage hoa cưới",
+    cat: "tickets",
+    imageUrl: "/images/decor/vintage-postage-stamps-set.png",
+    width: 240,
+    height: 240,
+  },
+  {
+    id: "wd-wax-seal-dove-pearl",
+    title: "Con dấu sáp chim bồ câu & ngọc trai rose gold",
+    cat: "wedding",
+    imageUrl: "/images/decor/wax-seal-dove-rose-gold.png",
+    width: 150,
+    height: 150,
+  },
+  {
+    id: "rb-silk-bow-champagne",
+    title: "Nơ lụa satin champagne hoàng gia",
+    cat: "ribbon",
+    imageUrl: "/images/decor/silk-ribbon-bow-champagne.png",
+    width: 180,
+    height: 220,
+  },
+  {
+    id: "fl-corner-peony-blush",
+    title: "Cụm hoa mẫu đơn & mao lương góc thiệp",
+    cat: "flower",
+    imageUrl: "/images/decor/watercolor-floral-corner-peony.png",
+    width: 240,
+    height: 240,
+  },
+  {
+    id: "fl-olive-branch-gold",
+    title: "Cành ô liu màu nước viền nhũ vàng",
+    cat: "flower",
+    imageUrl: "/images/decor/olive-branch-gold-watercolor.png",
+    width: 180,
+    height: 220,
+  },
+
   // ── 1. KHUNG VIỀN MỸ THUẬT CAO CẤP (AI GENERATED LACE & DECKLE) ──
   {
     id: "fr-lace-royal",
