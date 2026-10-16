@@ -47,7 +47,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) {
-      setErrorMsg("Vui lòng nhập họ và tên của bạn");
+      setErrorMsg(t("rsvpNameRequiredError") || "Vui lòng nhập họ và tên của bạn");
       return;
     }
 
@@ -88,7 +88,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
         onClose();
       }, 2500);
     } else {
-      setErrorMsg(res.error || "Gửi phản hồi thất bại. Vui lòng thử lại.");
+      setErrorMsg(res.error || t("rsvpSubmitFailedError") || "Gửi phản hồi thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -254,13 +254,13 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
               {/* Khách của bên nào */}
               <div>
                 <label className="block text-xs sm:text-[13px] font-semibold text-[#4A3728] mb-1">
-                  Bạn là khách của ai?
+                  {t("rsvpWhichSideQuestion") || "Bạn là khách của ai?"}
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[
-                    { id: "GROOM_SIDE", label: "Nhà Trai" },
-                    { id: "BRIDE_SIDE", label: "Nhà Gái" },
-                    { id: "MUTUAL", label: "Bạn Chung" },
+                    { id: "GROOM_SIDE", label: t("rsvpSideGroom") || "Nhà Trai" },
+                    { id: "BRIDE_SIDE", label: t("rsvpSideBride") || "Nhà Gái" },
+                    { id: "MUTUAL", label: t("rsvpSideMutual") || "Bạn Chung" },
                   ].map((s) => (
                     <button
                       key={s.id}
@@ -287,7 +287,7 @@ export const RsvpFormModal: React.FC<RsvpFormModalProps> = ({
                   rows={2}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="VD: Mình ăn chay / Đến muộn một chút..."
+                  placeholder={t("rsvpDietaryPlaceholder") || "VD: Mình ăn chay / Đến muộn một chút..."}
                   className="w-full px-3.5 py-2.5 text-base sm:text-sm rounded-xl border border-[#E2D4BF] focus:outline-none focus:border-[#C5A059] focus:ring-2 focus:ring-[#C5A059]/20 bg-[#FFFDF9] text-[#3B2A1E] placeholder:text-[#A89885] transition-all shadow-[0_1px_2px_rgba(0,0,0,0.02)] resize-none"
                 />
               </div>

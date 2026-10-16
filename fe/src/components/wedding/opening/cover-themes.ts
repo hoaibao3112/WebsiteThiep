@@ -415,6 +415,9 @@ export const DEFAULT_TEMPLATE_THEMES: Record<string, Partial<ResolvedCoverTheme>
   },
 };
 
+import { SupportedLanguage } from "@/config/i18n";
+import { formatWeddingDate } from "@/lib/i18n/wedding-translator";
+
 /**
  * Hàm giải quyết cấu hình bìa thiệp hoàn chỉnh:
  * Ưu tiên các trường người dùng chỉnh sửa từ backend, kết hợp fallback theo mẫu thiệp
@@ -423,7 +426,8 @@ export function resolveCoverTheme(
   templateSlug?: string,
   envelopeConfig?: EnvelopeConfig,
   weddingData?: Partial<WeddingDataPayload>,
-  activeGuestName?: string
+  activeGuestName?: string,
+  lang: SupportedLanguage = "vi"
 ): ResolvedCoverTheme {
   // 1. Xác định default template base
   const cleanSlug = templateSlug || "wedding-heritage-crimson-gold";
@@ -442,49 +446,64 @@ export function resolveCoverTheme(
     envelopeConfig?.groomName ||
     weddingData?.groom?.shortName ||
     weddingData?.groom?.fullName ||
-    "Chú rể";
+    (lang === "en" ? "Groom" : lang === "zh" ? "新郎" : "Chú rể");
   const brideName =
     envelopeConfig?.brideName ||
     weddingData?.bride?.shortName ||
     weddingData?.bride?.fullName ||
-    "Cô dâu";
+    (lang === "en" ? "Bride" : lang === "zh" ? "新娘" : "Cô dâu");
   const coupleNames = `${groomName} & ${brideName}`;
 
   // 4. Ngày cưới
+  const rawDate =
+    weddingData?.events && weddingData.events[0]?.eventDate
+      ? weddingData.events[0].eventDate
+      : "2026-12-19T18:00:00Z";
+  const formattedDate = formatWeddingDate(rawDate, lang).formatted;
+
   const dateText =
     envelopeConfig?.weddingDateText ||
     weddingData?.headerDate ||
-    (weddingData?.events && weddingData.events[0]?.eventDate
-      ? new Date(weddingData.events[0].eventDate).toLocaleDateString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-      : "19 tháng 12, 2026");
+    formattedDate;
 
   // 5. Lời mời khách
-  const salutation =
+  let salutation =
     activeGuestName
-      ? `Trân trọng kính mời: ${activeGuestName}`
+      ? (lang === "en" ? `Cordially Inviting: ${activeGuestName}` : lang === "zh" ? `敬邀：${activeGuestName}` : `Trân trọng kính mời: ${activeGuestName}`)
       : envelopeConfig?.salutation ||
         selectedStyleBase.salutation ||
         defaultBase.salutation ||
-        "Thân Mời";
+        (lang === "en" ? "Cordially Invites" : lang === "zh" ? "谨定于" : "Thân Mời");
+
+  if (lang === "en" && salutation === "Thân Mời") salutation = "Cordially Invites";
+  if (lang === "zh" && salutation === "Thân Mời") salutation = "谨定于";
 
   // 6. Tiêu đề bìa
-  const title =
+  let title =
     envelopeConfig?.coverTitle ||
     envelopeConfig?.title ||
     selectedStyleBase.title ||
     defaultBase.title ||
-    "THIỆP MỜI CƯỚI";
+    (lang === "en" ? "WEDDING INVITATION" : lang === "zh" ? "结婚请柬" : "THIỆP MỜI CƯỚI");
+
+  if (lang === "en" && (title === "THIỆP MỜI CƯỚI" || title === "THIỆP CƯỚI")) {
+    title = "WEDDING INVITATION";
+  } else if (lang === "zh" && (title === "THIỆP MỜI CƯỚI" || title === "THIỆP CƯỚI")) {
+    title = "结婚请柬";
+  }
 
   // 7. Chữ nút bấm
-  const buttonText =
+  let buttonText =
     envelopeConfig?.buttonText ||
     selectedStyleBase.buttonText ||
     defaultBase.buttonText ||
-    "Mở thiệp";
+    (lang === "en" ? "Open Invitation" : lang === "zh" ? "开启请柬" : "Mở thiệp");
+
+  if (lang === "en" && buttonText.toLowerCase().includes("mở thiệp")) {
+    buttonText = "Open Invitation";
+  } else if (lang === "zh" && buttonText.toLowerCase().includes("mở thiệp")) {
+    buttonText = "开启请柬";
+  }
 
   return {
     slug: cleanSlug,

@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Ticket, Plane, Sparkles, Heart, Film, Stamp, Download, Calendar, MapPin } from "lucide-react";
 import type { WeddingPassConfig } from "@/types/card.types";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface WeddingPassSectionProps {
   config?: WeddingPassConfig;
@@ -24,16 +25,17 @@ export const WeddingPassSection: React.FC<WeddingPassSectionProps> = ({
   primaryColor = "#BE944E",
   isPreview = false,
 }) => {
+  const { lang, t } = useLanguage();
   if (!config?.enabled) return null;
 
   const passType = config.passType || "boarding-pass";
-  const title = config.title || (passType === "boarding-pass" ? "Boarding Pass to Happily Ever After" : passType === "cinema-ticket" ? "A Romantic Love Story • Admit Two" : "Wedding Vintage Postcard & Stamp");
-  const departing = config.departing || "Độc Thân (Single Life)";
-  const arriving = config.arriving || "Hôn Nhân (Marriage)";
+  const title = config.title || (passType === "boarding-pass" ? (t("weddingPassTitle") || "Boarding Pass to Happily Ever After") : passType === "cinema-ticket" ? "A Romantic Love Story • Admit Two" : "Wedding Vintage Postcard & Stamp");
+  const departing = config.departing || (lang === "en" ? "Single Life" : lang === "zh" ? "单身岁月" : "Độc Thân (Single Life)");
+  const arriving = config.arriving || (lang === "en" ? "Happily Married" : lang === "zh" ? "百年偕老" : "Hôn Nhân (Marriage)");
   const gate = config.gate || "GATE 126";
   const seat = config.seat || "SEAT 01A & 01B";
   const passengerName = config.passengerName || `${groomName} & ${brideName}`;
-  const note = config.note || "Vé mời danh dự dành riêng cho quý khách tham dự ngày hạnh phúc viên mãn.";
+  const note = config.note || (lang === "en" ? "Honorary boarding pass for our valued guest on our special day." : lang === "zh" ? "献给尊贵贵宾的专属婚礼纪念登机牌" : "Vé mời danh dự dành riêng cho quý khách tham dự ngày hạnh phúc viên mãn.");
 
   // Format date text
   let dateText = "2026";
@@ -42,7 +44,7 @@ export const WeddingPassSection: React.FC<WeddingPassSectionProps> = ({
     try {
       const d = new Date(eventDate);
       if (!isNaN(d.getTime())) {
-        dateText = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+        dateText = d.toLocaleDateString(lang === "en" ? "en-US" : lang === "zh" ? "zh-CN" : "vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
         if (!config.boardingTime) {
           timeText = d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
         }
@@ -119,7 +121,9 @@ export const WeddingPassSection: React.FC<WeddingPassSectionProps> = ({
                 {/* Left 2 Cols: Flight info */}
                 <div className="md:col-span-2 space-y-4">
                   <div>
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Hành khách / Passenger</span>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                      {t("weddingPassPassenger") || "Hành khách / Passenger"}
+                    </span>
                     <span className="text-base sm:text-lg font-serif font-bold text-[#8B1E2D] block truncate">
                       {passengerName}
                     </span>
@@ -128,14 +132,18 @@ export const WeddingPassSection: React.FC<WeddingPassSectionProps> = ({
                   {/* Route: Departing -> Arriving */}
                   <div className="grid grid-cols-7 items-center bg-[#F7F3EB] p-2.5 rounded-xl border border-[#EBE3D3]">
                     <div className="col-span-3 text-left">
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">Khởi hành</span>
+                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                        {lang === "en" ? "Departing" : lang === "zh" ? "启程" : "Khởi hành"}
+                      </span>
                       <span className="text-xs sm:text-sm font-bold text-stone-800 line-clamp-1">{departing}</span>
                     </div>
                     <div className="col-span-1 flex justify-center text-amber-700">
                       <Plane className="w-4 h-4" />
                     </div>
                     <div className="col-span-3 text-right">
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">Điểm đến</span>
+                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider block">
+                        {lang === "en" ? "Arriving" : lang === "zh" ? "抵达" : "Điểm đến"}
+                      </span>
                       <span className="text-xs sm:text-sm font-bold text-[#966E29] line-clamp-1">{arriving}</span>
                     </div>
                   </div>
@@ -143,19 +151,27 @@ export const WeddingPassSection: React.FC<WeddingPassSectionProps> = ({
                   {/* Flight Details: Gate, Seat, Time, Date */}
                   <div className="grid grid-cols-4 gap-2 pt-1 text-center">
                     <div className="p-1.5 rounded-lg bg-stone-50 border border-stone-200">
-                      <span className="text-[9px] text-stone-400 font-bold block uppercase">Cửa</span>
+                      <span className="text-[9px] text-stone-400 font-bold block uppercase">
+                        {t("weddingPassGate") || "Cửa"}
+                      </span>
                       <span className="text-xs font-mono font-bold text-stone-800">{gate}</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-stone-50 border border-stone-200">
-                      <span className="text-[9px] text-stone-400 font-bold block uppercase">Ghế</span>
+                      <span className="text-[9px] text-stone-400 font-bold block uppercase">
+                        {t("weddingPassSeat") || "Ghế"}
+                      </span>
                       <span className="text-xs font-mono font-bold text-stone-800">{seat}</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-stone-50 border border-stone-200">
-                      <span className="text-[9px] text-stone-400 font-bold block uppercase">Giờ bay</span>
+                      <span className="text-[9px] text-stone-400 font-bold block uppercase">
+                        {t("weddingPassBoardingTime") || "Giờ bay"}
+                      </span>
                       <span className="text-xs font-mono font-bold text-amber-700">{timeText}</span>
                     </div>
                     <div className="p-1.5 rounded-lg bg-stone-50 border border-stone-200">
-                      <span className="text-[9px] text-stone-400 font-bold block uppercase">Ngày</span>
+                      <span className="text-[9px] text-stone-400 font-bold block uppercase">
+                        {t("weddingPassDate") || "Ngày"}
+                      </span>
                       <span className="text-xs font-mono font-bold text-stone-800">{dateText}</span>
                     </div>
                   </div>

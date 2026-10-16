@@ -25,10 +25,20 @@ import {
   Check,
 } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  getResolvedWeddingData,
+  translateWeddingRole,
+  translateEventName,
+  translateVenueName,
+  formatWeddingDate,
+  formatLunarDate,
+  translateQuoteOrGreeting,
+} from "@/lib/i18n/wedding-translator";
 
 export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
   card,
-  data,
+  data: initialData,
   primaryColor = "#4A121A",
   guestName,
   onOpenRsvp,
@@ -36,30 +46,33 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
   onSelectPhoto,
   isPreview = false,
 }) => {
+  const { lang, t } = useLanguage();
+  const data = getResolvedWeddingData(card, lang);
+
   // ── 1. DỮ LIỆU CÔ DÂU & CHÚ RỂ ──
-  const groomName = data.groom?.fullName || "Đặng Hoàng Long";
-  const groomShort = data.groom?.shortName || "Hoàng Long";
-  const groomBirthOrder = data.groom?.birthOrder || "TRƯỞNG NAM";
-  const groomFather = data.groom?.parents?.fatherName || "Đặng Văn Thắng";
-  const groomMother = data.groom?.parents?.motherName || "Bùi Thị Mai";
+  const groomName = data.groom?.fullName || (lang === "en" ? "Dang Hoang Long" : lang === "zh" ? "邓黄龙" : "Đặng Hoàng Long");
+  const groomShort = data.groom?.shortName || groomName.split(" ").slice(-2).join(" ");
+  const groomBirthOrder = translateWeddingRole(data.groom?.birthOrder || "TRƯỞNG NAM", lang);
+  const groomFather = data.groom?.parents?.fatherName || (lang === "en" ? "Dang Van Thang" : lang === "zh" ? "邓文胜" : "Đặng Văn Thắng");
+  const groomMother = data.groom?.parents?.motherName || (lang === "en" ? "Bui Thi Mai" : lang === "zh" ? "裴氏梅" : "Bùi Thị Mai");
   const groomAddress =
     data.groom?.parents?.address ||
     data.groom?.address ||
-    "Quận 1, TP. Hồ Chí Minh";
+    (lang === "en" ? "District 1, Ho Chi Minh City" : lang === "zh" ? "胡志明市第一郡" : "Quận 1, TP. Hồ Chí Minh");
 
-  const brideName = data.bride?.fullName || "Vũ Bảo Ngọc";
-  const brideShort = data.bride?.shortName || "Bảo Ngọc";
-  const brideBirthOrder = data.bride?.birthOrder || "ÚT NỮ";
-  const brideFather = data.bride?.parents?.fatherName || "Vũ Đức Trung";
-  const brideMother = data.bride?.parents?.motherName || "Ngô Thị Hạnh";
+  const brideName = data.bride?.fullName || (lang === "en" ? "Vu Bao Ngoc" : lang === "zh" ? "武宝玉" : "Vũ Bảo Ngọc");
+  const brideShort = data.bride?.shortName || brideName.split(" ").slice(-2).join(" ");
+  const brideBirthOrder = translateWeddingRole(data.bride?.birthOrder || "ÚT NỮ", lang);
+  const brideFather = data.bride?.parents?.fatherName || (lang === "en" ? "Vu Duc Trung" : lang === "zh" ? "武德忠" : "Vũ Đức Trung");
+  const brideMother = data.bride?.parents?.motherName || (lang === "en" ? "Ngo Thi Hanh" : lang === "zh" ? "吴氏杏" : "Ngô Thị Hạnh");
   const brideAddress =
     data.bride?.parents?.address ||
     data.bride?.address ||
-    "Quận 3, TP. Hồ Chí Minh";
+    (lang === "en" ? "District 3, Ho Chi Minh City" : lang === "zh" ? "胡志明市第三郡" : "Quận 3, TP. Hồ Chí Minh");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
   const events = card.events && card.events.length > 0 ? card.events : [];
-  const eventCeremony = events[0] || {
+  const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-01-03T09:00:00Z"),
     lunarDate: "Tức ngày 15 tháng 11 năm Ất Tỵ",
@@ -69,7 +82,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
     welcomingTime: "08:30",
   };
 
-  const eventReception = events[1] || events[0] || {
+  const rawReception = events[1] || events[0] || {
     eventName: "Tiệc Cưới",
     eventDate: new Date("2026-01-03T18:00:00Z"),
     lunarDate: "Tức ngày 15 tháng 11 năm Ất Tỵ",
@@ -79,39 +92,22 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
     welcomingTime: "17:30",
   };
 
-  // Helper phân tích ngày giờ
-  const parseDateDetails = (rawDate: string | Date) => {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) {
-      return {
-        dayName: "THỨ BẢY",
-        day: "03",
-        month: "01",
-        year: "2026",
-        time: "18:00",
-        rawDate: d,
-      };
-    }
-    const daysOfWeek = [
-      "CHỦ NHẬT",
-      "THỨ HAI",
-      "THỨ BA",
-      "THỨ TƯ",
-      "THỨ NĂM",
-      "THỨ SÁU",
-      "THỨ BẢY",
-    ];
-    const dayName = daysOfWeek[d.getDay()];
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = String(d.getFullYear());
-    const hours = String(d.getHours()).padStart(2, "0");
-    const mins = String(d.getMinutes()).padStart(2, "0");
-    return { dayName, day, month, year, time: `${hours}:${mins}`, rawDate: d };
+  const eventCeremony = {
+    ...rawCeremony,
+    eventName: translateEventName(rawCeremony.eventName, lang),
+    venueName: translateVenueName(rawCeremony.venueName, lang),
+    lunarDate: formatLunarDate(rawCeremony.lunarDate, lang),
   };
 
-  const ceremonyTime = parseDateDetails(eventCeremony.eventDate);
-  const receptionTime = parseDateDetails(eventReception.eventDate);
+  const eventReception = {
+    ...rawReception,
+    eventName: translateEventName(rawReception.eventName, lang),
+    venueName: translateVenueName(rawReception.venueName, lang),
+    lunarDate: formatLunarDate(rawReception.lunarDate, lang),
+  };
+
+  const ceremonyTime = formatWeddingDate(eventCeremony.eventDate, lang);
+  const receptionTime = formatWeddingDate(eventReception.eventDate, lang);
 
   // ── 3. DANH SÁCH ẢNH ALBUM ──
   const defaultPhotos = [
@@ -284,7 +280,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             className="mb-8"
           >
             <p className="text-xs uppercase tracking-[0.35em] text-[#6E1C24] font-semibold">
-              Save The Date
+              {t("saveOurDate") || "Save The Date"}
             </p>
           </motion.div>
 
@@ -451,7 +447,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             <div className="relative z-10 space-y-6">
               {/* Header Title */}
               <h3 className="text-base uppercase tracking-[0.2em] font-serif font-bold text-[#FDF6ED] pb-1 border-b border-[#CCA24C]/30 inline-block">
-                Thông Tin Lễ Cưới
+                {data.invitationTitle || t("weddingInformationTitle") || "Thông Tin Lễ Cưới"}
               </h3>
 
               {/* Parents Information: 2 Columns */}
@@ -459,7 +455,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 {/* Groom's Parents */}
                 <div className="border-r border-[#6E1C24]/80 pr-2">
                   <p className="text-[11px] text-[#D8B48D] italic font-light">
-                    Ông Bà
+                    {t("grandparentsTitle") || "Ông Bà"}
                   </p>
                   <p
                     data-editable-field="groom-father"
@@ -483,7 +479,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 {/* Bride's Parents */}
                 <div className="pl-2">
                   <p className="text-[11px] text-[#D8B48D] italic font-light">
-                    Ông Bà
+                    {t("grandparentsTitle") || "Ông Bà"}
                   </p>
                   <p
                     data-editable-field="bride-father"
@@ -508,10 +504,10 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               {/* Announcement */}
               <div className="pt-2">
                 <p className="text-xs uppercase tracking-[0.25em] text-[#EBD7BE] font-medium leading-relaxed">
-                  Trân Trọng Báo Tin
+                  {t("weddingInformationSubtitle") || "Trân Trọng Báo Tin"}
                 </p>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-[#D4AF37] font-semibold mt-0.5">
-                  Lễ Thành Hôn Của Con Chúng Tôi
+                  {t("ceremonyHeldAt") || "Lễ Thành Hôn Của Con Chúng Tôi"}
                 </p>
               </div>
 
@@ -555,11 +551,11 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               {/* Ceremony Venue & Time Box */}
               <div className="pt-2 pb-1 space-y-2">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#F3E5D4] font-semibold">
-                  Lễ Thành Hôn Được Cử Hành Tại Tư Gia
+                  {eventCeremony.eventName || t("ceremonyHeldAt")} {eventCeremony.venueName ? `• ${eventCeremony.venueName}` : ""}
                 </p>
 
                 <div className="flex items-center justify-center gap-4 text-xs font-serif text-[#EBD7BE]">
-                  <span>VÀO LÚC {ceremonyTime.time}</span>
+                  <span>{t("atTime") || "VÀO LÚC"} {ceremonyTime.time}</span>
                   <span className="w-1 h-1 rounded-full bg-[#CCA24C]" />
                   <span>{ceremonyTime.dayName}</span>
                 </div>
@@ -571,7 +567,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   </span>
                   <div className="w-[1px] h-10 bg-[#CCA24C]/40" />
                   <div className="text-left text-xs font-serif tracking-wider leading-snug text-[#F8EFE4]">
-                    <p className="font-bold">THÁNG {ceremonyTime.month}</p>
+                    <p className="font-bold">{t("monthPrefix") || "THÁNG"} {ceremonyTime.month}</p>
                     <p className="text-stone-300 font-light">{ceremonyTime.year}</p>
                   </div>
                 </div>
@@ -597,7 +593,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             className="mb-6"
           >
             <h3 className="text-base uppercase tracking-[0.3em] font-serif font-bold text-[#4A121A]">
-              Album Ảnh
+              {t("photoAlbumTitle") || "Album Ảnh"}
             </h3>
             <div className="w-10 h-[1.5px] bg-[#CCA24C] mx-auto mt-2" />
           </motion.div>
@@ -717,12 +713,12 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             <div className="relative z-10 space-y-6">
               {/* Header */}
               <h3 className="text-base uppercase tracking-[0.2em] font-serif font-bold text-[#FDF6ED] pb-1 border-b border-[#CCA24C]/30 inline-block">
-                Thông Tin Tiệc Cưới
+                {t("receptionSchedule") || "Thông Tin Tiệc Cưới"}
               </h3>
 
               <div className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#EBD7BE] font-semibold">
-                  Tiệc Cưới Sẽ Diễn Ra Vào Lúc:
+                  {t("partyHeldAt") || "Tiệc Cưới Sẽ Diễn Ra Vào Lúc:"}
                 </p>
 
                 <div className="flex items-center justify-center gap-4 text-xs font-serif text-[#EBD7BE]">
@@ -738,7 +734,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   </span>
                   <div className="w-[1px] h-10 bg-[#CCA24C]/40" />
                   <div className="text-left text-xs font-serif tracking-wider leading-snug text-[#F8EFE4]">
-                    <p className="font-bold">THÁNG {receptionTime.month}</p>
+                    <p className="font-bold">{t("monthPrefix") || "THÁNG"} {receptionTime.month}</p>
                     <p className="text-stone-300 font-light">{receptionTime.year}</p>
                   </div>
                 </div>
@@ -752,7 +748,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               <div className="grid grid-cols-2 gap-4 py-2 border-y border-[#6E1C24]/80 text-xs font-serif text-[#F3E5D4]">
                 <div>
                   <p className="uppercase tracking-wider text-[10px] text-[#CCA24C] font-semibold">
-                    Đón Khách
+                    {t("timelineWelcome") || "Đón Khách"}
                   </p>
                   <p className="text-base font-bold text-[#FFFDF9] mt-0.5">
                     {eventReception.welcomingTime || "17:30"}
@@ -760,7 +756,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 </div>
                 <div>
                   <p className="uppercase tracking-wider text-[10px] text-[#CCA24C] font-semibold">
-                    Khai Tiệc
+                    {t("timelineCeremony") || "Khai Tiệc"}
                   </p>
                   <p className="text-base font-bold text-[#FFFDF9] mt-0.5">
                     {receptionTime.time || "18:00"}
@@ -771,18 +767,18 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               {/* ── EMBEDDED MINI CALENDAR CARD (LIGHT PARCHMENT) ── */}
               <div className="bg-[#FAF6EE] text-[#4A121A] rounded-2xl p-4.5 shadow-inner border border-[#E8DCB8]/60 my-4">
                 <p className="font-serif italic text-lg text-[#5A141E] mb-2 font-medium">
-                  Tháng {parseInt(receptionTime.month, 10)} / {receptionTime.year}
+                  {t("monthPrefix") || "Tháng"} {parseInt(receptionTime.month, 10)} / {receptionTime.year}
                 </p>
 
                 {/* Days of week */}
                 <div className="grid grid-cols-7 gap-1 text-[11px] font-serif font-bold text-[#6E1C24] pb-2 border-b border-[#CCA24C]/30 mb-2">
-                  <span>T2</span>
-                  <span>T3</span>
-                  <span>T4</span>
-                  <span>T5</span>
-                  <span>T6</span>
-                  <span>T7</span>
-                  <span>CN</span>
+                  <span>{t("monShort") || "T2"}</span>
+                  <span>{t("tueShort") || "T3"}</span>
+                  <span>{t("wedShort") || "T4"}</span>
+                  <span>{t("thuShort") || "T5"}</span>
+                  <span>{t("friShort") || "T6"}</span>
+                  <span>{t("satShort") || "T7"}</span>
+                  <span>{t("sunShort") || "CN"}</span>
                 </div>
 
                 {/* Days grid */}
@@ -821,7 +817,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   rel="noopener noreferrer"
                   className="text-xs uppercase tracking-wider text-[#CCA24C] hover:text-[#E6C265] underline decoration-[#CCA24C]/60 underline-offset-4 font-semibold transition"
                 >
-                  Thêm vào lịch
+                  {t("addToCalendarBtn") || "Thêm vào lịch"}
                 </a>
               </div>
 
@@ -832,7 +828,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   onClick={onOpenRsvp}
                   className="w-full py-3.5 px-6 rounded-full bg-[#FAF6EE] text-[#4A121A] hover:bg-white text-xs uppercase tracking-[0.25em] font-serif font-bold shadow-[0_6px_20px_rgba(0,0,0,0.25)] transition transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
-                  Xác Nhận Tham Dự
+                  {t("confirmAttendanceBtn") || "Xác Nhận Tham Dự"}
                 </button>
               </div>
             </div>
@@ -851,7 +847,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             className="space-y-2 mb-5"
           >
             <h3 className="text-base uppercase tracking-[0.25em] font-serif font-bold text-[#4A121A]">
-              Tiệc Cưới Sẽ Tổ Chức Tại
+              {t("partyHeldAt") || "Tiệc Cưới Sẽ Tổ Chức Tại"}
             </h3>
             <p className="text-sm font-serif font-bold text-stone-800">
               {eventReception.venueName}
@@ -892,7 +888,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 rel="noopener noreferrer"
                 className="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-lg bg-white/95 text-xs font-semibold text-sky-700 shadow-md flex items-center gap-1.5 hover:bg-white transition"
               >
-                <span>Mở trong Maps</span>
+                <span>{t("viewMapBtn") || "Mở trong Maps"}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -912,7 +908,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               >
                 <Navigation className="w-3.5 h-3.5 text-[#CCA24C]" />
                 <span className="uppercase tracking-widest text-[11px]">
-                  Chỉ đường tới tiệc cưới
+                  {t("directionsBtn") || "Chỉ đường tới tiệc cưới"}
                 </span>
               </a>
             </div>
@@ -934,7 +930,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               {dressCodeTitle}
             </h3>
             <p className="text-xs text-stone-600 font-serif italic">
-              {dressCodeDescription}
+              {lang === "en" ? "Formal attire / Cocktail dress" : lang === "zh" ? "正装出席 / 优雅着装" : dressCodeDescription}
             </p>
           </motion.div>
 
@@ -991,7 +987,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
               {/* Heading */}
               <div className="text-center mb-8">
                 <h3 className="text-base uppercase tracking-[0.2em] font-serif font-bold text-[#FDF6ED] pb-1 border-b border-[#CCA24C]/30 inline-block">
-                  Lịch Trình Ngày Cưới
+                  {t("receptionSchedule") || "Lịch Trình Ngày Cưới"}
                 </h3>
               </div>
 
@@ -1001,6 +997,16 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 <div className="absolute left-[88px] top-3 bottom-3 w-[1.5px] bg-[#CCA24C]/50" />
 
                 {timelineItems.map((item, tIdx) => {
+                  const localizedTitle = (() => {
+                    const lower = item.title.toLowerCase();
+                    if (lower.includes("đón khách") || lower.includes("welcome")) return t("timelineWelcome") || item.title;
+                    if (lower.includes("khai tiệc") || lower.includes("ceremony") || lower.includes("opening")) return t("timelineCeremony") || item.title;
+                    if (lower.includes("rượu") || lower.includes("bánh") || lower.includes("champagne") || lower.includes("cake") || lower.includes("ly")) return t("timelineCake") || item.title;
+                    if (lower.includes("món") || lower.includes("tiệc") || lower.includes("dinner") || lower.includes("banquet")) return t("timelineDinner") || item.title;
+                    if (lower.includes("kết") || lower.includes("farewell") || lower.includes("chụp ảnh")) return t("timelineFarewell") || item.title;
+                    return item.title;
+                  })();
+
                   return (
                     <div
                       key={tIdx}
@@ -1016,7 +1022,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
 
                       {/* Event Title (right column) */}
                       <div className="flex-1 flex items-center gap-2 text-[#EBD7BE] font-medium pl-1">
-                        <span>{item.title}</span>
+                        <span>{localizedTitle}</span>
                       </div>
                     </div>
                   );
@@ -1039,10 +1045,10 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
           >
             <div className="text-center mb-5">
               <h3 className="text-base uppercase tracking-[0.2em] font-serif font-bold text-[#4A121A]">
-                Sổ Lưu Bút
+                {t("homeWishesTitle") || "Sổ Lưu Bút"}
               </h3>
               <p className="text-xs text-stone-500 font-serif italic mt-0.5">
-                Gửi lời chúc phúc ngọt ngào đến đôi uyên ương
+                {t("homeWishesSub") || "Gửi lời chúc phúc ngọt ngào đến đôi uyên ương"}
               </p>
             </div>
 
@@ -1053,7 +1059,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   type="text"
                   value={wishName}
                   onChange={(e) => setWishName(e.target.value)}
-                  placeholder="Tên của bạn..."
+                  placeholder={t("guestbookFormName") || "Tên của bạn..."}
                   className="w-full px-3.5 py-2 text-xs rounded-xl bg-stone-50 border border-stone-200 font-sans focus:outline-none focus:border-[#4A121A]"
                   required
                 />
@@ -1063,7 +1069,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                   rows={3}
                   value={wishContent}
                   onChange={(e) => setWishContent(e.target.value)}
-                  placeholder="Viết lời chúc mừng..."
+                  placeholder={t("sendWishInputPlaceholder") || "Viết lời chúc mừng..."}
                   className="w-full px-3.5 py-2 text-xs rounded-xl bg-stone-50 border border-stone-200 font-sans focus:outline-none focus:border-[#4A121A] resize-none"
                   required
                 />
@@ -1073,13 +1079,13 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
                 className="w-full py-2.5 px-4 rounded-xl bg-[#4A121A] hover:bg-[#6E1C24] text-white text-xs font-serif font-semibold tracking-wider flex items-center justify-center gap-2 shadow transition cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>Gửi Lời Chúc Mừng</span>
+                <span>{t("guestbookSubmitWish") || "Gửi Lời Chúc Mừng"}</span>
               </button>
             </form>
 
             {wishSuccess && (
               <p className="text-xs text-emerald-600 font-sans text-center mt-2.5">
-                ✓ Lời chúc của bạn đã được gửi thành công!
+                {t("copiedSuccessToast") ? `✓ ${t("copiedSuccessToast")}` : "✓ Lời chúc của bạn đã được gửi thành công!"}
               </p>
             )}
 
@@ -1117,7 +1123,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#4A121A] via-[#6E1C24] to-[#4A121A] text-[#FAF6EE] text-xs uppercase tracking-[0.2em] font-serif font-bold shadow-lg flex items-center justify-center gap-2.5 hover:opacity-95 transition cursor-pointer"
           >
             <Gift className="w-4 h-4 text-[#CCA24C]" />
-            <span>Gửi Quà Mừng & Hộp Tiền Mừng Cưới</span>
+            <span>{t("sendGiftQrBtn") || "Gửi Quà Mừng & Hộp Tiền Mừng Cưới"}</span>
           </button>
         </section>
 
@@ -1130,7 +1136,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             data-editable-type="text"
             className="italic text-stone-600 font-normal max-w-xs mx-auto px-4"
           >
-            {card.greetingMessage || data.greeting || "“Cảm ơn bạn đã luôn hiện diện trong những khoảnh khắc hạnh phúc nhất của chúng tôi.”"}
+            {translateQuoteOrGreeting(card.greetingMessage || data.greeting, lang) || (lang === "en" ? "“Thank you for being part of the happiest moments of our lives.”" : lang === "zh" ? "“感谢您在我们人生最幸福的时刻与我们同在。”" : "“Cảm ơn bạn đã luôn hiện diện trong những khoảnh khắc hạnh phúc nhất của chúng tôi.”")}
           </p>
           <p className="font-bold tracking-widest uppercase text-[#4A121A] pt-1">
             {groomShort} & {brideShort}
@@ -1148,7 +1154,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
             type="button"
             onClick={onOpenRsvp}
             className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF2B6D] to-[#FF6E9F] text-white shadow-xl flex items-center justify-center cursor-pointer"
-            title="Xác nhận tham dự"
+            title={t("confirmAttendanceBtn") || "Xác nhận tham dự"}
           >
             <MessageCircle className="w-6 h-6 fill-white" />
           </motion.button>

@@ -6,6 +6,8 @@ import type { CanvasElement } from "@/types/canvas.types";
 import type { WeddingSceneDocument } from "@/types/wedding-scene.types";
 import { canvasElementStyle, canvasElementAnimationClass, readRecord } from "@/lib/editor/canvas-presentation";
 import { CanvasElementContent } from "@/components/card/CanvasElementContent";
+import { useLanguage } from "@/context/LanguageContext";
+import { getResolvedWeddingData, getResolvedEvents } from "@/lib/i18n/wedding-translator";
 
 interface WeddingSceneRendererProps {
   card: CardDetail;
@@ -19,7 +21,10 @@ interface WeddingSceneRendererProps {
 }
 
 export function WeddingSceneRenderer({ card, data, scene, guestName, onOpenRsvp, onOpenGift, onSelectPhoto, isPreview = false }: WeddingSceneRendererProps) {
-  const renderData = { ...card, categoryData: { ...data, events: card.events, photos: card.photos } };
+  const { lang } = useLanguage();
+  const resolvedData = getResolvedWeddingData(card, lang);
+  const resolvedEvents = getResolvedEvents(card.events, card, lang);
+  const renderData = { ...card, categoryData: { ...resolvedData, events: resolvedEvents, photos: card.photos } };
   const elements = scene.elements.map((element) => {
     const binding = scene.bindings[element.id];
     if (!binding) return element;

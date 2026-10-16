@@ -8,6 +8,7 @@ import { EnvelopeConfig, WeddingDataPayload } from "@/types/card.types";
 import { EnvelopeOrnament } from "./EnvelopeOrnament";
 import { resolveCoverTheme } from "./cover-themes";
 import { playEnvelopeOpeningSound } from "./audio/opening-sound";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface WeddingCoverOpeningProps {
   templateSlug?: string;
@@ -26,17 +27,19 @@ export const WeddingCoverOpening: React.FC<WeddingCoverOpeningProps> = ({
   onOpenStart,
   onOpened,
 }) => {
+  const { lang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   const timerRef = useRef<number | null>(null);
 
-  // Phân giải cấu hình bìa thiệp (Ưu tiên cấu hình từ backend do người dùng tùy biến)
+  // Phân giải cấu hình bìa thiệp (Ưu tiên cấu hình từ backend do người dùng tùy biến, hỗ trợ đa ngôn ngữ)
   const theme = resolveCoverTheme(
     templateSlug,
     envelopeConfig,
     weddingData,
-    guestName
+    guestName,
+    lang
   );
 
   useEffect(() => {
@@ -325,7 +328,7 @@ export const WeddingCoverOpening: React.FC<WeddingCoverOpeningProps> = ({
                   borderColor: theme.sealBorderColor,
                 }}
                 onClick={handleOpenInvitation}
-                title="Bấm để mở thiệp"
+                title={t("coverTapHint") || "Bấm để mở thiệp"}
               >
                 {/* Vệt bóng gương lướt qua con dấu */}
                 <motion.div

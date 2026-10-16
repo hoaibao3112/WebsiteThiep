@@ -3,6 +3,8 @@
 import React from "react";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/context/LanguageContext";
+import { formatWeddingDate } from "@/lib/i18n/wedding-translator";
 
 interface InteractiveCalendarGridProps {
   targetDate: string | Date;
@@ -17,6 +19,7 @@ export const InteractiveCalendarGrid: React.FC<InteractiveCalendarGridProps> = (
   monthLabel,
   heartColor = "#E11D48",
 }) => {
+  const { lang, t } = useLanguage();
   const d = new Date(targetDate);
   const validDate = isNaN(d.getTime()) ? new Date("2026-12-24T18:00:00Z") : d;
   
@@ -39,7 +42,28 @@ export const InteractiveCalendarGrid: React.FC<InteractiveCalendarGridProps> = (
     days.push(i);
   }
 
-  const defaultMonthTitle = monthLabel || `Tháng ${String(month + 1).padStart(2, "0")}.${year}`;
+  const dateDetails = formatWeddingDate(validDate, lang);
+  const defaultMonthTitle =
+    monthLabel ||
+    (lang === "en"
+      ? `${dateDetails.month} ${year}`
+      : lang === "zh"
+      ? `${year}年 ${month + 1}月`
+      : `${t("monthPrefix") || "Tháng"} ${String(month + 1).padStart(2, "0")}.${year}`);
+
+  const cornerLabel =
+    lang === "en"
+      ? `${dateDetails.monthShort} / ${year}`
+      : lang === "zh"
+      ? `良辰吉日 • ${year}`
+      : `THÁNG ${month + 1} / ${year}`;
+
+  const dayHeaders =
+    lang === "en"
+      ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+      : lang === "zh"
+      ? ["一", "二", "三", "四", "五", "六", "日"]
+      : [t("monShort") || "T2", t("tueShort") || "T3", t("wedShort") || "T4", t("thuShort") || "T5", t("friShort") || "T6", t("satShort") || "T7", t("sunShort") || "CN"];
 
   const isDark = variant === "forest-card" || variant === "glass";
 
@@ -60,19 +84,15 @@ export const InteractiveCalendarGrid: React.FC<InteractiveCalendarGridProps> = (
           {defaultMonthTitle}
         </span>
         <span className="text-[10px] sm:text-xs opacity-70 font-mono font-medium">
-          DECEMBER / 2026
+          {cornerLabel}
         </span>
       </div>
 
       {/* DAYS OF WEEK */}
       <div className="grid grid-cols-7 gap-1 text-center mb-1 text-[10px] sm:text-xs font-semibold opacity-60">
-        <span>T2</span>
-        <span>T3</span>
-        <span>T4</span>
-        <span>T5</span>
-        <span>T6</span>
-        <span>T7</span>
-        <span>CN</span>
+        {dayHeaders.map((dh, i) => (
+          <span key={i}>{dh}</span>
+        ))}
       </div>
 
       {/* DAYS NUMBERS */}

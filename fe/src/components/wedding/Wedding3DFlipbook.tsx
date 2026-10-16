@@ -33,6 +33,7 @@ import {
 } from "@/types/album-3d.types";
 import { playPageFlipSound } from "@/lib/audio/page-flip-sound";
 import { downloadImage } from "@/lib/utils/download-image";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Wedding3DFlipbookProps {
   config?: Album3DConfig;
@@ -131,6 +132,7 @@ export function Wedding3DFlipbook({
   isPreview = false,
   onOpenAlbumEditor,
 }: Wedding3DFlipbookProps) {
+  const { lang, t } = useLanguage();
   const rawPages: Album3DPage[] = config?.pages || [];
   const pages: Album3DPage[] =
     rawPages.length > 0 ? rawPages : isPreview ? DEFAULT_PREVIEW_PAGES : [];
@@ -357,10 +359,10 @@ export function Wedding3DFlipbook({
             <span>Interactive Photobook 3D</span>
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-stone-900 tracking-tight">
-            {config?.title || "Album Kỷ Niệm Ngày Chung Đôi"}
+            {config?.title || t("album3dBookTitle") || "Album Kỷ Niệm Ngày Chung Đôi"}
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-1 font-light">
-            Chạm vào góc trang hoặc bấm nút điều hướng để xem chi tiết
+            {t("album3dFlipHint") || "Chạm vào góc trang hoặc bấm nút điều hướng để xem chi tiết"}
           </p>
         </div>
       )}
@@ -516,7 +518,7 @@ export function Wedding3DFlipbook({
 
               {/* Nhắc nhở bấm mở */}
               <div className="relative z-20 flex items-center gap-2 text-white/80 text-[11px] sm:text-xs font-medium bg-black/35 hover:bg-black/50 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/10 shadow-sm transition">
-                <span>Chạm để mở trang đầu tiên</span>
+                <span>{t("album3dFlipHint") || "Chạm để mở trang đầu tiên"}</span>
                 <ChevronRight className="w-3.5 h-3.5 animate-pulse text-amber-300" />
               </div>
             </motion.div>

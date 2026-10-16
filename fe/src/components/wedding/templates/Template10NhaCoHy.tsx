@@ -19,10 +19,19 @@ import {
   Loader2,
 } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  getResolvedWeddingData,
+  translateWeddingRole,
+  translateEventName,
+  translateVenueName,
+  formatWeddingDate,
+  formatLunarDate,
+} from "@/lib/i18n/wedding-translator";
 
 export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
   card,
-  data,
+  data: initialData,
   primaryColor = "#B22222",
   guestName,
   onOpenRsvp,
@@ -30,30 +39,33 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
   onSelectPhoto,
   isPreview = false,
 }) => {
+  const { lang, t } = useLanguage();
+  const data = getResolvedWeddingData(card, lang);
+
   // ── 1. DỮ LIỆU CÔ DÂU & CHÚ RỂ ──
-  const groomName = data.groom?.fullName || "Nguyễn Hoài Nam";
+  const groomName = data.groom?.fullName || (lang === "en" ? "Hoai Nam" : lang === "zh" ? "阮怀南" : "Nguyễn Hoài Nam");
   const groomShort = data.groom?.shortName || groomName.split(" ").slice(-2).join(" ");
-  const groomBirthOrder = data.groom?.birthOrder || "Thứ Nam";
-  const groomFather = data.groom?.parents?.fatherName || "Nguyễn Văn Khải";
-  const groomMother = data.groom?.parents?.motherName || "Trần Thu Hương";
+  const groomBirthOrder = translateWeddingRole(data.groom?.birthOrder || "Thứ Nam", lang);
+  const groomFather = data.groom?.parents?.fatherName || (lang === "en" ? "Nguyen Van Khai" : lang === "zh" ? "阮文凯" : "Nguyễn Văn Khải");
+  const groomMother = data.groom?.parents?.motherName || (lang === "en" ? "Tran Thu Huong" : lang === "zh" ? "陈秋香" : "Trần Thu Hương");
   const groomAddress =
     data.groom?.parents?.address ||
     data.groom?.address ||
-    "82 Trần Phú, phường Nha Trang, tỉnh Khánh Hòa";
+    (lang === "en" ? "82 Tran Phu, Nha Trang City" : lang === "zh" ? "芽庄市陈富路82号" : "82 Trần Phú, phường Nha Trang, tỉnh Khánh Hòa");
 
-  const brideName = data.bride?.fullName || "Võ Ngọc Diễm";
+  const brideName = data.bride?.fullName || (lang === "en" ? "Ngoc Diem" : lang === "zh" ? "武玉艳" : "Võ Ngọc Diễm");
   const brideShort = data.bride?.shortName || brideName.split(" ").slice(-2).join(" ");
-  const brideBirthOrder = data.bride?.birthOrder || "Út Nữ";
-  const brideFather = data.bride?.parents?.fatherName || "Võ Quốc Cường";
-  const brideMother = data.bride?.parents?.motherName || "Lê Thanh Mai";
+  const brideBirthOrder = translateWeddingRole(data.bride?.birthOrder || "Út Nữ", lang);
+  const brideFather = data.bride?.parents?.fatherName || (lang === "en" ? "Vo Quoc Cuong" : lang === "zh" ? "武国强" : "Võ Quốc Cường");
+  const brideMother = data.bride?.parents?.motherName || (lang === "en" ? "Le Thanh Mai" : lang === "zh" ? "黎青梅" : "Lê Thanh Mai");
   const brideAddress =
     data.bride?.parents?.address ||
     data.bride?.address ||
-    "45 Lê Hồng Phong, phường Tuy Hòa, tỉnh Đắk Lắk";
+    (lang === "en" ? "45 Le Hong Phong, Tuy Hoa City" : lang === "zh" ? "绥和市黎鸿峰路45号" : "45 Lê Hồng Phong, phường Tuy Hòa, tỉnh Đắk Lắk");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
   const events = card.events && card.events.length > 0 ? card.events : [];
-  const eventCeremony = events[0] || {
+  const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-03-23T09:00:00Z"),
     lunarDate: "Tức ngày 05/02 năm Bính Ngọ âm lịch",
@@ -62,7 +74,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
     mapUrl: "https://maps.google.com/?q=82+Trần+Phú+Nha+Trang",
   };
 
-  const eventParty = events[1] || events[0] || {
+  const rawParty = events[1] || events[0] || {
     eventName: "Tiệc Cưới",
     eventDate: new Date("2026-05-03T18:00:00Z"),
     lunarDate: "Tức ngày 17/03 năm Bính Ngọ âm lịch",
@@ -71,24 +83,22 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
     mapUrl: "https://maps.google.com/?q=Vinpearl+Resort+Nha+Trang",
   };
 
-  // Helper parse ngày tháng
-  const parseDateDetails = (rawDate: string | Date) => {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) {
-      return { dayName: "CHỦ NHẬT", day: "03", month: "05", year: "2026", time: "18:00" };
-    }
-    const daysOfWeek = ["CHỦ NHẬT", "THỨ HAI", "THỨ BA", "THỨ TƯ", "THỨ NĂM", "THỨ SÁU", "THỨ BẢY"];
-    const dayName = daysOfWeek[d.getDay()];
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = String(d.getFullYear());
-    const hours = String(d.getHours()).padStart(2, "0");
-    const mins = String(d.getMinutes()).padStart(2, "0");
-    return { dayName, day, month, year, time: `${hours}:${mins}` };
+  const eventCeremony = {
+    ...rawCeremony,
+    eventName: translateEventName(rawCeremony.eventName, lang),
+    venueName: translateVenueName(rawCeremony.venueName, lang),
+    lunarDate: formatLunarDate(rawCeremony.lunarDate, lang),
   };
 
-  const ceremonyTime = parseDateDetails(eventCeremony.eventDate);
-  const partyTime = parseDateDetails(eventParty.eventDate);
+  const eventParty = {
+    ...rawParty,
+    eventName: translateEventName(rawParty.eventName, lang),
+    venueName: translateVenueName(rawParty.venueName, lang),
+    lunarDate: formatLunarDate(rawParty.lunarDate, lang),
+  };
+
+  const ceremonyTime = formatWeddingDate(eventCeremony.eventDate, lang);
+  const partyTime = formatWeddingDate(eventParty.eventDate, lang);
 
   // ── 3. ALBUM ẢNH (LƯỚI 4 ẢNH) ──
   const defaultPhotos = [
@@ -296,7 +306,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               <span className="absolute -top-1.5 left-0 text-[#B22222] text-xs">⌜</span>
               <span className="absolute -top-1.5 right-0 text-[#B22222] text-xs">⌝</span>
               <h2 className="text-base sm:text-lg font-black tracking-widest text-[#B22222] uppercase">
-                THÔNG TIN LỄ CƯỚI
+                {t("weddingInformationTitle") || "THÔNG TIN LỄ CƯỚI"}
               </h2>
               <span className="absolute -bottom-1.5 left-0 text-[#B22222] text-xs">⌞</span>
               <span className="absolute -bottom-1.5 right-0 text-[#B22222] text-xs">⌟</span>
@@ -308,7 +318,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                 type="button"
                 onClick={scrollToContent}
                 className="w-10 h-10 rounded-full bg-[#B22222] hover:bg-[#8F1212] text-white flex items-center justify-center mx-auto shadow-md transition active:scale-95 cursor-pointer animate-pulse"
-                title="Xem thông tin chi tiết"
+                title={t("scrollDownToDetails") || "Xem thông tin chi tiết"}
               >
                 <ChevronDown className="w-5 h-5" />
               </button>
@@ -327,7 +337,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
             
             {/* NHÀ TRAI */}
             <div className="space-y-1 pr-2">
-              <span className="text-[11px] font-bold tracking-wider text-stone-500 uppercase block">Ông Bà</span>
+              <span className="text-[11px] font-bold tracking-wider text-stone-500 uppercase block">{t("grandparentsTitle") || "Ông Bà"}</span>
               <h3 className="text-xs sm:text-sm font-bold text-[#2E1618]">{groomFather}</h3>
               <h3 className="text-xs sm:text-sm font-bold text-[#2E1618]">{groomMother}</h3>
               <p className="text-[10px] sm:text-[11px] text-stone-600 leading-tight pt-1">
@@ -337,7 +347,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
 
             {/* NHÀ GÁI */}
             <div className="space-y-1 pl-2">
-              <span className="text-[11px] font-bold tracking-wider text-stone-500 uppercase block">Ông Bà</span>
+              <span className="text-[11px] font-bold tracking-wider text-stone-500 uppercase block">{t("grandparentsTitle") || "Ông Bà"}</span>
               <h3 className="text-xs sm:text-sm font-bold text-[#2E1618]">{brideFather}</h3>
               <h3 className="text-xs sm:text-sm font-bold text-[#2E1618]">{brideMother}</h3>
               <p className="text-[10px] sm:text-[11px] text-stone-600 leading-tight pt-1">
@@ -349,7 +359,8 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* DÒNG BÁO TIN & TÊN CÔ DÂU CHÚ RỂ */}
           <div className="text-center space-y-3 pt-2">
             <p className="text-[11px] sm:text-xs tracking-widest text-[#B22222] font-semibold uppercase">
-              TRÂN TRỌNG BÁO TIN<br />LỄ THÀNH HÔN CỦA CON CHÚNG TÔI.
+              {t("weddingInformationSubtitle") || "TRÂN TRỌNG BÁO TIN"}<br />
+              {t("ceremonyHeldAt") ? t("ceremonyHeldAt") : "LỄ THÀNH HÔN CỦA CON CHÚNG TÔI."}
             </p>
 
             <div className="space-y-1 pt-1">
@@ -376,8 +387,8 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* KHUNG THỜI GIAN LỄ THÀNH HÔN */}
           <div className="text-center pt-4 space-y-2 border-t border-[#B22222]/20">
             <p className="text-[11px] tracking-widest text-stone-700 font-bold uppercase">
-              LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI<br />
-              <span className="text-[#B22222] font-black">{eventCeremony.venueName || "TƯ GIA"}</span> VÀO LÚC
+              {eventCeremony.eventName}<br />
+              <span className="text-[#B22222] font-black">{eventCeremony.venueName || "TƯ GIA"}</span> {t("atTime") || "VÀO LÚC"}
             </p>
 
             <div className="text-2xl sm:text-3xl font-black text-[#2E1618] font-mono tracking-tight">
@@ -390,7 +401,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               <span className="text-stone-300">|</span>
               <span className="text-2xl sm:text-3xl font-black text-[#B22222] font-mono">{ceremonyTime.day}</span>
               <span className="text-stone-300">|</span>
-              <span className="tracking-wider">THÁNG {ceremonyTime.month}</span>
+              <span className="tracking-wider">{ceremonyTime.month}</span>
             </div>
 
             <div className="text-base font-bold text-[#2E1618] font-mono">
@@ -411,7 +422,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* TIÊU ĐỀ ALBUM */}
           <div className="text-center">
             <h2 className="text-lg sm:text-xl font-black tracking-widest text-[#B22222] uppercase">
-              ALBUM ẢNH
+              {t("photoAlbumTitle") || "ALBUM ẢNH"}
             </h2>
             <div className="w-12 h-0.5 bg-[#C89B3C] mx-auto mt-1" />
           </div>
@@ -428,7 +439,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                 >
                   <Image
                     src={photoUrl}
-                    alt={`Ảnh cưới ${idx + 1}`}
+                    alt={`Wedding Photo ${idx + 1}`}
                     fill
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     sizes="200px"
@@ -454,11 +465,11 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* THÔNG TIN TIỆC CƯỚI (RECEPTION PARTY) */}
           <div className="text-center space-y-2 pt-1">
             <h2 className="text-lg sm:text-xl font-black tracking-widest text-[#B22222] uppercase">
-              THÔNG TIN TIỆC CƯỚI
+              {eventParty.eventName}
             </h2>
 
             <p className="text-[11px] tracking-widest text-stone-700 font-bold uppercase pt-1">
-              TIỆC CƯỚI SẼ DIỄN RA VÀO LÚC:
+              {t("partyHeldAt") || "TIỆC CƯỚI SẼ DIỄN RA VÀO LÚC:"}
             </p>
 
             <div className="text-2xl sm:text-3xl font-black text-[#2E1618] font-mono tracking-tight">
@@ -471,7 +482,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               <span className="text-stone-300">|</span>
               <span className="text-2xl sm:text-3xl font-black text-[#B22222] font-mono">{partyTime.day}</span>
               <span className="text-stone-300">|</span>
-              <span className="tracking-wider">THÁNG {partyTime.month}</span>
+              <span className="tracking-wider">{partyTime.month}</span>
             </div>
 
             <div className="text-base font-bold text-[#2E1618] font-mono">
@@ -493,19 +504,25 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           <div className="w-full max-w-[320px] mx-auto bg-white rounded-2xl shadow-sm border border-[#EBDCC5] overflow-hidden">
             {/* Header Lịch */}
             <div className="bg-[#B22222] text-white py-2 px-4 text-center font-bold text-xs tracking-wider">
-              Tháng {calendarMonth} / {calendarYear}
+              {lang === "en" ? `${partyTime.month} ${calendarYear}` : lang === "zh" ? `${calendarYear}年 ${calendarMonth}月` : `Tháng ${calendarMonth} / ${calendarYear}`}
             </div>
 
             {/* Lưới các ngày */}
             <div className="p-3 text-center">
               <div className="grid grid-cols-7 text-[10px] font-bold text-stone-400 mb-2">
-                <span>T2</span>
-                <span>T3</span>
-                <span>T4</span>
-                <span>T5</span>
-                <span>T6</span>
-                <span>T7</span>
-                <span className="text-[#B22222]">CN</span>
+                {lang === "en" ? (
+                  <>
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span className="text-[#B22222]">Sun</span>
+                  </>
+                ) : lang === "zh" ? (
+                  <>
+                    <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span className="text-[#B22222]">日</span>
+                  </>
+                ) : (
+                  <>
+                    <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span className="text-[#B22222]">CN</span>
+                  </>
+                )}
               </div>
 
               <div className="grid grid-cols-7 gap-y-1.5 text-xs font-semibold text-stone-700">
@@ -544,7 +561,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               rel="noopener noreferrer"
               className="text-xs font-bold text-[#B22222] underline underline-offset-4 hover:text-[#8F1212] transition inline-block"
             >
-              Thêm vào lịch
+              {t("addToCalendar") || "Thêm vào lịch"}
             </a>
 
             <div>
@@ -553,7 +570,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                 onClick={onOpenRsvp}
                 className="w-full max-w-[240px] py-3 rounded-full bg-[#B22222] hover:bg-[#8F1212] text-white font-bold text-xs tracking-wider uppercase shadow-md transition active:scale-95 cursor-pointer mx-auto flex items-center justify-center gap-2"
               >
-                <span>XÁC NHẬN</span>
+                <span>{t("btnRsvp") || "XÁC NHẬN"}</span>
               </button>
             </div>
           </div>
@@ -561,7 +578,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* ĐỊA ĐIỂM TIỆC CƯỚI & GOOGLE MAPS */}
           <div className="text-center space-y-3 pt-4 border-t border-[#B22222]/20">
             <h2 className="text-base sm:text-lg font-black tracking-widest text-[#B22222] uppercase">
-              TIỆC CƯỚI SẼ TỔ CHỨC TẠI
+              {t("weddingMapTitle") || "TIỆC CƯỚI SẼ TỔ CHỨC TẠI"}
             </h2>
 
             <p className="text-xs sm:text-sm font-bold text-stone-800 leading-snug px-2">
@@ -583,7 +600,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                 className="absolute top-2 left-2 px-3 py-1.5 rounded-lg bg-white/95 text-stone-800 text-[11px] font-bold shadow-sm flex items-center gap-1.5 hover:bg-white"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-[#B22222]" />
-                <span>Mở trong Maps</span>
+                <span>Google Maps</span>
               </a>
             </div>
 
@@ -596,7 +613,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                 className="px-6 py-2 rounded-full border border-[#B22222] text-[#B22222] hover:bg-[#B22222] hover:text-white font-bold text-xs tracking-wider transition inline-flex items-center gap-1.5"
               >
                 <Navigation className="w-3.5 h-3.5" />
-                <span>Chỉ đường</span>
+                <span>{t("directionsBtn") || "Chỉ đường"}</span>
               </a>
             </div>
           </div>
@@ -611,7 +628,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           <div className="space-y-4">
             <div className="text-center">
               <h2 className="text-lg sm:text-xl font-black tracking-widest text-[#B22222] uppercase">
-                SỔ LƯU BÚT
+                {t("guestbookTitle") || "SỔ LƯU BÚT"}
               </h2>
               <div className="w-12 h-0.5 bg-[#C89B3C] mx-auto mt-1" />
             </div>
@@ -620,7 +637,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
             <form onSubmit={handleSubmitWish} className="space-y-3 pt-2">
               <input
                 type="text"
-                placeholder="Nhập tên của bạn*"
+                placeholder={t("guestbookFormName") || "Nhập tên của bạn*"}
                 value={wishName}
                 onChange={(e) => setWishName(e.target.value)}
                 required
@@ -628,7 +645,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               />
 
               <textarea
-                placeholder="Nhập lời chúc của bạn*"
+                placeholder={t("guestbookFormWish") || "Nhập lời chúc của bạn*"}
                 rows={3}
                 value={wishContent}
                 onChange={(e) => setWishContent(e.target.value)}
@@ -645,17 +662,17 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
                   {submittingWish ? (
                     <>
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>ĐANG GỬI...</span>
+                      <span>{t("submitting") || "ĐANG GỬI..."}</span>
                     </>
                   ) : (
-                    <span>GỬI LỜI CHÚC</span>
+                    <span>{t("guestbookSubmitWish") || "GỬI LỜI CHÚC"}</span>
                   )}
                 </button>
               </div>
 
               {wishSuccess && (
                 <p className="text-center text-xs font-semibold text-emerald-700 bg-emerald-50 py-1.5 rounded-lg border border-emerald-200">
-                  Cảm ơn bạn đã gửi lời chúc tốt đẹp đến đôi uyên ương! ✨
+                  {t("wishSuccess") || "Cảm ơn bạn đã gửi lời chúc tốt đẹp đến đôi uyên ương! ✨"}
                 </p>
               )}
             </form>
@@ -664,7 +681,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
             <div className="space-y-2 pt-2">
               {wishesList.length === 0 ? (
                 <p className="text-center text-xs text-stone-400 italic py-2">
-                  Chưa có lời chúc nào. Hãy là người đầu tiên!
+                  {t("emptyWishes") || "Chưa có lời chúc nào. Hãy là người đầu tiên!"}
                 </p>
               ) : (
                 <div className="max-h-52 overflow-y-auto space-y-2 pr-1 no-scrollbar">
@@ -685,7 +702,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
           {/* PHONG BAO MỪNG CƯỚI SONG HỶ */}
           <div className="text-center pt-4 space-y-3 border-t border-[#B22222]/20">
             <h2 className="text-base sm:text-lg font-black tracking-widest text-[#B22222] uppercase">
-              PHONG BAO MỪNG CƯỚI
+              {t("giftTitle") || "PHONG BAO MỪNG CƯỚI"}
             </h2>
 
             {/* Hình ảnh 2 phong bao lì xì tương tác */}
@@ -702,17 +719,17 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col items-center justify-end pb-4">
                 <span className="px-3.5 py-1 rounded-full bg-[#B22222]/90 text-white font-bold text-[11px] uppercase tracking-wider shadow-sm group-hover:bg-[#8F1212] transition">
-                  Nhấn để mở
+                  {t("coverOpenButtonText") || "Nhấn để mở"}
                 </span>
               </div>
             </div>
 
             <p className="text-xs text-stone-600 leading-relaxed pt-2 px-2">
-              Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi!
+              {data.greeting || (t("weddingInvitationDefaultGreeting") || "Sự hiện diện của quý khách là niềm vinh hạnh của gia đình chúng tôi!")}
             </p>
 
             <div className="pt-2 text-[11px] text-stone-400 tracking-wider">
-              ♡ thiepmungonline.com
+              ♡ CardVite Studio
             </div>
           </div>
         </section>

@@ -52,7 +52,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
   cardId,
   primaryColor = "#D4AF37",
 }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [wishes, setWishes] = useState<WishItem[]>(SAMPLE_DEMO_WISHES);
   const [senderName, setSenderName] = useState("");
   const [relationship, setRelationship] = useState("");
@@ -154,14 +154,14 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
           <input
             type="text"
             required
-            placeholder={t("yourName") || "Tên của bạn *"}
+            placeholder={t("guestbookFormName") || t("yourName") || "Tên của bạn *"}
             value={senderName}
             onChange={(e) => setSenderName(e.target.value)}
             className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
           />
           <input
             type="text"
-            placeholder={t("relationship") || "Mối quan hệ (VD: Bạn thân)"}
+            placeholder={t("guestbookFormRelation") || t("relationship") || "Mối quan hệ (VD: Bạn thân)"}
             value={relationship}
             onChange={(e) => setRelationship(e.target.value)}
             className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800"
@@ -171,7 +171,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
         <textarea
           rows={3}
           required
-          placeholder={t("writeWish") || "Viết lời chúc của bạn ở đây..."}
+          placeholder={t("guestbookFormWish") || t("writeWish") || "Viết lời chúc của bạn ở đây..."}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl border border-[#DFCEBA] focus:outline-none focus:ring-2 focus:ring-[#BE944E]/30 bg-white placeholder:text-stone-400 font-medium text-stone-800 resize-none"
@@ -202,7 +202,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-gradient-to-r from-[#A6784D] to-[#8C6038] active:scale-[0.98] text-white shadow-sm transition cursor-pointer disabled:opacity-50 min-h-[40px]"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>{submitting ? "..." : t("sendWish") || "Gửi Lời Chúc"}</span>
+            <span>{submitting ? "..." : (t("guestbookSubmitWish") || t("sendWish") || "Gửi Lời Chúc")}</span>
           </button>
         </div>
 
@@ -233,7 +233,7 @@ export const GuestbookSection: React.FC<GuestbookSectionProps> = ({
                     )}
                   </h4>
                   <span className="text-[9.5px] sm:text-[10px] text-stone-400 shrink-0">
-                    {new Date(w.createdAt).toLocaleDateString("vi-VN")}
+                    {new Date(w.createdAt).toLocaleDateString(lang === "en" ? "en-US" : lang === "zh" ? "zh-CN" : "vi-VN")}
                   </span>
                 </div>
                 <p className="text-xs text-stone-600 mt-1 leading-relaxed break-words">

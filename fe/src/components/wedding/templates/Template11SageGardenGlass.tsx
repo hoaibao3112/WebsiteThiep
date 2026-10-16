@@ -25,10 +25,19 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
+import {
+  getResolvedWeddingData,
+  translateWeddingRole,
+  translateEventName,
+  translateVenueName,
+  formatWeddingDate,
+  formatLunarDate,
+} from "@/lib/i18n/wedding-translator";
 
 export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
   card,
-  data,
+  data: initialData,
   primaryColor = "#3B523B",
   guestName,
   onOpenRsvp,
@@ -36,30 +45,33 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
   onSelectPhoto,
   isPreview = false,
 }) => {
+  const { lang, t } = useLanguage();
+  const data = getResolvedWeddingData(card, lang);
+
   // ── 1. DỮ LIỆU CÔ DÂU & CHÚ RỂ ──
-  const groomName = data.groom?.fullName || "Nguyễn Thành Đạt";
+  const groomName = data.groom?.fullName || (lang === "en" ? "Thanh Dat" : lang === "zh" ? "阮成达" : "Nguyễn Thành Đạt");
   const groomShort = data.groom?.shortName || groomName.split(" ").slice(-2).join(" ");
-  const groomBirthOrder = data.groom?.birthOrder || "Thứ Nam";
-  const groomFather = data.groom?.parents?.fatherName || "Nguyễn Quốc Bình";
-  const groomMother = data.groom?.parents?.motherName || "Trần Thu Hạnh";
+  const groomBirthOrder = translateWeddingRole(data.groom?.birthOrder || "Thứ Nam", lang);
+  const groomFather = data.groom?.parents?.fatherName || (lang === "en" ? "Nguyen Quoc Binh" : lang === "zh" ? "阮国平" : "Nguyễn Quốc Bình");
+  const groomMother = data.groom?.parents?.motherName || (lang === "en" ? "Tran Thu Hanh" : lang === "zh" ? "陈秋杏" : "Trần Thu Hạnh");
   const groomAddress =
     data.groom?.parents?.address ||
     data.groom?.address ||
-    "46 Quán Thánh, phường Ba Đình, Hà Nội";
+    (lang === "en" ? "46 Quan Thanh, Ba Dinh, Hanoi" : lang === "zh" ? "河内市巴亭坊馆圣街46号" : "46 Quán Thánh, phường Ba Đình, Hà Nội");
 
-  const brideName = data.bride?.fullName || "Vũ Khánh Ly";
+  const brideName = data.bride?.fullName || (lang === "en" ? "Khanh Ly" : lang === "zh" ? "武庆梨" : "Vũ Khánh Ly");
   const brideShort = data.bride?.shortName || brideName.split(" ").slice(-2).join(" ");
-  const brideBirthOrder = data.bride?.birthOrder || "Út Nữ";
-  const brideFather = data.bride?.parents?.fatherName || "Vũ Văn Hải";
-  const brideMother = data.bride?.parents?.motherName || "Phạm Ngọc Lan";
+  const brideBirthOrder = translateWeddingRole(data.bride?.birthOrder || "Út Nữ", lang);
+  const brideFather = data.bride?.parents?.fatherName || (lang === "en" ? "Vu Van Hai" : lang === "zh" ? "武文海" : "Vũ Văn Hải");
+  const brideMother = data.bride?.parents?.motherName || (lang === "en" ? "Pham Ngoc Lan" : lang === "zh" ? "范玉兰" : "Phạm Ngọc Lan");
   const brideAddress =
     data.bride?.parents?.address ||
     data.bride?.address ||
-    "82 Yên Phụ, phường Hồng Hà, Hà Nội";
+    (lang === "en" ? "82 Yen Phu, Tay Ho, Hanoi" : lang === "zh" ? "河内市安附路82号" : "82 Yên Phụ, phường Hồng Hà, Hà Nội");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
   const events = card.events && card.events.length > 0 ? card.events : [];
-  const eventCeremony = events[0] || {
+  const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-08-02T09:00:00Z"),
     lunarDate: "Tức ngày 20/06 năm Bính Ngọ âm lịch",
@@ -68,7 +80,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
     mapUrl: "https://maps.google.com/?q=46+Quán+Thánh+Ba+Đình+Hà+Nội",
   };
 
-  const eventParty = events[1] || events[0] || {
+  const rawParty = events[1] || events[0] || {
     eventName: "Tiệc Cưới",
     eventDate: new Date("2026-08-02T11:30:00Z"),
     lunarDate: "Tức ngày 20/06 năm Bính Ngọ âm lịch",
@@ -77,24 +89,22 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
     mapUrl: "https://maps.google.com/?q=Pan+Pacific+Hanoi+1+Thanh+Nien",
   };
 
-  // Helper parse ngày tháng
-  const parseDateDetails = (rawDate: string | Date) => {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) {
-      return { dayName: "CHỦ NHẬT", day: "02", month: "08", year: "2026", time: "11:30" };
-    }
-    const daysOfWeek = ["CHỦ NHẬT", "THỨ HAI", "THỨ BA", "THỨ TƯ", "THỨ NĂM", "THỨ SÁU", "THỨ BẢY"];
-    const dayName = daysOfWeek[d.getDay()];
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = String(d.getFullYear());
-    const hours = String(d.getHours()).padStart(2, "0");
-    const mins = String(d.getMinutes()).padStart(2, "0");
-    return { dayName, day, month, year, time: `${hours}:${mins}` };
+  const eventCeremony = {
+    ...rawCeremony,
+    eventName: translateEventName(rawCeremony.eventName, lang),
+    venueName: translateVenueName(rawCeremony.venueName, lang),
+    lunarDate: formatLunarDate(rawCeremony.lunarDate, lang),
   };
 
-  const ceremonyTime = parseDateDetails(eventCeremony.eventDate);
-  const partyTime = parseDateDetails(eventParty.eventDate);
+  const eventParty = {
+    ...rawParty,
+    eventName: translateEventName(rawParty.eventName, lang),
+    venueName: translateVenueName(rawParty.venueName, lang),
+    lunarDate: formatLunarDate(rawParty.lunarDate, lang),
+  };
+
+  const ceremonyTime = formatWeddingDate(eventCeremony.eventDate, lang);
+  const partyTime = formatWeddingDate(eventParty.eventDate, lang);
 
   // ── 3. ẢNH BÌA & ALBUM ẢNH (LƯỚI 4 ẢNH 2x2) ──
   const coverPhoto =
@@ -239,7 +249,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           href={`/dashboard/cards/create?template=wedding-sage-garden-glass`}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#D12B2B] hover:bg-[#B71F1F] text-white text-xs font-bold shadow-lg shadow-red-900/20 transition-all transform hover:scale-105 active:scale-95"
         >
-          <span>Sử dụng thiệp này</span>
+          <span>{t("useThisTemplate") || "Sử dụng thiệp này"}</span>
           <span className="text-sm font-semibold">→</span>
         </Link>
       </div>
@@ -271,7 +281,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md text-[#223522] text-[10px] font-medium shadow flex items-center gap-1.5">
                 <Sparkles className="w-2.5 h-2.5 text-emerald-700" />
-                <span>Chạm để xem ảnh</span>
+                <span>{t("tapToViewPhoto") || "Chạm để xem ảnh"}</span>
               </div>
             </div>
           </div>
@@ -280,7 +290,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           <div className="w-full max-w-[340px] mx-auto rounded-[32px] bg-white/50 backdrop-blur-md border border-white/70 shadow-[0_8px_32px_rgba(40,65,40,0.1)] p-5 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-[#DDE8DA]/30 pointer-events-none" />
             <p className="text-[10px] font-serif uppercase tracking-[0.28em] text-[#556D55] mb-2 font-medium">
-              Save Our Date
+              {t("saveOurDate") || "Save Our Date"}
             </p>
             <motion.h1
               initial={{ scale: 0.95 }}
@@ -302,7 +312,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
               {brideShort}
             </motion.h1>
             <p className="mt-3 text-[10.5px] uppercase tracking-[0.25em] text-[#4A644A] font-medium">
-              Pan Pacific Hotel • {partyTime.year}
+              {eventParty.venueName} • {partyTime.year}
             </p>
           </div>
         </motion.div>
@@ -322,14 +332,14 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-6"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            {data.invitationTitle || "THÔNG TIN LỄ CƯỚI"}
+            {data.invitationTitle || t("weddingInformationTitle") || "THÔNG TIN LỄ CƯỚI"}
           </h2>
 
           {/* 2 Cột Nhà Trai & Nhà Gái */}
           <div className="grid grid-cols-2 gap-4 text-xs mb-6">
             {/* Nhà Trai */}
             <div className="space-y-1">
-              <p className="text-[#556D55] italic text-[11px]">Ông Bà</p>
+              <p className="text-[#556D55] italic text-[11px]">{t("grandparentsTitle") || "Ông Bà"}</p>
               <p className="font-bold text-[#1C2C1C] text-sm leading-tight">{groomFather}</p>
               <p className="font-bold text-[#1C2C1C] text-sm leading-tight">{groomMother}</p>
               <p className="text-[10px] text-[#556D55] pt-1 leading-snug line-clamp-2">
@@ -339,7 +349,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
 
             {/* Nhà Gái */}
             <div className="space-y-1">
-              <p className="text-[#556D55] italic text-[11px]">Ông Bà</p>
+              <p className="text-[#556D55] italic text-[11px]">{t("grandparentsTitle") || "Ông Bà"}</p>
               <p className="font-bold text-[#1C2C1C] text-sm leading-tight">{brideFather}</p>
               <p className="font-bold text-[#1C2C1C] text-sm leading-tight">{brideMother}</p>
               <p className="text-[10px] text-[#556D55] pt-1 leading-snug line-clamp-2">
@@ -352,7 +362,8 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
 
           {/* Lời Báo Tin */}
           <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-[#354D35] mb-4">
-            TRÂN TRỌNG BÁO TIN<br />LỄ THÀNH HÔN CỦA CON CHÚNG TÔI.
+            {t("weddingInformationSubtitle") || "TRÂN TRỌNG BÁO TIN"}<br />
+            {t("ceremonyHeldAt") || "LỄ THÀNH HÔN CỦA CON CHÚNG TÔI."}
           </p>
 
           {/* Tên Chú Rể & Cô Dâu */}
@@ -383,7 +394,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           {/* Thông Tin Lễ Thành Hôn Tại Tư Gia */}
           <div className="bg-white/50 rounded-2xl p-4 border border-white/70 shadow-sm space-y-2">
             <p className="text-xs font-bold uppercase tracking-wider text-[#2D452D]">
-              {eventCeremony.eventName || "LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI"}
+              {eventCeremony.eventName || t("ceremonyHeldAt") || "LỄ THÀNH HÔN ĐƯỢC CỬ HÀNH TẠI"}
             </p>
             <p className="text-xs font-medium text-[#465E46] uppercase">
               {eventCeremony.venueName || "TƯ GIA"}
@@ -395,7 +406,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                 {ceremonyTime.day}
               </span>
               <span className="text-xs font-bold uppercase tracking-widest">
-                THÁNG {ceremonyTime.month}
+                {t("monthPrefix") || "THÁNG"} {ceremonyTime.month}
               </span>
             </div>
 
@@ -422,7 +433,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-5"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            ALBUM ẢNH CƯỚI
+            {t("photoAlbumTitle") || "ALBUM ẢNH CƯỚI"}
           </h2>
 
           <div className="grid grid-cols-2 gap-3">
@@ -456,7 +467,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           </div>
 
           <p className="text-[11px] text-[#556D55] italic mt-3">
-            (Chạm vào ảnh để xem toàn bộ album ảnh cưới)
+            {t("touchToViewAlbum") || "(Chạm vào ảnh để xem toàn bộ album ảnh cưới)"}
           </p>
         </motion.div>
 
@@ -474,11 +485,11 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-3"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            THÔNG TIN TIỆC CƯỚI
+            {t("receptionSchedule") || "THÔNG TIN TIỆC CƯỚI"}
           </h2>
 
           <p className="text-[11px] uppercase tracking-wider text-[#4A644A] font-semibold">
-            TIỆC CƯỚI SẼ DIỄN RA VÀO LÚC:
+            {t("partyHeldAt") || "TIỆC CƯỚI SẼ DIỄN RA VÀO LÚC:"}
           </p>
 
           <p className="text-3xl font-serif font-bold text-[#1C2C1C] my-1">
@@ -486,7 +497,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           </p>
 
           <p className="text-xs font-bold uppercase tracking-wider text-[#2D452D]">
-            {partyTime.dayName} / {partyTime.day} / THÁNG {partyTime.month}
+            {partyTime.dayName} / {partyTime.day} / {t("monthPrefix") || "THÁNG"} {partyTime.month}
           </p>
           <p className="text-sm font-serif font-bold text-[#1C2C1C] mb-1">
             {partyTime.year}
@@ -503,18 +514,18 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             </div>
 
             <h3 className="font-bold text-xs uppercase tracking-wider text-[#2E472E] mb-3 text-center">
-              THÁNG {parseInt(partyTime.month, 10)} / {partyTime.year}
+              {t("monthPrefix") || "THÁNG"} {parseInt(partyTime.month, 10)} / {partyTime.year}
             </h3>
 
             {/* Thứ trong tuần */}
             <div className="grid grid-cols-7 text-[10px] font-bold text-[#556D55] mb-2 text-center">
-              <span>T2</span>
-              <span>T3</span>
-              <span>T4</span>
-              <span>T5</span>
-              <span>T6</span>
-              <span>T7</span>
-              <span className="text-[#3B523B]">CN</span>
+              <span>{t("monShort") || "T2"}</span>
+              <span>{t("tueShort") || "T3"}</span>
+              <span>{t("wedShort") || "T4"}</span>
+              <span>{t("thuShort") || "T5"}</span>
+              <span>{t("friShort") || "T6"}</span>
+              <span>{t("satShort") || "T7"}</span>
+              <span className="text-[#3B523B]">{t("sunShort") || "CN"}</span>
             </div>
 
             {/* Các ngày trong tháng 8/2026 (Bắt đầu từ Thứ 7 ngày 1) */}
@@ -577,7 +588,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
               className="inline-flex items-center gap-1.5 px-6 py-2 rounded-full border border-[#3B523B] bg-white/40 hover:bg-[#3B523B] hover:text-white text-[#3B523B] text-xs font-semibold shadow-sm transition-all"
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Thêm vào lịch</span>
+              <span>{t("addToCalendarBtn") || "Thêm vào lịch"}</span>
             </button>
           </div>
 
@@ -586,7 +597,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
           {/* Địa điểm tiệc cưới */}
           <div className="space-y-1">
             <p className="text-xs font-bold uppercase tracking-wider text-[#2D452D]">
-              TIỆC CƯỚI SẼ TỔ CHỨC TẠI
+              {t("partyHeldAt") || "TIỆC CƯỚI SẼ TỔ CHỨC TẠI"}
             </p>
             <p className="text-sm font-bold text-[#1C2C1C]">
               {eventParty.venueName}
@@ -603,13 +614,13 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                 className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-[#3B523B] text-white text-xs font-medium hover:bg-[#2F422F] shadow-sm transition-all"
               >
                 <Navigation className="w-3 h-3" />
-                <span>Chỉ đường</span>
+                <span>{t("directionsBtn") || "Chỉ đường"}</span>
               </a>
               <button
                 onClick={onOpenRsvp}
                 className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full border border-[#3B523B] text-[#3B523B] bg-white/50 text-xs font-medium hover:bg-white transition-all"
               >
-                <span>Xác nhận tham dự</span>
+                <span>{t("confirmAttendanceBtn") || "Xác nhận tham dự"}</span>
               </button>
             </div>
           </div>
@@ -629,7 +640,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-6 text-center"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            LỊCH TRÌNH TIỆC CƯỚI
+            {t("receptionSchedule") || "LỊCH TRÌNH TIỆC CƯỚI"}
           </h2>
 
           <div className="space-y-4 max-w-[320px] mx-auto">
@@ -642,6 +653,17 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                 return <PartyPopper className="w-4 h-4 text-[#3B523B]" />;
               };
 
+              // Localize standard wedding timeline items
+              const localizedTitle = (() => {
+                const lower = item.title.toLowerCase();
+                if (lower.includes("đón khách") || lower.includes("welcome")) return t("timelineWelcome") || item.title;
+                if (lower.includes("khai tiệc") || lower.includes("ceremony") || lower.includes("opening")) return t("timelineCeremony") || item.title;
+                if (lower.includes("rượu") || lower.includes("bánh") || lower.includes("champagne") || lower.includes("cake")) return t("timelineCake") || item.title;
+                if (lower.includes("món") || lower.includes("tiệc") || lower.includes("dinner") || lower.includes("banquet")) return t("timelineDinner") || item.title;
+                if (lower.includes("kết") || lower.includes("farewell") || lower.includes("chụp ảnh")) return t("timelineFarewell") || item.title;
+                return item.title;
+              })();
+
               return (
                 <div
                   key={idx}
@@ -652,7 +674,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                   </div>
                   <div className="flex-1 flex items-baseline justify-between">
                     <span className="font-serif font-bold text-sm text-[#203322]">
-                      {item.title}
+                      {localizedTitle}
                     </span>
                     <span className="font-bold text-xs text-[#3B523B] tracking-wider">
                       {item.time}
@@ -678,18 +700,18 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-4"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            SỔ LƯU BÚT
+            {t("homeWishesTitle") || "SỔ LƯU BÚT"}
           </h2>
 
           <p className="text-xs text-[#4A644A] mb-5">
-            Gửi những lời chúc phúc ngọt ngào nhất tới tân lang & tân nương!
+            {t("homeWishesSub") || "Gửi những lời chúc phúc ngọt ngào nhất tới tân lang & tân nương!"}
           </p>
 
           <form onSubmit={handleSendWish} className="space-y-3 max-w-[340px] mx-auto text-left">
             <div>
               <input
                 type="text"
-                placeholder="Tên của bạn"
+                placeholder={t("guestbookFormName") || "Tên của bạn"}
                 value={guestNameInput}
                 onChange={(e) => setGuestNameInput(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white/90 text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#3B523B]"
@@ -699,7 +721,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             <div>
               <textarea
                 rows={3}
-                placeholder="Lời chúc của bạn"
+                placeholder={t("sendWishInputPlaceholder") || "Lời chúc của bạn"}
                 value={wishInput}
                 onChange={(e) => setWishInput(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white/90 text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#3B523B]"
@@ -715,17 +737,17 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
                 {submittingWish ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Đang gửi...</span>
+                    <span>{t("submitting") || "Đang gửi..."}</span>
                   </>
                 ) : (
-                  <span>GỬI LỜI CHÚC</span>
+                  <span>{t("guestbookSubmitWish") || "GỬI LỜI CHÚC"}</span>
                 )}
               </button>
             </div>
 
             {wishSuccess && (
               <p className="text-xs text-center text-emerald-700 font-medium pt-1">
-                Cảm ơn bạn! Lời chúc của bạn đã được lưu lại thành công ✨
+                {t("copiedSuccessToast") ? `${t("copiedSuccessToast")} ✨` : "Cảm ơn bạn! Lời chúc của bạn đã được lưu lại thành công ✨"}
               </p>
             )}
           </form>
@@ -761,11 +783,11 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-xl sm:text-2xl font-serif font-bold uppercase tracking-[0.14em] text-[#223522] mb-3"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            HỘP QUÀ MỪNG
+            {t("giftBoxTitle") || "HỘP QUÀ MỪNG"}
           </h2>
 
           <p className="text-xs text-[#4A644A] max-w-[300px] mx-auto mb-4">
-            Sự hiện diện và lời chúc phúc của quý khách là món quà quý giá nhất dành cho chúng tôi!
+            {t("giftBoxSubtitle") || "Sự hiện diện và lời chúc phúc của quý khách là món quà quý giá nhất dành cho chúng tôi!"}
           </p>
 
           {/* Glass Gift Box 3D Art */}
@@ -788,7 +810,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#3B523B] hover:bg-[#2C402C] text-white text-xs font-bold shadow-md transition-all"
             >
               <Gift className="w-4 h-4" />
-              <span>Gửi quà mừng cưới (Mở mã QR)</span>
+              <span>{t("sendGiftQrBtn") || "Gửi quà mừng cưới (Mở mã QR)"}</span>
             </button>
           </div>
         </motion.div>
@@ -801,7 +823,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
             className="text-2xl font-serif italic text-[#3B523B]"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
-            Thank you!
+            {t("thankYouTitle") || "Thank you!"}
           </p>
           <p className="text-xs text-[#556D55] uppercase tracking-widest font-medium">
             {groomShort} & {brideShort}
@@ -815,16 +837,16 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
         <button
           onClick={handleScrollDown}
           className="w-11 h-11 rounded-full bg-[#3E553E] hover:bg-[#2E422E] text-white flex items-center justify-center shadow-lg shadow-emerald-950/20 transition-all transform hover:scale-110 active:scale-95"
-          title="Cuộn xuống tiếp"
+          title={t("scrollDownToDetails") || "Cuộn xuống tiếp"}
         >
           <ChevronDown className="w-5 h-5" />
         </button>
 
-        {/* Nút sóng âm / nhạc */}
+        {/* Nút sóng âm / RSVP */}
         <button
           onClick={onOpenRsvp}
           className="w-11 h-11 rounded-full bg-[#3E553E] hover:bg-[#2E422E] text-white flex items-center justify-center shadow-lg shadow-emerald-950/20 transition-all transform hover:scale-110 active:scale-95"
-          title="Xác nhận tham dự"
+          title={t("confirmAttendanceBtn") || "Xác nhận tham dự"}
         >
           <div className="flex items-center gap-0.5">
             <span className="w-0.5 h-3 bg-white rounded-full animate-pulse" />

@@ -8,6 +8,7 @@ import { CanvasWidget } from "./CanvasWidget";
 import { Heart, Copy, Check, QrCode } from "lucide-react";
 import { STOCK_CATALOG } from "@/config/stock-catalog";
 import { SafeSvg } from "@/components/shared/SafeSvg";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function ScaledPresetWrapper({
   baseW,
@@ -44,6 +45,7 @@ export function ScaledPresetWrapper({
 }
 
 function ArchCountdownBoxes({ targetDate }: { targetDate: string }) {
+  const { t } = useLanguage();
   const [timeLeft, setTimeLeft] = useState({ days: 89, hours: 11, minutes: 51, seconds: 21 });
   useEffect(() => {
     const calculate = () => {
@@ -63,10 +65,10 @@ function ArchCountdownBoxes({ targetDate }: { targetDate: string }) {
   return (
     <div className="flex items-center justify-center gap-2.5">
       {[
-        { val: timeLeft.days, label: "NGÀY" },
-        { val: timeLeft.hours, label: "GIỜ" },
-        { val: timeLeft.minutes, label: "PHÚT" },
-        { val: timeLeft.seconds, label: "GIÂY" },
+        { val: timeLeft.days, label: t("countdownDays") || "NGÀY" },
+        { val: timeLeft.hours, label: t("countdownHours") || "GIỜ" },
+        { val: timeLeft.minutes, label: t("countdownMinutes") || "PHÚT" },
+        { val: timeLeft.seconds, label: t("countdownSeconds") || "GIÂY" },
       ].map((item, i) => (
         <div key={i} className="bg-[#111111] text-white rounded-md py-2 px-2.5 min-w-[55px] text-center shadow-md" suppressHydrationWarning>
           <div className="text-xl font-bold font-mono tracking-tight leading-none" suppressHydrationWarning>
@@ -90,6 +92,7 @@ function WeddingGiftLuxuryCard({
   data: any;
   onGift?: () => void;
 }) {
+  const { t, lang } = useLanguage();
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
 
   const custom = el.customData || {};
@@ -101,9 +104,10 @@ function WeddingGiftLuxuryCard({
   const brideBank = custom.brideBank || (typeof data.bankingSecondary?.bankCode === "string" ? data.bankingSecondary.bankCode : "") || "Techcombank";
   const brideAccount = custom.brideAccount || (typeof data.bankingSecondary?.accountNumber === "string" ? data.bankingSecondary.accountNumber : "") || "9876 543 210";
 
-  const title = custom.title || "MỪNG CƯỚI";
-  const subtitle = custom.subtitle || "Thay cho những lời chúc tốt đẹp";
-  const message = custom.message || "Sự hiện diện và lời chúc của bạn là món quà quý giá nhất với chúng mình. Nếu muốn gửi thêm chút yêu thương, bạn có thể mừng cưới qua số tài khoản bên dưới ạ.";
+  const defaultTitle = lang === "en" ? "WEDDING GIFT" : lang === "zh" ? "新婚礼金" : "MỪNG CƯỚI";
+  const title = custom.title || defaultTitle;
+  const subtitle = custom.subtitle || t("weddingGiftDefaultSubtitle") || "Thay cho những lời chúc tốt đẹp";
+  const message = custom.message || t("weddingGiftDefaultMessage") || "Sự hiện diện và lời chúc của bạn là món quà quý giá nhất với chúng mình. Nếu muốn gửi thêm chút yêu thương, bạn có thể mừng cưới qua số tài khoản bên dưới ạ.";
 
   const cleanBank = groomBank.replace(/[^a-zA-Z0-9]/g, "");
   const cleanAcc = groomAccount.replace(/[^a-zA-Z0-9]/g, "");
@@ -146,7 +150,7 @@ function WeddingGiftLuxuryCard({
         <div className="w-[310px] bg-[#FFFDF9] rounded-[24px] border border-amber-200/90 shadow-xl p-4 flex flex-col items-center relative space-y-3">
           {/* Pill Badge: QUÉT MÃ QR */}
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FAF5EC] border border-amber-200 text-[#8C6D37] text-[9px] font-bold tracking-widest uppercase shadow-2xs">
-            QUÉT MÃ QR
+            {t("scanQrCodeBadge") || "QUÉT MÃ QR"}
           </div>
 
           {/* QR Code Container with Gold Brackets */}
@@ -176,7 +180,7 @@ function WeddingGiftLuxuryCard({
             <div className="flex items-center gap-1.5 pl-1">
               <span className="text-sm">🤵</span>
               <div>
-                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">CHÚ RỂ</span>
+                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">{t("groomRoleBadge") || "CHÚ RỂ"}</span>
                 <span className="text-xs font-serif font-bold text-[#4A3225] block leading-tight">{groomName}</span>
               </div>
             </div>
@@ -195,11 +199,11 @@ function WeddingGiftLuxuryCard({
                 type="button"
                 onClick={(e) => handleCopy(groomAccount, "groom", e)}
                 className="p-1.5 hover:bg-stone-200/60 rounded-lg text-stone-600 hover:text-stone-900 transition pointer-events-auto cursor-pointer"
-                title="Sao chép số tài khoản"
+                title={t("copyAccountTooltip") || "Sao chép số tài khoản"}
               >
                 {copiedAccount === "groom" ? (
                   <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5">
-                    <Check className="size-3" /> Đã chép
+                    <Check className="size-3" /> {t("copiedBadge") || "Đã chép"}
                   </span>
                 ) : (
                   <Copy className="size-3.5 text-stone-500" />
@@ -220,7 +224,7 @@ function WeddingGiftLuxuryCard({
             <div className="flex items-center gap-1.5 pl-1">
               <span className="text-sm">👰</span>
               <div>
-                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">CÔ DÂU</span>
+                <span className="text-[8px] font-sans uppercase tracking-wider text-stone-400 block font-medium">{t("brideRoleBadge") || "CÔ DÂU"}</span>
                 <span className="text-xs font-serif font-bold text-[#4A3225] block leading-tight">{brideName}</span>
               </div>
             </div>
@@ -239,11 +243,11 @@ function WeddingGiftLuxuryCard({
                 type="button"
                 onClick={(e) => handleCopy(brideAccount, "bride", e)}
                 className="p-1.5 hover:bg-stone-200/60 rounded-lg text-stone-600 hover:text-stone-900 transition pointer-events-auto cursor-pointer"
-                title="Sao chép số tài khoản"
+                title={t("copyAccountTooltip") || "Sao chép số tài khoản"}
               >
                 {copiedAccount === "bride" ? (
                   <span className="text-[9px] font-bold text-emerald-600 flex items-center gap-0.5">
-                    <Check className="size-3" /> Đã chép
+                    <Check className="size-3" /> {t("copiedBadge") || "Đã chép"}
                   </span>
                 ) : (
                   <Copy className="size-3.5 text-stone-500" />
@@ -264,6 +268,7 @@ function WeddingGiftLuxuryCard({
 }
 
 export function CanvasElementContent({ element: el, draft, guestName, onRsvp, onGift }: { element: CanvasElement; draft?: object; guestName?: string; onRsvp?: () => void; onGift?: () => void }) {
+  const { t } = useLanguage();
   const data = readCanvasData(draft);
   if (el.type === "widget") {
     if (el.widgetType === "map" && (el.title === "Địa chỉ dự tiệc" || el.id?.includes("venue"))) {
@@ -276,12 +281,12 @@ export function CanvasElementContent({ element: el, draft, guestName, onRsvp, on
       const primaryColor = isLotus ? "#2E5136" : isForest ? "#364733" : isMarsala ? "#6B1724" : (el.color || "#543A2C");
       const venueName = (firstEvent.venueName as string) || (isLotus ? "Khách sạn CINELOVE" : isForest ? "TƯ GIA NHÀ GÁI" : "TƯ GIA NHÀ TRAI");
       const address = (firstEvent.address as string) || (isLotus ? "Hà Nội" : isForest ? "Xóm 5 , Xã Phú Cát, Quốc Oai, Hà Nội" : isMarsala ? "Khu Phố Xuân Thượng, Phường Quảng Vinh, Nam Sầm Sơn, Thanh Hóa" : "16 P. Phúc Minh, Phúc Diễn, Bắc Từ Liêm, TP. Hà Nội");
-      const buttonLabel = isLotus ? "CHỈ ĐƯỜNG" : "Xem chỉ đường";
+      const buttonLabel = isLotus ? (t("getDirectionsBtn") || "CHỈ ĐƯỜNG") : (t("getDirectionsBtn") || "Xem chỉ đường");
       return (
         <div className="w-full h-full px-4 py-3 flex flex-col items-center justify-center text-center select-none bg-transparent">
           <div className="inline-block border-b pb-1 mb-2" style={{ borderColor: `${primaryColor}66` }}>
             <span className="text-xs uppercase tracking-widest text-stone-600 font-medium">
-              Địa chỉ dự tiệc
+              {t("partyAddressTitle") || "Địa chỉ dự tiệc"}
             </span>
           </div>
           <h3 className="font-serif text-lg font-bold uppercase tracking-wider mb-1" style={{ color: primaryColor }}>

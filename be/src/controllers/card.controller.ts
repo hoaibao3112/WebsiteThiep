@@ -5,6 +5,8 @@ import { z } from "zod";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { HttpError } from "../lib/http-error";
 import { ensureWeddingSceneData } from "../services/wedding-scene.service";
+import { AiTranslateService } from "../services/ai-translate.service";
+import { logger } from "../lib/logger";
 
 export class CardController {
   static async getWeddingScenePreview(req: Request, res: Response, next: NextFunction) {
@@ -60,6 +62,12 @@ export class CardController {
       // Parse trực tiếp — ZodError sẽ được bắt bởi global error handler
       const input = DraftCardSchema.parse(body);
       const card = await CardService.createDraft(userId, accountId, input, idempotencyKey);
+
+      // Tự động dịch nền sang tiếng Anh và tiếng Trung (fire-and-forget)
+      AiTranslateService.translateAndSaveCard(accountId, card.id).catch((err: unknown) => {
+        logger.warn({ cardId: card.id, err: err instanceof Error ? err.message : err }, "Background AI card translation failed");
+      });
+
       return res.status(201).json({ success: true, data: card });
     } catch (error: unknown) {
       next(error);
@@ -87,6 +95,12 @@ export class CardController {
         (ifMatchHeader ? ifMatchHeader.replace(/"/g, "").trim() : undefined);
 
       const card = await CardService.updateDraft(accountId, req.params.id as string, input, expectedUpdatedAt);
+
+      // Tự động dịch nền sang tiếng Anh và tiếng Trung (fire-and-forget)
+      AiTranslateService.translateAndSaveCard(accountId, card.id).catch((err: unknown) => {
+        logger.warn({ cardId: card.id, err: err instanceof Error ? err.message : err }, "Background AI card translation failed");
+      });
+
       return res.status(200).json({ success: true, data: card, updatedAt: card.updatedAt });
     } catch (error: unknown) {
       next(error);
@@ -159,6 +173,17 @@ export class CardController {
       const id = req.params.id as string;
       const card = await CardService.publishCard(accountId, id);
       res.status(200).json({ success: true, data: card });
+    } catch (error: unknown) {
+      next(error);
+    }
+  }
+
+  static async translate(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { accountId } = CardController.getAuth(req);
+      const cardId = req.params.id as string;
+      const updatedCard = await AiTranslateService.translateAndSaveCard(accountId, cardId);
+      res.status(200).json({ success: true, data: updatedCard });
     } catch (error: unknown) {
       next(error);
     }

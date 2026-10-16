@@ -100,6 +100,7 @@ apiRouter.put("/cards/:cardId/album-3d", authGuard, Album3DController.updateConf
 apiRouter.post("/cards/:cardId/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive theo cardId
 apiRouter.post("/album-3d/google-drive-import", authGuard, Album3DController.importDrive); // Import ảnh từ Google Drive (Toàn cục / Tạo thiệp mới)
 apiRouter.patch("/cards/:id/publish", authGuard, CardController.publish); // Xuất bản thiệp
+apiRouter.post("/cards/:id/translate", authGuard, CardController.translate); // AI dịch thiệp sang EN/ZH
 apiRouter.delete("/cards/:id", authGuard, CardController.remove);
 apiRouter.get("/cards/:cardId/export-excel", authGuard, ExportController.exportExcel); // Xuất Excel RSVP
 

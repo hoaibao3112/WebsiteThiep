@@ -164,7 +164,7 @@ export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
                 className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-lg transition cursor-pointer active:scale-95"
               >
                 <Download className="w-3 h-3 text-[#BE944E]" />
-                <span>Tải ảnh QR về máy</span>
+                <span>{t("downloadQrBtn") || "Tải ảnh QR về máy"}</span>
               </button>
 
               <div className="w-full mt-3 p-3 sm:p-3.5 bg-stone-50 rounded-2xl border border-stone-200 text-left space-y-1.5">
@@ -189,17 +189,17 @@ export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
                     <button
                       onClick={() => handleCopy(currentBanking.accountNumber)}
                       className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 active:scale-95 text-amber-900 text-[11px] font-semibold transition cursor-pointer"
-                      title="Sao chép"
+                      title={t("copyAccountBtn") || "Sao chép"}
                     >
                       {copied ? (
                         <>
                           <Check className="w-3 h-3 text-emerald-600" />
-                          <span className="text-emerald-700">Đã chép</span>
+                          <span className="text-emerald-700">{t("copiedSuccessToast") || "Đã chép"}</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3 h-3" />
-                          <span>Sao chép</span>
+                          <span>{t("copyAccountBtn") || "Sao chép"}</span>
                         </>
                       )}
                     </button>
@@ -209,7 +209,7 @@ export const GiftQrBoxModal: React.FC<GiftQrBoxModalProps> = ({
             </div>
           ) : (
             <div className="py-8 text-sm text-stone-400">
-              Chưa có thông tin tài khoản
+              {t("noBankInfoText") || "Chưa có thông tin tài khoản"}
             </div>
           )}
         </motion.div>
