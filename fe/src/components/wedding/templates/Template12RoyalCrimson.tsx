@@ -71,7 +71,7 @@ export const Template12RoyalCrimson: React.FC<WeddingTemplateProps> = ({
     (lang === "en" ? "District 3, Ho Chi Minh City" : lang === "zh" ? "胡志明市第三郡" : "Quận 3, TP. Hồ Chí Minh");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
-  const events = card.events && card.events.length > 0 ? card.events : [];
+  const events = (card.events && card.events.length > 0 ? card.events : (data.events && data.events.length > 0 ? data.events : []));
   const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-01-03T09:00:00Z"),

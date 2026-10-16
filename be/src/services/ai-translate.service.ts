@@ -157,8 +157,11 @@ ${JSON.stringify(contentToTranslate, null, 2)}`;
 
         const response = await model.generateContent(prompt);
         const text = response.response.text();
-        const cleaned = text.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
-        const parsed = JSON.parse(cleaned) as { en?: Record<string, unknown>; zh?: Record<string, unknown> };
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("Không tìm thấy JSON object trong phản hồi từ Gemini");
+        }
+        const parsed = JSON.parse(jsonMatch[0]) as { en?: Record<string, unknown>; zh?: Record<string, unknown> };
 
         if (parsed && (parsed.en || parsed.zh)) {
           return {
@@ -180,13 +183,36 @@ ${JSON.stringify(contentToTranslate, null, 2)}`;
   static async translateAndSaveCard(accountId: string, cardId: string) {
     const card = await prisma.card.findFirst({
       where: { id: cardId, accountId },
+      include: {
+        events: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
     });
     if (!card) {
       throw new Error("Không tìm thấy thiệp cưới để dịch");
     }
 
     const categoryData = (card.categoryData as Record<string, unknown>) || {};
+    
+    // Nếu categoryData.events trống, bổ sung từ danh sách sự kiện card.events
+    if (!Array.isArray(categoryData.events) || categoryData.events.length === 0) {
+      if (card.events && card.events.length > 0) {
+        categoryData.events = card.events.map((e) => ({
+          eventName: e.eventName,
+          venueName: e.venueName,
+          address: e.address,
+          lunarDate: e.lunarDate,
+        }));
+      }
+    }
+
     const translations = await this.translateWeddingData(categoryData);
+
+    // Nếu không có bản dịch nào được tạo (ví dụ API key chưa cấu hình), không cần update database
+    if (Object.keys(translations.en).length === 0 && Object.keys(translations.zh).length === 0) {
+      return card;
+    }
 
     const existingTranslations = (categoryData.translations as Record<string, unknown>) || {};
     const updatedCategoryData = {

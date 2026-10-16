@@ -64,7 +64,7 @@ export const Template10NhaCoHy: React.FC<WeddingTemplateProps> = ({
     (lang === "en" ? "45 Le Hong Phong, Tuy Hoa City" : lang === "zh" ? "绥和市黎鸿峰路45号" : "45 Lê Hồng Phong, phường Tuy Hòa, tỉnh Đắk Lắk");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
-  const events = card.events && card.events.length > 0 ? card.events : [];
+  const events = (card.events && card.events.length > 0 ? card.events : (data.events && data.events.length > 0 ? data.events : []));
   const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-03-23T09:00:00Z"),

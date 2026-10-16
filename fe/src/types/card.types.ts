@@ -14,6 +14,7 @@ export interface EventItem {
   mapUrl?: string;
   latitude?: number;
   longitude?: number;
+  note?: string;
 }
 
 export interface PhotoItem {

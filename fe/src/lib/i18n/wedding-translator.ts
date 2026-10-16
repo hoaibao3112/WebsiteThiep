@@ -5,12 +5,12 @@ import type { CardDetail, WeddingDataPayload, EventItem } from "@/types/card.typ
  * Bảng tra cứu chuẩn hóa vai vế & thứ bậc gia đình
  */
 const BIRTH_ORDER_MAP: Record<string, { en: string; zh: string }> = {
-  "trưởng nam": { en: "Eldest Son", zh: "长男 / 长子" },
-  "trưởng tử": { en: "Eldest Son", zh: "长男 / 长子" },
-  "thứ nam": { en: "Second Son", zh: "次男 / 次子" },
-  "thứ tử": { en: "Second Son", zh: "次男 / 次子" },
-  "út nam": { en: "Youngest Son", zh: "幼男 / 幼子" },
-  "nam út": { en: "Youngest Son", zh: "幼男 / 幼子" },
+  "trưởng nam": { en: "Eldest Son", zh: "长子" },
+  "trưởng tử": { en: "Eldest Son", zh: "长子" },
+  "thứ nam": { en: "Second Son", zh: "次子" },
+  "thứ tử": { en: "Second Son", zh: "次子" },
+  "út nam": { en: "Youngest Son", zh: "幼子" },
+  "nam út": { en: "Youngest Son", zh: "幼子" },
   "trưởng nữ": { en: "Eldest Daughter", zh: "长女" },
   "thứ nữ": { en: "Second Daughter", zh: "次女" },
   "út nữ": { en: "Youngest Daughter", zh: "幼女" },
@@ -39,7 +39,7 @@ const EVENT_NAME_MAP: Record<string, { en: string; zh: string }> = {
  * Bảng tra cứu loại địa điểm
  */
 const VENUE_NAME_MAP: Record<string, { en: string; zh: string }> = {
-  "tư gia": { en: "Private Residence", zh: "府邸 / 家中" },
+  "tư gia": { en: "Private Residence", zh: "府邸" },
   "tư gia nhà trai": { en: "Groom's Family Residence", zh: "男方府邸" },
   "tư gia nhà gái": { en: "Bride's Family Residence", zh: "女方府邸" },
   "trung tâm tiệc cưới": { en: "Wedding Convention Center", zh: "婚礼宴会中心" },
@@ -132,7 +132,13 @@ export function translateQuoteOrGreeting(quote: string | null | undefined, lang:
  * Định dạng ngày giờ cưới theo ngôn ngữ
  */
 export function formatWeddingDate(rawDate: string | Date, lang: SupportedLanguage) {
-  const d = new Date(rawDate);
+  let d: Date;
+  if (typeof rawDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim())) {
+    const [y, m, day] = rawDate.trim().split("-").map(Number);
+    d = new Date(y, m - 1, day, 12, 0, 0); // safe noon local time
+  } else {
+    d = new Date(rawDate);
+  }
   const isValid = !isNaN(d.getTime());
   const dateObj = isValid ? d : new Date("2026-11-20T18:00:00Z");
 
@@ -214,10 +220,10 @@ export function formatLunarDate(lunarStr: string | null | undefined, lang: Suppo
  * 2. Tự động chuyển ngữ các vai vế, sự kiện, câu chúc mặc định qua bộ từ điển.
  */
 export function getResolvedWeddingData(
-  card: CardDetail,
+  card: CardDetail | null | undefined,
   lang: SupportedLanguage
 ): WeddingDataPayload {
-  const rawData = (card.categoryData as WeddingDataPayload) || {};
+  const rawData = (card?.categoryData as WeddingDataPayload) || {};
   if (lang === "vi") return rawData;
 
   const translations = (rawData as any)?.translations?.[lang] || {};
@@ -284,6 +290,8 @@ export function getResolvedWeddingData(
         ...ev,
         eventName: evTrans.eventName || translateEventName(ev.eventName, lang),
         venueName: evTrans.venueName || translateVenueName(ev.venueName, lang),
+        address: evTrans.address || ev.address,
+        note: evTrans.note || ev.note,
         lunarDate: evTrans.lunarDate || formatLunarDate(ev.lunarDate, lang),
       };
     });
@@ -297,13 +305,13 @@ export function getResolvedWeddingData(
  */
 export function getResolvedEvents(
   events: EventItem[] | undefined,
-  card: CardDetail,
+  card: CardDetail | null | undefined,
   lang: SupportedLanguage
 ): EventItem[] {
   if (!events || events.length === 0) return [];
   if (lang === "vi") return events;
 
-  const translations = (card.categoryData as any)?.translations?.[lang]?.events || [];
+  const translations = (card?.categoryData as any)?.translations?.[lang]?.events || [];
 
   return events.map((ev, idx) => {
     const evTrans = translations[idx] || {};
@@ -311,6 +319,8 @@ export function getResolvedEvents(
       ...ev,
       eventName: evTrans.eventName || translateEventName(ev.eventName, lang),
       venueName: evTrans.venueName || translateVenueName(ev.venueName, lang),
+      address: evTrans.address || ev.address,
+      note: evTrans.note || ev.note,
       lunarDate: evTrans.lunarDate || formatLunarDate(ev.lunarDate, lang),
     };
   });

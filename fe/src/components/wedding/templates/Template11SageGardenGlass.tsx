@@ -70,7 +70,7 @@ export const Template11SageGardenGlass: React.FC<WeddingTemplateProps> = ({
     (lang === "en" ? "82 Yen Phu, Tay Ho, Hanoi" : lang === "zh" ? "河内市安附路82号" : "82 Yên Phụ, phường Hồng Hà, Hà Nội");
 
   // ── 2. DỮ LIỆU SỰ KIỆN (LỄ THÀNH HÔN & TIỆC CƯỚI) ──
-  const events = card.events && card.events.length > 0 ? card.events : [];
+  const events = (card.events && card.events.length > 0 ? card.events : (data.events && data.events.length > 0 ? data.events : []));
   const rawCeremony = events[0] || {
     eventName: "Lễ Thành Hôn",
     eventDate: new Date("2026-08-02T09:00:00Z"),
