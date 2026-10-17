@@ -357,7 +357,7 @@ function EditCardContent() {
   const [album3DUpdateTick, setAlbum3DUpdateTick] = useState(0);
   const currentTabIndex = EDIT_TABS.findIndex((t) => t.key === activeTab);
 
-  const editorModeRef = useRef<"canvas" | "form">("form");
+  const editorModeRef = useRef<"canvas" | "form">("canvas");
 
   // Lắng nghe sự kiện mở modal Album 3D từ các thành phần con khi ở chế độ biểu mẫu
   useEffect(() => {
@@ -422,8 +422,8 @@ function EditCardContent() {
   const [coverPhotoUrl, setCoverPhotoUrl] = useState("");
   const [showQuickFill, setShowQuickFill] = useState(false);
 
-  // ── Editor Mode ("form" = Biểu Mẫu 2 cột Live Preview, "canvas" = WYSIWYG Studio) ──
-  const [editorMode, setEditorMode] = useState<"canvas" | "form">("form");
+  // ── Editor Mode ("canvas" = WYSIWYG Visual Studio mặc định, "form" = Biểu Mẫu 2 cột) ──
+  const [editorMode, setEditorMode] = useState<"canvas" | "form">("canvas");
   useEffect(() => {
     editorModeRef.current = editorMode;
   }, [editorMode]);
@@ -638,14 +638,7 @@ function EditCardContent() {
         if (wp.flowerCornerStyle) setPassFlowerStyle(wp.flowerCornerStyle);
         if (wp.note) setPassNote(wp.note);
       }
-      // Đảm bảo các mẫu thiệp có layout chuyên biệt luôn mở ở chế độ Biểu Mẫu + Live Preview
-      if (
-        card.template?.slug === "wedding-nha-co-hy" ||
-        card.template?.slug === "wedding-sage-garden-glass" ||
-        card.template?.slug === "wedding-royal-crimson-velvet"
-      ) {
-        setEditorMode("form");
-      }
+      // Mặc định luôn ở chế độ Visual Studio trực quan (canvas) cho tất cả các mẫu thiệp
     } else if (card.cardCategory === "BIRTHDAY" && card.categoryData.cardCategory === "BIRTHDAY") {
       setCelebrantName(card.categoryData.celebrantName);
       setAge(card.categoryData.age || 25);
