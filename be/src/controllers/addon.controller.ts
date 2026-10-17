@@ -1,18 +1,14 @@
-﻿import { Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { AddonService } from "../services/addon.service";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
 
 export class AddonController {
   /**
-   * GET /addons — Lấy danh mục tiện ích Addon kèm quota hiện tại của Account
+   * GET /addons — Lấy danh mục tiện ích Addon kèm quota hiện tại của Account (nếu có)
    */
   static async getCatalog(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const accountId = req.user?.accountId;
-      if (!accountId) {
-        return res.status(401).json({ success: false, error: "Chưa xác thực tài khoản" });
-      }
-
       const data = await AddonService.getCatalog(accountId);
       return res.status(200).json({ success: true, data });
     } catch (error) {

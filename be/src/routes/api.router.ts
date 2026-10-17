@@ -21,7 +21,7 @@ import { ReminderController } from "../controllers/reminder.controller";
 import { GuestSignatureController } from "../controllers/guest-signature.controller";
 import { DomainController } from "../controllers/domain.controller";
 import { AddonController } from "../controllers/addon.controller";
-import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
+import { authGuard, adminGuard, ownerGuard, optionalAuthGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
 import {
@@ -184,5 +184,10 @@ apiRouter.post("/domains/:id/verify", authGuard, DomainController.verify);
 apiRouter.delete("/domains/:id", authGuard, DomainController.remove);
 apiRouter.patch("/cards/:id/slug", authGuard, validate(UpdateCardSlugSchema), DomainController.updateSlug);
 apiRouter.get("/domains/lookup/:domain", DomainController.lookupByDomain);
+
+// --- ADDON (CỬA HÀNG TIỆN ÍCH) ROUTES ---
+apiRouter.get("/addons", optionalAuthGuard, AddonController.getCatalog);
+apiRouter.post("/addons/orders", authGuard, AddonController.createOrder);
+
 
 

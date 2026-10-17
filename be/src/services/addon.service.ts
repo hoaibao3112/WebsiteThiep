@@ -10,9 +10,20 @@ export class AddonService {
   private static readonly ORDER_EXPIRY_MS = 48 * 60 * 60 * 1000; // 48 giờ
 
   /**
-   * Lấy danh mục Addon kèm trạng thái khả dụng cho Account
+   * Lấy danh mục Addon kèm trạng thái khả dụng cho Account (nếu đã đăng nhập)
    */
-  static async getCatalog(accountId: string) {
+  static async getCatalog(accountId?: string) {
+    if (!accountId) {
+      return {
+        items: ADDON_CATALOG.map((item) => ({
+          ...item,
+          isEligible: true,
+          ineligibilityReason: undefined,
+        })),
+        accountQuota: null,
+      };
+    }
+
     const entitlement = await AccountEntitlementService.getEffectivePlan(accountId);
     const account = await prisma.account.findUniqueOrThrow({
       where: { id: accountId },
