@@ -121,8 +121,17 @@ export class CardService {
 
             if (effectivePlan.planCode === "FREE" && !isSystemAdmin) {
               const cardCount = await tx.card.count({ where: { accountId } });
-              if (cardCount >= 2) {
-                throw new HttpError(409, "Mỗi tài khoản FREE chỉ được tạo tối đa 2 thiệp", "CARD_LIMIT_REACHED");
+              const account = await tx.account.findUnique({
+                where: { id: accountId },
+                select: { extraCards: true },
+              });
+              const allowedMaxCards = 2 + (account?.extraCards || 0);
+              if (cardCount >= allowedMaxCards) {
+                throw new HttpError(
+                  409,
+                  `Tài khoản đã đạt giới hạn tối đa ${allowedMaxCards} thiệp. Bạn có thể mua thêm thiệp tại Cửa Hàng Add-on.`,
+                  "CARD_LIMIT_REACHED"
+                );
               }
             }
 

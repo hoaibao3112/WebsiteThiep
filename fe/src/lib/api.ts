@@ -279,4 +279,43 @@ export class ApiClient {
       `/cards/${encodeURIComponent(cardId)}/signature/${encodeURIComponent(elementId)}/list`
     );
   }
+
+  /**
+   * Lấy danh mục tiện ích Addon (Store) kèm quota tài khoản
+   */
+  static async getAddonsCatalog<T = unknown>(): Promise<ApiResult<T>> {
+    return ApiClient.request<T>("/addons");
+  }
+
+  /**
+   * Tạo đơn hàng mua Addon (VietQR)
+   */
+  static async createAddonOrder<T = unknown>(
+    addonCode: string,
+    idempotencyKey?: string
+  ): Promise<ApiResult<T>> {
+    const headers: Record<string, string> = {};
+    if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+    return ApiClient.request<T>("/addons/orders", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ addonCode }),
+    });
+  }
+
+  /**
+   * Xác nhận đã chuyển khoản ngân hàng cho đơn hàng
+   */
+  static async submitOrderTransfer<T = unknown>(orderId: string): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/orders/${encodeURIComponent(orderId)}/submit-transfer`, {
+      method: "POST",
+    });
+  }
+
+  /**
+   * Lấy chi tiết đơn hàng (polling trạng thái thanh toán)
+   */
+  static async getOrderDetail<T = unknown>(orderId: string): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(`/orders/${encodeURIComponent(orderId)}`);
+  }
 }

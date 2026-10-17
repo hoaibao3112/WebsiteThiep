@@ -105,7 +105,7 @@ export async function auditCardExpiryCandidates(
         currentExpiredAt: card.expiredAt,
         evidence: {
           orderId: matchingOrder.id,
-          planCode: matchingOrder.plan.code,
+          planCode: matchingOrder.plan?.code ?? "UNKNOWN",
           paidAt: matchingOrder.paidAt,
         },
       });

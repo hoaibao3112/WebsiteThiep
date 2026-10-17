@@ -427,8 +427,8 @@ export class OrderService {
     return {
       id: order.id,
       orderCode: order.orderCode,
-      planCode: order.plan.code,
-      planName: order.plan.name,
+      planCode: order.plan?.code ?? order.addonCode ?? "ADDON",
+      planName: order.plan?.name ?? (order.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
       amount: order.amount,
       status: order.status,
       paidAt: order.paidAt,

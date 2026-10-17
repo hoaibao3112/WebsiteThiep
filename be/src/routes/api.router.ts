@@ -20,6 +20,7 @@ import { CustomFormController } from "../controllers/custom-form.controller";
 import { ReminderController } from "../controllers/reminder.controller";
 import { GuestSignatureController } from "../controllers/guest-signature.controller";
 import { DomainController } from "../controllers/domain.controller";
+import { AddonController } from "../controllers/addon.controller";
 import { authGuard, adminGuard, ownerGuard } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
 import { csrfGuard } from "../middlewares/csrf.middleware";
@@ -142,6 +143,10 @@ apiRouter.post("/orders", authGuard, ownerGuard, validate(CreateOrderSchema), Or
 apiRouter.post("/orders/:orderId/submit-transfer", authGuard, ownerGuard, OrderController.submitTransfer);
 apiRouter.get("/orders/:orderId", authGuard, OrderController.getOrder);
 apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus); // Legacy polling
+
+// --- ADDON STORE ROUTES (TIỆN ÍCH BỔ SUNG) ---
+apiRouter.get("/addons", authGuard, AddonController.getCatalog);
+apiRouter.post("/addons/orders", authGuard, ownerGuard, AddonController.createOrder);
 
 // --- ADMIN: PAYMENT REVIEW ---
 apiRouter.get("/admin/payment-orders", adminGuard, AdminPaymentController.listQueue);

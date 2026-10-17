@@ -156,8 +156,8 @@ export class BillingService {
       ? {
           id: activeOrderRecord.id,
           orderCode: activeOrderRecord.orderCode,
-          planCode: activeOrderRecord.plan.code,
-          planName: activeOrderRecord.plan.name,
+          planCode: activeOrderRecord.plan?.code ?? activeOrderRecord.addonCode ?? "ADDON",
+          planName: activeOrderRecord.plan?.name ?? (activeOrderRecord.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
           amount: activeOrderRecord.amount,
           status: activeOrderRecord.status,
           paidAt: activeOrderRecord.paidAt,

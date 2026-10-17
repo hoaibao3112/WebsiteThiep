@@ -36,6 +36,13 @@ model Account {
   planStartedAt       DateTime             @default(now())
   planExpiresAt       DateTime?
 
+  // Quota cộng dồn từ Add-on (Store)
+  extraCards          Int                  @default(0) // Số thiệp được tạo thêm
+  extraPhotos         Int                  @default(0) // Số ảnh upload tối đa được cộng thêm
+  extraViews          Int                  @default(0) // Lượt xem cộng thêm
+  extraDomains        Int                  @default(0) // Slot tên miền riêng cộng thêm
+  extraProfiles       Int                  @default(0) // Số hồ sơ cưới cộng thêm
+
   members             AccountMember[]
   cards               Card[]
   cardEvents          CardEvent[]
@@ -471,6 +478,11 @@ enum PaymentGateway {
   MANUAL
 }
 
+enum OrderType {
+  PLAN
+  ADDON
+}
+
 model Order {
   id               String  @id @default(cuid())
   accountId        String
@@ -482,8 +494,11 @@ model Order {
   user             User    @relation("OrderPurchaser", fields: [userId], references: [id])
   cardId           String? // Nullable: legacy orders targeted a Card; account-level orders do not
   card             Card?   @relation(fields: [cardId], references: [id])
-  planId           String
-  plan             Plan    @relation(fields: [planId], references: [id])
+  orderType        OrderType @default(PLAN)
+  planId           String?
+  plan             Plan?   @relation(fields: [planId], references: [id])
+  addonCode        String? // Mã addon nếu là đơn mua addon (VD: "ADDON_CARDS_10", "ADDON_EXTEND_6M")
+  addonMetadata    Json?   // Snapshot thông tin addon lúc mua (tên, giá, hạn mức)
 
   amount         Int // Số tiền phải thanh toán VND (backend-authoritative)
   status         OrderStatus    @default(PENDING)
@@ -540,7 +555,8 @@ model OrderRequest {
   accountId      String
   account        Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   idempotencyKey String
-  planCode       PlanCode
+  planCode       PlanCode?
+  addonCode      String?
   orderId        String
   order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   createdAt      DateTime  @default(now())

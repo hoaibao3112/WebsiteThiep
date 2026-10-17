@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { logger } from "../lib/logger";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
+import { AddonService } from "./addon.service";
 
 // ────────────────────────────────────────────────────────────
 // DTOs
@@ -90,6 +91,9 @@ export class ManualPaymentReviewService {
           submittedAt: true,
           createdAt: true,
           expiredAt: true,
+          orderType: true,
+          addonCode: true,
+          addonMetadata: true,
           plan: { select: { code: true, name: true } },
           account: { select: { id: true, name: true } },
           user: { select: { email: true, name: true } },
@@ -104,8 +108,8 @@ export class ManualPaymentReviewService {
         orderCode: o.orderCode,
         amount: o.amount,
         status: o.status,
-        planCode: o.plan.code,
-        planName: o.plan.name,
+        planCode: o.plan?.code ?? o.addonCode ?? "ADDON",
+        planName: o.plan?.name ?? (o.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
         accountId: o.accountId,
         accountName: o.account?.name || "Tài khoản",
         buyerEmail: o.user?.email || "—",
@@ -121,9 +125,12 @@ export class ManualPaymentReviewService {
           email: o.user?.email || "—",
           name: o.user?.name || null,
         },
-        plan: {
+        plan: o.plan ? {
           code: o.plan.code,
           name: o.plan.name,
+        } : {
+          code: o.addonCode ?? "ADDON",
+          name: (o.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
         },
       })),
       total,
@@ -151,6 +158,9 @@ export class ManualPaymentReviewService {
         paidAt: true,
         reviewedAt: true,
         reviewNote: true,
+        orderType: true,
+        addonCode: true,
+        addonMetadata: true,
         plan: { select: { code: true, name: true } },
         account: { select: { id: true, name: true } },
         user: { select: { email: true, name: true } },
@@ -165,8 +175,8 @@ export class ManualPaymentReviewService {
       orderCode: o.orderCode,
       amount: o.amount,
       status: o.status,
-      planCode: o.plan.code,
-      planName: o.plan.name,
+      planCode: o.plan?.code ?? o.addonCode ?? "ADDON",
+      planName: o.plan?.name ?? (o.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
       accountId: o.accountId,
       accountName: o.account?.name || "Tài khoản",
       buyerEmail: o.user?.email || "—",
@@ -186,9 +196,12 @@ export class ManualPaymentReviewService {
         email: o.user?.email || "—",
         name: o.user?.name || null,
       },
-      plan: {
+      plan: o.plan ? {
         code: o.plan.code,
         name: o.plan.name,
+      } : {
+        code: o.addonCode ?? "ADDON",
+        name: (o.addonMetadata as any)?.name ?? "Tiện ích bổ sung",
       },
     };
   }
@@ -260,7 +273,7 @@ export class ManualPaymentReviewService {
 
             // 4. Re-read Account entitlement to prevent concurrent downgrade
             const accountEntitlement = await AccountEntitlementService.getEffectivePlan(order.accountId, new Date(), tx);
-            if (order.plan.code === "BASIC" && accountEntitlement.planCode === "VIP") {
+            if (order.plan && order.plan.code === "BASIC" && accountEntitlement.planCode === "VIP") {
               throw new HttpError(
                 409,
                 "Tài khoản đã được nâng cấp VIP — không thể duyệt đơn BASIC",
@@ -294,51 +307,57 @@ export class ManualPaymentReviewService {
               },
             });
 
-            // 6. Update Account Plan and expiry
+            // 6. Update Account Plan or fulfill Addon
             const now = new Date();
-            if (order.plan.code === "VIP") {
-              const { planStartedAt, planExpiresAt } = AccountEntitlementService.calculateVipActivation(now);
-              await tx.account.update({
-                where: { id: order.accountId },
-                data: {
-                  currentPlanId: order.planId,
-                  planStartedAt,
-                  planExpiresAt,
-                },
-              });
-            } else if (order.plan.code === "BASIC" && order.plan.durationDays) {
-              const currentAccount = await tx.account.findUniqueOrThrow({
-                where: { id: order.accountId },
-                select: { currentPlan: { select: { code: true } }, planExpiresAt: true },
-              });
+            if (order.orderType === "ADDON") {
+              await AddonService.fulfillAddon(order, tx);
+            } else if (order.plan && order.planId) {
+              if (order.plan.code === "VIP") {
+                const { planStartedAt, planExpiresAt } = AccountEntitlementService.calculateVipActivation(now);
+                await tx.account.update({
+                  where: { id: order.accountId },
+                  data: {
+                    currentPlanId: order.planId,
+                    planStartedAt,
+                    planExpiresAt,
+                  },
+                });
+              } else if (order.plan.code === "BASIC" && order.plan.durationDays) {
+                const currentAccount = await tx.account.findUniqueOrThrow({
+                  where: { id: order.accountId },
+                  select: { currentPlan: { select: { code: true } }, planExpiresAt: true },
+                });
 
-              const { planStartedAt, planExpiresAt } =
-                AccountEntitlementService.calculateBasicActivation(
-                  currentAccount.currentPlan?.code ?? null,
-                  currentAccount.planExpiresAt,
-                  order.plan.durationDays,
-                  now,
-                );
+                const { planStartedAt, planExpiresAt } =
+                  AccountEntitlementService.calculateBasicActivation(
+                    currentAccount.currentPlan?.code ?? null,
+                    currentAccount.planExpiresAt,
+                    order.plan.durationDays,
+                    now,
+                  );
 
-              await tx.account.update({
-                where: { id: order.accountId },
-                data: {
-                  currentPlanId: order.planId,
-                  planStartedAt,
-                  planExpiresAt,
-                },
-              });
+                await tx.account.update({
+                  where: { id: order.accountId },
+                  data: {
+                    currentPlanId: order.planId,
+                    planStartedAt,
+                    planExpiresAt,
+                  },
+                });
+              }
             }
 
             // 7. Card lifecycle: set expiredAt = null on ACTIVE, reactivate EXPIRED
-            await tx.card.updateMany({
-              where: { accountId: order.accountId, status: "ACTIVE" },
-              data: { expiredAt: null, planId: order.planId },
-            });
-            await tx.card.updateMany({
-              where: { accountId: order.accountId, status: "EXPIRED" },
-              data: { status: "ACTIVE", expiredAt: null, planId: order.planId },
-            });
+            if (order.planId) {
+              await tx.card.updateMany({
+                where: { accountId: order.accountId, status: "ACTIVE" },
+                data: { expiredAt: null, planId: order.planId },
+              });
+              await tx.card.updateMany({
+                where: { accountId: order.accountId, status: "EXPIRED" },
+                data: { status: "ACTIVE", expiredAt: null, planId: order.planId },
+              });
+            }
             // DRAFT and ARCHIVED remain unchanged
 
             return orderId;

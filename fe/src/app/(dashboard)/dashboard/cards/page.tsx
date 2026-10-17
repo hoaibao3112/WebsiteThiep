@@ -32,6 +32,7 @@ import {
   CheckCircle2,
   Globe,
   PenLine,
+  ShoppingBag,
 } from "lucide-react";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 
@@ -469,6 +470,16 @@ export default function MyCardsPage() {
                   <span>Tên miền</span>
                   <span className="ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800">
                     VIP
+                  </span>
+                </Link>
+                <Link
+                  href="/dashboard/addons"
+                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium transition cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4 shrink-0 text-rose-500" />
+                  <span>Cửa Hàng Add-on</span>
+                  <span className="ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700">
+                    Mới
                   </span>
                 </Link>
                 <Link

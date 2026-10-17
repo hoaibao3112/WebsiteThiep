@@ -51,6 +51,8 @@ export class AccountEntitlementService {
         currentPlanId: true,
         planStartedAt: true,
         planExpiresAt: true,
+        extraPhotos: true,
+        extraDomains: true,
         currentPlan: {
           select: {
             id: true,
@@ -76,19 +78,19 @@ export class AccountEntitlementService {
 
     // VIP = lifetime, never expires
     if (plan.code === "VIP") {
-      return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, false, now);
+      return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, false, now, account.extraPhotos, account.extraDomains);
     }
 
     // BASIC with expiry check
     if (plan.code === "BASIC" && account.planExpiresAt && account.planExpiresAt <= now) {
       // Expired BASIC → opportunistically persist FREE
       await this.opportunisticDowngradeToFree(accountId, account.currentPlanId, now, db);
-      return this.resolveFreePlan(accountId, db);
+      return this.resolveFreePlan(accountId, db, account.extraPhotos, account.extraDomains);
     }
 
     // Active BASIC or FREE
     const isExpired = account.planExpiresAt ? account.planExpiresAt <= now : false;
-    return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, isExpired, now);
+    return this.toPlanDTO(plan, account.planStartedAt, account.planExpiresAt, isExpired, now, account.extraPhotos, account.extraDomains);
   }
 
   /**
@@ -159,6 +161,8 @@ export class AccountEntitlementService {
   private static async resolveFreePlan(
     accountId: string,
     db: Prisma.TransactionClient | typeof prisma = prisma,
+    extraPhotos = 0,
+    extraDomains = 0,
   ): Promise<EffectivePlanDTO> {
     const freePlan = await db.plan.findUnique({
       where: { code: FREE_PLAN_CODE },
@@ -179,7 +183,7 @@ export class AccountEntitlementService {
       throw new Error("FREE plan not configured — system cannot resolve entitlement");
     }
 
-    return this.toPlanDTO(freePlan, null, null, false, new Date());
+    return this.toPlanDTO(freePlan, null, null, false, new Date(), extraPhotos, extraDomains);
   }
 
   private static toPlanDTO(
@@ -198,6 +202,8 @@ export class AccountEntitlementService {
     planExpiresAt: Date | null,
     isExpired: boolean,
     now: Date = new Date(),
+    extraPhotos = 0,
+    extraDomains = 0,
   ): EffectivePlanDTO {
     const isPaid = plan.code !== "FREE" && !isExpired;
     let daysRemaining: number | null = null;
@@ -210,9 +216,9 @@ export class AccountEntitlementService {
       planCode: plan.code,
       planName: plan.name,
       capabilities: {
-        maxPhotos: plan.maxPhotos,
+        maxPhotos: plan.maxPhotos + extraPhotos,
         hasWatermark: plan.hasWatermark,
-        allowCustomDomain: plan.allowCustomDomain,
+        allowCustomDomain: plan.allowCustomDomain || extraDomains > 0,
         allowMusicUpload: plan.allowMusicUpload,
         allowTelegramNoti: plan.allowTelegramNoti,
         allowPremiumTemplates: plan.allowPremiumTemplates,
