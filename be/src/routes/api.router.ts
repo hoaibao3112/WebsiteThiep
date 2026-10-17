@@ -165,6 +165,7 @@ apiRouter.get("/cards/:cardId/reminder/google-calendar-url", ReminderController.
 apiRouter.get("/cards/:cardId/reminder/ics", ReminderController.downloadIcs);
 
 // --- GUEST SIGNATURE (SỔ LƯU BÚT) ROUTES ---
+apiRouter.get("/signatures", authGuard, GuestSignatureController.getAccountSignatures); // Dashboard tổng hợp
 apiRouter.post("/cards/:cardId/signature/:elementId/submit", GuestSignatureController.submit);
 apiRouter.get("/cards/:cardId/signature/:elementId/gallery", GuestSignatureController.getGallery);
 apiRouter.get("/cards/:cardId/signature/:elementId/list", authGuard, GuestSignatureController.getList);

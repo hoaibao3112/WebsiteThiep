@@ -167,6 +167,67 @@ export class GuestSignatureService {
     return { success: true, isApproved: updated.isApproved };
   }
 
+  static async getAccountSignatures(
+    accountId: string,
+    page = 1,
+    limit = 20,
+    filterCardId?: string
+  ) {
+    const skip = (page - 1) * limit;
+    const where = {
+      accountId,
+      ...(filterCardId ? { cardId: filterCardId } : {}),
+    };
+
+    const [total, signatures] = await Promise.all([
+      prisma.guestSignature.count({ where }),
+      prisma.guestSignature.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          cardId: true,
+          elementId: true,
+          signerName: true,
+          message: true,
+          signatureUrl: true,
+          thumbUrl: true,
+          isApproved: true,
+          createdAt: true,
+          card: {
+            select: {
+              slug: true,
+              categoryData: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    // Thống kê nhanh
+    const totalCards = await prisma.guestSignature.groupBy({
+      by: ["cardId"],
+      where: { accountId },
+      _count: true,
+    });
+
+    const latest = signatures[0] ?? null;
+
+    return {
+      data: signatures,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        totalCards: totalCards.length,
+        latestCreatedAt: latest?.createdAt ?? null,
+      },
+    };
+  }
+
   static async deleteSignature(accountId: string, cardId: string, signatureId: string) {
     const signature = await prisma.guestSignature.findFirst({
       where: { id: signatureId, cardId, accountId },

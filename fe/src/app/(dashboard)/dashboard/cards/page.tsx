@@ -31,6 +31,7 @@ import {
   Armchair,
   CheckCircle2,
   Globe,
+  PenLine,
 } from "lucide-react";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 
@@ -395,6 +396,16 @@ export default function MyCardsPage() {
                   />
                   <span>Sổ lưu bút</span>
                 </button>
+
+                {/* 3b. CHỮ KÝ KHÁCH MỜI */}
+                <Link
+                  href="/dashboard/signatures"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer font-medium text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118]"
+                >
+                  <PenLine className="w-4 h-4 shrink-0 text-[#7A6B5D]" />
+                  <span>Chữ ký khách mời</span>
+                </Link>
 
                 {/* 4. ƯU ĐÃI CỦA TÔI */}
                 <button

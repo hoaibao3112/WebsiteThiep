@@ -225,5 +225,58 @@ export class ApiClient {
       (API_BASE_URL.startsWith("http") ? API_BASE_URL : "http://localhost:5000/api");
     return `${backendOrigin}/cards/${encodeURIComponent(slug)}/memories/stream`;
   }
-}
 
+  /**
+   * Lấy danh sách chữ ký tổng hợp across all cards của account (Dashboard)
+   */
+  static async getAccountSignatures<T = unknown>(
+    params?: { page?: number; limit?: number; cardId?: string }
+  ): Promise<ApiResult<T>> {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.limit) qs.set("limit", String(params.limit));
+    if (params?.cardId) qs.set("cardId", params.cardId);
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return ApiClient.request<T>(`/signatures${query}`);
+  }
+
+  /**
+   * Xóa chữ ký (Host)
+   */
+  static async deleteSignature<T = { success: boolean }>(
+    cardId: string,
+    elementId: string,
+    signatureId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(
+      `/cards/${encodeURIComponent(cardId)}/signature/${encodeURIComponent(elementId)}/${encodeURIComponent(signatureId)}`,
+      { method: "DELETE" }
+    );
+  }
+
+  /**
+   * Ẩn/Hiện chữ ký (Host)
+   */
+  static async toggleSignatureApprove<T = { success: boolean; isApproved: boolean }>(
+    cardId: string,
+    elementId: string,
+    signatureId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(
+      `/cards/${encodeURIComponent(cardId)}/signature/${encodeURIComponent(elementId)}/${encodeURIComponent(signatureId)}/approve`,
+      { method: "PATCH" }
+    );
+  }
+
+  /**
+   * Lấy danh sách chữ ký theo từng widget (Host)
+   */
+  static async getCardSignatures<T = unknown>(
+    cardId: string,
+    elementId: string
+  ): Promise<ApiResult<T>> {
+    return ApiClient.request<T>(
+      `/cards/${encodeURIComponent(cardId)}/signature/${encodeURIComponent(elementId)}/list`
+    );
+  }
+}
