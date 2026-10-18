@@ -148,7 +148,12 @@ export default function AddonsStorePage() {
   // Polling order status
   useEffect(() => {
     if (!activeOrder) return;
-    if (activeOrder.status === "PAID" || activeOrder.status === "EXPIRED") return;
+    if (
+      activeOrder.status === "PAID" ||
+      activeOrder.status === "EXPIRED" ||
+      activeOrder.status === "REJECTED"
+    )
+      return;
 
     const interval = setInterval(async () => {
       try {
@@ -166,6 +171,10 @@ export default function AddonsStorePage() {
             loadData();
           } else if (updated.status === "AWAITING_REVIEW") {
             setTransferSubmitted(true);
+          } else if (updated.status === "REJECTED") {
+            setActiveOrder((prev) => (prev ? { ...prev, status: "REJECTED" } : null));
+          } else if (updated.status === "EXPIRED") {
+            setActiveOrder((prev) => (prev ? { ...prev, status: "EXPIRED" } : null));
           }
         }
       } catch {
@@ -780,6 +789,43 @@ export default function AddonsStorePage() {
             </div>
 
             <div className="p-6 space-y-5">
+              {/* REJECTED STATE */}
+              {activeOrder.status === "REJECTED" ? (
+                <div className="py-6 text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+                    <X className="w-10 h-10" />
+                  </div>
+                  <h4 className="text-lg font-bold text-stone-900">Đơn Hàng Bị Từ Chối</h4>
+                  <p className="text-xs text-stone-500 max-w-xs mx-auto">
+                    Đơn hàng <strong>{activeOrder.addonName}</strong> đã bị từ chối. Vui lòng liên hệ hỗ trợ hoặc thử mua lại.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveOrder(null); setSelectedAddon(null); }}
+                    className="mt-4 px-6 py-2.5 rounded-xl bg-stone-700 text-white font-bold text-xs hover:bg-stone-800 transition cursor-pointer"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              ) : activeOrder.status === "EXPIRED" ? (
+                <div className="py-6 text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
+                    <Clock className="w-10 h-10" />
+                  </div>
+                  <h4 className="text-lg font-bold text-stone-900">Đơn Hàng Đã Hết Hạn</h4>
+                  <p className="text-xs text-stone-500 max-w-xs mx-auto">
+                    Đơn hàng <strong>{activeOrder.addonName}</strong> đã hết hạn thanh toán (48 giờ). Vui lòng tạo đơn hàng mới.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => { setActiveOrder(null); setSelectedAddon(null); }}
+                    className="mt-4 px-6 py-2.5 rounded-xl bg-[#E82561] text-white font-bold text-xs hover:bg-[#D81B55] transition cursor-pointer"
+                  >
+                    Mua lại
+                  </button>
+                </div>
+              ) : (
+              <>
               {/* PAID STATE */}
               {activeOrder.status === "PAID" ? (
                 <div className="py-6 text-center space-y-3">
@@ -929,6 +975,8 @@ export default function AddonsStorePage() {
                   </div>
                 </>
               )}
+            </>
+            )}
             </div>
           </div>
         </div>

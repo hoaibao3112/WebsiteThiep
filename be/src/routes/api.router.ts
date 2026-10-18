@@ -145,7 +145,7 @@ apiRouter.get("/orders/:orderId", authGuard, OrderController.getOrder);
 apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus); // Legacy polling
 
 // --- ADDON STORE ROUTES (TIỆN ÍCH BỔ SUNG) ---
-apiRouter.get("/addons", authGuard, AddonController.getCatalog);
+apiRouter.get("/addons", optionalAuthGuard, AddonController.getCatalog);
 apiRouter.post("/addons/orders", authGuard, ownerGuard, AddonController.createOrder);
 
 // --- ADMIN: PAYMENT REVIEW ---
@@ -184,10 +184,4 @@ apiRouter.post("/domains/:id/verify", authGuard, DomainController.verify);
 apiRouter.delete("/domains/:id", authGuard, DomainController.remove);
 apiRouter.patch("/cards/:id/slug", authGuard, validate(UpdateCardSlugSchema), DomainController.updateSlug);
 apiRouter.get("/domains/lookup/:domain", DomainController.lookupByDomain);
-
-// --- ADDON (CỬA HÀNG TIỆN ÍCH) ROUTES ---
-apiRouter.get("/addons", optionalAuthGuard, AddonController.getCatalog);
-apiRouter.post("/addons/orders", authGuard, AddonController.createOrder);
-
-
 
