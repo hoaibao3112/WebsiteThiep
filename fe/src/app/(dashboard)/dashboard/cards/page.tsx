@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -35,6 +35,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
+import { DashboardSidebar } from "@/components/shared/DashboardSidebar";
 
 interface DashboardCard {
   id: string;
@@ -56,7 +57,17 @@ export default function MyCardsPage() {
   const router = useRouter();
 
   // State
-  const [activeTab, setActiveTab] = useState<SidebarTab>("cards");
+  const searchParams = useSearchParams();
+  const queryTab = searchParams.get("tab") as SidebarTab | null;
+  const [activeTab, setActiveTab] = useState<SidebarTab>(
+    queryTab && ["cards", "rsvp", "wishes", "perks", "account"].includes(queryTab) ? queryTab : "cards"
+  );
+
+  useEffect(() => {
+    if (queryTab && ["cards", "rsvp", "wishes", "perks", "account"].includes(queryTab)) {
+      setActiveTab(queryTab);
+    }
+  }, [queryTab]);
   const [cards, setCards] = useState<DashboardCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -211,311 +222,34 @@ export default function MyCardsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F9F5EE] text-[#2D241E] flex flex-col font-sans selection:bg-[#EADDCB] selection:text-[#4A3728] relative overflow-x-hidden">
-      {/* ======================================================== */}
-      {/* BOTANICAL WATERCOLOR & LINE-ART BACKGROUND DECORATIONS   */}
-      {/* ======================================================== */}
-      {/* Bottom-left botanical illustration (matching user screenshot) */}
-      <div className="fixed bottom-0 left-0 w-72 sm:w-96 h-72 sm:h-96 pointer-events-none z-0 select-none opacity-85">
-        <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Main branch stems */}
-          <path d="M-20 420 C50 350 110 260 160 150 C180 100 200 60 210 20" stroke="#C2AE93" strokeWidth="1.8" strokeLinecap="round" opacity="0.65" />
-          <path d="M30 410 C90 320 140 230 190 120 C220 50 250 10 260 -10" stroke="#D1BEA5" strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
-          
-          {/* Side twigs */}
-          <path d="M120 220 C145 195 170 180 200 175" stroke="#C2AE93" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-          <path d="M90 280 C120 260 155 250 185 248" stroke="#C2AE93" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-          <path d="M60 340 C95 325 130 320 165 315" stroke="#C2AE93" strokeWidth="1.2" strokeLinecap="round" opacity="0.6" />
-          
-          {/* Gentle leaves & flower buds */}
-          <ellipse cx="160" cy="150" rx="14" ry="7" transform="rotate(-35 160 150)" fill="#EADDCB" opacity="0.7" />
-          <ellipse cx="200" cy="175" rx="16" ry="8" transform="rotate(-15 200 175)" fill="#E4D5C1" opacity="0.65" />
-          <ellipse cx="185" cy="248" rx="18" ry="9" transform="rotate(-10 185 248)" fill="#EFE5D7" opacity="0.75" />
-          <ellipse cx="140" cy="200" rx="12" ry="6" transform="rotate(-40 140 200)" fill="#E4D5C1" opacity="0.65" />
-          <ellipse cx="105" cy="270" rx="15" ry="7" transform="rotate(-30 105 270)" fill="#EADDCB" opacity="0.7" />
-          <ellipse cx="165" cy="315" rx="20" ry="9" transform="rotate(-8 165 315)" fill="#E8D9C6" opacity="0.65" />
-          <ellipse cx="120" cy="330" rx="16" ry="7" transform="rotate(-20 120 330)" fill="#EFE5D7" opacity="0.75" />
-
-          {/* Delicate baby's breath flower clusters */}
-          <circle cx="210" cy="20" r="3.5" fill="#C2AE93" opacity="0.8" />
-          <circle cx="218" cy="15" r="2.5" fill="#EADDCB" opacity="0.9" />
-          <circle cx="204" cy="26" r="3" fill="#D9C7B2" opacity="0.7" />
-          <circle cx="260" cy="-10" r="3.5" fill="#C2AE93" opacity="0.8" />
-          <circle cx="202" cy="173" r="3" fill="#D1BEA5" opacity="0.8" />
-          <circle cx="188" cy="246" r="3" fill="#C2AE93" opacity="0.8" />
-        </svg>
-      </div>
-
+    <div className="min-h-screen bg-[#FAF7F2] text-[#2B2118] flex font-sans">
       {/* MOBILE TOP BAR */}
-      <header className="lg:hidden bg-white/95 backdrop-blur-md border-b border-[#EADDCB] px-4 py-3 sticky top-0 z-30 flex items-center justify-between shadow-2xs">
+      <header className="lg:hidden bg-[#FAF7F2] border-b border-[#EADDCB] px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-xl text-[#78695A] hover:bg-[#F3EDE2] transition"
+            className="p-2 rounded-xl text-[#78695A] hover:bg-[#F3EDE2] transition cursor-pointer"
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <Menu className="w-5 h-5" />
           </button>
-          <span className="font-serif font-bold text-base text-[#2D241E]">
-            Studio Quản Lý Thiệp
-          </span>
+          <span className="font-bold text-sm text-[#2B2118]">Quản lý thiệp</span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowQuickFill(true)}
-            className="p-1.5 rounded-full bg-[#F3EDE2] text-[#8C6D45] text-xs font-semibold flex items-center gap-1 px-2.5"
-            title="Hồ sơ cưới"
-          >
-            <Heart className="w-3.5 h-3.5 fill-[#C29D67] text-[#C29D67]" />
-            <span className="hidden sm:inline">Hồ sơ cưới</span>
-          </button>
-          <div className="w-8 h-8 rounded-full bg-[#E82561] text-white font-bold text-xs flex items-center justify-center shadow-xs">
-            {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
-          </div>
+        <div className="w-8 h-8 rounded-full bg-[#8C6239] text-white font-bold text-xs flex items-center justify-center">
+          {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
         </div>
       </header>
 
-      {/* DASHBOARD LAYOUT CONTAINER */}
-      <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative z-10">
-        {/* ======================================================== */}
-        {/* LEFT SIDEBAR (STICKY ON DESKTOP, DRAWER ON MOBILE)       */}
-        {/* ======================================================== */}
-        <aside
-          className={`
-            fixed lg:sticky top-0 lg:top-0 h-screen z-40 lg:z-10
-            w-68 sm:w-72 bg-[#F9F5EE]/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none
-            flex flex-col justify-between p-5 sm:p-6 transition-transform duration-300
-            ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          `}
-        >
-          <div className="space-y-6">
-            {/* USER PROFILE BOX (MATCHING SCREENSHOT) */}
-            <div
-              onClick={() => setActiveTab("account")}
-              className="bg-white/95 rounded-2xl p-3.5 border border-[#EFE5D8] shadow-xs hover:shadow-sm transition cursor-pointer relative overflow-hidden flex items-center justify-between group"
-            >
-              {/* Subtle botanical branch watermark in corner of card */}
-              <div className="absolute right-0 bottom-0 w-16 h-16 pointer-events-none opacity-40">
-                <svg viewBox="0 0 100 100" fill="none" className="w-full h-full">
-                  <path d="M40 90 C60 60 75 40 90 20" stroke="#C2AE93" strokeWidth="1.5" />
-                  <ellipse cx="65" cy="50" rx="8" ry="4" transform="rotate(-30 65 50)" fill="#EADDCB" />
-                  <ellipse cx="80" cy="30" rx="7" ry="3.5" transform="rotate(-20 80 30)" fill="#D9C7B2" />
-                </svg>
-              </div>
+      {/* SHARED SIDEBAR */}
+      <DashboardSidebar
+        isMobileOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        onLogout={handleLogout}
+        currentTab={activeTab}
+      />
 
-              <div className="flex items-center gap-3 relative z-10 overflow-hidden">
-                {/* Avatar with bright rose-red circle (like screenshot) */}
-                <div className="w-11 h-11 rounded-full bg-[#E82561] text-white font-bold text-base flex items-center justify-center shrink-0 shadow-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
-                </div>
-                <div className="overflow-hidden">
-                  <h4 className="text-xs font-bold text-[#2B2118] truncate group-hover:text-[#8C6239] transition">
-                    {user?.name || "Trần Hoài Bảo"}
-                  </h4>
-                  <p className="text-[11px] text-[#8E7E70] truncate max-w-[115px]">
-                    {user?.email || "baohoaitran3112@gm..."}
-                  </p>
-                </div>
-              </div>
-
-              <ChevronRight className="w-4 h-4 text-[#8E7E70] group-hover:translate-x-0.5 transition-transform shrink-0 relative z-10" />
-            </div>
-
-            {/* SIDEBAR NAVIGATION GROUP */}
-            <div>
-              <p className="text-xs font-semibold text-[#8E7E70] px-2 pb-3 select-none">
-                Thiệp của tôi
-              </p>
-              <nav className="space-y-1.5">
-                {/* 1. THIỆP CƯỚI (ACTIVE HIGHLIGHT MATCHING SCREENSHOT) */}
-                <button
-                  onClick={() => {
-                    setActiveTab("cards");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer relative ${
-                    activeTab === "cards"
-                      ? "bg-[#F0E6D8] border border-[#E2D5C3]/70 text-[#2B2118] font-bold shadow-2xs"
-                      : "text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium"
-                  }`}
-                >
-                  {/* Thick vertical active bar on the left edge (like screenshot) */}
-                  {activeTab === "cards" && (
-                    <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  )}
-                  <BookOpen
-                    className={`w-4 h-4 shrink-0 ${
-                      activeTab === "cards" ? "text-[#8C6239]" : "text-[#7A6B5D]"
-                    }`}
-                  />
-                  <span>Thiệp cưới</span>
-                </button>
-
-                {/* 2. XÁC NHẬN THAM DỰ */}
-                <button
-                  onClick={() => {
-                    setActiveTab("rsvp");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer relative ${
-                    activeTab === "rsvp"
-                      ? "bg-[#F0E6D8] border border-[#E2D5C3]/70 text-[#2B2118] font-bold shadow-2xs"
-                      : "text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium"
-                  }`}
-                >
-                  {activeTab === "rsvp" && (
-                    <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  )}
-                  <Armchair
-                    className={`w-4 h-4 shrink-0 ${
-                      activeTab === "rsvp" ? "text-[#8C6239]" : "text-[#7A6B5D]"
-                    }`}
-                  />
-                  <span>Xác nhận tham dự</span>
-                </button>
-
-                {/* 3. SỔ LƯU BÚT */}
-                <button
-                  onClick={() => {
-                    setActiveTab("wishes");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer relative ${
-                    activeTab === "wishes"
-                      ? "bg-[#F0E6D8] border border-[#E2D5C3]/70 text-[#2B2118] font-bold shadow-2xs"
-                      : "text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium"
-                  }`}
-                >
-                  {activeTab === "wishes" && (
-                    <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  )}
-                  <FileEdit
-                    className={`w-4 h-4 shrink-0 ${
-                      activeTab === "wishes" ? "text-[#8C6239]" : "text-[#7A6B5D]"
-                    }`}
-                  />
-                  <span>Sổ lưu bút</span>
-                </button>
-
-                {/* 3b. CHỮ KÝ KHÁCH MỜI */}
-                <Link
-                  href="/dashboard/signatures"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer font-medium text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118]"
-                >
-                  <PenLine className="w-4 h-4 shrink-0 text-[#7A6B5D]" />
-                  <span>Chữ ký khách mời</span>
-                </Link>
-
-                {/* 4. ƯU ĐÃI CỦA TÔI */}
-                <button
-                  onClick={() => {
-                    setActiveTab("perks");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer relative ${
-                    activeTab === "perks"
-                      ? "bg-[#F0E6D8] border border-[#E2D5C3]/70 text-[#2B2118] font-bold shadow-2xs"
-                      : "text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium"
-                  }`}
-                >
-                  {activeTab === "perks" && (
-                    <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  )}
-                  <Ticket
-                    className={`w-4 h-4 shrink-0 ${
-                      activeTab === "perks" ? "text-[#8C6239]" : "text-[#7A6B5D]"
-                    }`}
-                  />
-                  <span>Ưu đãi của tôi</span>
-                </button>
-
-                {/* 5. TÀI KHOẢN */}
-                <button
-                  onClick={() => {
-                    setActiveTab("account");
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm transition cursor-pointer relative ${
-                    activeTab === "account"
-                      ? "bg-[#F0E6D8] border border-[#E2D5C3]/70 text-[#2B2118] font-bold shadow-2xs"
-                      : "text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium"
-                  }`}
-                >
-                  {activeTab === "account" && (
-                    <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  )}
-                  <User
-                    className={`w-4 h-4 shrink-0 ${
-                      activeTab === "account" ? "text-[#8C6239]" : "text-[#7A6B5D]"
-                    }`}
-                  />
-                  <span>Tài khoản</span>
-                </button>
-              </nav>
-            </div>
-
-            {/* NHÓM: TIỆN ÍCH */}
-            <div className="pt-2">
-              <p className="text-xs font-semibold text-[#8E7E70] px-2 pb-2 select-none">
-                Tiện ích
-              </p>
-              <nav className="space-y-1.5">
-                <Link
-                  href="/dashboard/domains"
-                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium transition cursor-pointer"
-                >
-                  <Globe className="w-4 h-4 shrink-0 text-[#7A6B5D]" />
-                  <span>Tên miền</span>
-                  <span className="ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800">
-                    VIP
-                  </span>
-                </Link>
-                <Link
-                  href="/dashboard/addons"
-                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium transition cursor-pointer"
-                >
-                  <ShoppingBag className="w-4 h-4 shrink-0 text-rose-500" />
-                  <span>Cửa Hàng Add-on</span>
-                  <span className="ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700">
-                    Mới
-                  </span>
-                </Link>
-                <Link
-                  href="/dashboard/billing"
-                  className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm text-[#5C4D40] hover:bg-[#F3ECE2]/80 hover:text-[#2B2118] font-medium transition cursor-pointer"
-                >
-                  <Crown className="w-4 h-4 shrink-0 text-amber-600" />
-                  <span>Nâng cấp gói</span>
-                </Link>
-              </nav>
-            </div>
-          </div>
-
-          {/* SIDEBAR FOOTER */}
-          <div className="space-y-2 pt-4 border-t border-[#EADDCB]/60">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#8C7662] hover:text-rose-700 hover:bg-rose-50/80 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Đăng xuất</span>
-            </button>
-          </div>
-        </aside>
-
-        {/* MOBILE OVERLAY BACKDROP */}
-        {isMobileMenuOpen && (
-          <div
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-stone-900/40 z-30 lg:hidden backdrop-blur-2xs"
-          />
-        )}
-
-        {/* ======================================================== */}
-        {/* MAIN CONTENT AREA                                        */}
-        {/* ======================================================== */}
+      {/* MAIN CONTENT WRAPPER */}
+      <div className="flex-1 flex flex-col min-w-0">
         <main className="flex-1 p-4 sm:p-7 lg:p-9 max-w-5xl overflow-y-auto">
           {/* TAB 1: THIỆP CƯỚI (MATCHES USER SCREENSHOT EXACTLY) */}
           {activeTab === "cards" && (

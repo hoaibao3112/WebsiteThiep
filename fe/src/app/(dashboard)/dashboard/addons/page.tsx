@@ -37,6 +37,7 @@ import {
   Menu,
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { DashboardSidebar } from "@/components/shared/DashboardSidebar";
 
 interface AddonCatalogItem {
   code: string;
@@ -329,188 +330,37 @@ export default function AddonsStorePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFBF7] text-stone-900 flex flex-col font-sans">
-      {/* ── TOP MOBILE BAR ── */}
-      <div className="lg:hidden h-14 bg-white border-b border-stone-200 px-4 flex items-center justify-between sticky top-0 z-40">
-        <button
-          type="button"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 transition cursor-pointer"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-        <span className="font-bold text-sm text-stone-900">Zen Store</span>
+    <div className="min-h-screen bg-[#FAF7F2] text-[#2B2118] flex font-sans">
+      {/* MOBILE TOP BAR */}
+      <header className="lg:hidden bg-[#FAF7F2] border-b border-[#EADDCB] px-4 py-3 sticky top-0 z-30 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-xl text-[#78695A] hover:bg-[#F3EDE2] transition cursor-pointer"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <span className="font-bold text-sm text-[#2B2118]">Cửa hàng Add-on</span>
+        </div>
         <Link
           href="/dashboard/billing"
-          className="px-3 py-1.5 rounded-full bg-gradient-to-r from-[#E82561] to-[#F43F5E] text-white font-bold text-xs shadow-xs"
+          className="px-3 py-1.5 rounded-full bg-[#8C6239] text-white font-bold text-xs hover:bg-[#78532F] transition"
         >
           Nâng cấp
         </Link>
-      </div>
+      </header>
 
-      {/* ── UNIFIED 2-COLUMN DASHBOARD LAYOUT (MATCHING SCREENSHOT 1) ── */}
-      <div className="flex-1 flex w-full relative">
-        {/* ======================================================== */}
-        {/* LEFT SIDEBAR (STICKY ON DESKTOP, DRAWER ON MOBILE)       */}
-        {/* ======================================================== */}
-        <aside
-          className={`
-            fixed lg:sticky top-0 h-screen z-50 lg:z-30
-            w-64 bg-white border-r border-stone-200/90
-            flex flex-col justify-between p-4 transition-transform duration-300
-            ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          `}
-        >
-          <div className="space-y-6 overflow-y-auto no-scrollbar">
-            {/* BRAND LOGO */}
-            <div className="px-3 py-2 flex items-center justify-between">
-              <Link href="/dashboard/cards" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#E82561] to-[#F43F5E] text-white flex items-center justify-center shadow-xs">
-                  <Heart className="w-4 h-4 fill-white" />
-                </div>
-                <span className="font-bold text-lg text-stone-900 tracking-tight">
-                  zenlove
-                </span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="lg:hidden p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* SHARED SIDEBAR */}
+      <DashboardSidebar
+        isMobileOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
 
-            {/* NAV GROUP 1: CHÍNH */}
-            <nav className="space-y-1 text-xs sm:text-sm">
-              <Link
-                href="/dashboard/cards"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-              >
-                <LayoutDashboard className="w-4 h-4 text-stone-400" />
-                <span>Tổng quan</span>
-              </Link>
-              <Link
-                href="/dashboard/cards"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-              >
-                <Layers className="w-4 h-4 text-stone-400" />
-                <span>Thiệp của tôi</span>
-              </Link>
-              <Link
-                href="/dashboard/cards/new"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-              >
-                <PlusCircle className="w-4 h-4 text-stone-400" />
-                <span>Tạo thiết kế</span>
-              </Link>
-            </nav>
-
-            {/* NAV GROUP 2: LỜI CHÚC & QUÀ TẶNG */}
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 px-3 pb-2 select-none">
-                Lời chúc &amp; Quà tặng
-              </p>
-              <nav className="space-y-1 text-xs sm:text-sm">
-                <Link
-                  href="/dashboard/cards?tab=wishes"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <Heart className="w-4 h-4 text-stone-400" />
-                  <span>Lời chúc</span>
-                </Link>
-                <Link
-                  href="/dashboard/cards?tab=rsvp"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <Send className="w-4 h-4 text-stone-400" />
-                  <span>Xác nhận tham dự</span>
-                </Link>
-                <Link
-                  href="/dashboard/cards?tab=banking"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <Gift className="w-4 h-4 text-stone-400" />
-                  <span>Quà tặng</span>
-                </Link>
-                <Link
-                  href="/dashboard/signatures"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <PenLine className="w-4 h-4 text-stone-400" />
-                  <span>Chữ ký khách mời</span>
-                </Link>
-              </nav>
-            </div>
-
-            {/* NAV GROUP 3: TIỆN ÍCH */}
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 px-3 pb-2 select-none">
-                Tiện ích
-              </p>
-              <nav className="space-y-1 text-xs sm:text-sm">
-                <Link
-                  href="/dashboard/cards"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <Heart className="w-4 h-4 text-stone-400" />
-                  <span>Hồ sơ cưới</span>
-                </Link>
-                <Link
-                  href="/dashboard/domains"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <Globe className="w-4 h-4 text-stone-400" />
-                  <span>Tên miền</span>
-                </Link>
-
-                {/* ══ ZEN STORE (ACTIVE RED PILL HIGHLIGHT MATCHING SCREENSHOT) ══ */}
-                <div className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl bg-[#E82561] text-white font-bold shadow-xs">
-                  <ShoppingCart className="w-4 h-4 fill-white/20" />
-                  <span>Zen Store</span>
-                </div>
-              </nav>
-            </div>
-
-            {/* NAV GROUP 4: TÀI KHOẢN */}
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 px-3 pb-2 select-none">
-                Tài khoản
-              </p>
-              <nav className="space-y-1 text-xs sm:text-sm">
-                <Link
-                  href="/dashboard/cards?tab=account"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-stone-600 hover:text-stone-900 hover:bg-stone-50 font-medium transition"
-                >
-                  <User className="w-4 h-4 text-stone-400" />
-                  <span>Thông tin tài khoản</span>
-                </Link>
-              </nav>
-            </div>
-          </div>
-
-          {/* USER BOTTOM CARD */}
-          <div className="pt-3 border-t border-stone-100 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#E82561] text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-stone-900 truncate">
-                {user?.name || "Trần Hoài Bảo"}
-              </p>
-              <p className="text-[11px] text-stone-400 truncate">
-                {accountQuota?.currentPlanName || "Free Plan"}
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* ======================================================== */}
-        {/* RIGHT MAIN WORKSPACE (MATCHING ZENLOVE ADDONS SCREENSHOT)*/}
-        {/* ======================================================== */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#FDFBF7]">
+      {/* RIGHT MAIN WORKSPACE */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#FAF7F2]">
           {/* ── TOP SEARCH & ACTION BAR ── */}
-          <header className="h-16 bg-white border-b border-stone-200 px-4 sm:px-8 flex items-center justify-between gap-4 sticky top-0 z-20">
+          <header className="h-16 bg-[#FAF7F2] border-b border-[#EADDCB] px-4 sm:px-8 flex items-center justify-between gap-4 sticky top-0 z-20">
             {/* Search Input Box (Ctrl K) */}
             <div className="flex-1 max-w-md relative">
               <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -543,13 +393,13 @@ export default function AddonsStorePage() {
                 <HelpCircle className="w-4 h-4" />
               </button>
 
-              {/* Nút [Nâng cấp ngay] đỏ pill */}
+          Nâng cấp
               <Link
                 href="/dashboard/billing"
                 className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#E82561] to-[#F43F5E] hover:from-[#D81B55] hover:to-[#E82561] text-white font-bold text-xs shadow-sm transition active:scale-95"
               >
                 <Crown className="w-3.5 h-3.5" />
-                <span>Nâng cấp ngay</span>
+          Nâng cấp
               </Link>
 
               <button
@@ -748,7 +598,7 @@ export default function AddonsStorePage() {
                                   className="px-5 py-2.5 rounded-full bg-white text-[#E82561] border border-[#E82561] hover:bg-rose-50 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer active:scale-95"
                                 >
                                   <Crown className="w-3.5 h-3.5 text-[#E82561]" />
-                                  <span>Nâng cấp gói</span>
+          Nâng cấp
                                 </button>
                                 {item.ineligibilityReason && (
                                   <p className="text-[10px] text-stone-400 font-medium select-none">
@@ -767,7 +617,6 @@ export default function AddonsStorePage() {
             )}
           </main>
         </div>
-      </div>
 
       {/* ── MODAL THANH TOÁN VIETQR TỨC THÌ ── */}
       {activeOrder && (
@@ -976,7 +825,7 @@ export default function AddonsStorePage() {
                 </>
               )}
             </>
-            )}
+          )}
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { DashboardSidebar } from "@/components/shared/DashboardSidebar";
 
 interface SignatureItem {
   id: string;
@@ -198,75 +199,18 @@ export default function SignaturesDashboardPage() {
           </button>
           <span className="font-serif font-bold text-base text-[#2D241E]">Chữ Ký Khách Mời</span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-[#E82561] text-white font-bold text-xs flex items-center justify-center shadow-xs">
+        <div className="w-8 h-8 rounded-full bg-[#8C6239] text-white font-bold text-xs flex items-center justify-center shadow-xs">
           {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
         </div>
       </header>
 
       <div className="flex-1 flex max-w-[1400px] w-full mx-auto relative z-10">
-        {/* Sidebar */}
-        <aside className={`fixed lg:sticky top-0 lg:top-0 h-screen z-40 lg:z-10 w-68 sm:w-72 bg-[#F9F5EE]/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none flex flex-col justify-between p-5 sm:p-6 transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-          <div className="space-y-6">
-            <Link href="/dashboard/cards" className="bg-white/95 rounded-2xl p-3.5 border border-[#EFE5D8] shadow-xs hover:shadow-sm transition cursor-pointer flex items-center justify-between group">
-              <div className="flex items-center gap-3 overflow-hidden">
-                <div className="w-11 h-11 rounded-full bg-[#E82561] text-white font-bold text-base flex items-center justify-center shrink-0 shadow-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
-                </div>
-                <div className="overflow-hidden">
-                  <h4 className="text-xs font-bold text-[#2B2118] truncate group-hover:text-[#8C6239] transition">{user?.name || "Người dùng"}</h4>
-                  <p className="text-[11px] text-[#8E7E70] truncate max-w-[115px]">{user?.email || ""}</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#8E7E70] group-hover:translate-x-0.5 transition-transform shrink-0" />
-            </Link>
-
-            <div>
-              <p className="text-xs font-semibold text-[#8E7E70] px-2 pb-3 select-none">Thiệp của tôi</p>
-              <nav className="space-y-1.5">
-                <Link href="/dashboard/cards" className={navBase} onClick={() => setIsMobileMenuOpen(false)}>
-                  <BookOpen className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Thiệp cưới</span>
-                </Link>
-                <Link href="/dashboard/cards" className={navBase} onClick={() => setIsMobileMenuOpen(false)}>
-                  <Armchair className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Xác nhận tham dự</span>
-                </Link>
-                <Link href="/dashboard/cards" className={navBase} onClick={() => setIsMobileMenuOpen(false)}>
-                  <FileEdit className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Sổ lưu bút</span>
-                </Link>
-                <div className={navActive} onClick={() => setIsMobileMenuOpen(false)}>
-                  <span className="w-1 h-5 bg-[#8C6239] rounded-full absolute left-1" />
-                  <PenLine className="w-4 h-4 shrink-0 text-[#8C6239]" /><span>Chữ ký khách mời</span>
-                </div>
-                <Link href="/dashboard/cards" className={navBase} onClick={() => setIsMobileMenuOpen(false)}>
-                  <Ticket className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Ưu đãi của tôi</span>
-                </Link>
-                <Link href="/dashboard/cards" className={navBase} onClick={() => setIsMobileMenuOpen(false)}>
-                  <User className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Tài khoản</span>
-                </Link>
-              </nav>
-            </div>
-
-            <div className="pt-2">
-              <p className="text-xs font-semibold text-[#8E7E70] px-2 pb-2 select-none">Tiện ích</p>
-              <nav className="space-y-1.5">
-                <Link href="/dashboard/domains" className={navBase}>
-                  <Globe className="w-4 h-4 shrink-0 text-[#7A6B5D]" /><span>Tên miền</span>
-                  <span className="ml-auto text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800">VIP</span>
-                </Link>
-                <Link href="/dashboard/billing" className={navBase}>
-                  <Crown className="w-4 h-4 shrink-0 text-amber-600" /><span>Nâng cấp gói</span>
-                </Link>
-              </nav>
-            </div>
-          </div>
-
-          <div className="space-y-2 pt-4 border-t border-[#EADDCB]/60">
-            <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[#8C7662] hover:text-rose-700 hover:bg-rose-50/80 transition">
-              <LogOut className="w-4 h-4" /><span>Đăng xuất</span>
-            </button>
-          </div>
-        </aside>
-
-        {isMobileMenuOpen && <div onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 bg-stone-900/40 z-30 lg:hidden backdrop-blur-2xs" />}
+        {/* SHARED SIDEBAR */}
+        <DashboardSidebar
+          isMobileOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+          onLogout={handleLogout}
+        />
 
         {/* Main content */}
         <main className="flex-1 p-4 sm:p-7 lg:p-9 max-w-5xl overflow-y-auto">
