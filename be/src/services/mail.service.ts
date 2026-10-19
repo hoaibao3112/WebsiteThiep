@@ -224,7 +224,7 @@ export class MailService {
     submittedAt: Date;
     reviewUrl?: string;
   }): Promise<void> {
-    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "hoaibao3112@gmail.com";
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "baohoaitran3112@gmail.com";
     const subject = `🔔 [CardVite] Khách xác nhận chuyển khoản: ${data.orderCode} - ${data.amount.toLocaleString("vi-VN")} đ`;
     const html = `
       <!DOCTYPE html>
@@ -303,7 +303,7 @@ export class MailService {
 
           <div class="footer">
             Thông báo tự động từ Hệ thống Quản trị CardVite Platform.<br/>
-            Gửi tới quản trị viên: hoaibao3112@gmail.com
+            Gửi tới quản trị viên: baohoaitran3112@gmail.com
           </div>
         </div>
       </body>

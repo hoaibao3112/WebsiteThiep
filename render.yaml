@@ -37,6 +37,8 @@ services:
         sync: false
       - key: APP_URL
         sync: false
+      - key: ADMIN_NOTIFY_EMAIL
+        sync: false
       # Redis: ưu tiên REDIS_URL (rediss:// cho TLS). REDIS_HOST/PORT/PASSWORD chỉ dùng khi không có REDIS_URL.
       - key: REDIS_URL
         sync: false

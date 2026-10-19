@@ -309,7 +309,7 @@ export class OrderService {
       customerEmail: order.user?.email,
       customerPhone: order.user?.phone || undefined,
       submittedAt: order.submittedAt || new Date(),
-      reviewUrl: `${process.env.APP_URL || "http://localhost:3000"}/dashboard/admin/payments`,
+      reviewUrl: `${(process.env.APP_URL || (process.env.NODE_ENV === "production" ? "https://cardvite.vn" : "http://localhost:3000")).replace(/\/$/, "")}/dashboard/admin/payments`,
     }).catch((err: unknown) => {
       logger.error({ err, orderId }, "[OrderService] Lỗi gửi email thông báo xác nhận chuyển khoản cho admin");
     });
