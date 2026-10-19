@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { logger } from "../lib/logger";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
+import { MailService } from "./mail.service";
 
 // ────────────────────────────────────────────────────────────
 // TYPES
@@ -290,7 +291,27 @@ export class OrderService {
 
     const order = await prisma.order.findUniqueOrThrow({
       where: { id: orderId },
-      include: { plan: true },
+      include: { plan: true, user: true },
+    });
+
+    // Bắn email thông báo về Gmail của Admin để duyệt đơn
+    const itemName =
+      order.orderType === "ADDON"
+        ? ((order.addonMetadata as Record<string, unknown> | null)?.name as string | undefined) || `Tiện ích ${order.addonCode || ""}`
+        : (order.plan?.name || "Gói dịch vụ");
+
+    MailService.sendPaymentTransferNotificationEmail({
+      orderCode: order.orderCode,
+      amount: order.amount,
+      orderType: order.orderType,
+      itemName,
+      customerName: order.user?.name || undefined,
+      customerEmail: order.user?.email,
+      customerPhone: order.user?.phone || undefined,
+      submittedAt: order.submittedAt || new Date(),
+      reviewUrl: `${process.env.APP_URL || "http://localhost:3000"}/dashboard/admin/payments`,
+    }).catch((err: unknown) => {
+      logger.error({ err, orderId }, "[OrderService] Lỗi gửi email thông báo xác nhận chuyển khoản cho admin");
     });
 
     return this.toSafeDTO(order);

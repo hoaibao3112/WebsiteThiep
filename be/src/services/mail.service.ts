@@ -209,5 +209,121 @@ export class MailService {
       );
     }
   }
+
+  /**
+   * Gửi thông báo khi khách hàng xác nhận đã chuyển khoản ngân hàng về Gmail của Admin để duyệt
+   */
+  static async sendPaymentTransferNotificationEmail(data: {
+    orderCode: string;
+    amount: number;
+    orderType: "PLAN" | "ADDON";
+    itemName: string;
+    customerName?: string;
+    customerEmail?: string;
+    customerPhone?: string;
+    submittedAt: Date;
+    reviewUrl?: string;
+  }): Promise<void> {
+    const adminEmail = process.env.ADMIN_NOTIFY_EMAIL || "hoaibao3112@gmail.com";
+    const subject = `🔔 [CardVite] Khách xác nhận chuyển khoản: ${data.orderCode} - ${data.amount.toLocaleString("vi-VN")} đ`;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #FAF7F2; margin: 0; padding: 25px 15px; color: #181716; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; padding: 35px 30px; border: 1px solid #EFE9E1; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+          .header { text-align: center; border-bottom: 2px solid #F2E8D7; padding-bottom: 20px; margin-bottom: 25px; }
+          .logo { font-family: Georgia, serif; font-size: 26px; font-weight: bold; color: #8C6239; letter-spacing: 1px; }
+          .badge { display: inline-block; background: #FFF4DC; color: #8C6239; font-size: 11px; font-weight: bold; padding: 5px 14px; border-radius: 20px; margin-top: 8px; border: 1px solid #E6D0A6; }
+          .title { font-size: 20px; font-weight: 700; color: #181716; margin: 15px 0 5px 0; text-align: center; }
+          .code-box { background-color: #FAF7F2; border: 1.5px dashed #C5A582; border-radius: 14px; padding: 14px 20px; text-align: center; margin: 20px 0; }
+          .code-title { font-size: 11px; text-transform: uppercase; color: #8E7E70; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
+          .code-val { font-family: 'Courier New', monospace; font-size: 24px; font-weight: 800; color: #8C6239; letter-spacing: 2px; }
+          .table-info { width: 100%; border-collapse: collapse; margin-top: 15px; }
+          .table-info td { padding: 12px 14px; border-bottom: 1px solid #F5EFE6; font-size: 13px; }
+          .table-info td.label { font-weight: 600; color: #666666; width: 35%; background: #FAF7F2; border-radius: 8px 0 0 8px; }
+          .table-info td.value { font-weight: 700; color: #181716; }
+          .amount-highlight { font-size: 18px; color: #E82561; font-weight: 800; }
+          .btn-group { text-align: center; margin-top: 30px; }
+          .btn-approve { display: inline-block; background: #8C6239; color: #ffffff !important; text-decoration: none; font-weight: bold; font-size: 14px; padding: 14px 32px; border-radius: 30px; box-shadow: 0 4px 15px rgba(140,98,57,0.3); }
+          .btn-zalo { display: inline-block; background: #0068FF; color: #ffffff !important; text-decoration: none; font-weight: bold; font-size: 13px; padding: 12px 20px; border-radius: 30px; margin-left: 10px; }
+          .footer { font-size: 11px; color: #999999; text-align: center; margin-top: 30px; border-top: 1px solid #EFE9E1; padding-top: 15px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">CardVite Admin</div>
+            <div class="badge">🔔 KHÁCH ĐÃ XÁC NHẬN CHUYỂN KHOẢN</div>
+            <div class="title">Đơn Hàng Cần Duyệt Thanh Toán</div>
+          </div>
+
+          <div class="code-box">
+            <div class="code-title">Mã Chuyển Khoản Đối Soát (Nội dung CK)</div>
+            <div class="code-val">${data.orderCode}</div>
+          </div>
+
+          <table class="table-info">
+            <tr>
+              <td class="label">💰 Số Tiền Cần Nhận:</td>
+              <td class="value"><span class="amount-highlight">${data.amount.toLocaleString("vi-VN")} đ</span></td>
+            </tr>
+            <tr>
+              <td class="label">📦 Sản Phẩm / Gói:</td>
+              <td class="value" style="color: #8C6239;">${data.itemName} (${data.orderType === "PLAN" ? "Gói Dịch Vụ" : "Tiện Ích Add-on"})</td>
+            </tr>
+            <tr>
+              <td class="label">👤 Tên Khách Hàng:</td>
+              <td class="value">${data.customerName || "Khách hàng"}</td>
+            </tr>
+            <tr>
+              <td class="label">✉️ Email Tài Khoản:</td>
+              <td class="value">${data.customerEmail || "Không có"}</td>
+            </tr>
+            <tr>
+              <td class="label">📞 Điện Thoại / Zalo:</td>
+              <td class="value" style="color: #0068FF;">${data.customerPhone || "Chưa cập nhật"}</td>
+            </tr>
+            <tr>
+              <td class="label">⏰ Thời Gian Khách Báo:</td>
+              <td class="value" style="font-size: 12px; color: #777777;">${data.submittedAt.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 25px; padding: 14px; background: #FFF8EE; border-left: 4px solid #8C6239; border-radius: 8px; font-size: 12px; color: #6D5030; line-height: 1.5;">
+            📌 <strong>Hướng dẫn duyệt:</strong> Vui lòng mở ứng dụng ngân hàng kiểm tra biến động số dư khớp với số tiền <strong>${data.amount.toLocaleString("vi-VN")} đ</strong> và mã nội dung <strong>${data.orderCode}</strong>, sau đó nhấn nút <strong>Duyệt Đơn Ngay</strong> bên dưới để hệ thống tự động kích hoạt tài khoản cho khách.
+          </div>
+
+          <div class="btn-group">
+            <a href="${data.reviewUrl || "http://localhost:3000/dashboard/admin/payments"}" target="_blank" class="btn-approve">👉 Mở Trang Duyệt Đơn Ngay</a>
+            ${data.customerPhone ? `<a href="https://zalo.me/${data.customerPhone.replace(/[^0-9]/g, "")}" target="_blank" class="btn-zalo">💬 Nhắn Zalo Khách</a>` : ""}
+          </div>
+
+          <div class="footer">
+            Thông báo tự động từ Hệ thống Quản trị CardVite Platform.<br/>
+            Gửi tới quản trị viên: hoaibao3112@gmail.com
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const transporter = getTransporter();
+    const fromAddress = process.env.SMTP_FROM || `"CardVite Payment" <no-reply@cardvite.vn>`;
+
+    if (transporter) {
+      await mailCircuit.execute(() =>
+        transporter.sendMail({ from: fromAddress, to: adminEmail, subject, html })
+      );
+      logger.info({ adminEmail, orderCode: data.orderCode }, "[MailService] Đã gửi thông báo xác nhận chuyển khoản tới admin thành công");
+    } else {
+      logger.info(
+        { adminEmail, orderCode: data.orderCode, amount: data.amount },
+        "[DEV PAYMENT TRANSFER NOTIFICATION]"
+      );
+    }
+  }
 }
 
