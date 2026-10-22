@@ -2225,10 +2225,10 @@ export function EditorProvider<T extends object>({
   const triggerSave = useCallback(() => {
     if (!saveRef.current) return Promise.resolve();
     const revision = dirtyTickRef.current;
-    const snapshot = draftRef.current;
     const save = saveQueueRef.current.catch(() => undefined).then(async () => {
       setSaveState("saving");
-      await saveRef.current?.(snapshot);
+      const latestSnapshot = draftRef.current;
+      await saveRef.current?.(latestSnapshot);
       setSaveState(dirtyTickRef.current === revision ? "saved" : "dirty");
     }).catch((error: unknown) => {
       setSaveState("dirty");

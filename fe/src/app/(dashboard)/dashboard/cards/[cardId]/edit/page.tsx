@@ -523,6 +523,18 @@ function EditCardContent() {
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
   const [expectedUpdatedAt, setExpectedUpdatedAt] = useState<string | null>(null);
+  const expectedUpdatedAtRef = React.useRef<string | null>(null);
+  useEffect(() => {
+    expectedUpdatedAtRef.current = expectedUpdatedAt;
+  }, [expectedUpdatedAt]);
+
+  const isSavingInFlightRef = React.useRef(false);
+  const pendingSaveArgsRef = React.useRef<{
+    draftSnapshot?: CardDetail;
+    navigate: boolean;
+    forceOverwrite: boolean;
+  } | null>(null);
+
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
 
   // ── Save state ──
@@ -542,7 +554,9 @@ function EditCardContent() {
     setSlug(card.slug);
     setCardStatus(card.status || "DRAFT");
     if (card.updatedAt) {
-      setExpectedUpdatedAt(new Date(card.updatedAt).toISOString());
+      const iso = new Date(card.updatedAt).toISOString();
+      expectedUpdatedAtRef.current = iso;
+      setExpectedUpdatedAt(iso);
     }
     setBankGroomTouched(false);
     setBankBrideTouched(false);
@@ -1318,6 +1332,13 @@ function EditCardContent() {
   // ────────────────────────────────────────────────────────────────
 
   const persistCard = async (draftSnapshot?: CardDetail, navigate = false, forceOverwrite = false) => {
+    // Save Mutex Lock: Nếu đang có request lưu đang gửi dở, ghi nhớ snapshot mới nhất để gửi ngay sau đó (chống 409)
+    if (isSavingInFlightRef.current) {
+      pendingSaveArgsRef.current = { draftSnapshot, navigate, forceOverwrite };
+      return;
+    }
+
+    isSavingInFlightRef.current = true;
     const saveRevision = draftRevisionRef.current;
     setSaving(true);
     setSaveError(null);
@@ -1471,15 +1492,18 @@ function EditCardContent() {
         : null
       : undefined;
 
-    // 4. Chuẩn hóa slug và templateSlug
-    const cleanSlug = snapSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
+    // 4. Chuẩn hóa slug và templateSlug (Đảm bảo nếu thiệp đã ACTIVE thì luôn giữ slug hiện tại để tránh 409 SLUG_LOCKED)
+    const activeLockedSlug = cardStatus === "ACTIVE" && slug ? slug : snapSlug;
+    const cleanSlug = activeLockedSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
     if (cleanSlug.length < 3) {
       setSaving(false);
+      isSavingInFlightRef.current = false;
       setSaveError("Đường dẫn thiệp (Slug URL) phải có ít nhất 3 ký tự.");
       return;
     }
-    if (slugAvailable === false) {
+    if (slugAvailable === false && cardStatus !== "ACTIVE") {
       setSaving(false);
+      isSavingInFlightRef.current = false;
       setSaveError(slugError || "Đường dẫn thiệp đã có người sử dụng. Vui lòng chọn đường dẫn khác.");
       return;
     }
@@ -1616,8 +1640,11 @@ function EditCardContent() {
       categoryData: categoryDataPayload,
       data: categoryDataPayload,
     };
-    if (!forceOverwrite && expectedUpdatedAt) {
-      payload.expectedUpdatedAt = expectedUpdatedAt;
+
+    // Luôn ưu tiên timestamp mới nhất từ expectedUpdatedAtRef để chống 409
+    const activeExpectedUpdatedAt = expectedUpdatedAtRef.current || expectedUpdatedAt;
+    if (!forceOverwrite && activeExpectedUpdatedAt) {
+      payload.expectedUpdatedAt = activeExpectedUpdatedAt;
     }
     if (musicUrlPayload !== undefined) {
       payload.musicUrl = musicUrlPayload;
@@ -1634,8 +1661,6 @@ function EditCardContent() {
         method: "PUT",
         body: JSON.stringify(payload),
       });
-
-      setSaving(false);
 
       if (!res.success) {
         if (res.status === 409 && ((res as any).code === "CARD_VERSION_CONFLICT" || res.error?.includes("phiên khác"))) {
@@ -1654,7 +1679,9 @@ function EditCardContent() {
 
       const updatedCard = res.data as any;
       if (updatedCard?.updatedAt) {
-        setExpectedUpdatedAt(new Date(updatedCard.updatedAt).toISOString());
+        const nextIso = new Date(updatedCard.updatedAt).toISOString();
+        expectedUpdatedAtRef.current = nextIso;
+        setExpectedUpdatedAt(nextIso);
       }
 
       if (navigate) confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
@@ -1666,9 +1693,17 @@ function EditCardContent() {
         router.push(`/thiep/${cleanSlug}`);
       }, 1800);
     } catch (error) {
-      setSaving(false);
       setSaveError(error instanceof Error ? error.message : "Không thể kết nối máy chủ. Dữ liệu của bạn vẫn được giữ nguyên.");
       if (!navigate) throw error;
+    } finally {
+      setSaving(false);
+      isSavingInFlightRef.current = false;
+      // Nếu có lượt lưu tiếp theo trong hàng đợi, thực thi ngay với snapshot và expectedUpdatedAt mới nhất
+      if (pendingSaveArgsRef.current) {
+        const nextArgs = pendingSaveArgsRef.current;
+        pendingSaveArgsRef.current = null;
+        void persistCard(nextArgs.draftSnapshot, nextArgs.navigate, nextArgs.forceOverwrite);
+      }
     }
   };
   const handleSaveCard = () => { void persistCard(undefined, true); };

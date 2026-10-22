@@ -1,8 +1,20 @@
 import { z } from "zod";
 
+export const AlbumImageUrlSchema = z.string().refine(
+  (val) => !val.startsWith("data:image/") && (/^https?:\/\//i.test(val) || val.startsWith("/") || val === ""),
+  "Đường dẫn ảnh không hợp lệ hoặc chưa được tải lên máy chủ"
+);
+
+export const HexColorOptionalSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{3,8}$/, "Mã màu Hex không hợp lệ")
+  .nullable()
+  .optional()
+  .or(z.literal(""));
+
 export const Album3DPageSchema = z.object({
   id: z.string(),
-  url: z.string().url("Đường dẫn ảnh không hợp lệ"),
+  url: AlbumImageUrlSchema,
   caption: z.string().max(200, "Chú thích không quá 200 ký tự").optional(),
   aspectRatio: z.enum(["portrait", "landscape", "square"]).optional().default("portrait"),
   sortOrder: z.number().int().default(0),
@@ -42,15 +54,15 @@ export const AlbumFrontCoverFrameShapeSchema = z.enum([
 export const AlbumFrontCoverConfigSchema = z.object({
   enabled: z.boolean().default(true),
   designPreset: AlbumFrontCoverPresetSchema.default("photo-arch-gold"),
-  photoUrl: z.string().url("Đường dẫn ảnh không hợp lệ").optional().or(z.literal("")),
+  photoUrl: AlbumImageUrlSchema.nullable().optional().or(z.literal("")),
   title: z.string().max(120).default("HOÀNG LONG & BẢO NGỌC"),
   subtitle: z.string().max(120).default("OUR WEDDING PHOTOBOOK • 2026"),
   monogram: z.string().max(20).optional().default("L & N"),
   badgeText: z.string().max(60).optional().default("WEDDING COLLECTION"),
   frameShape: AlbumFrontCoverFrameShapeSchema.default("arch"),
   theme: AlbumCoverThemeSchema.default("leather-burgundy"),
-  customBgColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Mã màu Hex không hợp lệ").optional(),
-  customTextColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Mã màu Hex không hợp lệ").optional(),
+  customBgColor: HexColorOptionalSchema,
+  customTextColor: HexColorOptionalSchema,
 });
 
 export interface AlbumFrontCoverPresetMeta {
@@ -217,12 +229,12 @@ export const AlbumBackCoverConfigSchema = z.object({
   ),
   signatureText: z.string().max(120).optional().default(""),
   buttonText: z.string().max(60).default("Quay lại trang bìa"),
-  photoUrl: z.string().url("Đường dẫn ảnh không hợp lệ").optional().or(z.literal("")),
+  photoUrl: AlbumImageUrlSchema.nullable().optional().or(z.literal("")),
   showPetals: z.boolean().default(true),
   borderStyle: AlbumBackCoverBorderStyleSchema.default("stitched-dashed"),
   badgeIcon: AlbumBackCoverBadgeIconSchema.default("heart"),
-  customBgColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Mã màu Hex không hợp lệ").optional(),
-  customTextColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Mã màu Hex không hợp lệ").optional(),
+  customBgColor: HexColorOptionalSchema,
+  customTextColor: HexColorOptionalSchema,
 });
 
 // ── THƯ VIỆN PRESETS THIẾT KẾ BÌA KẾT ĐƯỢC QUẢN LÝ TỪ BACKEND ──

@@ -52,13 +52,21 @@ export function errorHandler(
 
   // 2. Lỗi validation Zod — trả 400 với chi tiết field errors
   if (err instanceof ZodError) {
+    const fieldErrors: Record<string, string[]> = {};
+    err.issues.forEach((issue) => {
+      const path = issue.path.join(".") || "form";
+      if (!fieldErrors[path]) fieldErrors[path] = [];
+      fieldErrors[path].push(issue.message);
+    });
+
     return res.status(400).json({
       success: false,
-      error: "Dữ liệu không hợp lệ",
+      error: err.issues[0]?.message || "Dữ liệu không hợp lệ",
       details: err.issues.map((issue) => ({
         field: issue.path.join("."),
         message: issue.message,
       })),
+      fieldErrors,
     });
   }
 
