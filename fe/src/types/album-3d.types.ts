@@ -393,6 +393,79 @@ export const DEFAULT_ALBUM_3D_CONFIG: Album3DConfig = {
   backCover: DEFAULT_ALBUM_BACK_COVER,
 };
 
+export const DEMO_ALBUM_3D_PAGES: Album3DPage[] = [
+  { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
+  { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
+  { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
+  { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
+  { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
+  { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
+];
+
+export interface ResolveAlbum3DOptions {
+  groomName?: string;
+  brideName?: string;
+  weddingDate?: string;
+  fallbackPhotos?: Array<{ id?: string; url: string; caption?: string }>;
+  includeDemoIfEmpty?: boolean;
+}
+
+/**
+ * Hàm chuẩn hóa cấu hình Album 3D tập trung, tái sử dụng giữa Canvas, Modal, và WeddingView
+ */
+export function resolveEffectiveAlbum3DConfig(
+  rawAlbum?: Partial<Album3DConfig> | null,
+  options?: ResolveAlbum3DOptions
+): Album3DConfig {
+  const currentAlbum = rawAlbum || DEFAULT_ALBUM_3D_CONFIG;
+  const groomName = options?.groomName?.trim() || "Chú rể";
+  const brideName = options?.brideName?.trim() || "Cô dâu";
+  const weddingDate = options?.weddingDate || "2026";
+
+  const fallbackPages: Album3DPage[] = Array.isArray(options?.fallbackPhotos) && options.fallbackPhotos.length > 0
+    ? options.fallbackPhotos.map((p, idx) => ({
+        id: p.id || `p-${idx}`,
+        url: p.url,
+        caption: p.caption,
+        sortOrder: idx,
+      }))
+    : [];
+
+  const effectivePages = currentAlbum.pages && currentAlbum.pages.length > 0
+    ? currentAlbum.pages
+    : fallbackPages.length > 0
+    ? fallbackPages
+    : options?.includeDemoIfEmpty
+    ? DEMO_ALBUM_3D_PAGES
+    : [];
+
+  const baseFrontCover = rawAlbum?.frontCover || currentAlbum.frontCover || DEFAULT_ALBUM_FRONT_COVER;
+  const resolvedFrontCover: AlbumFrontCoverConfig = {
+    ...DEFAULT_ALBUM_FRONT_COVER,
+    ...baseFrontCover,
+    photoUrl: baseFrontCover.photoUrl || (effectivePages.length > 0 ? effectivePages[0].url : ""),
+  };
+
+  const baseBackCover = rawAlbum?.backCover || currentAlbum.backCover || DEFAULT_ALBUM_BACK_COVER;
+  const resolvedBackCover: AlbumBackCoverConfig = {
+    ...DEFAULT_ALBUM_BACK_COVER,
+    ...baseBackCover,
+    signatureText: baseBackCover.signatureText || `${groomName} & ${brideName}`,
+  };
+
+  return {
+    ...DEFAULT_ALBUM_3D_CONFIG,
+    ...currentAlbum,
+    enabled: currentAlbum.enabled ?? true,
+    title: rawAlbum?.title || currentAlbum.title || "Album Kỷ Niệm Ngày Chung Đôi",
+    coverTitle: rawAlbum?.coverTitle || `${groomName.toUpperCase()} & ${brideName.toUpperCase()}`,
+    coverSubtitle: rawAlbum?.coverSubtitle || `Our Wedding Photobook • ${weddingDate.slice(-4) || "2026"}`,
+    pages: effectivePages,
+    frontCover: resolvedFrontCover,
+    backCover: resolvedBackCover,
+  };
+}
+
 /**
  * Trích xuất Google Drive File ID từ bất kỳ định dạng link chia sẻ nào
  */

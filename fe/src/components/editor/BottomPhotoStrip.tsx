@@ -10,6 +10,7 @@ export function BottomPhotoStrip() {
     draft,
     selectedField,
     selectedCanvasElement,
+    canvasMode,
     fields,
     replaceSelectedImage,
     setCoverPhoto,
@@ -57,7 +58,17 @@ export function BottomPhotoStrip() {
     (selectedField && selectedField.type === "image")
   );
 
-  const handleSelectPhoto = (photoUrl: string) => {
+  const handleSelectPhoto = (photoUrl: string, index?: number) => {
+    if (canvasMode === "album3d") {
+      // Khi đang ở chế độ xem Album 3D, bấm vào ảnh sẽ lật nhanh đến trang chứa ảnh đó
+      if (typeof window !== "undefined") {
+        const targetSpread = index !== undefined ? Math.floor(index / 2) + 1 : 1;
+        window.dispatchEvent(
+          new CustomEvent("jump-flipbook-spread", { detail: { target: targetSpread } })
+        );
+      }
+      return;
+    }
     replaceSelectedImage(photoUrl);
   };
 
@@ -129,7 +140,12 @@ export function BottomPhotoStrip() {
             </span>
           </div>
 
-          {hasSelectedImageTarget ? (
+          {canvasMode === "album3d" ? (
+            <span className="text-[10px] font-medium text-amber-800 bg-amber-50 border border-amber-200/80 rounded-full px-2 py-0.5 flex items-center gap-1">
+              <Sparkles className="size-2.5 text-amber-600" />
+              Bấm ảnh để lật nhanh đến trang trong Album 3D
+            </span>
+          ) : hasSelectedImageTarget ? (
             <span className="text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200/60 rounded-full px-2 py-0.5 flex items-center gap-1 animate-pulse">
               <Sparkles className="size-2.5" />
               Bấm ảnh để thay thế vào node đang chọn
@@ -156,13 +172,19 @@ export function BottomPhotoStrip() {
             return (
               <div
                 key={photo.id || idx}
-                onClick={() => handleSelectPhoto(photo.url)}
+                onClick={() => handleSelectPhoto(photo.url, idx)}
                 className={`relative group size-12 sm:size-14 rounded-xl overflow-hidden shrink-0 border transition-all cursor-pointer bg-stone-100 ${
                   isActive
                     ? "ring-2 ring-amber-500 ring-offset-2 border-amber-500 scale-105 shadow-md"
                     : "border-stone-200 hover:border-amber-400 hover:scale-102"
                 }`}
-                title={hasSelectedImageTarget ? "Nhấp để thay ảnh vào node đang chọn" : "Nhấp để chọn ảnh"}
+                title={
+                  canvasMode === "album3d"
+                    ? "Bấm để lật đến trang ảnh này trong Album 3D"
+                    : hasSelectedImageTarget
+                    ? "Nhấp để thay ảnh vào node đang chọn"
+                    : "Nhấp để chọn ảnh"
+                }
               >
                 <img
                   src={photo.url}

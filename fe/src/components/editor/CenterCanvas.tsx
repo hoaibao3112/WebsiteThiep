@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useEditor, CanvasElement } from "./EditorContext";
 import { CanvasElementContent } from "@/components/card/CanvasElementContent";
 import { canvasElementStyle, canvasElementAnimationClass } from "@/lib/editor/canvas-presentation";
@@ -29,10 +29,7 @@ import { CanvasPatternOverlay, CanvasFallingEffect } from "@/components/card/Can
 import { Wedding3DFlipbook } from "@/components/wedding/Wedding3DFlipbook";
 import {
   Album3DConfig,
-  Album3DPage,
-  DEFAULT_ALBUM_3D_CONFIG,
-  DEFAULT_ALBUM_FRONT_COVER,
-  DEFAULT_ALBUM_BACK_COVER,
+  resolveEffectiveAlbum3DConfig,
 } from "@/types/album-3d.types";
 
 interface CenterCanvasProps {
@@ -627,6 +624,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
   // Keyboard shortcuts (Delete, Arrows, Ctrl+C, Ctrl+V)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Khi đang xem Album 3D, nhường phím mũi tên và phím cách cho Album lật trang
+      if (canvasMode === "album3d") return;
+
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
@@ -659,35 +659,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedCanvasElement, removeCanvasElement, updateCanvasElement, copySelectedElement, pasteElement]);
+  }, [canvasMode, selectedCanvasElement, removeCanvasElement, updateCanvasElement, copySelectedElement, pasteElement]);
 
-  // Cấu hình Album 3D hoàn chỉnh đảm bảo luôn có trang hiển thị
-  const currentAlbum: Album3DConfig = (draft as any)?.categoryData?.album3d || DEFAULT_ALBUM_3D_CONFIG;
-  const directPhotos = (draft as any)?.photos || (draft as any)?.categoryData?.photos || [];
-  const fallbackPages: Album3DPage[] = Array.isArray(directPhotos) && directPhotos.length > 0
-    ? directPhotos.map((p: any, idx: number) => ({
-        id: p.id || `p-${idx}`,
-        url: p.url,
-        caption: p.caption,
-        sortOrder: idx,
-      }))
-    : [];
-
-  const demoPages: Album3DPage[] = [
-    { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
-    { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
-    { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
-    { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
-    { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
-    { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
-  ];
-
-  const effectivePages = currentAlbum.pages && currentAlbum.pages.length > 0
-    ? currentAlbum.pages
-    : fallbackPages.length > 0
-    ? fallbackPages
-    : demoPages;
-
+  // Trích xuất tên dâu rể và ngày cưới cho Album 3D
   const groomShortName = (draft as any)?.categoryData?.groom?.shortName || (draft as any)?.categoryData?.groom?.fullName || (draft as any)?.groom?.shortName || "Chú rể";
   const brideShortName = (draft as any)?.categoryData?.bride?.shortName || (draft as any)?.categoryData?.bride?.fullName || (draft as any)?.bride?.shortName || "Cô dâu";
   const firstEventDate = (draft as any)?.events?.[0]?.eventDate;
@@ -695,16 +669,19 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     ? (typeof firstEventDate === "string" ? firstEventDate.slice(0, 10).split("-").reverse().join("/") : new Date(firstEventDate).toISOString().slice(0, 10).split("-").reverse().join("/"))
     : "2026";
 
-  const effectiveAlbumConfig: Album3DConfig = {
-    ...currentAlbum,
-    enabled: true,
-    title: currentAlbum.title || "Album Kỷ Niệm Ngày Chung Đôi",
-    coverTitle: currentAlbum.coverTitle || `${groomShortName.toUpperCase()} & ${brideShortName.toUpperCase()}`,
-    coverSubtitle: currentAlbum.coverSubtitle || `Our Wedding Photobook • ${displayWeddingDate.slice(-4) || "2026"}`,
-    pages: effectivePages,
-    frontCover: currentAlbum.frontCover || (effectivePages.length > 0 ? { ...DEFAULT_ALBUM_FRONT_COVER, photoUrl: effectivePages[0].url } : DEFAULT_ALBUM_FRONT_COVER),
-    backCover: currentAlbum.backCover || { ...DEFAULT_ALBUM_BACK_COVER, signatureText: `${groomShortName} & ${brideShortName}` },
-  };
+  // Cấu hình Album 3D hoàn chỉnh được memoize tránh re-render lặp lại khi kéo thả
+  const effectiveAlbumConfig = useMemo<Album3DConfig>(() => {
+    const rawAlbum: Album3DConfig | undefined = (draft as any)?.categoryData?.album3d;
+    const directPhotos = (draft as any)?.photos || (draft as any)?.categoryData?.photos || [];
+
+    return resolveEffectiveAlbum3DConfig(rawAlbum, {
+      groomName: groomShortName,
+      brideName: brideShortName,
+      weddingDate: displayWeddingDate,
+      fallbackPhotos: directPhotos,
+      includeDemoIfEmpty: true,
+    });
+  }, [draft, groomShortName, brideShortName, displayWeddingDate]);
 
   return (
     <section className="flex-1 min-w-0 bg-[#e9e9e9] p-3 sm:p-5 flex flex-col items-center justify-between overflow-hidden relative select-none">
@@ -764,7 +741,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
                 Cuốn Album 3D Lật Trang Thực Tế
               </span>
               <span className="text-[10px] text-amber-800 bg-amber-100 font-semibold px-2 py-0.5 rounded-full">
-                {effectivePages.length} trang ảnh
+                {effectiveAlbumConfig.pages.length} trang ảnh
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -805,7 +782,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
               groomName={groomShortName}
               brideName={brideShortName}
               weddingDate={displayWeddingDate}
-              isPreview={false}
+              isPreview={true}
               onOpenAlbumEditor={(tab) => openAlbum3DEditor(tab === "front" ? "frontCover" : "backCover")}
             />
           </div>

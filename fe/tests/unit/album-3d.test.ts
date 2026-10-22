@@ -5,6 +5,8 @@ import {
   buildGoogleDriveDirectUrl,
   parseMultipleGoogleDriveLinks,
   DEFAULT_ALBUM_3D_CONFIG,
+  DEMO_ALBUM_3D_PAGES,
+  resolveEffectiveAlbum3DConfig,
 } from "../../src/types/album-3d.types";
 
 describe("Album 3D & Google Drive Utilities (Frontend)", () => {
@@ -83,6 +85,45 @@ describe("Album 3D & Google Drive Utilities (Frontend)", () => {
     it("ensures frontCover defaults and theme options are present", () => {
       expect(DEFAULT_ALBUM_3D_CONFIG.title).toContain("Album");
       expect(DEFAULT_ALBUM_3D_CONFIG.pages).toEqual([]);
+    });
+  });
+
+  describe("resolveEffectiveAlbum3DConfig & DEMO_ALBUM_3D_PAGES", () => {
+    it("has 6 high quality demo pages in DEMO_ALBUM_3D_PAGES", () => {
+      expect(DEMO_ALBUM_3D_PAGES.length).toBe(6);
+      expect(DEMO_ALBUM_3D_PAGES[0].url).toContain("images.unsplash.com");
+    });
+
+    it("resolves config with demo pages when empty and includeDemoIfEmpty is true", () => {
+      const config = resolveEffectiveAlbum3DConfig(null, {
+        groomName: "Hoàng Long",
+        brideName: "Bảo Ngọc",
+        weddingDate: "2026-10-25",
+        includeDemoIfEmpty: true,
+      });
+
+      expect(config.enabled).toBe(true);
+      expect(config.coverTitle).toBe("HOÀNG LONG & BẢO NGỌC");
+      expect(config.pages.length).toBe(6);
+      expect(config.frontCover?.photoUrl).toBe(config.pages[0].url);
+      expect(config.backCover?.signatureText).toBe("Hoàng Long & Bảo Ngọc");
+    });
+
+    it("prioritizes fallbackPhotos when raw album has no pages", () => {
+      const customPhotos = [
+        { id: "p1", url: "https://example.com/photo1.jpg", caption: "Photo 1" },
+        { id: "p2", url: "https://example.com/photo2.jpg", caption: "Photo 2" },
+      ];
+
+      const config = resolveEffectiveAlbum3DConfig(null, {
+        groomName: "Chú rể",
+        brideName: "Cô dâu",
+        fallbackPhotos: customPhotos,
+        includeDemoIfEmpty: true,
+      });
+
+      expect(config.pages.length).toBe(2);
+      expect(config.pages[0].url).toBe("https://example.com/photo1.jpg");
     });
   });
 });

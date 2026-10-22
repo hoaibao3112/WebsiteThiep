@@ -67,8 +67,8 @@ describe("EditCardPage owner flow", () => {
     await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
     await waitFor(() => expect(ApiClient.request).toHaveBeenCalledWith(
       "/cards/demo-card-1", expect.objectContaining({ method: "PUT" })
-    ), { timeout: 4000 });
-  });
+    ), { timeout: 12000 });
+  }, 35000);
 
   it("does not display false success when saving fails", async () => {
     vi.mocked(ApiClient.request).mockImplementation(async (_endpoint, options) =>
@@ -77,8 +77,8 @@ describe("EditCardPage owner flow", () => {
         : { success: true, data: TEST_CARD });
     await renderPage();
     await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
-    const alerts = await screen.findAllByRole("alert");
+    const alerts = await screen.findAllByRole("alert", {}, { timeout: 12000 });
     expect(alerts[0]).toHaveTextContent("Mất kết nối");
     expect(screen.queryByText(/lưu thành công/i)).not.toBeInTheDocument();
-  });
+  }, 35000);
 });

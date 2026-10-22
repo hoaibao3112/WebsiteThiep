@@ -271,7 +271,18 @@ export function Wedding3DFlipbook({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement as HTMLElement | null;
+      if (
+        activeEl &&
+        (activeEl.tagName === "INPUT" ||
+          activeEl.tagName === "TEXTAREA" ||
+          activeEl.isContentEditable)
+      ) {
+        return;
+      }
+
       if (e.key === "ArrowRight" || e.key === " ") {
+        if (e.key === " ") e.preventDefault();
         goNext();
       } else if (e.key === "ArrowLeft") {
         goPrev();

@@ -21,7 +21,7 @@ import { Template12RoyalCrimson } from "./templates/Template12RoyalCrimson";
 import { PhotoWallSection } from "./photobooth/PhotoWallSection";
 import { Wedding3DFlipbook } from "./Wedding3DFlipbook";
 import { WeddingPassSection } from "./pass/WeddingPassSection";
-import { Album3DConfig, DEFAULT_ALBUM_FRONT_COVER, DEFAULT_ALBUM_BACK_COVER } from "@/types/album-3d.types";
+import { Album3DConfig, resolveEffectiveAlbum3DConfig } from "@/types/album-3d.types";
 import { DEMO_TEMPLATES_MAP } from "@/app/(public)/thiep/[slug]/demo-templates-data";
 
 interface WeddingViewProps {
@@ -226,50 +226,20 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         {/* 4.1 ALBUM ẢNH CƯỚI LẬT TRANG 3D CHÂN THỰC */}
         {(() => {
           const rawAlbum = (card.categoryData as any)?.album3d as Album3DConfig | undefined;
-          const fallbackPages = (card.photos || []).map((p, idx) => ({
-            id: p.id || `p-${idx}`,
-            url: p.url,
-            caption: p.caption || undefined,
-            sortOrder: idx,
-          }));
-
-          const demoPages = [
-            { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
-            { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
-            { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
-            { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
-            { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
-            { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
-          ];
-
-          const effectivePages =
-            rawAlbum?.pages && rawAlbum.pages.length > 0
-              ? rawAlbum.pages
-              : fallbackPages.length > 0
-              ? fallbackPages
-              : isPreview
-              ? demoPages
-              : [];
-
-          const albumConfig: Album3DConfig = {
-            enabled: rawAlbum?.enabled ?? true,
-            title: rawAlbum?.title || "Album Kỷ Niệm Ngày Chung Đôi",
-            coverTitle: rawAlbum?.coverTitle || `${groomShortName.toUpperCase()} & ${brideShortName.toUpperCase()}`,
-            coverSubtitle: rawAlbum?.coverSubtitle || `Our Wedding Photobook • ${card.events?.[0]?.eventDate ? new Date(card.events[0].eventDate).getFullYear() : "2026"}`,
-            coverTheme: rawAlbum?.coverTheme || "leather-burgundy",
-            soundEnabled: rawAlbum?.soundEnabled ?? true,
-            pages: effectivePages,
-            coverMonogram: rawAlbum?.coverMonogram,
-            frontCover: rawAlbum?.frontCover || (effectivePages.length > 0 ? { ...DEFAULT_ALBUM_FRONT_COVER, photoUrl: effectivePages[0].url } : DEFAULT_ALBUM_FRONT_COVER),
-            backCover: rawAlbum?.backCover || { ...DEFAULT_ALBUM_BACK_COVER, signatureText: `${groomShortName} & ${brideShortName}` },
-          };
-
-          if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;
-
           const firstEventDate = card.events?.[0]?.eventDate;
           const displayWeddingDate = firstEventDate
             ? (typeof firstEventDate === "string" ? firstEventDate.slice(0, 10).split("-").reverse().join("/") : new Date(firstEventDate).toISOString().slice(0, 10).split("-").reverse().join("/"))
             : "2026";
+
+          const albumConfig = resolveEffectiveAlbum3DConfig(rawAlbum, {
+            groomName: groomShortName,
+            brideName: brideShortName,
+            weddingDate: displayWeddingDate,
+            fallbackPhotos: card.photos,
+            includeDemoIfEmpty: isPreview,
+          });
+
+          if (!albumConfig.enabled || albumConfig.pages.length === 0) return null;
 
           return (
             <Wedding3DFlipbook

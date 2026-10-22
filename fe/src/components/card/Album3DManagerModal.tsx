@@ -38,8 +38,9 @@ import {
   ALBUM_FRONT_COVER_PRESET_CATALOG,
   DEFAULT_ALBUM_FRONT_COVER,
   ALBUM_BACK_COVER_PRESET_CATALOG,
-  DEFAULT_ALBUM_BACK_COVER,
   DEFAULT_ALBUM_3D_CONFIG,
+  DEMO_ALBUM_3D_PAGES,
+  resolveEffectiveAlbum3DConfig,
   parseMultipleGoogleDriveLinks,
   extractGoogleDriveFolderId,
 } from "@/types/album-3d.types";
@@ -584,17 +585,12 @@ export function Album3DManagerModal({
               {/* KHUNG HIỂN THỊ CUỐN ALBUM 3D HOÀN CHỈNH */}
               <div className="w-full bg-[#181615] rounded-3xl p-3 sm:p-6 shadow-2xl border border-stone-800 flex flex-col items-center overflow-hidden">
                 <Wedding3DFlipbook
-                  config={{
-                    ...config,
-                    pages: config.pages && config.pages.length > 0 ? config.pages : [
-                      { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
-                      { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
-                      { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
-                      { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
-                      { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
-                      { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
-                    ],
-                  }}
+                  config={resolveEffectiveAlbum3DConfig(config, {
+                    groomName: config.coverTitle?.split("&")?.[0]?.trim() || "Hoàng Long",
+                    brideName: config.coverTitle?.split("&")?.[1]?.trim() || "Bảo Ngọc",
+                    weddingDate: "2026",
+                    includeDemoIfEmpty: true,
+                  })}
                   groomName={config.coverTitle?.split("&")?.[0]?.trim() || "Hoàng Long"}
                   brideName={config.coverTitle?.split("&")?.[1]?.trim() || "Bảo Ngọc"}
                   weddingDate="2026"
