@@ -102,7 +102,7 @@ export function Album3DTool() {
         }
       });
     }
-    const pages = currentAlbum.pages;
+    const pages = currentAlbum?.pages;
     if (Array.isArray(pages)) {
       pages.forEach((p, idx) => {
         if (p?.url && !list.some((existing) => existing.url === p.url)) {
@@ -111,7 +111,7 @@ export function Album3DTool() {
       });
     }
     return list;
-  }, [draft, currentAlbum.pages]);
+  }, [draft, currentAlbum?.pages]);
 
   // Cập nhật cấu hình Bìa Trước
   const handleUpdateFrontCover = (patch: Partial<AlbumFrontCoverConfig>) => {

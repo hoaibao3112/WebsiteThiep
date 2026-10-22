@@ -130,9 +130,15 @@ export default function AddonsStorePage() {
       setError(null);
       const res = await ApiClient.getAddonsCatalog<AddonCatalogResponse>();
       if (res.success && res.data) {
-        setAddons(res.data.items);
-        setAccountQuota(res.data.accountQuota);
+        const rawItems = Array.isArray(res.data.items)
+          ? res.data.items
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+        setAddons(rawItems);
+        setAccountQuota(res.data.accountQuota || null);
       } else {
+        setAddons([]);
         setError(res.error || "Không thể tải danh mục tiện ích.");
       }
     } catch {
@@ -242,29 +248,35 @@ export default function AddonsStorePage() {
 
   // Counts per category
   const counts = useMemo(() => {
-    const map: Record<string, number> = { all: addons.length };
-    addons.forEach((item) => {
-      map[item.category] = (map[item.category] || 0) + 1;
+    const safeAddons = Array.isArray(addons) ? addons : [];
+    const map: Record<string, number> = { all: safeAddons.length };
+    safeAddons.forEach((item) => {
+      if (item?.category) {
+        map[item.category] = (map[item.category] || 0) + 1;
+      }
     });
     return map;
   }, [addons]);
 
   // Filtered addons
   const filteredAddons = useMemo(() => {
-    return addons.filter((item) => {
+    const safeAddons = Array.isArray(addons) ? addons : [];
+    return safeAddons.filter((item) => {
+      if (!item) return false;
       const matchCat = activeCategory === "all" || item.category === activeCategory;
       const matchSearch =
         !searchQuery ||
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.badge.toLowerCase().includes(searchQuery.toLowerCase());
+        (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.badge || "").toLowerCase().includes(searchQuery.toLowerCase());
       return matchCat && matchSearch;
     });
   }, [addons, activeCategory, searchQuery]);
 
   // Featured items (Đề xuất cho bạn)
   const featuredItems = useMemo(() => {
-    return addons.filter((item) => item.isFeatured);
+    const safeAddons = Array.isArray(addons) ? addons : [];
+    return safeAddons.filter((item) => item?.isFeatured);
   }, [addons]);
 
   // Render SVG Icon matching zenlove screenshot

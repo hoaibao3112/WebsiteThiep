@@ -112,8 +112,15 @@ export default function SignaturesDashboardPage() {
         ...(cardId ? { cardId } : {}),
       });
       if (res.success && res.data) {
-        setSignatures(res.data.data);
-        setMeta(res.data.meta);
+        const rawList = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray((res.data as any)?.data)
+          ? (res.data as any).data
+          : [];
+        setSignatures(rawList);
+        const rawMeta =
+          (res.data as any)?.meta || (res as any)?.meta || null;
+        setMeta(rawMeta);
       } else {
         setSignatures([]);
         setMeta(null);
@@ -131,8 +138,9 @@ export default function SignaturesDashboardPage() {
 
   const uniqueCards = useMemo(() => {
     const seen = new Map<string, SignatureItem>();
-    signatures.forEach((s) => {
-      if (!seen.has(s.cardId)) seen.set(s.cardId, s);
+    const safeSignatures = Array.isArray(signatures) ? signatures : [];
+    safeSignatures.forEach((s) => {
+      if (s && s.cardId && !seen.has(s.cardId)) seen.set(s.cardId, s);
     });
     return Array.from(seen.values());
   }, [signatures]);
@@ -160,13 +168,14 @@ export default function SignaturesDashboardPage() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const sig = signatures.find((s) => s.id === deleteId);
+    const safeSignatures = Array.isArray(signatures) ? signatures : [];
+    const sig = safeSignatures.find((s) => s.id === deleteId);
     if (!sig) return;
     setDeleting(true);
     const res = await ApiClient.deleteSignature(sig.cardId, sig.elementId, sig.id);
     if (res.success) {
-      setSignatures((prev) => prev.filter((s) => s.id !== deleteId));
-      if (meta) setMeta({ ...meta, total: meta.total - 1 });
+      setSignatures((prev) => (Array.isArray(prev) ? prev.filter((s) => s.id !== deleteId) : []));
+      if (meta) setMeta({ ...meta, total: Math.max(0, meta.total - 1) });
       showToast("Đã xóa chữ ký");
     } else {
       showToast("Xóa thất bại, vui lòng thử lại");
@@ -293,7 +302,7 @@ export default function SignaturesDashboardPage() {
             </div>
 
             {/* Table header */}
-            {!loading && signatures.length > 0 && (
+            {!loading && (Array.isArray(signatures) ? signatures : []).length > 0 && (
               <div className="hidden sm:grid grid-cols-[2fr_2fr_1.5fr_1.5fr_auto] gap-4 px-5 py-2.5 border-b border-[#F0EAE0] bg-[#FAF7F2] text-xs font-semibold text-[#8E7E70] uppercase tracking-wide">
                 <span>Chữ ký</span><span>Thiệp</span><span>Vị trí</span><span>Thời gian</span><span>Hành động</span>
               </div>
@@ -315,7 +324,7 @@ export default function SignaturesDashboardPage() {
             )}
 
             {/* Empty state */}
-            {!loading && signatures.length === 0 && (
+            {!loading && (!Array.isArray(signatures) || signatures.length === 0) && (
               <div className="py-20 flex flex-col items-center justify-center gap-4 text-center px-6">
                 <div className="w-16 h-16 rounded-full bg-[#F0E6D8] flex items-center justify-center">
                   <PenLine className="w-8 h-8 text-[#C2AE93]" />
@@ -331,7 +340,7 @@ export default function SignaturesDashboardPage() {
             )}
 
             {/* Rows */}
-            {!loading && signatures.length > 0 && (
+            {!loading && Array.isArray(signatures) && signatures.length > 0 && (
               <div className="divide-y divide-[#F0EAE0]">
                 {signatures.map((sig) => (
                   <div key={sig.id} className="grid grid-cols-1 sm:grid-cols-[2fr_2fr_1.5fr_1.5fr_auto] gap-3 sm:gap-4 px-5 py-4 items-center hover:bg-[#FAF7F2] transition group">

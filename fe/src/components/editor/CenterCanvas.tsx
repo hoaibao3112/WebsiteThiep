@@ -456,7 +456,10 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     const el = containerRef.current;
     if (!el) return;
 
-    const allKeys = new Set([...Object.keys(fieldOffsets), ...Object.keys(fieldScales)]);
+    const allKeys = new Set([
+      ...Object.keys(fieldOffsets || {}),
+      ...Object.keys(fieldScales || {}),
+    ]);
     allKeys.forEach((fieldId) => {
       const target = el.querySelector<HTMLElement>(`[data-editable-field="${fieldId}"]`);
       if (target) {

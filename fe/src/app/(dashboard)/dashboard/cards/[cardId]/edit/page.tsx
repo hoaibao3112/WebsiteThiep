@@ -1101,9 +1101,8 @@ function EditCardContent() {
     musicUrl: selectedMusicSrc,
     greetingMessage,
     bankingPrimary: { bankCode: bankCodeGroom, accountNumber: accNumGroom, accountName: accNameGroom },
-    bankingSecondary: { bankCode: bankCodeBride, accountNumber: accNumBride, accountName: accNameBride },
-    events: events.map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
-    photos,
+    events: (Array.isArray(events) ? events : []).map((e) => ({ ...e, eventDate: new Date(e.eventDate) })),
+    photos: Array.isArray(photos) ? photos : [],
     categoryData:
       category === "WEDDING"
         ? {
