@@ -45,13 +45,14 @@ import {
 } from "@/types/album-3d.types";
 import { ApiClient } from "@/lib/api";
 import { uploadSingleImage } from "@/lib/image-upload";
+import { Wedding3DFlipbook } from "@/components/wedding/Wedding3DFlipbook";
 
 interface Album3DManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   cardId: string;
   initialConfig?: Album3DConfig;
-  initialTab?: "drive" | "upload" | "settings" | "frontCover" | "backCover";
+  initialTab?: "drive" | "upload" | "settings" | "frontCover" | "backCover" | "preview";
   onSaved?: (updatedConfig: Album3DConfig) => void;
 }
 
@@ -118,15 +119,17 @@ export function Album3DManagerModal({
   onClose,
   cardId,
   initialConfig,
-  initialTab = "backCover",
+  initialTab = "preview",
   onSaved,
 }: Album3DManagerModalProps) {
-  const [activeTab, setActiveTab] = useState<"drive" | "upload" | "settings">(
-    initialTab === "backCover" || initialTab === "frontCover"
+  const [activeTab, setActiveTab] = useState<"preview" | "drive" | "upload" | "settings">(
+    initialTab === "preview"
+      ? "preview"
+      : initialTab === "backCover" || initialTab === "frontCover"
       ? "settings"
       : initialTab === "drive" || initialTab === "upload" || initialTab === "settings"
       ? initialTab
-      : "settings"
+      : "preview"
   );
   const [config, setConfig] = useState<Album3DConfig>(initialConfig || DEFAULT_ALBUM_3D_CONFIG);
   const [driveInput, setDriveInput] = useState("");
@@ -142,7 +145,9 @@ export function Album3DManagerModal({
   // Đồng bộ tab khi modal được mở với initialTab chỉ định
   useEffect(() => {
     if (isOpen) {
-      if (initialTab === "backCover") {
+      if (initialTab === "preview") {
+        setActiveTab("preview");
+      } else if (initialTab === "backCover") {
         setActiveTab("settings");
         setSettingsSubTab("back");
       } else if (initialTab === "frontCover") {
@@ -482,13 +487,28 @@ export function Album3DManagerModal({
         </div>
 
         {/* NAVIGATION TABS */}
-        <div className="px-6 pt-3 border-b border-stone-200 flex items-center gap-2 bg-white shrink-0">
+        <div className="px-6 pt-3 border-b border-stone-200 flex items-center gap-2 bg-white shrink-0 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveTab("preview")}
+            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
+              activeTab === "preview"
+                ? "border-amber-600 text-amber-700 font-bold"
+                : "border-transparent text-stone-500 hover:text-stone-800"
+            }`}
+          >
+            <BookOpen className="size-4 text-amber-600" />
+            <span>Xem &amp; Lật Album 3D</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800">
+              VIP
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => setActiveTab("drive")}
-            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
+            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === "drive"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
@@ -498,9 +518,9 @@ export function Album3DManagerModal({
           <button
             type="button"
             onClick={() => setActiveTab("upload")}
-            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
+            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === "upload"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
@@ -510,9 +530,9 @@ export function Album3DManagerModal({
           <button
             type="button"
             onClick={() => setActiveTab("settings")}
-            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
+            className={`pb-3 px-3 text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 transition whitespace-nowrap cursor-pointer ${
               activeTab === "settings"
-                ? "border-amber-600 text-amber-700"
+                ? "border-amber-600 text-amber-700 font-bold"
                 : "border-transparent text-stone-500 hover:text-stone-800"
             }`}
           >
@@ -523,6 +543,70 @@ export function Album3DManagerModal({
 
         {/* MODAL BODY */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* TAB 0: LIVE 3D FLIPBOOK PREVIEW */}
+          {activeTab === "preview" && (
+            <div className="space-y-4 animate-in fade-in flex flex-col items-center">
+              <div className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-gradient-to-r from-amber-50 via-rose-50/50 to-amber-50 p-3.5 rounded-2xl border border-amber-200/90 text-xs shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-stone-800 font-semibold">
+                    Lật trang trực tiếp bằng cách bấm vào trang sách, kéo chuột hoặc phím mũi tên:
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("drive")}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-950 font-bold hover:bg-amber-100/60 transition shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <LinkIcon className="size-3.5 text-amber-600" />
+                    <span>Google Drive</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("upload")}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-950 font-bold hover:bg-amber-100/60 transition shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="size-3.5 text-amber-600" />
+                    <span>+ Tải ảnh</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("settings")}
+                    className="px-3 py-1.5 rounded-xl bg-amber-500 text-stone-950 font-bold hover:bg-amber-600 transition shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Palette className="size-3.5" />
+                    <span>Đổi bìa</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KHUNG HIỂN THỊ CUỐN ALBUM 3D HOÀN CHỈNH */}
+              <div className="w-full bg-[#181615] rounded-3xl p-3 sm:p-6 shadow-2xl border border-stone-800 flex flex-col items-center overflow-hidden">
+                <Wedding3DFlipbook
+                  config={{
+                    ...config,
+                    pages: config.pages && config.pages.length > 0 ? config.pages : [
+                      { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
+                      { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
+                      { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
+                      { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
+                      { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
+                      { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
+                    ],
+                  }}
+                  groomName={config.coverTitle?.split("&")?.[0]?.trim() || "Hoàng Long"}
+                  brideName={config.coverTitle?.split("&")?.[1]?.trim() || "Bảo Ngọc"}
+                  weddingDate="2026"
+                  isPreview={false}
+                  onOpenAlbumEditor={(tab) => {
+                    setSettingsSubTab(tab === "front" ? "front" : "back");
+                    setActiveTab("settings");
+                  }}
+                />
+              </div>
+            </div>
+          )}
           {/* TAB 1: GOOGLE DRIVE IMPORT */}
           {activeTab === "drive" && (
             <div className="space-y-5 animate-in fade-in">

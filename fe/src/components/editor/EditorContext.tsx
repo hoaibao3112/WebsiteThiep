@@ -115,9 +115,13 @@ export interface EditorContextValue<T extends object = Record<string, unknown>> 
   showBottomToolbar: boolean;
   setShowBottomToolbar: (val: boolean | ((prev: boolean) => boolean)) => void;
 
+  // Canvas View Mode ("card" = thiết kế toàn thiệp, "album3d" = giao diện cuốn album 3D)
+  canvasMode: "card" | "album3d";
+  setCanvasMode: (mode: "card" | "album3d") => void;
+
   // Album 3D & Back Cover
   updateAlbum3D: (albumConfig: Album3DConfig) => void;
-  openAlbum3DEditor: (tab?: "frontCover" | "backCover" | "drive") => void;
+  openAlbum3DEditor: (tab?: "frontCover" | "backCover" | "drive" | "preview") => void;
 }
 
 const EditorContext = createContext<EditorContextValue<any> | null>(null);
@@ -247,6 +251,7 @@ export function EditorProvider<T extends object>({
 
   const [activeTool, setActiveTool] = useState<ToolCategory | null>(null);
   const [zoomLevel, setZoomLevelState] = useState<number>(100);
+  const [canvasMode, setCanvasMode] = useState<"card" | "album3d">("card");
 
   const [past, setPast] = useState<T[]>([]);
   const [future, setFuture] = useState<T[]>([]);
@@ -2259,13 +2264,15 @@ export function EditorProvider<T extends object>({
     [draft, onDraftChange]
   );
 
-  const openAlbum3DEditor = useCallback((tab: "frontCover" | "backCover" | "drive" = "backCover") => {
+  const openAlbum3DEditor = useCallback((tab: "frontCover" | "backCover" | "drive" | "preview" = "preview") => {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab } }));
     }
   }, []);
 
   const value: EditorContextValue<T> = {
+    canvasMode,
+    setCanvasMode,
     draft,
     templateSlug,
     isVip,

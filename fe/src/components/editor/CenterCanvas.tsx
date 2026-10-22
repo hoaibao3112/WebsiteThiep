@@ -18,9 +18,22 @@ import {
   MessageCircle,
   ArrowDownUp,
   Maximize2,
+  Mail,
+  BookOpen,
+  UploadCloud,
+  Palette,
+  ArrowLeft,
 } from "lucide-react";
 import { BottomPhotoStrip } from "./BottomPhotoStrip";
 import { CanvasPatternOverlay, CanvasFallingEffect } from "@/components/card/CanvasEffects";
+import { Wedding3DFlipbook } from "@/components/wedding/Wedding3DFlipbook";
+import {
+  Album3DConfig,
+  Album3DPage,
+  DEFAULT_ALBUM_3D_CONFIG,
+  DEFAULT_ALBUM_FRONT_COVER,
+  DEFAULT_ALBUM_BACK_COVER,
+} from "@/types/album-3d.types";
 
 interface CenterCanvasProps {
   children: React.ReactNode;
@@ -288,6 +301,9 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     registerViewportCenterGetter,
     beginInteraction,
     endInteraction,
+    canvasMode,
+    setCanvasMode,
+    openAlbum3DEditor,
   } = useEditor();
 
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -298,7 +314,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
 
   // Auto-fit canvas height to rich template content if it exceeds canvasHeight
   useEffect(() => {
-    if (!templateLayerRef.current) return;
+    if (typeof ResizeObserver === "undefined" || !templateLayerRef.current) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const measuredHeight = Math.ceil(entry.contentRect.height);
@@ -645,37 +661,171 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedCanvasElement, removeCanvasElement, updateCanvasElement, copySelectedElement, pasteElement]);
 
-  // Render content according to element type
+  // Cấu hình Album 3D hoàn chỉnh đảm bảo luôn có trang hiển thị
+  const currentAlbum: Album3DConfig = (draft as any)?.categoryData?.album3d || DEFAULT_ALBUM_3D_CONFIG;
+  const directPhotos = (draft as any)?.photos || (draft as any)?.categoryData?.photos || [];
+  const fallbackPages: Album3DPage[] = Array.isArray(directPhotos) && directPhotos.length > 0
+    ? directPhotos.map((p: any, idx: number) => ({
+        id: p.id || `p-${idx}`,
+        url: p.url,
+        caption: p.caption,
+        sortOrder: idx,
+      }))
+    : [];
+
+  const demoPages: Album3DPage[] = [
+    { id: "demo-p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800", caption: "Khoảnh khắc ngọt ngào", sortOrder: 0 },
+    { id: "demo-p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800", caption: "Trao nhau lời hẹn ước", sortOrder: 1 },
+    { id: "demo-p3", url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=800", caption: "Nụ cười rạng rỡ", sortOrder: 2 },
+    { id: "demo-p4", url: "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=800", caption: "Tình yêu đơm hoa", sortOrder: 3 },
+    { id: "demo-p5", url: "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=800", caption: "Hạnh phúc viên mãn", sortOrder: 4 },
+    { id: "demo-p6", url: "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?w=800", caption: "Forever & Always", sortOrder: 5 },
+  ];
+
+  const effectivePages = currentAlbum.pages && currentAlbum.pages.length > 0
+    ? currentAlbum.pages
+    : fallbackPages.length > 0
+    ? fallbackPages
+    : demoPages;
+
+  const groomShortName = (draft as any)?.categoryData?.groom?.shortName || (draft as any)?.categoryData?.groom?.fullName || (draft as any)?.groom?.shortName || "Chú rể";
+  const brideShortName = (draft as any)?.categoryData?.bride?.shortName || (draft as any)?.categoryData?.bride?.fullName || (draft as any)?.bride?.shortName || "Cô dâu";
+  const firstEventDate = (draft as any)?.events?.[0]?.eventDate;
+  const displayWeddingDate = firstEventDate
+    ? (typeof firstEventDate === "string" ? firstEventDate.slice(0, 10).split("-").reverse().join("/") : new Date(firstEventDate).toISOString().slice(0, 10).split("-").reverse().join("/"))
+    : "2026";
+
+  const effectiveAlbumConfig: Album3DConfig = {
+    ...currentAlbum,
+    enabled: true,
+    title: currentAlbum.title || "Album Kỷ Niệm Ngày Chung Đôi",
+    coverTitle: currentAlbum.coverTitle || `${groomShortName.toUpperCase()} & ${brideShortName.toUpperCase()}`,
+    coverSubtitle: currentAlbum.coverSubtitle || `Our Wedding Photobook • ${displayWeddingDate.slice(-4) || "2026"}`,
+    pages: effectivePages,
+    frontCover: currentAlbum.frontCover || (effectivePages.length > 0 ? { ...DEFAULT_ALBUM_FRONT_COVER, photoUrl: effectivePages[0].url } : DEFAULT_ALBUM_FRONT_COVER),
+    backCover: currentAlbum.backCover || { ...DEFAULT_ALBUM_BACK_COVER, signatureText: `${groomShortName} & ${brideShortName}` },
+  };
 
   return (
     <section className="flex-1 min-w-0 bg-[#e9e9e9] p-3 sm:p-5 flex flex-col items-center justify-between overflow-hidden relative select-none">
-      {/* ── TOP STATUS BAR ── */}
-      <div className="w-full max-w-[390px] mb-2 flex items-center justify-between text-xs text-stone-500 shrink-0">
-        <span className="font-semibold flex items-center gap-1.5 text-stone-700">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Kéo thả và chỉnh sửa trực tiếp trên thiệp
-        </span>
-        <span aria-live="polite" className="inline-flex items-center gap-1 text-emerald-700 font-medium">
-          <Check className="size-3" />
-          {saveState === "saving" ? "Đang lưu..." : saveState === "dirty" ? "Chưa lưu" : "Đã lưu"}
-        </span>
+      {/* ── TOP STATUS & VIEW MODE BAR ── */}
+      <div className="w-full max-w-2xl mb-2 flex flex-col xs:flex-row items-center justify-between gap-2 text-xs shrink-0 px-1">
+        {/* Toggle Chế độ xem: Thiệp Cưới vs Cuốn Album 3D */}
+        <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-stone-200 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setCanvasMode("card")}
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              canvasMode === "card"
+                ? "bg-amber-500 text-stone-950 shadow-xs"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+            }`}
+          >
+            <Mail className="size-3.5" />
+            <span>Thiết Kế Thiệp</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCanvasMode("album3d")}
+            className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              canvasMode === "album3d"
+                ? "bg-amber-500 text-stone-950 shadow-xs"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-100"
+            }`}
+          >
+            <BookOpen className="size-3.5" />
+            <span>Xem Cuốn Album 3D</span>
+            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-200 text-amber-900">
+              VIP
+            </span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 text-stone-500 text-[11px]">
+          <span className="font-semibold flex items-center gap-1.5 text-stone-700">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {canvasMode === "album3d" ? "Lật trang 3D tương tác trực tiếp" : "Kéo thả chỉnh sửa trên thiệp"}
+          </span>
+          <span aria-live="polite" className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+            <Check className="size-3" />
+            {saveState === "saving" ? "Đang lưu..." : saveState === "dirty" ? "Chưa lưu" : "Đã lưu"}
+          </span>
+        </div>
       </div>
 
-      {/* ── CANVAS VIEWPORT WITH ZOOM TRANSFORM ── */}
-      <div
-        ref={viewportRef}
-        data-center-canvas-viewport="true"
-        className="relative w-full min-h-0 flex-1 overflow-auto"
-        onClick={(e) => {
-          if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
-            return;
-          }
-          if (e.target === e.currentTarget) {
-            selectElement(null);
-            setInlineEditingId(null);
-          }
-        }}
-      >
+      {/* ── CHẾ ĐỘ 1: XEM CUỐN ALBUM 3D TRỰC TIẾP ── */}
+      {canvasMode === "album3d" ? (
+        <div className="relative w-full min-h-0 flex-1 overflow-auto flex flex-col items-center justify-start py-4 px-2 no-scrollbar">
+          {/* Quick Album Toolbar */}
+          <div className="w-full max-w-3xl bg-white/95 backdrop-blur-md rounded-2xl p-2.5 border border-stone-200 shadow-md mb-4 flex flex-wrap items-center justify-between text-xs gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-stone-900 flex items-center gap-1.5">
+                <BookOpen className="size-4 text-amber-600" />
+                Cuốn Album 3D Lật Trang Thực Tế
+              </span>
+              <span className="text-[10px] text-amber-800 bg-amber-100 font-semibold px-2 py-0.5 rounded-full">
+                {effectivePages.length} trang ảnh
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => openAlbum3DEditor("drive")}
+                className="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition cursor-pointer flex items-center gap-1"
+                title="Nhập ảnh từ Google Drive"
+              >
+                <UploadCloud className="size-3.5 text-amber-700" />
+                <span>Google Drive / Tải ảnh</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openAlbum3DEditor("frontCover")}
+                className="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition cursor-pointer flex items-center gap-1"
+                title="Chỉnh sửa bìa trước và bìa sau"
+              >
+                <Palette className="size-3.5" />
+                <span>Đổi Bìa</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCanvasMode("card")}
+                className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-xs"
+                title="Quay lại giao diện chỉnh sửa thiệp"
+              >
+                <ArrowLeft className="size-3.5" />
+                <span>Về Thiệp</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Khung sách 3D tương tác chân thực */}
+          <div className="w-full max-w-4xl bg-stone-900/5 backdrop-blur-xs rounded-3xl p-3 sm:p-6 border border-stone-200/80 shadow-inner flex flex-col items-center">
+            <Wedding3DFlipbook
+              config={effectiveAlbumConfig}
+              groomName={groomShortName}
+              brideName={brideShortName}
+              weddingDate={displayWeddingDate}
+              isPreview={false}
+              onOpenAlbumEditor={(tab) => openAlbum3DEditor(tab === "front" ? "frontCover" : "backCover")}
+            />
+          </div>
+        </div>
+      ) : (
+        /* ── CHẾ ĐỘ 2: CANVAS THIẾT KẾ THIỆP TRUYỀN THỐNG ── */
+        <div
+          ref={viewportRef}
+          data-center-canvas-viewport="true"
+          className="relative w-full min-h-0 flex-1 overflow-auto"
+          onClick={(e) => {
+            if (Date.now() - lastInteractionTimeRef.current < 300 || isInteractingRef.current) {
+              return;
+            }
+            if (e.target === e.currentTarget) {
+              selectElement(null);
+              setInlineEditingId(null);
+            }
+          }}
+        >
         <div className="relative mx-auto my-8 pb-16" style={{ width: 390 * zoomLevel / 100, height: (canvasHeight + 110) * zoomLevel / 100 }}>
         <div
           ref={containerRef}
@@ -976,6 +1126,7 @@ export function CenterCanvas({ children }: CenterCanvasProps) {
           <MessageCircle className="size-5.5 fill-white text-stone-900" />
         </button>
       </div>
+      )}
 
       {/* ── BOTTOM PHOTO STRIP ── */}
       <BottomPhotoStrip />

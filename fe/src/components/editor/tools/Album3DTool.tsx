@@ -70,7 +70,7 @@ const FRAME_SHAPES: Array<{
 ];
 
 export function Album3DTool() {
-  const { draft, updateAlbum3D, openAlbum3DEditor } = useEditor();
+  const { draft, updateAlbum3D, openAlbum3DEditor, canvasMode, setCanvasMode } = useEditor();
   const [activeTab, setActiveTab] = useState<"front" | "back" | "pages">("front");
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
@@ -243,6 +243,20 @@ export function Album3DTool() {
             <span>Mở rộng</span>
           </button>
         </div>
+
+        {/* Nút Hiển Thị Giao Diện Album 3D Ngay */}
+        <button
+          type="button"
+          onClick={() => setCanvasMode(canvasMode === "album3d" ? "card" : "album3d")}
+          className={`w-full py-2 px-3 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+            canvasMode === "album3d"
+              ? "bg-stone-900 text-amber-300 hover:bg-black"
+              : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950"
+          }`}
+        >
+          <BookOpen className="size-4" />
+          <span>{canvasMode === "album3d" ? "Quay lại thiết kế thiệp" : "Hiển Thị Cuốn Album 3D Ngay"}</span>
+        </button>
 
         {/* 3 TABS ĐIỀU KHIỂN CHÍNH */}
         <div className="grid grid-cols-3 gap-1 bg-white/80 p-1 rounded-xl border border-amber-200/70">

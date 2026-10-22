@@ -157,6 +157,9 @@ function DefaultInspector() {
     canvasHeight,
     setCanvasHeight,
     fitCanvasToContent,
+    canvasMode,
+    setCanvasMode,
+    openAlbum3DEditor,
   } = useEditor();
 
   const [wishTab, setWishTab] = useState<"content" | "public" | "private">("content");
@@ -314,11 +317,26 @@ function DefaultInspector() {
           <p className="text-[11px] text-stone-600 leading-relaxed font-light">
             Tùy biến màn kết &ldquo;Forever &amp; Always&rdquo;, lời cảm ơn, mẫu viền, và album lật trang 3D.
           </p>
-          <div className="grid grid-cols-2 gap-2 pt-1">
+
+          {/* Nút Xem Ngay Cuốn Album 3D Trực Tiếp */}
+          <button
+            type="button"
+            onClick={() => setCanvasMode(canvasMode === "album3d" ? "card" : "album3d")}
+            className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+              canvasMode === "album3d"
+                ? "bg-stone-900 text-amber-300 hover:bg-black"
+                : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950"
+            }`}
+          >
+            <BookOpen className="size-4" />
+            <span>{canvasMode === "album3d" ? "Quay lại thiết kế thiệp" : "Xem & Lật Album 3D Trực Tiếp"}</span>
+          </button>
+
+          <div className="grid grid-cols-2 gap-2 pt-0.5">
             <button
               type="button"
               onClick={() => {
-                window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } }));
+                openAlbum3DEditor("backCover");
               }}
               className="py-1.5 px-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold shadow-2xs transition flex items-center justify-center gap-1 cursor-pointer active:scale-95"
             >
@@ -328,7 +346,7 @@ function DefaultInspector() {
             <button
               type="button"
               onClick={() => {
-                window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "frontCover" } }));
+                openAlbum3DEditor("frontCover");
               }}
               className="py-1.5 px-2 rounded-xl bg-white hover:bg-stone-50 border border-amber-200 text-stone-800 text-xs font-semibold transition cursor-pointer"
             >
@@ -338,7 +356,7 @@ function DefaultInspector() {
           <button
             type="button"
             onClick={() => {
-              window.dispatchEvent(new CustomEvent("open-album-3d-editor", { detail: { tab: "drive" } }));
+              openAlbum3DEditor("drive");
             }}
             className="w-full py-1.5 px-2 rounded-xl bg-stone-900 hover:bg-black text-amber-300 text-xs font-medium transition cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
           >

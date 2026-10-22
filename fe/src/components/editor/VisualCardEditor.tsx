@@ -146,17 +146,17 @@ function VisualCardEditorInner({
   }, []);
 
   const [showAlbum3DModal, setShowAlbum3DModal] = useState(false);
-  const [album3DInitialTab, setAlbum3DInitialTab] = useState<"frontCover" | "backCover" | "drive">("backCover");
+  const [album3DInitialTab, setAlbum3DInitialTab] = useState<"frontCover" | "backCover" | "drive" | "preview">("preview");
   const { updateAlbum3D } = useEditor();
 
   // Lắng nghe sự kiện mở modal Album 3D từ Canvas, RightPanel hoặc LeftSidebar
   useEffect(() => {
     const handleOpen = (e: Event) => {
-      const customEvent = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" }>;
+      const customEvent = e as CustomEvent<{ tab?: "frontCover" | "backCover" | "drive" | "preview" }>;
       if (customEvent.detail?.tab) {
         setAlbum3DInitialTab(customEvent.detail.tab);
       } else {
-        setAlbum3DInitialTab("backCover");
+        setAlbum3DInitialTab("preview");
       }
       setShowAlbum3DModal(true);
     };

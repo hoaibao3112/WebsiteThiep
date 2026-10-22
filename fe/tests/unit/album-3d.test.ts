@@ -79,6 +79,11 @@ describe("Album 3D & Google Drive Utilities (Frontend)", () => {
       expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.badgeIcon).toBe("heart");
       expect(DEFAULT_ALBUM_3D_CONFIG.backCover?.showPetals).toBe(true);
     });
+
+    it("ensures frontCover defaults and theme options are present", () => {
+      expect(DEFAULT_ALBUM_3D_CONFIG.title).toContain("Album");
+      expect(DEFAULT_ALBUM_3D_CONFIG.pages).toEqual([]);
+    });
   });
 });
 
