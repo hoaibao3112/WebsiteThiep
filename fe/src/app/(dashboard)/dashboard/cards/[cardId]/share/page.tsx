@@ -156,7 +156,7 @@ export default function BulkSharePage() {
     try {
       await copyInvitation(msg);
     } catch {}
-    openZaloShare(guestFullUrl(guest));
+    openZaloShare(guestFullUrl(guest), guest.phone);
   }
 
   async function copyAllLinks() {
@@ -360,17 +360,23 @@ export default function BulkSharePage() {
                   {showTemplateEditor && (
                     <div className="mt-3">
                       <textarea
-                        rows={3}
+                        rows={5}
                         value={messageTemplate}
                         onChange={(e) => setMessageTemplate(e.target.value)}
-                        className="w-full rounded-xl bg-[#FAF7F2] border border-[#E6DED3] p-3 text-xs sm:text-sm text-[#2D1F15] outline-none focus:border-[#C77834] focus:ring-1 focus:ring-[#C77834]"
+                        className="w-full rounded-xl bg-[#FAF7F2] border border-[#E6DED3] p-3 text-xs sm:text-sm text-[#2D1F15] outline-none focus:border-[#C77834] focus:ring-1 focus:ring-[#C77834] leading-relaxed resize-none"
                       />
-                      <p className="mt-1 text-[11px] text-[#8C7A6B]">
-                        Biến tự động thay thế:{" "}
-                        <code className="bg-[#F0E8DE] px-1 rounded">{"{danh_xung}"}</code>,{" "}
-                        <code className="bg-[#F0E8DE] px-1 rounded">{"{ten_khach}"}</code>,{" "}
-                        <code className="bg-[#F0E8DE] px-1 rounded">{"{link_thiep}"}</code>
-                      </p>
+                      <div className="mt-1 flex items-center justify-between text-[11px] text-[#8C7A6B]">
+                        <span>
+                          Biến tự động: <code className="bg-[#F0E8DE] px-1 rounded">{"{danh_xung}"}</code>, <code className="bg-[#F0E8DE] px-1 rounded">{"{ten_khach}"}</code>, <code className="bg-[#F0E8DE] px-1 rounded">{"{link_thiep}"}</code>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setMessageTemplate(DEFAULT_INVITATION)}
+                          className="text-[#C77834] hover:underline cursor-pointer"
+                        >
+                          Khôi phục mẫu chuẩn
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -447,6 +453,28 @@ export default function BulkSharePage() {
                     >
                       + Nhập Thêm
                     </button>
+                  </div>
+                </div>
+
+                {/* ZALO GUIDE BANNER — 3 bước gửi thiệp đẹp */}
+                <div className="rounded-2xl bg-gradient-to-r from-[#EBF4FF] to-[#F0F7FF] border border-[#C8DCF5] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xl">💡</span>
+                    <span className="text-xs font-bold text-[#0055CC] uppercase tracking-wide">Cách gửi thiệp qua Zalo</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#3A6FA8]">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                      Bấm <strong className="text-[#0055CC]">Mở Zalo</strong> — lời mời kèm link tự động copy
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                      Dán <strong className="text-[#0055CC]">Ctrl+V</strong> vào khung chat
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                      Link tự hiển thị <strong className="text-[#0055CC]">ảnh bìa in tên khách</strong> ✨
+                    </span>
                   </div>
                 </div>
 

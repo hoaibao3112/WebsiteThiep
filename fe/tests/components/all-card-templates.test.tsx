@@ -89,6 +89,7 @@ describe("Wedding Template Interaction Controls", () => {
         guestName="Khách Quý"
         onOpenRsvp={onOpenRsvp}
         onOpenGift={onOpenGift}
+        onSelectPhoto={vi.fn()}
       />
     );
 

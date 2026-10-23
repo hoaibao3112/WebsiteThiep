@@ -22,7 +22,29 @@ interface PageProps {
   }>;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function getApiBaseUrl(): string {
+  if (process.env.INTERNAL_API_URL) return process.env.INTERNAL_API_URL;
+  if (process.env.BACKEND_INTERNAL_URL) return `${process.env.BACKEND_INTERNAL_URL}/api`;
+  if (process.env.BACKEND_ORIGIN) return `${process.env.BACKEND_ORIGIN}/api`;
+  const nextApi = process.env.NEXT_PUBLIC_API_URL;
+  if (nextApi && nextApi.startsWith("http")) return nextApi;
+  return "https://websitethiep.onrender.com/api";
+}
+
+function getAppUrl(): string {
+  let url = process.env.NEXT_PUBLIC_APP_URL;
+  if (!url && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    url = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  } else if (!url && process.env.VERCEL_URL) {
+    url = `https://${process.env.VERCEL_URL}`;
+  }
+  if (!url) {
+    url = "https://website-thiep.vercel.app";
+  }
+  return url.replace(/^["']|["']$/g, "").replace(/\/$/, "");
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 const DEMO_WEDDING_CARD: CardDetail = DEMO_TEMPLATES_MAP["wedding-heritage-crimson-gold"];
 
@@ -86,7 +108,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const hasGuest = Boolean(guestCode);
 
   const data = await getCardData(slug, guestCode);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cardvite.vn";
+  const appUrl = getAppUrl();
 
   if (!data || !data.card) {
     return {
@@ -103,12 +125,17 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   // Tạo title theo loại thiệp
   let title = "";
   let description = card.greetingMessage || "Trân trọng kính mời quý khách đến chung vui cùng gia đình chúng mình!";
+  let groomName = "";
+  let brideName = "";
+  let eventDateStr = "";
+  let venueName = "";
 
   if (card.cardCategory === "WEDDING") {
-    const groomName = (categoryData.groom as Record<string, string>)?.fullName || "";
-    const brideName = (categoryData.bride as Record<string, string>)?.fullName || "";
+    groomName = (categoryData.groom as Record<string, string>)?.fullName || "";
+    brideName = (categoryData.bride as Record<string, string>)?.fullName || "";
     const mainEvent = card.events?.[0];
-    const eventDateStr = mainEvent?.eventDate
+    venueName = mainEvent?.venueName || "";
+    eventDateStr = mainEvent?.eventDate
       ? new Date(mainEvent.eventDate).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })
       : "";
     title = `Thiệp Cưới ${groomName} & ${brideName}${eventDateStr ? ` — ${eventDateStr}` : ""}`;
@@ -124,30 +151,40 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   }
 
   // Cá nhân hóa Title & Description khi có thông tin khách mời
+  let guestDisplayName = "";
   const guestInfo = data.guestInfo as { salutation?: string; fullName?: string } | undefined;
   if (guestInfo?.fullName) {
     const salutation = guestInfo.salutation ? `${guestInfo.salutation} ` : "";
-    const guestDisplayName = `${salutation}${guestInfo.fullName}`.trim();
+    guestDisplayName = `${salutation}${guestInfo.fullName}`.trim();
     if (card.cardCategory === "WEDDING") {
-      const groomName = (categoryData.groom as Record<string, string>)?.fullName || "";
-      const brideName = (categoryData.bride as Record<string, string>)?.fullName || "";
-      title = `Trân trọng kính mời: ${guestDisplayName} đến dự Lễ Thành Hôn ${groomName} & ${brideName}`;
-      description = `${guestDisplayName} ơi, sự hiện diện của bạn là niềm vinh hạnh to lớn của chúng mình. Bấm để xem thiệp cưới và xác nhận tham dự nhé!`;
+      title = `💌 Kính mời ${guestDisplayName} — Lễ Thành Hôn ${groomName} & ${brideName}`;
+      description = `${guestDisplayName} ơi, sự hiện diện của bạn là niềm vinh hạnh to lớn của chúng mình. Bấm để xem thiệp cưới và xác nhận tham dự nhé! 🌸`;
     } else {
-      title = `Trân trọng kính mời: ${guestDisplayName} tham dự buổi tiệc`;
+      title = `💌 Trân trọng kính mời ${guestDisplayName} tham dự buổi tiệc`;
     }
   }
 
-  // OG image: Nếu là thiệp cưới, trỏ tới dynamic OG route /api/og/card để render ảnh có in tên khách mời
-  const defaultOgImage = `${appUrl}/images/wedding_card_sample.jpg`;
-  let ogImage = card.photos?.[0]?.url || defaultOgImage;
+  // OG image: Luôn dùng absolute URL bắt đầu bằng https:// để Zalo/Facebook/Telegram crawler load chính xác 100%
+  let fullOgImageUrl = `${appUrl}/images/wedding_card_sample.jpg`;
   if (card.cardCategory === "WEDDING") {
-    ogImage = `${appUrl}/api/og/card?slug=${encodeURIComponent(slug)}${
-      guestCode ? `&g=${encodeURIComponent(guestCode)}` : ""
-    }`;
+    const coupleNames = groomName && brideName ? `${groomName.toUpperCase()} & ${brideName.toUpperCase()}` : "";
+    const ogParams = new URLSearchParams();
+    ogParams.set("slug", slug);
+    if (guestCode) ogParams.set("g", guestCode);
+    if (guestDisplayName) ogParams.set("guest", guestDisplayName);
+    if (coupleNames) ogParams.set("couple", coupleNames);
+    if (eventDateStr) ogParams.set("date", eventDateStr);
+    if (venueName) ogParams.set("venue", venueName);
+    if (card.photos?.[0]?.url) ogParams.set("bg", card.photos[0].url);
+
+    fullOgImageUrl = `${appUrl}/api/og/card?${ogParams.toString()}`;
+  } else if (card.photos?.[0]?.url) {
+    fullOgImageUrl = card.photos[0].url.startsWith("http")
+      ? card.photos[0].url
+      : `${appUrl}${card.photos[0].url.startsWith("/") ? "" : "/"}${card.photos[0].url}`;
   }
 
-  // Trang có ?g= hoặc live-display: robots noindex để tránh lộ thông tin khách mời
+  // robots: noindex chỉ ảnh hưởng Google Search Index, KHÔNG ảnh hưởng Zalo/FB OG crawler
   const shouldNoIndex = hasGuest || isLiveDisplay;
   const canonicalUrl = guestCode ? `${appUrl}/thiep/${slug}?g=${guestCode}` : `${appUrl}/thiep/${slug}`;
 
@@ -166,13 +203,21 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       siteName: "CardVite",
       locale: "vi_VN",
       type: "website",
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+      images: [
+        {
+          url: fullOgImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+          type: "image/png",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      images: [fullOgImageUrl],
     },
     alternates: {
       canonical: canonicalUrl,

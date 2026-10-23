@@ -3,10 +3,16 @@ import { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
-const API_BASE_URL =
-  process.env.INTERNAL_API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://localhost:5000/api";
+function getApiBaseUrl(): string {
+  if (process.env.INTERNAL_API_URL) return process.env.INTERNAL_API_URL;
+  if (process.env.BACKEND_INTERNAL_URL) return `${process.env.BACKEND_INTERNAL_URL}/api`;
+  if (process.env.BACKEND_ORIGIN) return `${process.env.BACKEND_ORIGIN}/api`;
+  const nextApi = process.env.NEXT_PUBLIC_API_URL;
+  if (nextApi && nextApi.startsWith("http")) return nextApi;
+  return "https://websitethiep.onrender.com/api";
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 export async function GET(req: NextRequest) {
   try {

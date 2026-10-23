@@ -553,6 +553,28 @@ export default function GuestsPage() {
               </div>
             </div>
 
+            {/* ZALO GUIDE BANNER — 3 bước gửi thiệp đẹp */}
+            <div className="mb-4 rounded-2xl bg-gradient-to-r from-[#EBF4FF] to-[#F0F7FF] border border-[#C8DCF5] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xl">💡</span>
+                <span className="text-xs font-bold text-[#0055CC] uppercase tracking-wide">Cách gửi thiệp qua Zalo</span>
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#3A6FA8]">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">1</span>
+                  Bấm <strong className="text-[#0055CC]">Gửi Zalo</strong> — lời mời tự copy
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
+                  Dán <strong className="text-[#0055CC]">Ctrl+V</strong> vào khung chat Zalo
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
+                  Link tự hiển thị <strong className="text-[#0055CC]">ảnh bìa thiệp đẹp</strong> ✨
+                </span>
+              </div>
+            </div>
+
             {/* SEARCH & MESSAGE TEMPLATE ROW */}
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-3 mb-4">
               <div className="relative">
@@ -566,16 +588,18 @@ export default function GuestsPage() {
                 />
               </div>
 
-              <div className="relative flex items-center">
-                <FileText className="absolute left-3.5 w-4 h-4 text-[#A69788] pointer-events-none" />
-                <input
-                  type="text"
+              <div className="relative">
+                <FileText className="absolute left-3.5 top-2.5 w-4 h-4 text-[#A69788] pointer-events-none" />
+                <textarea
+                  rows={3}
                   value={messageTemplate}
                   onChange={(e) => setMessageTemplate(e.target.value)}
                   aria-label="Mẫu lời mời Zalo"
-                  title="Tùy chỉnh mẫu tin nhắn gửi kèm thiệp mời"
-                  className="h-10 w-full rounded-xl bg-white border border-[#E5DDD2] pl-10 pr-3 text-xs sm:text-sm text-[#524438] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 transition shadow-2xs truncate"
+                  title="Tùy chỉnh mẫu tin nhắn. Dùng {danh_xung} {ten_khach} {link_thiep}"
+                  placeholder="{danh_xung} {ten_khach} ... {link_thiep}"
+                  className="w-full rounded-xl bg-white border border-[#E5DDD2] pl-10 pr-3 pt-2 pb-2 text-xs sm:text-sm text-[#524438] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 transition shadow-2xs resize-none leading-relaxed"
                 />
+                <p className="mt-1 text-[10px] text-[#A09386] pl-1">Biến: <code>{'{danh_xung}'}</code> <code>{'{ten_khach}'}</code> <code>{'{link_thiep}'}</code></p>
               </div>
             </div>
 

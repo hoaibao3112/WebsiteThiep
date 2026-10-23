@@ -6,7 +6,7 @@ import { DemoTemplateActionBar } from "@/components/card/DemoTemplateActionBar";
 import { EnvelopeConfigModal } from "@/components/editor/EnvelopeConfigModal";
 import { Album3DManagerModal } from "@/components/card/Album3DManagerModal";
 import { ApiClient } from "@/lib/api";
-import type { Album3DConfig } from "@/types/card.types";
+import { DEFAULT_ALBUM_3D_CONFIG, DEFAULT_ALBUM_BACK_COVER, type Album3DConfig } from "@/types/album-3d.types";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
@@ -124,13 +124,14 @@ describe("EnvelopeConfigModal", () => {
 
 describe("Album3DManagerModal", () => {
   const mockAlbumConfig: Album3DConfig = {
+    ...DEFAULT_ALBUM_3D_CONFIG,
     enabled: true,
-    albumTheme: "leather-burgundy",
     pages: [
       { id: "page-1", url: "/images/demo/1.jpg", caption: "Ảnh 1", aspectRatio: "portrait", sortOrder: 0 },
       { id: "page-2", url: "/images/demo/2.jpg", caption: "Ảnh 2", aspectRatio: "portrait", sortOrder: 1 },
     ],
     frontCover: {
+      ...DEFAULT_ALBUM_3D_CONFIG.frontCover,
       enabled: true,
       designPreset: "photo-arch-gold",
       photoUrl: "/images/demo/front.jpg",
@@ -143,13 +144,11 @@ describe("Album3DManagerModal", () => {
       customTextColor: "",
     },
     backCover: {
+      ...DEFAULT_ALBUM_BACK_COVER,
       enabled: true,
       designPreset: "velvet-stitched",
       title: "CẢM ƠN",
       subtitle: "THANK YOU",
-      photoUrl: "",
-      customBgColor: "",
-      customTextColor: "",
     },
   };
 
@@ -159,8 +158,9 @@ describe("Album3DManagerModal", () => {
       <Album3DManagerModal
         isOpen={true}
         onClose={vi.fn()}
-        config={mockAlbumConfig}
-        onChange={onChange}
+        cardId="card-123"
+        initialConfig={mockAlbumConfig}
+        onSaved={onChange}
       />
     );
 
