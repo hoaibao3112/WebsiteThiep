@@ -29,6 +29,8 @@ import {
   Upload,
   Users,
   X,
+  Globe,
+  Smartphone,
 } from "lucide-react";
 import { ApiClient } from "@/lib/api";
 import { parseGuestText } from "@/lib/guests/parse-guest-text";
@@ -37,6 +39,7 @@ import {
   copyInvitation,
   DEFAULT_INVITATION,
   openZaloShare,
+  isMobileDevice,
 } from "@/lib/guests/zalo-share";
 
 /* ────── Types ────── */
@@ -89,6 +92,9 @@ export default function BulkSharePage() {
   const [guests, setGuests] = useState<GuestResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [zaloModalGuest, setZaloModalGuest] = useState<GuestResult | null>(null);
+  const [zaloCopied, setZaloCopied] = useState(false);
 
   // Copy helpers
   const linkCopy = useCopyFeedback();
@@ -156,7 +162,11 @@ export default function BulkSharePage() {
     try {
       await copyInvitation(msg);
     } catch {}
-    openZaloShare(guestFullUrl(guest), guest.phone);
+    setZaloModalGuest(guest);
+    setZaloCopied(true);
+    if (isMobileDevice()) {
+      openZaloShare(guestFullUrl(guest), guest.phone, "app");
+    }
   }
 
   async function copyAllLinks() {
@@ -700,6 +710,143 @@ export default function BulkSharePage() {
                 type="button"
                 onClick={() => setShowPreviewModal(false)}
                 className="px-5 py-2 rounded-xl bg-[#3D2C1E] text-white text-xs sm:text-sm font-semibold hover:bg-[#2B1E14] transition"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL GỬI THIỆP ZALO CHO KHÁCH — CHỐNG TREO/QUAY TRẮNG TRÊN PC */}
+      {zaloModalGuest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto"
+          onClick={() => setZaloModalGuest(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-gradient-to-b from-[#FFFFFF] to-[#FBF8F3] rounded-3xl p-6 sm:p-7 shadow-2xl border border-[#E5DDD2] overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-[#F0EAE1]">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-[#0068FF] text-white flex items-center justify-center shadow-xs">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold font-serif text-[#2D1F15]">
+                    Gửi Thiệp Cho {zaloModalGuest.salutation} {zaloModalGuest.fullName}
+                  </h3>
+                  <p className="text-xs text-[#7A6D60]">
+                    {zaloModalGuest.phone ? `Số điện thoại: ${zaloModalGuest.phone}` : "Chưa có số điện thoại"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setZaloModalGuest(null)}
+                className="w-8 h-8 rounded-full bg-[#F0EBE1] text-[#6E5948] hover:bg-[#E5DCD0] flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Success notification banner */}
+            <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-emerald-800 font-medium">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Đã tự động sao chép lời mời riêng của khách vào bộ nhớ tạm!</span>
+            </div>
+
+            {/* Message preview snippet */}
+            <div className="mt-3.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-semibold text-[#7A6D60] uppercase tracking-wider">
+                  Nội dung đã copy (sẵn sàng dán):
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const msg = guestMessage(zaloModalGuest);
+                    await copyInvitation(msg);
+                    setZaloCopied(true);
+                    setTimeout(() => setZaloCopied(false), 2000);
+                  }}
+                  className="text-xs text-[#0068FF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                >
+                  {zaloCopied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">Đã copy lại!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clipboard className="w-3.5 h-3.5" />
+                      <span>Copy lại</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="rounded-xl bg-[#FAF7F2] border border-[#EAE2D5] p-3 text-xs text-[#4A382A] max-h-36 overflow-y-auto whitespace-pre-line leading-relaxed font-sans">
+                {guestMessage(zaloModalGuest)}
+              </div>
+            </div>
+
+            {/* 2 NÚT HÀNH ĐỘNG MỞ ZALO — GIẢI QUYẾT TRIỆT ĐỂ LỖI QUAY TRẮNG */}
+            <div className="mt-5 space-y-2.5">
+              {/* Lựa chọn 1: Mở Zalo Web (khuyên dùng trên máy tính, 100% không bị treo) */}
+              <button
+                type="button"
+                onClick={() => {
+                  openZaloShare(guestFullUrl(zaloModalGuest), zaloModalGuest.phone, "web");
+                }}
+                className="w-full py-3 px-4 rounded-2xl bg-[#0068FF] hover:bg-[#0055D4] text-white font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg transition flex items-center justify-between gap-3 cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 text-left">
+                  <Globe className="w-5 h-5 shrink-0" />
+                  <div>
+                    <p className="font-bold">Mở Zalo Web (chat.zalo.me)</p>
+                    <p className="text-[11px] text-white/80 font-normal">
+                      Khuyên dùng trên máy tính • Không bao giờ bị treo
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 shrink-0 text-white/70" />
+              </button>
+
+              {/* Lựa chọn 2: Mở App Zalo (zalo.me) */}
+              <button
+                type="button"
+                onClick={() => {
+                  openZaloShare(guestFullUrl(zaloModalGuest), zaloModalGuest.phone, "app");
+                }}
+                className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF6EE] border border-[#DECFC0] text-[#3D2C1E] font-semibold text-xs sm:text-sm transition flex items-center justify-between gap-3 cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 text-left">
+                  <Smartphone className="w-5 h-5 text-[#8C7A6B] shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs sm:text-sm">Mở Ứng Dụng Zalo (PC / Điện thoại)</p>
+                    <p className="text-[11px] text-[#8C7A6B] font-normal">
+                      {zaloModalGuest.phone ? `Nhắn tới ${zaloModalGuest.phone}` : "Mở app Zalo"}
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 shrink-0 text-[#8C7A6B]" />
+              </button>
+            </div>
+
+            {/* Mẹo 1 bước dán */}
+            <p className="mt-4 text-center text-xs text-[#7A6D60]">
+              💡 <strong>Cách gửi:</strong> Sau khi mở Zalo, chỉ cần bấm <strong className="text-[#0068FF]">Ctrl+V</strong> (hoặc Dán) vào khung chat là xong!
+            </p>
+
+            {/* Footer nút phụ */}
+            <div className="mt-4 pt-3.5 border-t border-[#F0EAE1] flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setZaloModalGuest(null)}
+                className="px-5 py-2 rounded-xl bg-[#F0EBE1] hover:bg-[#E5DCD0] text-xs font-semibold text-[#5A4B3D] transition cursor-pointer"
               >
                 Đóng
               </button>

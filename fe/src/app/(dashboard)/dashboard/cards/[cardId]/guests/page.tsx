@@ -32,6 +32,10 @@ import {
   Users,
   BarChart3,
   X,
+  RotateCcw,
+  Globe,
+  Smartphone,
+  ExternalLink,
 } from "lucide-react";
 import { ApiClient } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -41,6 +45,7 @@ import {
   copyInvitation,
   DEFAULT_INVITATION,
   openZaloShare,
+  isMobileDevice,
 } from "@/lib/guests/zalo-share";
 import {
   formatExactDateTime,
@@ -177,6 +182,9 @@ export default function GuestsPage() {
 
   const [previewGuest, setPreviewGuest] = useState<Guest | null>(null);
   const [isDownloadingOg, setIsDownloadingOg] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [zaloModalGuest, setZaloModalGuest] = useState<Guest | null>(null);
+  const [zaloCopied, setZaloCopied] = useState(false);
 
   function guestUrl(guest: Guest) {
     return new URL(guest.customUrl, window.location.origin).toString();
@@ -209,10 +217,10 @@ export default function GuestsPage() {
   }
 
   /**
-   * 1-Click Gửi Zalo:
+   * 1-Click Gửi Zalo Thông Minh:
    * 1. Tạo lời mời cá nhân hóa & copy vào Clipboard.
    * 2. Tự động đánh dấu CONFIRMED_SENT trong hệ thống.
-   * 3. Mở khung chat Zalo (mở thẳng SĐT nếu có).
+   * 3. Mở Modal Zalo tiện lợi (cho phép chọn Zalo Web chống treo trên PC hoặc App Zalo).
    */
   async function share(guest: Guest) {
     setPendingId(guest.id);
@@ -226,7 +234,7 @@ export default function GuestsPage() {
     try {
       await copyInvitation(message);
       setNotice(
-        `Đã sao chép lời mời riêng cho ${guest.salutation} ${guest.fullName}! Hãy dán (Ctrl+V) vào khung chat Zalo vừa mở.`
+        `✓ Đã sao chép lời mời riêng cho ${guest.salutation} ${guest.fullName}!`
       );
     } catch {
       setNotice(message);
@@ -261,9 +269,14 @@ export default function GuestsPage() {
       body: JSON.stringify({ status: "CONFIRMED_SENT" }),
     }).catch(console.error);
 
-    // Mở Zalo (nếu có số ĐT sẽ mở thẳng hộp chat)
-    openZaloShare(url, guest.phone);
     setPendingId(null);
+    setZaloModalGuest(guest);
+    setZaloCopied(true);
+
+    // Nếu trên điện thoại, tự động mở app Zalo luôn
+    if (isMobileDevice()) {
+      openZaloShare(url, guest.phone, "app");
+    }
   }
 
   async function remove(guest: Guest) {
@@ -554,10 +567,10 @@ export default function GuestsPage() {
             </div>
 
             {/* ZALO GUIDE BANNER — 3 bước gửi thiệp đẹp */}
-            <div className="mb-4 rounded-2xl bg-gradient-to-r from-[#EBF4FF] to-[#F0F7FF] border border-[#C8DCF5] px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="mb-4 rounded-2xl bg-gradient-to-r from-[#EBF4FF] to-[#F0F7FF] border border-[#C8DCF5] px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xl">💡</span>
-                <span className="text-xs font-bold text-[#0055CC] uppercase tracking-wide">Cách gửi thiệp qua Zalo</span>
+                <span className="text-xs font-bold text-[#0055CC] uppercase tracking-wide">3 Bước gửi thiệp Zalo</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#3A6FA8]">
                 <span className="flex items-center gap-1.5">
@@ -566,41 +579,52 @@ export default function GuestsPage() {
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">2</span>
-                  Dán <strong className="text-[#0055CC]">Ctrl+V</strong> vào khung chat Zalo
+                  Dán <strong className="text-[#0055CC]">Ctrl+V</strong> vào khung chat
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-5 h-5 rounded-full bg-[#0068FF] text-white text-[10px] font-bold flex items-center justify-center shrink-0">3</span>
-                  Link tự hiển thị <strong className="text-[#0055CC]">ảnh bìa thiệp đẹp</strong> ✨
+                  Link tự hiện <strong className="text-[#0055CC]">ảnh bìa in tên khách</strong> ✨
                 </span>
               </div>
             </div>
 
-            {/* SEARCH & MESSAGE TEMPLATE ROW */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-3 mb-4">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-3 w-4 h-4 text-[#A69788]" />
+            {/* TOOLBAR: TÌM KIẾM RỘNG RÃI & NÚT TÙY CHỈNH MẪU LỜI MỜI */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mb-4">
+              {/* Ô TÌM KIẾM RỘNG RÃI */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A69788]" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Tìm tên hoặc số điện thoại..."
-                  className="h-10 w-full rounded-xl bg-white border border-[#E5DDD2] pl-10 pr-3 text-xs sm:text-sm text-[#2C1E14] placeholder-[#A09386] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 transition shadow-2xs"
+                  placeholder="Tìm theo tên khách mời hoặc số điện thoại..."
+                  className="h-11 w-full rounded-xl bg-white border border-[#E5DDD2] pl-10 pr-10 text-xs sm:text-sm text-[#2C1E14] placeholder-[#A09386] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 transition shadow-2xs"
                 />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => setSearch("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A69788] hover:text-[#524438] p-1 cursor-pointer"
+                    title="Xóa tìm kiếm"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
 
-              <div className="relative">
-                <FileText className="absolute left-3.5 top-2.5 w-4 h-4 text-[#A69788] pointer-events-none" />
-                <textarea
-                  rows={3}
-                  value={messageTemplate}
-                  onChange={(e) => setMessageTemplate(e.target.value)}
-                  aria-label="Mẫu lời mời Zalo"
-                  title="Tùy chỉnh mẫu tin nhắn. Dùng {danh_xung} {ten_khach} {link_thiep}"
-                  placeholder="{danh_xung} {ten_khach} ... {link_thiep}"
-                  className="w-full rounded-xl bg-white border border-[#E5DDD2] pl-10 pr-3 pt-2 pb-2 text-xs sm:text-sm text-[#524438] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 transition shadow-2xs resize-none leading-relaxed"
-                />
-                <p className="mt-1 text-[10px] text-[#A09386] pl-1">Biến: <code>{'{danh_xung}'}</code> <code>{'{ten_khach}'}</code> <code>{'{link_thiep}'}</code></p>
-              </div>
+              {/* NÚT MỞ MODAL TÙY CHỈNH MẪU LỜI MỜI ZALO */}
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(true)}
+                className="inline-flex items-center justify-center gap-2 h-11 px-4 rounded-xl bg-white border border-[#E5DDD2] hover:bg-[#FAF7F2] hover:border-[#C77834]/60 text-xs sm:text-sm font-semibold text-[#5A4B3D] shadow-2xs transition shrink-0 cursor-pointer"
+                title="Tùy chỉnh mẫu tin nhắn gửi kèm thiệp mời"
+              >
+                <FileText className="w-4 h-4 text-[#C77834]" />
+                <span>Mẫu Lời Mời Zalo</span>
+                <span className="text-[11px] font-normal text-[#8C7A6B] bg-[#F5EFE6] px-1.5 py-0.5 rounded-md">
+                  Chỉnh sửa
+                </span>
+              </button>
             </div>
 
             {/* ───────────────────────────────────────────────────────── */}
@@ -1142,6 +1166,286 @@ export default function GuestsPage() {
               >
                 <MessageCircle className="size-4" />
                 <span>Gửi Zalo ngay</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL TÙY CHỈNH MẪU LỜI MỜI ZALO RỘNG RÃI & SANG TRỌNG */}
+      {showTemplateModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto"
+          onClick={() => setShowTemplateModal(false)}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-gradient-to-b from-[#FDFBF7] to-[#FAF6EE] rounded-3xl p-6 sm:p-7 shadow-2xl border border-[#E8DAC6] overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-[#EADDCC]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#B89628]">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold font-serif text-[#2D1F15]">
+                    Tùy Chỉnh Mẫu Lời Mời Zalo
+                  </h3>
+                  <p className="text-xs text-[#7A6D60]">
+                    Tự động điền danh xưng, tên khách và link thiệp riêng khi gửi
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(false)}
+                className="w-8 h-8 rounded-full bg-[#EFE6D8] text-[#6E5948] hover:bg-[#E3D5C0] flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Soạn thảo tin nhắn */}
+            <div className="mt-5 space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-[#5A4B3D]">
+                    Nội dung tin nhắn:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMessageTemplate(DEFAULT_INVITATION)}
+                    className="text-xs text-[#C77834] hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Khôi phục mẫu chuẩn</span>
+                  </button>
+                </div>
+
+                <textarea
+                  rows={6}
+                  value={messageTemplate}
+                  onChange={(e) => setMessageTemplate(e.target.value)}
+                  placeholder="Nhập mẫu tin nhắn..."
+                  className="w-full rounded-2xl bg-white border border-[#DECFC0] p-4 text-xs sm:text-sm text-[#2D1F15] outline-none focus:border-[#C77834] focus:ring-2 focus:ring-[#C77834]/20 leading-relaxed resize-none shadow-2xs font-sans"
+                />
+
+                {/* Các nút bấm nhanh chèn biến */}
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <span className="text-[11px] text-[#8C7A6B] mr-1">Chèn nhanh:</span>
+                  <button
+                    type="button"
+                    onClick={() => setMessageTemplate((prev) => `${prev} {danh_xung}`)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-[#E0D6C8] hover:bg-[#F5EFE6] text-[11px] font-medium text-[#4A382A] transition cursor-pointer"
+                  >
+                    + {'{danh_xung}'} <span className="text-[#8C7A6B]">(Anh/Chị/Bạn)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMessageTemplate((prev) => `${prev} {ten_khach}`)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-[#E0D6C8] hover:bg-[#F5EFE6] text-[11px] font-medium text-[#4A382A] transition cursor-pointer"
+                  >
+                    + {'{ten_khach}'} <span className="text-[#8C7A6B]">(Tên khách)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMessageTemplate((prev) => `${prev} {link_thiep}`)}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-[#E0D6C8] hover:bg-[#F5EFE6] text-[11px] font-medium text-[#4A382A] transition cursor-pointer"
+                  >
+                    + {'{link_thiep}'} <span className="text-[#8C7A6B]">(Link thiệp)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Khung mô phỏng bong bóng chat Zalo thực tế */}
+              <div>
+                <p className="text-xs font-semibold text-[#5A4B3D] mb-2 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>Xem trước tin nhắn khách sẽ nhận được:</span>
+                </p>
+                <div className="rounded-2xl bg-[#E8F2FA] border border-[#C8DCF5] p-4 text-xs sm:text-sm text-[#1A2E3D]">
+                  <div className="bg-white rounded-2xl p-3.5 shadow-2xs border border-[#D5E4F2] whitespace-pre-line leading-relaxed text-[#2C3E50]">
+                    {buildGuestInvitation(messageTemplate, {
+                      salutation: "Chị",
+                      fullName: "Lan Anh",
+                      url: "https://website-thiep.vercel.app/thiep/long-ngoc?g=VIP888",
+                    })}
+                  </div>
+                  <p className="text-[11px] text-[#5A7C99] mt-2 flex items-center gap-1.5">
+                    <span>✨</span>
+                    <span>Khi gửi link, ảnh bìa thiệp cưới in tên riêng sẽ tự động xuất hiện phía trên link.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-[#EADDCC] flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowTemplateModal(false)}
+                className="px-6 py-2.5 rounded-xl bg-[#3D2C1E] hover:bg-[#2B1E14] text-xs sm:text-sm font-semibold text-white shadow-xs transition cursor-pointer"
+              >
+                Xong / Lưu lại
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL GỬI THIỆP ZALO CHO KHÁCH — KHÔNG BAO GIỜ BỊ QUAY TREO TRẮNG */}
+      {zaloModalGuest && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto"
+          onClick={() => setZaloModalGuest(null)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-gradient-to-b from-[#FFFFFF] to-[#FBF8F3] rounded-3xl p-6 sm:p-7 shadow-2xl border border-[#E5DDD2] overflow-hidden my-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-[#F0EAE1]">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-[#0068FF] text-white flex items-center justify-center shadow-xs">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold font-serif text-[#2D1F15]">
+                    Gửi Thiệp Cho {zaloModalGuest.salutation} {zaloModalGuest.fullName}
+                  </h3>
+                  <p className="text-xs text-[#7A6D60]">
+                    {zaloModalGuest.phone ? `Số điện thoại: ${zaloModalGuest.phone}` : "Chưa có số điện thoại"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setZaloModalGuest(null)}
+                className="w-8 h-8 rounded-full bg-[#F0EBE1] text-[#6E5948] hover:bg-[#E5DCD0] flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Success notification banner */}
+            <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-emerald-800 font-medium">
+              <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Đã tự động sao chép lời mời riêng của khách vào bộ nhớ tạm!</span>
+            </div>
+
+            {/* Message preview snippet */}
+            <div className="mt-3.5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-semibold text-[#7A6D60] uppercase tracking-wider">
+                  Nội dung đã copy (sẵn sàng dán):
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const msg = buildGuestInvitation(messageTemplate, {
+                      salutation: zaloModalGuest.salutation,
+                      fullName: zaloModalGuest.fullName,
+                      url: guestUrl(zaloModalGuest),
+                    });
+                    await copyInvitation(msg);
+                    setZaloCopied(true);
+                    setTimeout(() => setZaloCopied(false), 2000);
+                  }}
+                  className="text-xs text-[#0068FF] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                >
+                  {zaloCopied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">Đã copy lại!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clipboard className="w-3.5 h-3.5" />
+                      <span>Copy lại</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="rounded-xl bg-[#FAF7F2] border border-[#EAE2D5] p-3 text-xs text-[#4A382A] max-h-36 overflow-y-auto whitespace-pre-line leading-relaxed font-sans">
+                {buildGuestInvitation(messageTemplate, {
+                  salutation: zaloModalGuest.salutation,
+                  fullName: zaloModalGuest.fullName,
+                  url: guestUrl(zaloModalGuest),
+                })}
+              </div>
+            </div>
+
+            {/* 2 NÚT HÀNH ĐỘNG MỞ ZALO — GIẢI QUYẾT TRIỆT ĐỂ LỖI QUAY TRẮNG */}
+            <div className="mt-5 space-y-2.5">
+              {/* Lựa chọn 1: Mở Zalo Web (khuyên dùng trên máy tính, 100% không bị treo) */}
+              <button
+                type="button"
+                onClick={() => {
+                  openZaloShare(guestUrl(zaloModalGuest), zaloModalGuest.phone, "web");
+                }}
+                className="w-full py-3 px-4 rounded-2xl bg-[#0068FF] hover:bg-[#0055D4] text-white font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg transition flex items-center justify-between gap-3 cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 text-left">
+                  <Globe className="w-5 h-5 shrink-0" />
+                  <div>
+                    <p className="font-bold">Mở Zalo Web (chat.zalo.me)</p>
+                    <p className="text-[11px] text-white/80 font-normal">
+                      Khuyên dùng trên máy tính • Không bao giờ bị treo
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 shrink-0 text-white/70" />
+              </button>
+
+              {/* Lựa chọn 2: Mở App Zalo (zalo.me) */}
+              <button
+                type="button"
+                onClick={() => {
+                  openZaloShare(guestUrl(zaloModalGuest), zaloModalGuest.phone, "app");
+                }}
+                className="w-full py-2.5 px-4 rounded-2xl bg-white hover:bg-[#FAF6EE] border border-[#DECFC0] text-[#3D2C1E] font-semibold text-xs sm:text-sm transition flex items-center justify-between gap-3 cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5 text-left">
+                  <Smartphone className="w-5 h-5 text-[#8C7A6B] shrink-0" />
+                  <div>
+                    <p className="font-semibold text-xs sm:text-sm">Mở Ứng Dụng Zalo (PC / Điện thoại)</p>
+                    <p className="text-[11px] text-[#8C7A6B] font-normal">
+                      {zaloModalGuest.phone ? `Nhắn tới ${zaloModalGuest.phone}` : "Mở app Zalo"}
+                    </p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 shrink-0 text-[#8C7A6B]" />
+              </button>
+            </div>
+
+            {/* Mẹo 1 bước dán */}
+            <p className="mt-4 text-center text-xs text-[#7A6D60]">
+              💡 <strong>Cách gửi:</strong> Sau khi mở Zalo, chỉ cần bấm <strong className="text-[#0068FF]">Ctrl+V</strong> (hoặc Dán) vào khung chat là xong!
+            </p>
+
+            {/* Footer nút phụ */}
+            <div className="mt-4 pt-3.5 border-t border-[#F0EAE1] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  const g = zaloModalGuest;
+                  setZaloModalGuest(null);
+                  setPreviewGuest(g);
+                }}
+                className="text-xs text-[#8C6D15] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Xem & Tải ảnh thiệp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setZaloModalGuest(null)}
+                className="px-4 py-1.5 rounded-xl bg-[#F0EBE1] hover:bg-[#E5DCD0] text-xs font-semibold text-[#5A4B3D] transition cursor-pointer"
+              >
+                Đóng
               </button>
             </div>
           </div>

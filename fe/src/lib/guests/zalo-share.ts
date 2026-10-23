@@ -33,15 +33,30 @@ export async function copyInvitation(message: string) {
 }
 
 /**
- * Mở Zalo thông minh:
- * - Nếu khách có số điện thoại → mở thẳng hộp chat cá nhân zalo.me/<phone>
- * - Nếu không có → mở zalo.me để người dùng tự tìm liên lạc
- *
- * NOTE: Đây là cách duy nhất để mở Zalo nhắn tin 1-1 từ web browser.
- * Zalo không cung cấp API web để tự động gửi tin nhắn (cần OA + người follow).
- * Người dùng cần dán (Ctrl+V) lời mời đã copy vào khung chat.
+ * Kiểm tra xem người dùng đang truy cập bằng điện thoại hay máy tính
  */
-export function openZaloShare(_url: string, phone?: string | null) {
+export function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+}
+
+/**
+ * Mở Zalo thông minh:
+ * - target === "web": Mở thẳng Zalo Web (chat.zalo.me) — giải pháp hoàn hảo cho PC, không bao giờ bị redirect.zalo.me quay treo
+ * - target === "app" (hoặc mặc định trên mobile): Mở zalo.me/<phone> để kích hoạt app Zalo
+ */
+export function openZaloShare(
+  _url: string,
+  phone?: string | null,
+  target: "app" | "web" = "app"
+) {
+  if (target === "web") {
+    window.open("https://chat.zalo.me/", "_blank", "noopener,noreferrer");
+    return;
+  }
+
   const digits = phone ? phone.replace(/[^0-9]/g, "") : "";
   if (digits.length >= 9) {
     window.open(`https://zalo.me/${digits}`, "_blank", "noopener,noreferrer");
