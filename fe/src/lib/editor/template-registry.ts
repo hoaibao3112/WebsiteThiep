@@ -88,6 +88,8 @@ export function getTemplateFields(slug: string): readonly EditorField[] {
 export function isAllowedEditorPath(path: string): boolean {
   const canvasPaths = new Set([
     "photos", "categoryData.photos", "coverPhotoUrl",
+    // categoryData root — dùng khi updateAlbum3D ghi toàn bộ categoryData
+    "categoryData", "categoryData.album3d",
     "categoryData.canvasElements", "categoryData.fieldPositions", "categoryData.fieldScales",
     "categoryData.canvasDocument", "categoryData.canvasDocument.elements", "categoryData.canvasDocument.height", "categoryData.canvasDocument.background",
     "categoryData.canvasDocument.background.color", "categoryData.canvasDocument.background.pattern",
