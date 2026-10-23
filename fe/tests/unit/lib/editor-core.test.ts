@@ -9,6 +9,13 @@ describe("visual editor core", () => {
     expect(readDraftPath(next, "categoryData.groom.fullName")).toBe("Lan");
     expect(readDraftPath(draft, "categoryData.groom.fullName")).toBe("Minh");
     expect(() => applyDraftPatch(draft, "__proto__.polluted", "x")).toThrow();
+
+    // categoryData root & categoryData.album3d allowed
+    const withAlbum = applyDraftPatch(draft, "categoryData.album3d", { enabled: true });
+    expect((withAlbum as any).categoryData?.album3d?.enabled).toBe(true);
+
+    const withCat = applyDraftPatch(draft, "categoryData", { groom: { fullName: "Test" } });
+    expect((withCat as any).categoryData?.groom?.fullName).toBe("Test");
   });
 
   it("returns fields appropriate for each template", () => {

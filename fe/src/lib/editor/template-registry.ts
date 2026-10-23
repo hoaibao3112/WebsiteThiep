@@ -86,8 +86,9 @@ export function getTemplateFields(slug: string): readonly EditorField[] {
 }
 
 export function isAllowedEditorPath(path: string): boolean {
+  if (path === "categoryData" || path.startsWith("categoryData.album3d")) return true;
   const canvasPaths = new Set([
-    "photos", "categoryData.photos", "coverPhotoUrl",
+    "photos", "categoryData.photos", "coverPhotoUrl", "categoryData.coverPhotoUrl",
     // categoryData root — dùng khi updateAlbum3D ghi toàn bộ categoryData
     "categoryData", "categoryData.album3d",
     "categoryData.canvasElements", "categoryData.fieldPositions", "categoryData.fieldScales",
