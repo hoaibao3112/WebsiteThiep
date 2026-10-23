@@ -1,8 +1,9 @@
 import React from "react";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiClient } from "@/lib/api";
+import EditCardPage from "@/app/(dashboard)/dashboard/cards/[cardId]/edit/page";
 
 vi.mock("next/navigation", () => ({
   useParams: () => ({ cardId: "demo-card-1" }),
@@ -25,9 +26,8 @@ const TEST_CARD = {
   events: [], photos: [],
 };
 
-async function renderPage() {
-  const Page = (await import("@/app/(dashboard)/dashboard/cards/[cardId]/edit/page")).default;
-  await act(async () => { render(<Page />); });
+function renderPage() {
+  render(<EditCardPage />);
 }
 
 describe("EditCardPage owner flow", () => {
@@ -63,20 +63,28 @@ describe("EditCardPage owner flow", () => {
       }
       return options?.method === "PUT" ? { success: true, data: TEST_CARD } : { success: true, data: TEST_CARD };
     });
-    await renderPage();
-    await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
+    renderPage();
+    const saveButton = await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i });
+    await waitFor(() => expect(saveButton).toBeEnabled());
+    fireEvent.click(saveButton);
     await waitFor(() => expect(ApiClient.request).toHaveBeenCalledWith(
       "/cards/demo-card-1", expect.objectContaining({ method: "PUT" })
     ), { timeout: 12000 });
   }, 35000);
 
   it("does not display false success when saving fails", async () => {
-    vi.mocked(ApiClient.request).mockImplementation(async (_endpoint, options) =>
-      options?.method === "PUT"
+    vi.mocked(ApiClient.request).mockImplementation(async (endpoint, options) => {
+      if (typeof endpoint === "string" && endpoint.includes("slug-availability")) {
+        return { success: true, data: { available: true } };
+      }
+      return options?.method === "PUT"
         ? { success: false, error: "Mất kết nối, chưa lưu thay đổi" }
-        : { success: true, data: TEST_CARD });
-    await renderPage();
-    await userEvent.click(await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i }));
+        : { success: true, data: TEST_CARD };
+    });
+    renderPage();
+    const saveButton = await screen.findByRole("button", { name: /Lưu thiệp|Lưu Thay Đổi/i });
+    await waitFor(() => expect(saveButton).toBeEnabled());
+    fireEvent.click(saveButton);
     const alerts = await screen.findAllByRole("alert", {}, { timeout: 12000 });
     expect(alerts[0]).toHaveTextContent("Mất kết nối");
     expect(screen.queryByText(/lưu thành công/i)).not.toBeInTheDocument();

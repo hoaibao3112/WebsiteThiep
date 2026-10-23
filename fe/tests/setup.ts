@@ -28,24 +28,38 @@ vi.mock("canvas-confetti", () => ({
 }));
 
 // ─── Mock framer-motion (no animations in tests) ───
+const motionComponentCache: Record<string, any> = {};
 vi.mock("framer-motion", () => ({
   motion: new Proxy(
     {},
     {
-      get: (_target, tag: string) =>
-        ({ children, initial: _initial, animate: _animate, exit: _exit,
-          transition: _transition, whileHover: _whileHover, whileTap: _whileTap,
-          layout: _layout, ...props }: { children: ReactNode; [key: string]: unknown }) =>
-          createElement(tag, props, children),
+      get: (_target, tag: string) => {
+        if (!motionComponentCache[tag]) {
+          const Comp = ({ children, initial: _initial, animate: _animate, exit: _exit,
+            transition: _transition, whileHover: _whileHover, whileTap: _whileTap,
+            layout: _layout, ...props }: { children: ReactNode; [key: string]: unknown }) =>
+            createElement(tag, props, children);
+          Comp.displayName = `motion.${tag}`;
+          motionComponentCache[tag] = Comp;
+        }
+        return motionComponentCache[tag];
+      },
     }
   ),
   AnimatePresence: ({ children }: { children: ReactNode }) => children,
 }));
 
+import { cleanup } from "@testing-library/react";
+
+afterEach(() => {
+  cleanup();
+});
+
 // ─── Mock ApiClient ───
 vi.mock("@/lib/api", () => ({
   ApiClient: {
     request: vi.fn().mockResolvedValue({ success: false }),
+    getEnvelopeStyles: vi.fn().mockResolvedValue({ success: true, data: [] }),
     setToken: vi.fn(),
     clearToken: vi.fn(),
   },
