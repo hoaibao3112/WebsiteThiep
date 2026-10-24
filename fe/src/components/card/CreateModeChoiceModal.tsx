@@ -138,6 +138,16 @@ export function CreateModeChoiceModal({
                               <Check className="w-6 h-6 text-white stroke-[3]" />
                             </div>
                           )}
+                          <a
+                            href={`/demo/${template.demoSlug || template.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute bottom-1 right-1 p-1 rounded-md bg-black/70 hover:bg-black text-amber-300 hover:text-amber-200 backdrop-blur-xs transition shadow-xs z-10"
+                            title="Xem thử thiệp thực tế trong tab mới"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </a>
                         </div>
 
                         {/* Metadata */}
@@ -160,10 +170,23 @@ export function CreateModeChoiceModal({
                             <span className="text-xs font-bold text-amber-400 font-serif">
                               {template.price}
                             </span>
-                            <span className="text-[11px] font-bold text-amber-300 flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
-                              <span>Chọn mẫu</span>
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={`/demo/${template.demoSlug || template.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-[11px] text-stone-400 hover:text-amber-300 flex items-center gap-1 transition"
+                                title="Mở trang xem thử mẫu"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>Demo</span>
+                              </a>
+                              <span className="text-[11px] font-bold text-amber-300 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                                <span>Chọn mẫu</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

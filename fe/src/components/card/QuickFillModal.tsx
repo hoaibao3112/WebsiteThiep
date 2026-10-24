@@ -5,6 +5,15 @@ import { X, Sparkles, Plus, Trash2, Calendar, Clock, MapPin, Check, Loader2 } fr
 import { ApiClient } from "@/lib/api";
 import { uploadSingleImage } from "@/lib/image-upload";
 
+export interface QuickFillEvent {
+  eventName: string;
+  eventDate: string;
+  eventHour: string;
+  eventMinute: string;
+  eventPeriod: "AM" | "PM";
+  address: string;
+}
+
 export interface QuickFillData {
   groomName: string;
   groomFather: string;
@@ -12,10 +21,13 @@ export interface QuickFillData {
   brideName: string;
   brideFather: string;
   brideMother: string;
+  // Legacy single-event fields (giữ để tương thích ngược)
   eventDate: string;
   eventHour: string;
   eventMinute: string;
   address: string;
+  // Multi-event
+  events: QuickFillEvent[];
   photos: { id: string; url: string; caption?: string }[];
 }
 
@@ -32,6 +44,11 @@ export function QuickFillModal({
   onApply,
   initialData,
 }: QuickFillModalProps) {
+  const DEFAULT_EVENTS: QuickFillEvent[] = [
+    { eventName: "Lễ Vu Quy (Nhà Gái)", eventDate: "", eventHour: "9", eventMinute: "00", eventPeriod: "AM", address: "" },
+    { eventName: "Tiệc Cưới Chính Thức", eventDate: "", eventHour: "6", eventMinute: "00", eventPeriod: "PM", address: "" },
+  ];
+
   const [groomName, setGroomName] = useState(initialData?.groomName || "");
   const [groomFather, setGroomFather] = useState(initialData?.groomFather || "");
   const [groomMother, setGroomMother] = useState(initialData?.groomMother || "");
@@ -40,25 +57,26 @@ export function QuickFillModal({
   const [brideFather, setBrideFather] = useState(initialData?.brideFather || "");
   const [brideMother, setBrideMother] = useState(initialData?.brideMother || "");
 
-  const [eventDate, setEventDate] = useState(initialData?.eventDate || "");
-  const [eventHour, setEventHour] = useState(initialData?.eventHour || "10");
-  const [eventPeriod, setEventPeriod] = useState<"AM" | "PM">("AM");
-  const [eventMinute, setEventMinute] = useState(initialData?.eventMinute || "30");
+  const [events, setEvents] = useState<QuickFillEvent[]>(
+    initialData?.events && initialData.events.length > 0
+      ? initialData.events
+      : DEFAULT_EVENTS
+  );
 
-  const [address, setAddress] = useState(initialData?.address || "");
   const [photos, setPhotos] = useState<{ id: string; url: string; caption?: string }[]>(
     initialData?.photos || []
   );
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [hasProfile, setHasProfile] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [savingToProfile, setSavingToProfile] = useState(true); // Default checked
+  const [savingToProfile, setSavingToProfile] = useState(true);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [filledFromProfileToast, setFilledFromProfileToast] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   // Check if user has saved profile in DB
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -90,10 +108,20 @@ export function QuickFillModal({
         if (p.brideName) setBrideName(p.brideName);
         if (p.brideFather) setBrideFather(p.brideFather);
         if (p.brideMother) setBrideMother(p.brideMother);
-        if (p.eventDate) setEventDate(p.eventDate);
-        if (p.eventHour) setEventHour(p.eventHour);
-        if (p.eventMinute) setEventMinute(p.eventMinute);
-        if (p.address) setAddress(p.address);
+        if (Array.isArray(p.events) && p.events.length > 0) {
+          setEvents(p.events);
+        } else if (p.eventDate || p.address) {
+          setEvents([
+            {
+              eventName: p.eventName || "Lễ Thành Hôn",
+              eventDate: p.eventDate || "",
+              eventHour: p.eventHour?.split(" ")[0] || "11",
+              eventMinute: p.eventMinute || "00",
+              eventPeriod: p.eventHour?.includes("PM") ? "PM" : "AM",
+              address: p.address || "",
+            },
+          ]);
+        }
         if (Array.isArray(p.photos) && p.photos.length > 0) {
           setPhotos(p.photos);
         }
@@ -142,6 +170,10 @@ export function QuickFillModal({
     e.target.value = "";
   };
 
+  const updateEvent = (idx: number, field: keyof QuickFillEvent, value: string) => {
+    setEvents((prev) => prev.map((ev, i) => (i === idx ? { ...ev, [field]: value } : ev)));
+  };
+
   const handleContinue = async () => {
     const data: QuickFillData = {
       groomName: groomName.trim(),
@@ -150,14 +182,15 @@ export function QuickFillModal({
       brideName: brideName.trim(),
       brideFather: brideFather.trim(),
       brideMother: brideMother.trim(),
-      eventDate,
-      eventHour: `${eventHour} ${eventPeriod}`,
-      eventMinute,
-      address: address.trim(),
+      // Legacy single-event (lấy event đầu tiên)
+      eventDate: events[0]?.eventDate || "",
+      eventHour: events[0] ? `${events[0].eventHour} ${events[0].eventPeriod}` : "10 AM",
+      eventMinute: events[0]?.eventMinute || "00",
+      address: events[0]?.address || "",
+      events,
       photos,
     };
 
-    // If checkbox checked, update user profile in backend
     if (savingToProfile) {
       ApiClient.request("/user/wedding-profile", {
         method: "PUT",
@@ -291,69 +324,101 @@ export function QuickFillModal({
             </div>
           </div>
 
-          {/* Ngày & Giờ tổ chức */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="font-bold text-stone-700 block mb-1.5">Ngày tổ chức</label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50 text-xs text-stone-900"
-                />
-              </div>
+          {/* Sự kiện cưới — multi-event */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-stone-700">Sự kiện cưới</label>
+              <button
+                type="button"
+                onClick={() =>
+                  setEvents((prev) => [
+                    ...prev,
+                    { eventName: "Sự kiện mới", eventDate: "", eventHour: "10", eventMinute: "00", eventPeriod: "AM", address: "" },
+                  ])
+                }
+                className="flex items-center gap-1 text-[11px] font-bold text-amber-700 hover:text-amber-900 transition cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Thêm sự kiện
+              </button>
             </div>
 
-            <div>
-              <label className="font-bold text-stone-700 block mb-1.5">Giờ tổ chức</label>
-              <div className="grid grid-cols-3 gap-1.5">
-                <select
-                  value={eventHour}
-                  onChange={(e) => setEventHour(e.target.value)}
-                  className="px-2 py-2 rounded-xl border border-stone-200 bg-stone-50/50 text-xs focus:outline-none focus:border-amber-500"
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                    <option key={h} value={String(h)}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
+            {events.map((ev, idx) => (
+              <div key={idx} className="rounded-2xl border border-stone-200 bg-stone-50/60 p-3 space-y-2 relative">
+                <div className="flex items-center justify-between gap-2">
+                  <input
+                    type="text"
+                    value={ev.eventName}
+                    onChange={(e) => updateEvent(idx, "eventName", e.target.value)}
+                    placeholder="VD: Tiệc cưới chính thức"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200 focus:border-amber-500 focus:outline-none bg-white text-xs font-semibold text-stone-800"
+                  />
+                  {events.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setEvents((prev) => prev.filter((_, i) => i !== idx))}
+                      className="p-1 text-rose-400 hover:text-rose-600 cursor-pointer shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
 
-                <select
-                  value={eventMinute}
-                  onChange={(e) => setEventMinute(e.target.value)}
-                  className="px-2 py-2 rounded-xl border border-stone-200 bg-stone-50/50 text-xs focus:outline-none focus:border-amber-500"
-                >
-                  {["00", "15", "30", "45"].map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] font-semibold text-stone-500 block mb-1">Ngày</label>
+                    <input
+                      type="date"
+                      value={ev.eventDate}
+                      onChange={(e) => updateEvent(idx, "eventDate", e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg border border-stone-200 focus:border-amber-500 focus:outline-none bg-white text-xs text-stone-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-stone-500 block mb-1">Giờ</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      <select
+                        value={ev.eventHour}
+                        onChange={(e) => updateEvent(idx, "eventHour", e.target.value)}
+                        className="px-1 py-1.5 rounded-lg border border-stone-200 bg-white text-xs focus:outline-none focus:border-amber-500"
+                      >
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                          <option key={h} value={String(h)}>{h}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={ev.eventMinute}
+                        onChange={(e) => updateEvent(idx, "eventMinute", e.target.value)}
+                        className="px-1 py-1.5 rounded-lg border border-stone-200 bg-white text-xs focus:outline-none focus:border-amber-500"
+                      >
+                        {["00", "15", "30", "45"].map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={ev.eventPeriod}
+                        onChange={(e) => updateEvent(idx, "eventPeriod", e.target.value as "AM" | "PM")}
+                        className="px-1 py-1.5 rounded-lg border border-stone-200 bg-white text-xs font-bold focus:outline-none focus:border-amber-500"
+                      >
+                        <option value="AM">SA</option>
+                        <option value="PM">CH</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
-                <select
-                  value={eventPeriod}
-                  onChange={(e) => setEventPeriod(e.target.value as "AM" | "PM")}
-                  className="px-2 py-2 rounded-xl border border-stone-200 bg-stone-50/50 text-xs font-bold focus:outline-none focus:border-amber-500"
-                >
-                  <option value="AM">AM (Sáng)</option>
-                  <option value="PM">PM (Chiều)</option>
-                </select>
+                <div>
+                  <label className="text-[10px] font-semibold text-stone-500 block mb-1">Địa chỉ</label>
+                  <input
+                    type="text"
+                    placeholder="VD: 123 Đường ABC, Quận 1, TP.HCM"
+                    value={ev.address}
+                    onChange={(e) => updateEvent(idx, "address", e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg border border-stone-200 focus:border-amber-500 focus:outline-none bg-white text-xs text-stone-900"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Địa chỉ tổ chức */}
-          <div>
-            <label className="font-bold text-stone-700 block mb-1.5">Địa chỉ tổ chức</label>
-            <input
-              type="text"
-              placeholder="VD: 123 Đường ABC, Quận 1, TP.HCM"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 focus:border-amber-500 focus:outline-none bg-stone-50/50 text-xs text-stone-900"
-            />
+            ))}
           </div>
 
           {/* Tải ảnh cưới (Tối đa 20 ảnh) */}

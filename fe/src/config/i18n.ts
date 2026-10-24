@@ -177,6 +177,7 @@ export const DICTIONARY = {
     viewMoreTemplates: "XEM THÊM 240+ MẪU",
     faqHeading: "Câu Hỏi Thường Gặp",
     faqSubheading: "GIẢI ĐÁP THẮC MẮC",
+    badgeUniqueDesign: "THIẾT KẾ ĐỘC BẢN",
     ctaBannerTitle: "Sẵn sàng tạo tấm thiệp độc bản của bạn?",
     ctaBannerSubtitle: "Trải nghiệm phong bì sáp 3D, album ảnh cưới và quản lý RSVP chuyên nghiệp cho sự kiện của bạn.",
     ctaBannerBtn: "BẮT ĐẦU THIẾT KẾ",
@@ -599,7 +600,6 @@ export const DICTIONARY = {
     authResendIn: "Gửi lại sau",
     authCreatePasswordTitle: "Tạo mật khẩu cho tài khoản",
     authPasswordRule: "Mật khẩu tối thiểu 6 ký tự để bảo vệ tài khoản của bạn.",
-    badgeUniqueDesign: "Thiết Kế Độc Bản",
 
     // Wedding Template General & Opening Cover
     weddingInvitationTitle: "THIỆP MỜI CƯỚI",
@@ -915,6 +915,7 @@ export const DICTIONARY = {
     viewMoreTemplates: "LOAD 240+ MORE TEMPLATES",
     faqHeading: "Frequently Asked Questions",
     faqSubheading: "ANSWERS & GUIDANCE",
+    badgeUniqueDesign: "BESPOKE DESIGN",
     ctaBannerTitle: "Ready to design your bespoke invitation?",
     ctaBannerSubtitle: "Experience 3D wax seal envelopes, photo galleries, and professional RSVP management for your celebration.",
     ctaBannerBtn: "START DESIGNING NOW",
@@ -1337,7 +1338,6 @@ export const DICTIONARY = {
     authResendIn: "Resend in",
     authCreatePasswordTitle: "Set Your Account Password",
     authPasswordRule: "Password must have at least 6 characters to secure your account.",
-    badgeUniqueDesign: "Bespoke Design",
 
     // Wedding Template General & Opening Cover
     weddingInvitationTitle: "WEDDING INVITATION",
@@ -1653,6 +1653,7 @@ export const DICTIONARY = {
     viewMoreTemplates: "加载更多 240+ 模版",
     faqHeading: "常见问题解答",
     faqSubheading: "答疑与指南",
+    badgeUniqueDesign: "专属独家设计",
     ctaBannerTitle: "准备好制作您的专属独家请帖了吗？",
     ctaBannerSubtitle: "沉浸式体验 3D 封蜡火漆信封、唯美相册画廊与专业宾客出席名单管理系统。",
     ctaBannerBtn: "立即开启定制",
@@ -2075,7 +2076,6 @@ export const DICTIONARY = {
     authResendIn: "重新发送倒计时",
     authCreatePasswordTitle: "设置账户登录密码",
     authPasswordRule: "密码至少需 6 个字符以确保您的账户安全。",
-    badgeUniqueDesign: "独家专属定制",
 
     // Wedding Template General & Opening Cover
     weddingInvitationTitle: "结婚请柬",

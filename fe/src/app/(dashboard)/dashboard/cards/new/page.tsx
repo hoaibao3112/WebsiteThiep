@@ -32,6 +32,8 @@ import {
   LayoutTemplate,
   FilePlus2,
   Eye,
+  MoreHorizontal,
+  X,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -203,6 +205,46 @@ function CardBuilderContent() {
 
   const hasTemplateInQuery = Boolean(searchParams.get("template"));
   const [showChoiceModal, setShowChoiceModal] = useState(!hasTemplateInQuery);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [hasDraftBanner, setHasDraftBanner] = useState(false);
+  const draftDataRef = useRef<any>(null);
+
+  // Check saved draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("wedding-card-draft");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.savedAt && Date.now() - parsed.savedAt < 7 * 86400000) {
+          draftDataRef.current = parsed;
+          setHasDraftBanner(true);
+        }
+      }
+    } catch (_) {}
+  }, []);
+
+  const restoreDraft = () => {
+    if (!draftDataRef.current) return;
+    const d = draftDataRef.current;
+    if (d.category) setCategory(d.category);
+    if (d.templateSlug) setTemplateSlug(d.templateSlug);
+    if (d.primaryColor) setPrimaryColor(d.primaryColor);
+    if (d.fontFamily) setFontFamily(d.fontFamily);
+    if (d.greetingMessage !== undefined) setGreetingMessage(d.greetingMessage);
+    if (d.customPhotos) setCustomPhotos(d.customPhotos);
+    if (d.weddingData) setWeddingData(d.weddingData);
+    if (d.birthdayData) setBirthdayData(d.birthdayData);
+    if (d.newbornData) setNewbornData(d.newbornData);
+    setHasDraftBanner(false);
+    confetti({ particleCount: 35, spread: 55, origin: { y: 0.25 } });
+  };
+
+  const dismissDraft = () => {
+    setHasDraftBanner(false);
+    try {
+      localStorage.removeItem("wedding-card-draft");
+    } catch (_) {}
+  };
 
   useEffect(() => {
     if (category !== "WEDDING") {
@@ -290,17 +332,33 @@ function CardBuilderContent() {
           },
         },
         coverPhotoUrl: data.photos && data.photos[0] ? data.photos[0].url : prev.coverPhotoUrl,
-        events: data.eventDate
-          ? [
-              {
-                id: "ev-main",
-                eventName: "Lễ Thành Hôn",
-                eventDate: new Date(`${data.eventDate}T${String(data.eventHour || "10").padStart(2, "0")}:${String(data.eventMinute || "0").padStart(2, "0")}`),
-                venueName: "Trung tâm tiệc cưới",
-                address: data.address || "Tư gia",
-              },
-            ]
-          : prev.events,
+        events:
+          data.events && data.events.length > 0
+            ? data.events.map((ev, i) => {
+                const hourNum = parseInt(ev.eventHour || "10", 10);
+                const militaryHour = ev.eventPeriod === "PM" ? (hourNum % 12) + 12 : hourNum % 12;
+                const dateStr = ev.eventDate
+                  ? `${ev.eventDate}T${String(militaryHour).padStart(2, "0")}:${String(ev.eventMinute || "00").padStart(2, "0")}:00`
+                  : new Date().toISOString();
+                return {
+                  id: `ev-${i + 1}`,
+                  eventName: ev.eventName || (i === 0 ? "Lễ Vu Quy" : "Lễ Thành Hôn"),
+                  eventDate: new Date(dateStr),
+                  venueName: ev.address || "Tư gia",
+                  address: ev.address || "",
+                };
+              })
+            : data.eventDate
+            ? [
+                {
+                  id: "ev-main",
+                  eventName: "Lễ Thành Hôn",
+                  eventDate: new Date(`${data.eventDate}T${String(data.eventHour || "10").padStart(2, "0")}:${String(data.eventMinute || "0").padStart(2, "0")}`),
+                  venueName: "Trung tâm tiệc cưới",
+                  address: data.address || "Tư gia",
+                },
+              ]
+            : prev.events,
       };
 
       setWeddingScene((curr) => {
@@ -830,27 +888,29 @@ function CardBuilderContent() {
           </div>
 
           {category === "WEDDING" && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 relative">
+              {/* Always visible: Chọn Mẫu */}
               <button
                 type="button"
                 onClick={() => setShowChoiceModal(true)}
-                className="min-h-10 px-3 sm:px-4 py-2 rounded-xl border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
-                title="Chọn một trong 9 mẫu thiết kế sẵn từ máy chủ hoặc tạo mẫu trắng"
+                className="min-h-9 px-2.5 sm:px-4 py-2 rounded-xl border border-amber-400 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+                title="Chọn mẫu thiết kế"
               >
                 <LayoutTemplate className="w-3.5 h-3.5 text-amber-600" />
-                <span className="hidden sm:inline">Chọn Mẫu Có Sẵn</span>
+                <span className="hidden sm:inline">Chọn Mẫu</span>
                 <span className="sm:hidden">Mẫu</span>
               </button>
 
+              {/* Desktop: show all buttons */}
               <button
                 type="button"
                 onClick={() => handleTemplateChange("wedding-blank")}
-                className={`min-h-10 px-3 sm:px-3.5 py-2 rounded-xl border text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0 ${
+                className={`hidden md:flex min-h-9 px-3 py-2 rounded-xl border text-xs font-semibold transition items-center gap-1.5 cursor-pointer shadow-2xs shrink-0 ${
                   templateSlug === "wedding-blank"
                     ? "bg-stone-900 border-stone-800 text-white font-bold"
                     : "border-stone-200 bg-white hover:bg-stone-50 text-stone-700"
                 }`}
-                title="Khởi tạo khung trắng sạch sẽ để tự thiết kế"
+                title="Mẫu Trắng Sáng Tạo"
               >
                 <FilePlus2 className="w-3.5 h-3.5" />
                 <span>Mẫu Trắng</span>
@@ -859,22 +919,66 @@ function CardBuilderContent() {
               <button
                 type="button"
                 onClick={() => setShowApplyProfileModal(true)}
-                className="min-h-10 px-3 sm:px-3.5 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
-                title="Lấy dữ liệu từ Hồ Sơ Cưới tài khoản đưa vào thiệp"
+                className="hidden md:flex min-h-9 px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+                title="Lấy dữ liệu từ Hồ Sơ Cưới"
               >
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span className="hidden md:inline">Từ Hồ Sơ</span>
+                <span>Từ Hồ Sơ</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowQuickFill(true)}
-                className="min-h-10 px-3 sm:px-3.5 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
+                className="hidden md:flex min-h-9 px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition items-center gap-1.5 cursor-pointer shadow-2xs shrink-0"
               >
                 <span>Điền Nhanh</span>
               </button>
+
+              {/* Mobile: "..." overflow menu */}
+              <div className="relative md:hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="min-h-9 w-9 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 flex items-center justify-center cursor-pointer shadow-2xs"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {showMobileMenu && (
+                  <>
+                    <div className="fixed inset-0 z-30" onClick={() => setShowMobileMenu(false)} />
+                    <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-2xl border border-stone-200 shadow-xl z-40 overflow-hidden py-1">
+                      <button
+                        type="button"
+                        onClick={() => { handleTemplateChange("wedding-blank"); setShowMobileMenu(false); }}
+                        className={`w-full flex items-center gap-2.5 px-4 py-3 text-xs font-semibold text-left transition cursor-pointer ${templateSlug === "wedding-blank" ? "bg-stone-100 text-stone-900 font-bold" : "text-stone-700 hover:bg-stone-50"}`}
+                      >
+                        <FilePlus2 className="w-4 h-4 text-stone-500" />
+                        <span>Mẫu Trắng Sáng Tạo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowApplyProfileModal(true); setShowMobileMenu(false); }}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 text-xs font-semibold text-stone-700 hover:bg-stone-50 text-left transition cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-600" />
+                        <span>Lấy từ Hồ Sơ Cưới</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowQuickFill(true); setShowMobileMenu(false); }}
+                        className="w-full flex items-center gap-2.5 px-4 py-3 text-xs font-semibold text-stone-700 hover:bg-stone-50 text-left transition cursor-pointer"
+                      >
+                        <span className="w-4 h-4 text-center text-stone-500">⚡</span>
+                        <span>Điền Nhanh Thông Tin</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
+
 
           <div className="flex items-center gap-2">
             {/* ACTION 1: XEM TRƯỚC THIỆP THỰC TẾ TRƯỚC KHI XUẤT BẢN */}
@@ -918,37 +1022,102 @@ function CardBuilderContent() {
         </div>
 
         {/* ROW 2: HORIZONTAL SWIPEABLE BAR (CATEGORIES + TEMPLATES) */}
-        <div className="px-3 sm:px-6 py-1.5 border-t border-stone-100 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {/* CATEGORY (CHUYÊN BIỆT THIỆP CƯỚI) */}
-          <div className="flex items-center gap-1 shrink-0 p-0.5 bg-stone-100 rounded-xl border border-stone-200">
-            <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-stone-900 shadow-xs flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
-              <span>Thiệp Cưới</span>
-            </span>
-          </div>
-
-          <div className="h-5 w-px bg-stone-200 shrink-0" />
-
-          {/* TEMPLATE PRESET SELECTOR (TOUCH HORIZONTAL SCROLL) */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[11px] text-stone-400 font-medium shrink-0">Mẫu:</span>
-            {templatesForCategory.map((tpl) => (
+        <div className="relative border-t border-stone-100 bg-stone-50/60">
+          <div className="px-3 sm:px-6 py-1.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {/* CATEGORY SWITCHER */}
+            <div className="flex items-center gap-1 shrink-0 p-0.5 bg-stone-200/70 rounded-xl border border-stone-200/80">
               <button
-                key={tpl.slug}
                 type="button"
-                onClick={() => handleTemplateChange(tpl.slug)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border shrink-0 min-h-[34px] flex items-center ${
-                  templateSlug === tpl.slug
-                    ? "bg-amber-50 border-amber-400 text-amber-900 font-bold shadow-2xs"
-                    : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                onClick={() => handleCategoryChange("WEDDING")}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  category === "WEDDING"
+                    ? "bg-white text-stone-900 shadow-xs"
+                    : "text-stone-600 hover:text-stone-950"
                 }`}
               >
-                {tpl.label}
+                <Heart className={`w-3.5 h-3.5 ${category === "WEDDING" ? "text-rose-500 fill-rose-500/20" : "text-stone-400"}`} />
+                <span>Thiệp Cưới</span>
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => handleCategoryChange("BIRTHDAY")}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  category === "BIRTHDAY"
+                    ? "bg-white text-stone-900 shadow-xs"
+                    : "text-stone-600 hover:text-stone-950"
+                }`}
+              >
+                <Cake className={`w-3.5 h-3.5 ${category === "BIRTHDAY" ? "text-amber-500 fill-amber-500/20" : "text-stone-400"}`} />
+                <span>Sinh Nhật</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCategoryChange("NEWBORN")}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  category === "NEWBORN"
+                    ? "bg-white text-stone-900 shadow-xs"
+                    : "text-stone-600 hover:text-stone-950"
+                }`}
+              >
+                <Baby className={`w-3.5 h-3.5 ${category === "NEWBORN" ? "text-sky-500 fill-sky-500/20" : "text-stone-400"}`} />
+                <span>Đầy Tháng</span>
+              </button>
+            </div>
+
+            <div className="h-5 w-px bg-stone-300/80 shrink-0" />
+
+            {/* TEMPLATE PRESET SELECTOR (TOUCH HORIZONTAL SCROLL) */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[11px] text-stone-500 font-medium shrink-0">Mẫu:</span>
+              {templatesForCategory.map((tpl) => (
+                <button
+                  key={tpl.slug}
+                  type="button"
+                  onClick={() => handleTemplateChange(tpl.slug)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer border shrink-0 min-h-[34px] flex items-center ${
+                    templateSlug === tpl.slug
+                      ? "bg-amber-50 border-amber-400 text-amber-900 font-bold shadow-2xs"
+                      : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                  }`}
+                >
+                  {tpl.label}
+                </button>
+              ))}
+            </div>
           </div>
+          {/* Subtle gradient right fade to indicate scrollable items */}
+          <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-stone-50 to-transparent pointer-events-none md:hidden" />
         </div>
       </header>
+
+      {/* DRAFT RESTORE BANNER */}
+      {hasDraftBanner && (
+        <div className="bg-amber-50/95 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-amber-950 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="truncate">
+              Bạn có bản thảo thiệp chưa lưu từ phiên làm việc trước.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={restoreDraft}
+              className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shadow-xs cursor-pointer transition"
+            >
+              Khôi Phục
+            </button>
+            <button
+              type="button"
+              onClick={dismissDraft}
+              className="p-1 rounded-md text-stone-400 hover:text-stone-700 cursor-pointer transition"
+              title="Bỏ qua bản thảo"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ERROR BANNER */}
       {errorMsg && (

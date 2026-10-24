@@ -6,20 +6,19 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import confetti from "canvas-confetti";
 import {
-  ArrowRight,
   ChevronDown,
   Heart,
   ChevronUp,
-  ChevronLeft,
-  ChevronRight,
   Sparkles,
   Eye,
-  Crown,
   Check,
   Sparkle,
-  Star,
   Layers,
-  Wand2,
+  Search,
+  X,
+  SlidersHorizontal,
+  Baby,
+  Cake,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useLanguage } from "@/context/LanguageContext";
@@ -29,6 +28,18 @@ import { TemplateDetailModal, TemplateModalData } from "@/components/shared/Temp
 import { MASTER_TEMPLATES, MasterTemplateItem } from "@/lib/templates-data";
 
 type TemplateItem = MasterTemplateItem;
+type CategoryFilter = "ALL" | "WEDDING" | "BIRTHDAY" | "NEWBORN";
+type SortOption = "popular" | "newest" | "price-asc" | "price-desc";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  WEDDING: "Thiệp Cưới",
+  BIRTHDAY: "Sinh Nhật",
+  NEWBORN: "Thôi Nôi",
+};
+
+function parsePrice(price: string): number {
+  return parseInt(price.replace(/[^0-9]/g, "") || "0", 10);
+}
 
 // Interactive 3D Tilt Card Component
 function LuxuryTemplateCard({
@@ -125,9 +136,9 @@ function LuxuryTemplateCard({
           </span>
         )}
 
-        {/* CATEGORY TAG (TOP RIGHT) */}
+        {/* CATEGORY TAG (TOP RIGHT) — dynamic */}
         <span className="absolute top-3 right-3 px-2.5 py-0.5 rounded-full bg-black/45 backdrop-blur-md text-amber-200 text-[9px] font-bold tracking-wider uppercase border border-amber-300/30">
-          Thiệp Cưới
+          {CATEGORY_LABELS[template.category] || "Thiệp Cưới"}
         </span>
 
         {/* INTERACTIVE HOVER GLASS OVERLAY (DESKTOP) */}
@@ -234,37 +245,83 @@ export default function CollectionsPage() {
   const { user, openAuthModal } = useAuth();
   const router = useRouter();
 
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("WEDDING");
   const [selectedStyle, setSelectedStyle] = useState("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("popular");
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [selectedModalTemplate, setSelectedModalTemplate] = useState<TemplateModalData | null>(null);
-  const [favorites, setFavorites] = useState<Record<string, boolean>>({});
   const [displayedCount, setDisplayedCount] = useState(12);
 
+  // Persist favorites to localStorage
+  const [favorites, setFavorites] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const saved = localStorage.getItem("template-favorites");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
   const TEMPLATES = MASTER_TEMPLATES;
 
-  const styles = [
-    { id: "ALL", label: `Tất Cả Mẫu Cưới (${TEMPLATES.length})` },
-    { id: "Cổ Điển Hoàng Gia", label: t("styleRoyalClassic") || "Cổ Điển Hoàng Gia" },
-    { id: "Minimalist Luxury", label: t("styleMinimalistLuxury") || "Tối Giản Sang Trọng" },
-    { id: "Floral Romance", label: t("styleFloralRomance") || "Hoa Cỏ Lãng Mạn" },
+  const categoryTabs: { id: CategoryFilter; label: string; icon: React.ReactNode }[] = [
+    { id: "ALL", label: `Tất Cả (${TEMPLATES.length})`, icon: <Layers className="w-3.5 h-3.5" /> },
+    { id: "WEDDING", label: `Thiệp Cưới (${TEMPLATES.filter((t) => t.category === "WEDDING").length})`, icon: <Heart className="w-3.5 h-3.5" /> },
+    { id: "BIRTHDAY", label: `Sinh Nhật (${TEMPLATES.filter((t) => t.category === "BIRTHDAY").length})`, icon: <Cake className="w-3.5 h-3.5" /> },
+    { id: "NEWBORN", label: `Thôi Nôi (${TEMPLATES.filter((t) => t.category === "NEWBORN").length})`, icon: <Baby className="w-3.5 h-3.5" /> },
   ];
 
-  const filteredTemplates = TEMPLATES.filter((tpl) => {
-    const matchStyle = selectedStyle === "ALL" || tpl.style === selectedStyle;
-    return matchStyle;
-  });
+  const stylesForCategory = [
+    "ALL",
+    ...Array.from(
+      new Set(
+        TEMPLATES
+          .filter((tpl) => selectedCategory === "ALL" || tpl.category === selectedCategory)
+          .map((tpl) => tpl.style)
+          .filter(Boolean)
+      )
+    ),
+  ];
+
+  const sortOptions: { id: SortOption; label: string }[] = [
+    { id: "popular", label: "Phổ biến nhất" },
+    { id: "newest", label: "Mới nhất" },
+    { id: "price-asc", label: "Giá thấp → cao" },
+    { id: "price-desc", label: "Giá cao → thấp" },
+  ];
+
+  const filteredTemplates = TEMPLATES
+    .filter((tpl) => {
+      const matchCategory = selectedCategory === "ALL" || tpl.category === selectedCategory;
+      const matchStyle = selectedStyle === "ALL" || tpl.style === selectedStyle;
+      const matchSearch =
+        !searchQuery ||
+        tpl.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (tpl.tags || []).some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (tpl.style || "").toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCategory && matchStyle && matchSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "newest": return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+        case "price-asc": return parsePrice(a.price) - parsePrice(b.price);
+        case "price-desc": return parsePrice(b.price) - parsePrice(a.price);
+        default: return (b.salesCount || 0) - (a.salesCount || 0);
+      }
+    });
 
   const visibleTemplates = filteredTemplates.slice(0, displayedCount);
 
   const handleToggleFavorite = (id: string) => {
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
-    confetti({
-      particleCount: 25,
-      spread: 40,
-      origin: { y: 0.7 },
-      colors: ["#FF6B8B", "#FF8E53", "#BE944E"],
+    setFavorites((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      try { localStorage.setItem("template-favorites", JSON.stringify(next)); } catch {}
+      return next;
     });
+    confetti({ particleCount: 25, spread: 40, origin: { y: 0.7 }, colors: ["#FF6B8B", "#FF8E53", "#BE944E"] });
   };
 
   const handleUseTemplate = (template: TemplateItem) => {
@@ -276,16 +333,15 @@ export default function CollectionsPage() {
     }
   };
 
-
+  const handleCategoryChange = (cat: CategoryFilter) => {
+    setSelectedCategory(cat);
+    setSelectedStyle("ALL");
+    setDisplayedCount(12);
+  };
 
   const handleLoadMore = () => {
-    setDisplayedCount((prev) => Math.min(prev + 4, TEMPLATES.length));
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.8 },
-      colors: ["#BE944E", "#D4AF37", "#FFFFFF"],
-    });
+    setDisplayedCount((prev) => Math.min(prev + 4, filteredTemplates.length));
+    confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 }, colors: ["#BE944E", "#D4AF37", "#FFFFFF"] });
   };
 
   const FAQS = [
@@ -438,49 +494,158 @@ export default function CollectionsPage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 3. ELEGANT WEDDING STYLES FILTER */}
+      {/* 3. CATEGORY TABS + SEARCH + SORT TOOLBAR */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 my-6">
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)]">
-          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar py-0.5 px-1">
-            {styles.map((s) => {
-              const isActive = selectedStyle === s.id;
+      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 mb-4">
+        <div className="bg-white/85 backdrop-blur-md rounded-2xl p-3 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)] space-y-3">
+
+          {/* Row 1: Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {categoryTabs.map((cat) => {
+              const isActive = selectedCategory === cat.id;
               return (
                 <button
-                  key={s.id}
-                  onClick={() => setSelectedStyle(s.id)}
-                  className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer ${
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer shrink-0 ${
                     isActive
-                      ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md scale-102 ring-2 ring-[#BE944E]/30"
+                      ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md ring-2 ring-[#BE944E]/30"
                       : "bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200/80 hover:border-[#BE944E]/40"
                   }`}
                 >
-                  {s.label}
+                  {cat.icon}
+                  <span>{cat.label}</span>
                 </button>
               );
             })}
           </div>
+
+          {/* Row 2: Style filter + Search + Sort */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* Style Filter pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+              {stylesForCategory.map((s) => {
+                const isActive = selectedStyle === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedStyle(s)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
+                      isActive
+                        ? "bg-[#BE944E]/15 text-[#8C6424] border border-[#BE944E]/50 font-bold"
+                        : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+                    }`}
+                  >
+                    {s === "ALL" ? "Tất Cả Phong Cách" : s}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1 hidden sm:block" />
+
+            {/* Search input */}
+            <div className="relative w-full sm:w-52 shrink-0">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Tìm mẫu..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setDisplayedCount(12); }}
+                className="w-full pl-8 pr-8 py-2 rounded-xl border border-stone-200 bg-stone-50/80 text-xs focus:outline-none focus:border-[#BE944E] transition text-stone-800 placeholder:text-stone-400"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-700 cursor-pointer">
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative shrink-0">
+              <button
+                onClick={() => setShowSortMenu(!showSortMenu)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-xs font-semibold text-stone-700 transition cursor-pointer whitespace-nowrap"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-stone-500" />
+                <span className="hidden sm:inline">{sortOptions.find((o) => o.id === sortBy)?.label}</span>
+                <span className="sm:hidden">Sắp xếp</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-stone-400 transition-transform ${showSortMenu ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {showSortMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl border border-stone-200 shadow-xl z-30 overflow-hidden"
+                  >
+                    {sortOptions.map((opt) => (
+                      <button
+                        key={opt.id}
+                        onClick={() => { setSortBy(opt.id); setShowSortMenu(false); }}
+                        className={`w-full px-4 py-2.5 text-xs text-left font-medium transition cursor-pointer flex items-center justify-between ${
+                          sortBy === opt.id ? "bg-amber-50 text-[#8C6424] font-bold" : "text-stone-700 hover:bg-stone-50"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {sortBy === opt.id && <Check className="w-3.5 h-3.5 text-[#BE944E]" />}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </section>
 
+      {/* Close sort menu backdrop */}
+      {showSortMenu && <div className="fixed inset-0 z-20" onClick={() => setShowSortMenu(false)} />}
+
       {/* ------------------------------------------------------------- */}
-      {/* 4. TEMPLATES 8-CARD LUXURY GRID (4 Columns x 2 Rows) */}
+      {/* 4. TEMPLATES GRID */}
       {/* ------------------------------------------------------------- */}
       <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 my-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          {visibleTemplates.map((tItem) => (
-            <LuxuryTemplateCard
-              key={tItem.id}
-              template={tItem}
-              onOpenDemo={(t) => setSelectedModalTemplate(t)}
-              onUseTemplate={handleUseTemplate}
-              isFavorite={!!favorites[tItem.id]}
-              onToggleFavorite={handleToggleFavorite}
-            />
-          ))}
+        {/* Result count */}
+        <div className="text-xs text-stone-500 mb-4 font-medium">
+          {searchQuery ? (
+            <span>Tìm thấy <span className="font-bold text-stone-800">{filteredTemplates.length}</span> mẫu cho &ldquo;{searchQuery}&rdquo;</span>
+          ) : (
+            <span>Hiển thị <span className="font-bold text-stone-800">{Math.min(displayedCount, filteredTemplates.length)}</span>/{filteredTemplates.length} mẫu</span>
+          )}
         </div>
 
-        {/* LOAD MORE BUTTON WITH GLOW EFFECT */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+          {visibleTemplates.length > 0 ? (
+            visibleTemplates.map((tItem) => (
+              <LuxuryTemplateCard
+                key={tItem.id}
+                template={tItem}
+                onOpenDemo={(t) => setSelectedModalTemplate(t)}
+                onUseTemplate={handleUseTemplate}
+                isFavorite={!!favorites[tItem.id]}
+                onToggleFavorite={handleToggleFavorite}
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-20 text-center">
+              <div className="text-5xl mb-4">🔍</div>
+              <p className="text-stone-500 font-semibold text-sm">Không tìm thấy mẫu phù hợp</p>
+              <p className="text-stone-400 text-xs mt-1">Thử tìm kiếm với từ khóa khác hoặc bỏ bộ lọc</p>
+              <button
+                onClick={() => { setSearchQuery(""); setSelectedStyle("ALL"); }}
+                className="mt-4 px-5 py-2 rounded-full bg-[#BE944E] text-white text-xs font-bold cursor-pointer hover:bg-[#9E7329] transition"
+              >
+                Xóa bộ lọc
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* LOAD MORE BUTTON */}
         {displayedCount < filteredTemplates.length && (
           <div className="text-center mt-12">
             <motion.button
@@ -490,10 +655,8 @@ export default function CollectionsPage() {
               className="relative group inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#FFFBF2] to-[#FAF3E3] border border-[#D9C4A1] text-xs font-bold uppercase tracking-[0.2em] text-[#8C6424] shadow-[0_4px_16px_rgba(190,148,78,0.15)] hover:shadow-[0_8px_24px_rgba(190,148,78,0.25)] transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#BE944E] group-hover:rotate-12 transition-transform" />
-              <span>{t("viewMoreTemplates") || "XEM THÊM 240+ MẪU"}</span>
+              <span>XEM THÊM {filteredTemplates.length - displayedCount} MẪU</span>
               <ChevronDown className="w-4 h-4 text-[#BE944E] group-hover:translate-y-0.5 transition-transform" />
-
-              {/* Glowing aura */}
               <div className="absolute inset-0 rounded-full bg-amber-400/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </motion.button>
           </div>
@@ -538,33 +701,90 @@ export default function CollectionsPage() {
       </section>
 
       {/* ------------------------------------------------------------- */}
-      {/* 6. BOTTOM BANNER */}
+      {/* 6. BOTTOM BANNER (Light Luxury 3D Paper-Cut Sculptural Design) */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-6xl mx-auto px-6 mb-16">
-        <div className="rounded-[36px] bg-gradient-to-br from-[#1C1A17] via-[#2D261E] to-[#1C1A17] text-white p-10 sm:p-14 text-center shadow-2xl relative overflow-hidden border border-[#D4AF37]/30">
-          {/* Glowing backlight */}
-          <div className="absolute top-0 right-1/4 w-72 h-72 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 mb-20">
+        <div className="relative rounded-[36px] sm:rounded-[44px] overflow-hidden p-4 sm:p-7 md:p-12 bg-gradient-to-b from-[#F2ECE1] via-[#EBE2D5] to-[#E5DACB] border border-[#E3D6C4] shadow-[0_20px_50px_rgba(180,140,80,0.08)]">
+          {/* 3D Sculptural Paper Cut Relief Layers */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            {/* Top Wave Layer 1 */}
+            <svg
+              className="absolute -top-10 left-0 w-full h-44 sm:h-52 opacity-75"
+              viewBox="0 0 1200 300"
+              fill="none"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M0 0 L1200 0 L1200 70 C1000 150 850 40 600 100 C350 160 200 80 0 140 Z"
+                fill="#F7F1E7"
+              />
+              <path
+                d="M0 0 L1200 0 L1200 30 C950 110 750 25 500 70 C250 120 150 60 0 95 Z"
+                fill="#FAF6EE"
+              />
+            </svg>
 
-          <div className="relative z-10 space-y-5 max-w-lg mx-auto">
-            <span className="inline-block px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-400/30">
-              {t("badgeUniqueDesign") || "Thiết Kế Độc Bản"}
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-stone-100">
-              {t("ctaBannerTitle") || "Bắt đầu tạo thiệp ngay hôm nay"}
+            {/* Concentric Circles Art (Left Edge) */}
+            <svg
+              className="absolute -left-16 sm:-left-12 top-1/2 -translate-y-1/2 w-44 sm:w-56 h-44 sm:h-56 opacity-45"
+              viewBox="0 0 200 200"
+              fill="none"
+            >
+              <circle cx="50" cy="100" r="85" stroke="#BEA992" strokeWidth="1.5" />
+              <circle cx="50" cy="100" r="55" stroke="#BEA992" strokeWidth="1.2" />
+              <circle cx="50" cy="100" r="28" fill="#E2D4C1" />
+            </svg>
+
+            {/* Soft Organic Circles Art (Right Edge) */}
+            <svg
+              className="absolute -right-14 sm:-right-10 top-1/3 w-52 sm:w-64 h-52 sm:h-64 opacity-40"
+              viewBox="0 0 200 200"
+              fill="none"
+            >
+              <circle cx="145" cy="90" r="75" fill="#E0D2C0" />
+              <circle cx="145" cy="90" r="45" stroke="#BEA992" strokeWidth="1.5" />
+              <circle cx="145" cy="90" r="22" fill="#D7C5B0" />
+            </svg>
+
+            {/* Bottom Right 4-Point Sparkle */}
+            <div className="absolute bottom-5 sm:bottom-7 right-7 sm:right-12 text-[#D2C0AB] opacity-80">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0 L14.2 9.2 L24 12 L14.2 14.8 L12 24 L9.8 14.8 L0 12 L9.8 9.2 Z" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Main Ivory Card */}
+          <div className="relative z-10 w-full rounded-[28px] sm:rounded-[36px] bg-[#FAF3E7] border border-[#EADBCA] shadow-[0_12px_36px_rgba(180,140,80,0.06),0_2px_8px_rgba(0,0,0,0.02)] py-12 sm:py-16 md:py-20 px-6 sm:px-12 text-center flex flex-col items-center justify-center space-y-4 sm:space-y-5">
+            {/* Tag Badge */}
+            <div className="inline-flex items-center justify-center px-4 sm:px-5 py-1 sm:py-1.5 rounded-full bg-[#E5D7C3] border border-[#D5C2AA]/80 shadow-2xs">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#6E4F32]">
+                {t("badgeUniqueDesign") || "THIẾT KẾ ĐỘC BẢN"}
+              </span>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl sm:text-3xl md:text-[34px] lg:text-[36px] font-serif font-bold text-[#1E1B18] tracking-tight leading-[1.28] max-w-xl mx-auto">
+              {t("ctaBannerTitle") || "Sẵn sàng tạo tấm thiệp độc bản của bạn?"}
             </h2>
-            <p className="text-xs text-stone-300 leading-relaxed">
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-[13px] md:text-sm text-[#685F55] leading-relaxed max-w-lg sm:max-w-xl mx-auto">
               {t("ctaBannerSubtitle") || "Trải nghiệm phong bì sáp 3D, album ảnh cưới và quản lý RSVP chuyên nghiệp cho sự kiện của bạn."}
             </p>
-            <div>
+
+            {/* CTA Button */}
+            <div className="pt-2">
               <button
+                type="button"
                 onClick={() => {
                   if (user) router.push("/dashboard/cards/new");
                   else openAuthModal("login");
                 }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-gradient-to-r from-[#BE944E] to-[#D4AF37] hover:from-[#D4AF37] hover:to-[#BE944E] text-stone-950 text-xs font-bold uppercase tracking-widest transition shadow-lg shadow-amber-500/20 hover:scale-105 cursor-pointer"
+                className="group inline-flex items-center justify-center gap-2.5 px-7 sm:px-9 py-3 sm:py-3.5 rounded-full bg-[#8E5323] hover:bg-[#7D451B] active:scale-95 text-white text-xs sm:text-[12.5px] font-bold uppercase tracking-[0.16em] transition-all duration-300 shadow-[0_8px_22px_rgba(142,83,35,0.35)] hover:shadow-[0_12px_28px_rgba(142,83,35,0.45)] cursor-pointer"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{t("ctaBannerBtn") || "Tạo Thiệp Ngay"}</span>
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FFDE9E] fill-[#FFDE9E] transition-transform duration-300 group-hover:rotate-12" />
+                <span>{t("ctaBannerBtn") || "BẮT ĐẦU THIẾT KẾ"}</span>
               </button>
             </div>
           </div>
