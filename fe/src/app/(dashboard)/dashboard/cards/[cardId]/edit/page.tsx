@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } fr
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { CardCategory, CardDetail, EventItem, PhotoItem, WeddingDataPayload, CardElementAnimationsConfig } from "@/types/card.types";
+import { CardCategory, CardDetail, EventItem, PhotoItem, WeddingDataPayload, CardElementAnimationsConfig, OpeningEffectType } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
@@ -385,7 +385,7 @@ function EditCardContent() {
   const [allowMusicUpload, setAllowMusicUpload] = useState(true);
   const [primaryColor, setPrimaryColor] = useState("#BE944E");
   const [fontFamily, setFontFamily] = useState("Playfair Display");
-  const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "NONE">("WAX_SEAL");
+  const [openingEffect, setOpeningEffect] = useState<OpeningEffectType>("WAX_SEAL");
   const [fallingEffect, setFallingEffect] = useState<"PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON" | "NONE">(
     "PETAL"
   );
@@ -567,7 +567,7 @@ function EditCardContent() {
     setAllowMusicUpload(Boolean(cardPlan?.allowMusicUpload ?? (cardPlan?.code === "VIP" || cardPlan?.code === "BASIC")));
     setPrimaryColor(card.primaryColor);
     setFontFamily(card.fontFamily);
-    setOpeningEffect((card.openingEffect as "WAX_SEAL" | "GATE_OPEN" | "NONE") || "WAX_SEAL");
+    setOpeningEffect((card.openingEffect as OpeningEffectType) || "WAX_SEAL");
     setFallingEffect(
       (card.fallingEffect as "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON" | "NONE") || "PETAL"
     );
@@ -2147,9 +2147,12 @@ function EditCardContent() {
                       onChange={(e) => setOpeningEffect(e.target.value as any)}
                       className="w-full px-3 py-2.5 text-base sm:text-xs rounded-xl bg-white border border-stone-200 font-medium min-h-[44px] sm:min-h-[38px]"
                     >
-                      <option value="WAX_SEAL">Sáp Niêm Phong Vàng</option>
-                      <option value="GATE_OPEN">Cổng Hoa Mở</option>
-                      <option value="NONE">Mở Trực Tiếp</option>
+                      <option value="NONE">Không hiệu ứng (Mở trực tiếp)</option>
+                      <option value="WAX_SEAL">Con dấu sáp hoàng gia</option>
+                      <option value="GATE_OPEN">Cổng hoa mở 2 cánh (VIP)</option>
+                      <option value="GIFT_BOX">Hộp quà tình yêu 3D (VIP)</option>
+                      <option value="ROYAL_CURTAIN">Màn nhung sân khấu (VIP)</option>
+                      <option value="ORIENTAL_DOOR">Cửa cung đình Song Hỷ (VIP)</option>
                     </select>
                   </div>
                   <div>

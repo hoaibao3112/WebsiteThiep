@@ -9,7 +9,7 @@ const OPENING_EFFECTS = [
     id: "NONE",
     title: "Không hiệu ứng",
     description: "Vào thẳng nội dung thiệp ngay lập tức",
-    previewBg: "from-stone-100 to-stone-200",
+    previewBg: "from-stone-100 to-stone-200 text-stone-600",
     vipOnly: false,
   },
   {
@@ -24,6 +24,7 @@ const OPENING_EFFECTS = [
     title: "Cổng hoa mở 2 cánh",
     description: "Cửa dinh thự / cổng hoa bung mở sang hai bên",
     previewBg: "from-amber-700 to-amber-950 text-amber-100",
+    thumbnail: "/images/effects/royal-gate.jpg",
     vipOnly: true,
   },
   {
@@ -31,6 +32,23 @@ const OPENING_EFFECTS = [
     title: "Hộp quà tình yêu",
     description: "Hộp quà 3D mở nắp kèm pháo hoa rực rỡ",
     previewBg: "from-rose-600 to-pink-900 text-white",
+    thumbnail: "/images/effects/gift-box-closed.jpg",
+    vipOnly: true,
+  },
+  {
+    id: "ROYAL_CURTAIN",
+    title: "Màn nhung sân khấu",
+    description: "Rèm nhung hoàng gia kéo 2 bên kèm ánh đèn lung linh",
+    previewBg: "from-red-950 to-amber-950 text-amber-200",
+    thumbnail: "/images/effects/royal-curtain.jpg",
+    vipOnly: true,
+  },
+  {
+    id: "ORIENTAL_DOOR",
+    title: "Cửa cung đình Song Hỷ",
+    description: "Cửa gỗ rồng phượng thếp vàng chạm gõ mở vào",
+    previewBg: "from-red-900 to-stone-900 text-amber-300",
+    thumbnail: "/images/effects/oriental-door.jpg",
     vipOnly: true,
   },
 ];
@@ -102,9 +120,13 @@ export function EffectTool() {
                 className="p-3 flex items-start gap-3 cursor-pointer"
               >
                 <div
-                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.previewBg} shadow-inner flex items-center justify-center shrink-0 border border-white/20`}
+                  className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.previewBg} shadow-inner flex items-center justify-center shrink-0 border border-white/20 overflow-hidden relative`}
                 >
-                  <Sparkles className="size-5" />
+                  {item.thumbnail ? (
+                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <Sparkles className="size-5" />
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1">

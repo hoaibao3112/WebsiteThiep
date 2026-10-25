@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CardDetail, WeddingDataPayload } from "@/types/card.types";
 import { WeddingCoverOpening } from "./opening/WeddingCoverOpening";
+import { UniversalOpeningEffect } from "../shared/OpeningEffect/UniversalOpeningEffect";
 import { FallingEffect } from "../shared/FallingEffect";
 import { AudioPlayer } from "../shared/AudioPlayer";
 import { FloatingCelebrationWidget } from "../shared/FloatingCelebrationWidget";
@@ -105,14 +106,14 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
   const activeGuestName = resolvedGuestName || guestName;
   const envelopeConfig = (data.envelopeConfig || (card.categoryData as any)?.envelopeConfig) as import("@/types/card.types").EnvelopeConfig | undefined;
-  const isCoverOpeningExplicitlyDisabled = envelopeConfig?.enabled === false;
+  const isCoverOpeningExplicitlyDisabled = envelopeConfig?.enabled === false && (!card.openingEffect || card.openingEffect === "NONE");
+  const hasOpeningEffect = card.openingEffect && card.openingEffect !== "NONE";
   const shouldShowOpening =
     !isPreview &&
     !opened &&
     !isCoverOpeningExplicitlyDisabled &&
     (
-      card.openingEffect === "WAX_SEAL" ||
-      card.openingEffect === "GATE_OPEN" ||
+      hasOpeningEffect ||
       envelopeConfig?.enabled === true ||
       isDemoCard ||
       Boolean(activeGuestName) ||
@@ -135,9 +136,10 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
         "--wedding-scene-text": scene?.tokens.text || "#2e1b1b",
       } as React.CSSProperties}
     >
-      {/* 1. MÀN HÌNH BÌA MỞ THIỆP CƯỚI CAO CẤP CÓ ÂM THANH & CHUYỂN ĐỘNG (11 MẪU THIỆP & TÙY BIẾN TỪ BACKEND) */}
+      {/* 1. MÀN HÌNH BÌA MỞ THIỆP CƯỚI CAO CẤP CÓ ÂM THANH & CHUYỂN ĐỘNG (ĐA DẠNG 5 HIỆU ỨNG TƯƠNG TÁC) */}
       {shouldShowOpening && (
-        <WeddingCoverOpening
+        <UniversalOpeningEffect
+          effect={card.openingEffect || (envelopeConfig?.enabled ? "WAX_SEAL" : "WAX_SEAL")}
           templateSlug={effectiveSlug}
           envelopeConfig={envelopeConfig}
           weddingData={data}

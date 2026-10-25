@@ -36,6 +36,8 @@ import { RsvpFormModal } from "@/components/shared/RsvpFormModal";
 import { GiftQrBoxModal } from "@/components/shared/GiftQrBoxModal";
 import { GuestbookSection } from "@/components/shared/GuestbookSection";
 import { WaxSealOpening } from "@/components/shared/OpeningEffect/WaxSealOpening";
+import { UniversalOpeningEffect } from "@/components/shared/OpeningEffect/UniversalOpeningEffect";
+import { OpeningEffectType } from "@/types/card.types";
 import { getMonogram } from "@/lib/guest/monogram";
 
 type DeviceMode = "mobile" | "tablet" | "desktop";
@@ -95,10 +97,12 @@ export function LiveCardPreviewModal({
     categoryData?.canvasDocument?.musicUrl ||
     "";
 
-  // Check envelope configuration
+  // Check envelope & opening effect configuration
   const envelopeConfig =
     categoryData?.envelopeConfig || draft?.envelopeConfig;
   const hasEnvelope = Boolean(envelopeConfig && envelopeConfig.enabled !== false);
+  const openingEffect = (draft?.openingEffect as OpeningEffectType) || (hasEnvelope ? "WAX_SEAL" : "NONE");
+  const shouldShowOpeningOverlay = Boolean(openingEffect && openingEffect !== "NONE" && !envelopeOpened);
 
   // Auto setup audio
   useEffect(() => {
@@ -448,15 +452,15 @@ export function LiveCardPreviewModal({
                   backgroundPosition: "center",
                 }}
               >
-                {/* WAX SEAL ENVELOPE OPENING OVERLAY */}
-                {hasEnvelope && !envelopeOpened ? (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#FAF6EE]/95">
-                    <WaxSealOpening
-                      primaryColor={primaryColor}
-                      title={`${groomName} & ${brideName}`}
-                      guestName={simulatedGuestName}
-                      monogram={coupleMonogram}
+                {/* UNIVERSAL OPENING EFFECT OVERLAY (ALL 5 EFFECTS SUPPORTED) */}
+                {shouldShowOpeningOverlay ? (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center">
+                    <UniversalOpeningEffect
+                      effect={openingEffect}
+                      templateSlug={templateSlug}
                       envelopeConfig={envelopeConfig}
+                      weddingData={categoryData}
+                      guestName={simulatedGuestName}
                       onOpened={() => setEnvelopeOpened(true)}
                     />
                   </div>

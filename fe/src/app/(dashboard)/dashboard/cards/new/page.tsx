@@ -3,7 +3,7 @@
 import React, { useState, Suspense, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload, PhotoItem } from "@/types/card.types";
+import { CardCategory, CardDetail, WeddingDataPayload, BirthdayDataPayload, NewbornDataPayload, PhotoItem, OpeningEffectType } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { BirthdayView } from "@/components/birthday/BirthdayView";
 import { NewbornView } from "@/components/newborn/NewbornView";
@@ -163,7 +163,7 @@ function CardBuilderContent() {
   const [fontFamily, setFontFamily] = useState(
     initialDemoCard?.fontFamily || initialTemplateConfig?.defaultFontFamily || "Playfair Display"
   );
-  const [openingEffect, setOpeningEffect] = useState<"NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX">(
+  const [openingEffect, setOpeningEffect] = useState<OpeningEffectType>(
     initialDemoCard?.openingEffect || "WAX_SEAL"
   );
   const [fallingEffect, setFallingEffect] = useState<"NONE" | "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON">(

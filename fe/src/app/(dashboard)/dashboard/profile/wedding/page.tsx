@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Sparkles, Check, Loader2, Heart, Plus } from "lucide-react";
 import { ApiClient } from "@/lib/api";
-import { CardDetail, EventItem, PhotoItem } from "@/types/card.types";
+import { CardDetail, EventItem, PhotoItem, OpeningEffectType } from "@/types/card.types";
 import { WeddingView } from "@/components/wedding/WeddingView";
 import { WeddingAccordionForm } from "@/components/wedding/form/WeddingAccordionForm";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
@@ -22,7 +22,7 @@ export default function WeddingProfilePage() {
   // ── 23 SECTIONS STATE ──
   const [templateSlug, setTemplateSlug] = useState("wedding-heritage-crimson-gold");
   const [primaryColor, setPrimaryColor] = useState("#8B1E2D");
-  const [openingEffect, setOpeningEffect] = useState<"WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX" | "NONE">("WAX_SEAL");
+  const [openingEffect, setOpeningEffect] = useState<OpeningEffectType>("WAX_SEAL");
 
   const [groomName, setGroomName] = useState("");
   const [groomShort, setGroomShort] = useState("");

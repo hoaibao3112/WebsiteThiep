@@ -915,7 +915,7 @@ function SelectInspector({
       >
         <option value="">Mặc định của mẫu thiệp</option>
         {field.allowedValues
-          ?.filter((option) => isVip || !["GATE_OPEN", "GIFT_BOX", "BALLOON"].includes(option))
+          ?.filter((option) => isVip || !["GATE_OPEN", "GIFT_BOX", "ROYAL_CURTAIN", "ORIENTAL_DOOR", "BALLOON"].includes(option))
           .map((opt) => (
             <option key={opt} value={opt}>
               {opt}

@@ -35,7 +35,7 @@ import {
   Pause,
   ExternalLink,
 } from "lucide-react";
-import { PhotoItem, EventItem } from "@/types/card.types";
+import { PhotoItem, EventItem, OpeningEffectType } from "@/types/card.types";
 
 interface WeddingAccordionFormProps {
   // Theme & Opening
@@ -43,8 +43,8 @@ interface WeddingAccordionFormProps {
   onSelectTemplate?: (slug: string) => void;
   primaryColor: string;
   onColorChange: (color: string) => void;
-  openingEffect: "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX" | "NONE";
-  onOpeningEffectChange: (effect: "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX" | "NONE") => void;
+  openingEffect: OpeningEffectType;
+  onOpeningEffectChange: (effect: OpeningEffectType) => void;
 
   // Couple & Parents
   groomName: string;
@@ -245,7 +245,9 @@ export function WeddingAccordionForm(props: WeddingAccordionFormProps) {
             {[
               { id: "WAX_SEAL", name: "Sáp Niêm Phong" },
               { id: "GATE_OPEN", name: "Cổng Hoa Mở" },
-              { id: "GIFT_BOX", name: "Hộp Quà Sang Trọng" },
+              { id: "GIFT_BOX", name: "Hộp Quà 3D" },
+              { id: "ROYAL_CURTAIN", name: "Màn Nhung Hoàng Gia" },
+              { id: "ORIENTAL_DOOR", name: "Cửa Cung Đình" },
               { id: "NONE", name: "Vào Thẳng Thiệp" },
             ].map((eff) => (
               <button

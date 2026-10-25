@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CardDetail, BirthdayDataPayload } from "@/types/card.types";
-import { WaxSealOpening } from "../shared/OpeningEffect/WaxSealOpening";
+import { UniversalOpeningEffect } from "../shared/OpeningEffect/UniversalOpeningEffect";
 import { FallingEffect } from "../shared/FallingEffect";
 import { AudioPlayer } from "../shared/AudioPlayer";
 import { CountdownTimer } from "../shared/CountdownTimer";
@@ -39,13 +39,11 @@ export const BirthdayView: React.FC<{
 
   return (
     <div data-template-variant={variant} className={`relative min-h-screen bg-stone-950 text-stone-100 font-sans ${isPreview ? "pb-4 overflow-hidden" : "pb-24 overflow-x-hidden"}`}>
-      {!isPreview && !opened && (card.openingEffect === "WAX_SEAL" || card.openingEffect === "GATE_OPEN" || Boolean(guestName)) && (
-        <WaxSealOpening
-          primaryColor={primaryColor}
+      {!isPreview && !opened && (card.openingEffect !== "NONE" || Boolean(guestName)) && (
+        <UniversalOpeningEffect
+          effect={card.openingEffect || "GIFT_BOX"}
           title={`${t("birthdayTitle")} - ${data.celebrantName}`}
-          subtitle="Birthday Invitation"
           guestName={guestName}
-          isVipExperience={isVipExperience}
           onOpenStart={() => setAudioStarted(true)}
           onOpened={() => setOpened(true)}
         />

@@ -1,6 +1,6 @@
 export type CardCategory = "WEDDING" | "BIRTHDAY" | "NEWBORN";
 export type CeremonyType = "ANNOUNCEMENT_ONLY" | "FULL_MONTH" | "ONE_YEAR";
-export type OpeningEffectType = "NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX";
+export type OpeningEffectType = "NONE" | "WAX_SEAL" | "GATE_OPEN" | "GIFT_BOX" | "ROYAL_CURTAIN" | "ORIENTAL_DOOR";
 export type FallingEffectType = "NONE" | "PETAL" | "HEART" | "SNOW" | "CONFETTI" | "BALLOON";
 
 export interface EventItem {

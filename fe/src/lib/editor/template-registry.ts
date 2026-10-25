@@ -28,7 +28,7 @@ const WEDDING_FIELDS: readonly EditorField[] = [
   { id: "greeting", type: "text", label: "Lời ngỏ / Thông điệp mời", path: "greetingMessage", maxLength: 500, group: "Nội Dung Thiệp" },
   { id: "primary-color", type: "color", label: "Màu chủ đạo", path: "primaryColor", group: "Giao Diện" },
   { id: "font-family", type: "font", label: "Font chữ", path: "fontFamily", allowedValues: ["Inter", "Playfair Display", "Cinzel", "Quicksand", "Outfit"], group: "Giao Diện" },
-  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"], group: "Hiệu Ứng" },
+  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX", "ROYAL_CURTAIN", "ORIENTAL_DOOR"], group: "Hiệu Ứng" },
   { id: "falling-effect", type: "effect", label: "Hiệu ứng rơi", path: "fallingEffect", allowedValues: ["NONE", "PETAL", "HEART", "SNOW", "CONFETTI", "BALLOON"], group: "Hiệu Ứng" },
   { id: "music", type: "music", label: "Nhạc nền", path: "musicUrl", group: "Âm Thanh" },
 ];
@@ -40,7 +40,7 @@ const BIRTHDAY_FIELDS: readonly EditorField[] = [
   { id: "greeting", type: "text", label: "Lời mời sinh nhật", path: "greetingMessage", maxLength: 500 },
   { id: "primary-color", type: "color", label: "Màu chủ đạo", path: "primaryColor" },
   { id: "font-family", type: "font", label: "Font chữ", path: "fontFamily", allowedValues: ["Outfit", "Inter", "Quicksand", "Playfair Display"] },
-  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"] },
+  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX", "ROYAL_CURTAIN", "ORIENTAL_DOOR"] },
   { id: "falling-effect", type: "effect", label: "Hiệu ứng rơi", path: "fallingEffect", allowedValues: ["BALLOON", "CONFETTI", "NONE", "HEART"] },
   { id: "music", type: "music", label: "Nhạc nền", path: "musicUrl" },
 ];
@@ -54,7 +54,7 @@ const NEWBORN_FIELDS: readonly EditorField[] = [
   { id: "greeting", type: "text", label: "Lời ngỏ đầy tháng / thôi nôi", path: "greetingMessage", maxLength: 500 },
   { id: "primary-color", type: "color", label: "Màu chủ đạo", path: "primaryColor" },
   { id: "font-family", type: "font", label: "Font chữ", path: "fontFamily", allowedValues: ["Quicksand", "Inter", "Outfit"] },
-  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"] },
+  { id: "opening-effect", type: "effect", label: "Hiệu ứng mở", path: "openingEffect", allowedValues: ["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX", "ROYAL_CURTAIN", "ORIENTAL_DOOR"] },
   { id: "falling-effect", type: "effect", label: "Hiệu ứng rơi", path: "fallingEffect", allowedValues: ["BALLOON", "CONFETTI", "PETAL", "NONE"] },
   { id: "music", type: "music", label: "Nhạc nền", path: "musicUrl" },
 ];
