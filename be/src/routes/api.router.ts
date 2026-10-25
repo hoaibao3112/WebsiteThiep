@@ -38,6 +38,7 @@ import {
   AiChatSchema,
   CreateCustomDomainSchema,
   UpdateCardSlugSchema,
+  CreateAddonOrderSchema,
 } from "../schemas";
 
 const upload = multer({
@@ -146,7 +147,7 @@ apiRouter.get("/orders/:orderCode/status", OrderController.checkStatus); // Lega
 
 // --- ADDON STORE ROUTES (TIỆN ÍCH BỔ SUNG) ---
 apiRouter.get("/addons", optionalAuthGuard, AddonController.getCatalog);
-apiRouter.post("/addons/orders", authGuard, ownerGuard, AddonController.createOrder);
+apiRouter.post("/addons/orders", authGuard, ownerGuard, validate(CreateAddonOrderSchema), AddonController.createOrder);
 
 // --- ADMIN: PAYMENT REVIEW ---
 apiRouter.get("/admin/payment-orders", adminGuard, AdminPaymentController.listQueue);

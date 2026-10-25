@@ -41,11 +41,28 @@ export class AddonService {
       let isEligible = true;
       let ineligibilityReason: string | undefined;
 
-      if (item.requiredPlanCode) {
+      // 1. Gia hạn thời gian: Chỉ áp dụng cho gói BASIC
+      if (item.category === "time") {
+        if (entitlement.planCode === "VIP") {
+          isEligible = false;
+          ineligibilityReason = "Gói VIP có thời hạn vĩnh viễn, không cần gia hạn thời gian";
+        } else if (entitlement.planCode === "FREE") {
+          isEligible = false;
+          ineligibilityReason = "Gói gia hạn chỉ áp dụng cho Gói Tiêu Chuẩn (BASIC). Vui lòng nâng cấp gói";
+        }
+      }
+
+      // 2. Tên miền riêng: Yêu cầu nâng cấp gói trả phí (BASIC hoặc VIP)
+      if (item.category === "custom_domain") {
         if (entitlement.planCode === "FREE") {
           isEligible = false;
-          ineligibilityReason = "Cần gói có tên miền riêng";
+          ineligibilityReason = "Cần nâng cấp lên gói trả phí để kết nối tên miền riêng";
         }
+      }
+
+      if (item.requiredPlanCode && entitlement.planCode === "FREE") {
+        isEligible = false;
+        ineligibilityReason = ineligibilityReason || "Cần nâng cấp gói dịch vụ để sử dụng tiện ích này";
       }
 
       return {
@@ -108,15 +125,33 @@ export class AddonService {
 
     // 4. Validate điều kiện gói
     const entitlement = await AccountEntitlementService.getEffectivePlan(accountId);
+    if (addon.category === "time") {
+      if (entitlement.planCode === "VIP") {
+        throw new HttpError(400, "Gói VIP có thời hạn vĩnh viễn, không cần gia hạn thời gian", "PLAN_INELIGIBLE_FOR_ADDON");
+      }
+      if (entitlement.planCode === "FREE") {
+        throw new HttpError(400, "Gói gia hạn chỉ áp dụng cho Gói Tiêu Chuẩn (BASIC). Vui lòng nâng cấp gói trước.", "PLAN_INELIGIBLE_FOR_ADDON");
+      }
+    }
+    if (addon.category === "custom_domain" && entitlement.planCode === "FREE") {
+      throw new HttpError(400, "Tiện ích tên miền riêng yêu cầu tài khoản nâng cấp lên gói trả phí (BASIC/VIP)", "PLAN_UPGRADE_REQUIRED");
+    }
     if (addon.requiredPlanCode && entitlement.planCode === "FREE") {
-      throw new HttpError(
-        400,
-        "Tiện ích này yêu cầu tài khoản phải nâng cấp lên gói có tên miền riêng (BASIC/VIP)",
-        "PLAN_UPGRADE_REQUIRED",
-      );
+      throw new HttpError(400, "Tiện ích này yêu cầu tài khoản phải nâng cấp lên gói trả phí", "PLAN_UPGRADE_REQUIRED");
     }
 
-    // 5. Kiểm tra đơn hàng trùng lặp đang PENDING cùng addonCode
+    // 5. Dọn dẹp đơn PENDING quá hạn (stale order cleanup)
+    await prisma.order.updateMany({
+      where: {
+        accountId,
+        orderType: "ADDON",
+        status: "PENDING",
+        expiredAt: { lte: new Date() },
+      },
+      data: { status: "EXPIRED" },
+    });
+
+    // 6. Kiểm tra đơn hàng trùng lặp đang PENDING cùng addonCode
     const pendingSameAddonOrder = await prisma.order.findFirst({
       where: {
         accountId,

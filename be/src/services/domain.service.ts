@@ -63,8 +63,8 @@ export class DomainService {
       }),
     ]);
 
-    const maxAllowedDomains =
-      (effectivePlan.capabilities.allowCustomDomain ? 1 : 0) + (account.extraDomains || 0);
+    const basePlanDomains = effectivePlan.planCode === "VIP" ? 1 : 0;
+    const maxAllowedDomains = basePlanDomains + (account.extraDomains || 0);
 
     return {
       defaultDomain: {
@@ -167,18 +167,17 @@ export class DomainService {
       prisma.customDomain.count({ where: { accountId } }),
     ]);
 
-    // 1. Kiểm tra quyền hạn theo Plan
-    if (!effectivePlan.capabilities.allowCustomDomain) {
+    // 1. Kiểm tra Quota & Slot Tên Miền (VIP base 1 + Addon extraDomains)
+    const basePlanDomains = effectivePlan.planCode === "VIP" ? 1 : 0;
+    const maxAllowedDomains = basePlanDomains + (account.extraDomains || 0);
+
+    if (maxAllowedDomains === 0) {
       throw new HttpError(
         403,
-        `Gói hiện tại (${effectivePlan.planName}) không hỗ trợ tên miền riêng. Vui lòng nâng cấp lên gói VIP để sử dụng tính năng này.`,
+        `Gói hiện tại (${effectivePlan.planName}) không hỗ trợ tên miền riêng. Vui lòng nâng cấp lên gói VIP hoặc mua thêm slot tên miền tại trang Tiện Ích.`,
         "PLAN_ENTITLEMENT_REQUIRED"
       );
     }
-
-    // 2. Kiểm tra Quota giới hạn số lượng tên miền (Plan base 1 + Addon extraDomains)
-    const maxAllowedDomains =
-      (effectivePlan.capabilities.allowCustomDomain ? 1 : 0) + (account.extraDomains || 0);
 
     if (currentCount >= maxAllowedDomains) {
       throw new HttpError(

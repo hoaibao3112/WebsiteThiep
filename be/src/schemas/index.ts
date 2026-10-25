@@ -99,4 +99,11 @@ export type {
   UpdateCardSlugInput,
 } from "../lib/validators/domain.validator";
 
+// -----------------------------------------------------------------------
+// ADDON SCHEMAS
+// -----------------------------------------------------------------------
+export { CreateAddonOrderSchema } from "../lib/validators/addon.schema";
+export type { CreateAddonOrderInput } from "../lib/validators/addon.schema";
+
+
 

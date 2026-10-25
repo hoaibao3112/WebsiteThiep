@@ -147,14 +147,14 @@ export class CardService {
             const bankingPrimaryValue = input.bankingPrimary === null
               ? Prisma.DbNull
               : input.bankingPrimary !== undefined
-              ? (input.bankingPrimary as Prisma.InputJsonValue)
-              : undefined;
+                ? (input.bankingPrimary as Prisma.InputJsonValue)
+                : undefined;
 
             const bankingSecondaryValue = input.bankingSecondary === null
               ? Prisma.DbNull
               : input.bankingSecondary !== undefined
-              ? (input.bankingSecondary as Prisma.InputJsonValue)
-              : undefined;
+                ? (input.bankingSecondary as Prisma.InputJsonValue)
+                : undefined;
 
             (input.data as Record<string, unknown>).events = input.events;
             (input.data as Record<string, unknown>).photos = input.photos;
@@ -542,26 +542,26 @@ export class CardService {
     const bankingPrimaryValue = input.bankingPrimary === null
       ? Prisma.DbNull
       : input.bankingPrimary !== undefined
-      ? (input.bankingPrimary as Prisma.InputJsonValue)
-      : undefined;
+        ? (input.bankingPrimary as Prisma.InputJsonValue)
+        : undefined;
 
     const bankingSecondaryValue = input.bankingSecondary === null
       ? Prisma.DbNull
       : input.bankingSecondary !== undefined
-      ? (input.bankingSecondary as Prisma.InputJsonValue)
-      : undefined;
+        ? (input.bankingSecondary as Prisma.InputJsonValue)
+        : undefined;
 
     const specialEffectConfigValue = input.specialEffectConfig === null
       ? Prisma.DbNull
       : input.specialEffectConfig !== undefined
-      ? (input.specialEffectConfig as Prisma.InputJsonValue)
-      : undefined;
+        ? (input.specialEffectConfig as Prisma.InputJsonValue)
+        : undefined;
 
     const backgroundVideoConfigValue = input.backgroundVideoConfig === null
       ? Prisma.DbNull
       : input.backgroundVideoConfig !== undefined
-      ? (input.backgroundVideoConfig as Prisma.InputJsonValue)
-      : undefined;
+        ? (input.backgroundVideoConfig as Prisma.InputJsonValue)
+        : undefined;
 
     (input.data as Record<string, unknown>).events = input.events;
     (input.data as Record<string, unknown>).photos = input.photos;
