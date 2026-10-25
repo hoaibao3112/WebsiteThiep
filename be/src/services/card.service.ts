@@ -8,6 +8,7 @@ import { Prisma, CardCategory } from "@prisma/client";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
 import { ensureWeddingScene, ensureWeddingSceneData, resolveBinding } from "./wedding-scene.service";
+import { RESERVED_SLUGS } from "../lib/validators/domain.validator";
 
 export function assertCardEditable(
   card: { status: string },
@@ -393,8 +394,12 @@ export class CardService {
   }
 
   static async isSlugAvailable(slug: string, excludeCardId?: string) {
+    const cleanSlug = slug.toLowerCase().trim();
+    if (RESERVED_SLUGS.has(cleanSlug)) {
+      return false;
+    }
     const existing = await prisma.card.findFirst({
-      where: { slug, ...(excludeCardId ? { id: { not: excludeCardId } } : {}) },
+      where: { slug: cleanSlug, ...(excludeCardId ? { id: { not: excludeCardId } } : {}) },
       select: { id: true },
     });
     return !existing;

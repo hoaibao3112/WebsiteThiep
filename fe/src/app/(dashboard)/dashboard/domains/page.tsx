@@ -196,6 +196,13 @@ export default function DomainsPage() {
       router.push("/dashboard/billing?plan=VIP");
       return;
     }
+    const isQuotaFull =
+      domainData?.quota && domainData.quota.used >= domainData.quota.max;
+    if (isQuotaFull) {
+      showToast("Bạn đã dùng hết số lượng tên miền cho phép. Vui lòng mua thêm slot tại Tiện Ích!");
+      router.push("/dashboard/addons");
+      return;
+    }
     setConnectDomain("");
     setConnectCardId(cards[0]?.id || "");
     setConnectError(null);
@@ -273,24 +280,59 @@ export default function DomainsPage() {
   // Open DNS guidance modal for an existing domain
   const openDnsGuide = (domain: CustomDomainItem) => {
     setActiveGuideDomain(domain);
-    setActiveDnsRecords([
-      {
-        type: "CNAME",
-        name: "@ (hoặc www)",
-        value: domain.targetValue || "cname.vercel-dns.com",
-        description: "Bản ghi chính để trỏ tên miền về máy chủ thiệp cưới",
-      },
-      ...(domain.verificationTxt
-        ? [
-            {
-              type: "TXT",
-              name: "_wst-verify",
-              value: domain.verificationTxt,
-              description: "Bản ghi xác minh quyền sở hữu tên miền (tùy chọn)",
-            },
-          ]
-        : []),
-    ]);
+    const parts = domain.domain.split(".");
+    const doubleTlds = new Set(["com.vn", "net.vn", "org.vn", "edu.vn", "gov.vn"]);
+    const isDoubleTld = parts.length >= 2 && doubleTlds.has(parts.slice(-2).join("."));
+    const isApex =
+      domain.targetType === "A" ||
+      (isDoubleTld ? parts.length === 3 : parts.length === 2);
+
+    if (isApex) {
+      setActiveDnsRecords([
+        {
+          type: "A",
+          name: "@",
+          value: domain.targetValue && domain.targetValue !== "cname.vercel-dns.com" ? domain.targetValue : "76.76.21.21",
+          description: "Bản ghi A trỏ tên miền gốc (@) về máy chủ thiệp cưới",
+        },
+        {
+          type: "CNAME",
+          name: "www",
+          value: "cname.vercel-dns.com",
+          description: "Bản ghi CNAME để khách mời truy cập www vẫn tự động vào thiệp",
+        },
+        ...(domain.verificationTxt
+          ? [
+              {
+                type: "TXT",
+                name: "_wst-verify",
+                value: domain.verificationTxt,
+                description: "Bản ghi xác minh quyền sở hữu tên miền (tùy chọn)",
+              },
+            ]
+          : []),
+      ]);
+    } else {
+      const hostName = parts.slice(0, parts.length - (isDoubleTld ? 3 : 2)).join(".");
+      setActiveDnsRecords([
+        {
+          type: "CNAME",
+          name: hostName || "@",
+          value: domain.targetValue || "cname.vercel-dns.com",
+          description: `Bản ghi CNAME trỏ tiền tố "${hostName}" về máy chủ thiệp cưới`,
+        },
+        ...(domain.verificationTxt
+          ? [
+              {
+                type: "TXT",
+                name: `_wst-verify.${hostName}`,
+                value: domain.verificationTxt,
+                description: "Bản ghi xác minh quyền sở hữu tên miền (tùy chọn)",
+              },
+            ]
+          : []),
+      ]);
+    }
     setIsDnsGuideOpen(true);
   };
 
@@ -511,15 +553,70 @@ export default function DomainsPage() {
 
             {/* BUTTON CREATE DOMAIN */}
             {isVipEntitled && (
-              <button
-                onClick={openConnectModal}
-                className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold bg-[#8C6239] hover:bg-[#734f2d] text-white flex items-center justify-center gap-2 transition cursor-pointer shadow-xs shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Kết nối tên miền</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={openConnectModal}
+                  disabled={Boolean(domainData?.quota && domainData.quota.used >= domainData.quota.max)}
+                  className="px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold bg-[#8C6239] hover:bg-[#734f2d] text-white flex items-center justify-center gap-2 transition cursor-pointer shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={domainData?.quota && domainData.quota.used >= domainData.quota.max ? "Đã đạt giới hạn số lượng tên miền" : "Kết nối tên miền"}
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Kết nối tên miền</span>
+                </button>
+              </div>
             )}
           </div>
+
+          {/* QUOTA PROGRESS INDICATOR (VIP) */}
+          {isVipEntitled && domainData?.quota && (
+            <div className="bg-[#FAF7F2] rounded-2xl p-4 sm:p-5 border border-[#EADDCB] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-[#5C4D40]">Hạn mức tên miền riêng:</span>
+                  <span className="px-2 py-0.5 rounded-full font-bold bg-[#EADDCB] text-[#5C4D40]">
+                    {domainData.quota.used} / {domainData.quota.max} slot đã sử dụng
+                  </span>
+                  {domainData.quota.extraDomains > 0 && (
+                    <span className="text-[11px] text-[#8C6239] font-medium">
+                      (+{domainData.quota.extraDomains} slot mua thêm)
+                    </span>
+                  )}
+                </div>
+
+                {domainData.quota.used >= domainData.quota.max ? (
+                  <Link
+                    href="/dashboard/addons"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-xl transition"
+                  >
+                    <span>Hết lượt kết nối • Mua thêm slot</span>
+                    <span>→</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/dashboard/addons"
+                    className="text-xs text-[#8C6239] hover:underline flex items-center gap-1"
+                  >
+                    <span>Mua thêm slot tên miền tại Tiện Ích</span>
+                    <span>›</span>
+                  </Link>
+                )}
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full bg-[#EADDCB]/60 h-2 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    domainData.quota.used >= domainData.quota.max
+                      ? "bg-amber-600"
+                      : "bg-[#8C6239]"
+                  }`}
+                  style={{
+                    width: `${Math.min(100, Math.round((domainData.quota.used / Math.max(domainData.quota.max, 1)) * 100))}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* ======================================================= */}
           {/* STATE A: NOT VIP -> ELEGANT GOLD LOCKED STATE           */}
@@ -947,7 +1044,13 @@ export default function DomainsPage() {
                   Đăng nhập vào trang quản trị tên miền nơi bạn đã mua (PA Vietnam, Mắt Bão, Nhân Hòa, Cloudflare, GoDaddy, Namecheap...).
                 </li>
                 <li>
-                  Vào mục <strong>Quản lý DNS (DNS Records)</strong> và thêm bản ghi <strong>CNAME</strong> theo giá trị ở bảng trên.
+                  Vào mục <strong>Quản lý DNS (DNS Records)</strong> và thêm bản ghi{" "}
+                  {activeGuideDomain.targetType === "A" || activeDnsRecords.some((r) => r.type === "A") ? (
+                    <strong>A (cho Host @) và CNAME (cho Host www)</strong>
+                  ) : (
+                    <strong>CNAME</strong>
+                  )}{" "}
+                  theo giá trị ở bảng trên.
                 </li>
                 <li>
                   Lưu bản ghi, sau đó quay lại đây và bấm nút <strong>"Kiểm tra kết nối"</strong>.

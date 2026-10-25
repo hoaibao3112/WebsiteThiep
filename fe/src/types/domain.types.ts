@@ -38,6 +38,11 @@ export interface DomainListResponse {
     planCode: "FREE" | "BASIC" | "VIP";
     planName: string;
   };
+  quota?: {
+    used: number;
+    max: number;
+    extraDomains: number;
+  };
   domains: CustomDomainItem[];
 }
 
