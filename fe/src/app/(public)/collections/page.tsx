@@ -400,11 +400,11 @@ export default function CollectionsPage() {
       {/* ------------------------------------------------------------- */}
       {/* 1. TOP NAVBAR */}
       {/* ------------------------------------------------------------- */}
-      <header className="w-full px-6 py-4 md:px-12 lg:px-20 bg-[#FAF7F2]/90 backdrop-blur-md sticky top-0 z-40 border-b border-[#EFE9E1]/80 transition-all">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center group" title="Trang Chủ">
+      <header className="w-full px-3.5 py-2.5 sm:px-6 sm:py-3.5 md:px-12 lg:px-20 bg-[#FAF7F2]/95 backdrop-blur-md sticky top-0 z-40 border-b border-[#EFE9E1]/80 transition-all">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center shrink-0 group" title="Trang Chủ">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo.png" alt="Logo" className="h-12 sm:h-14 md:h-15 w-auto object-contain transition-transform group-hover:scale-105" />
+            <img src="/images/logo.png" alt="Logo" className="h-9 sm:h-12 md:h-14 w-auto object-contain transition-transform group-hover:scale-105" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 lg:gap-10 text-[11px] font-bold uppercase tracking-[0.2em] text-[#181716]/80">
@@ -422,23 +422,23 @@ export default function CollectionsPage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <LanguageSwitcher />
 
             {user ? (
               <Link
                 href="/dashboard/cards"
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-stone-200 text-stone-800 text-xs font-semibold hover:border-[#BE944E] transition shadow-2xs"
+                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-white border border-stone-200 text-stone-800 text-xs font-semibold hover:border-[#BE944E] transition shadow-2xs"
               >
                 <div className="w-5 h-5 rounded-full bg-[#BE944E] text-white flex items-center justify-center text-[10px] font-bold">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="max-w-[120px] truncate">{user.name}</span>
+                <span className="max-w-[80px] sm:max-w-[120px] truncate">{user.name}</span>
               </Link>
             ) : (
               <button
                 onClick={() => openAuthModal("login")}
-                className="px-4 py-2 rounded-full text-[11px] font-bold text-stone-700 hover:text-stone-900 border border-stone-300 hover:bg-white transition cursor-pointer"
+                className="px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-[10.5px] sm:text-[11px] font-bold text-stone-700 hover:text-stone-900 border border-stone-300 hover:bg-white transition cursor-pointer"
               >
                 {t("navLogin") || "Đăng Nhập"}
               </button>
@@ -449,7 +449,7 @@ export default function CollectionsPage() {
                 if (user) router.push("/dashboard/cards/new");
                 else openAuthModal("login");
               }}
-              className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-[11px] font-bold tracking-widest uppercase shadow-md transition cursor-pointer"
+              className="inline-flex items-center justify-center px-3 py-1.5 sm:px-5 sm:py-2 rounded-full bg-gradient-to-r from-[#BE944E] to-[#9E7329] hover:from-[#9E7329] hover:to-[#825B1D] text-white text-[10px] sm:text-[11px] font-bold tracking-wider sm:tracking-widest uppercase shadow-md transition cursor-pointer whitespace-nowrap active:scale-95"
             >
               {t("homeCreateBtn")}
             </button>
@@ -460,16 +460,16 @@ export default function CollectionsPage() {
       {/* ------------------------------------------------------------- */}
       {/* 2. HERO TITLE SECTION (Matching Image Reference) */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-4xl mx-auto px-6 pt-12 pb-6 text-center space-y-4">
+      <section className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-5 pb-3 sm:pt-12 sm:pb-6 text-center space-y-2 sm:space-y-4">
         {/* GOLD BADGE */}
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#F5EEDF] border border-[#D9C4A1] text-[#8C6424] text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] shadow-2xs"
+          className="inline-flex items-center gap-1.5 px-3 py-0.5 sm:px-4 sm:py-1 rounded-full bg-[#F5EEDF] border border-[#D9C4A1] text-[#8C6424] text-[9.5px] sm:text-[11px] font-bold uppercase tracking-[0.2em] shadow-2xs"
         >
-          <Sparkle className="w-3 h-3 fill-[#8C6424]" />
-          <span>{t("collectionsBadge") || "BỘ SƯU TẬP THIỆP CƯỚI CAO CẤP"}</span>
-          <Sparkle className="w-3 h-3 fill-[#8C6424]" />
+          <Sparkle className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-[#8C6424]" />
+          <span>{t("collectionsBadge") || "BỘ SƯU TẬP CAO CẤP"}</span>
+          <Sparkle className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-[#8C6424]" />
         </motion.div>
 
         {/* LUXURY TITLE */}
@@ -477,9 +477,9 @@ export default function CollectionsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl sm:text-5xl lg:text-[54px] font-serif font-bold text-[#2A231C] tracking-tight leading-tight"
+          className="text-2xl sm:text-4xl lg:text-[52px] font-serif font-bold text-[#2A231C] tracking-tight leading-tight"
         >
-          {t("collectionsTitle") || "Bộ Sưu Tập Mẫu Thiệp Cưới Sang Trọng"}
+          {t("collectionsTitle") || "Kho Mẫu Thiệp Đa Danh Mục"}
         </motion.h1>
 
         {/* DESCRIPTION */}
@@ -487,27 +487,27 @@ export default function CollectionsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-xs sm:text-sm text-stone-600 max-w-2xl mx-auto leading-relaxed"
+          className="text-[11.5px] sm:text-sm text-stone-600 max-w-2xl mx-auto leading-relaxed line-clamp-2 sm:line-clamp-none px-2"
         >
-          {t("collectionsDesc") || "Khám phá các thiết kế thiệp cưới trực tuyến độc quyền, từ nét đẹp Á Đông hoàng gia đến phong cách phương Tây tối giản tinh tế. Trải nghiệm phong bì sáp 3D, album ảnh cưới và xác nhận tham dự (RSVP) chuyên nghiệp."}
+          {t("collectionsDesc") || "Khám phá các thiết kế thiệp cưới, sinh nhật và sự kiện trực tuyến độc quyền, tối giản và đậm chất nghệ thuật để lưu giữ khoảnh khắc đáng nhớ."}
         </motion.p>
       </section>
 
       {/* ------------------------------------------------------------- */}
       {/* 3. CATEGORY TABS + SEARCH + SORT TOOLBAR */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 mb-4">
-        <div className="bg-white/85 backdrop-blur-md rounded-2xl p-3 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)] space-y-3">
+      <section className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 mb-3 sm:mb-4">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-2.5 sm:p-3.5 border border-[#EBE3D3] shadow-[0_8px_30px_rgba(180,140,70,0.06)] space-y-2.5 sm:space-y-3">
 
-          {/* Row 1: Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {/* Row 1: Category Tabs (Horizontal Scrollable) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pb-0.5">
             {categoryTabs.map((cat) => {
               const isActive = selectedCategory === cat.id;
               return (
                 <button
                   key={cat.id}
                   onClick={() => handleCategoryChange(cat.id)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer shrink-0 ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[11.5px] sm:text-xs font-bold whitespace-nowrap transition-all duration-300 cursor-pointer shrink-0 ${
                     isActive
                       ? "bg-gradient-to-r from-[#8C6424] to-[#6E4E18] text-white shadow-md ring-2 ring-[#BE944E]/30"
                       : "bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200/80 hover:border-[#BE944E]/40"
@@ -520,81 +520,89 @@ export default function CollectionsPage() {
             })}
           </div>
 
-          {/* Row 2: Style filter + Search + Sort */}
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-            {/* Style Filter pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
-              {stylesForCategory.map((s) => {
-                const isActive = selectedStyle === s;
-                return (
-                  <button
-                    key={s}
-                    onClick={() => setSelectedStyle(s)}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
-                      isActive
-                        ? "bg-[#BE944E]/15 text-[#8C6424] border border-[#BE944E]/50 font-bold"
-                        : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
-                    }`}
-                  >
-                    {s === "ALL" ? "Tất Cả Phong Cách" : s}
-                  </button>
-                );
-              })}
-            </div>
+          {/* Row 2: Style Filter Pills (Horizontal Scrollable) */}
+          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+            {stylesForCategory.map((s) => {
+              const isActive = selectedStyle === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setSelectedStyle(s)}
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10.5px] sm:text-[11px] font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
+                    isActive
+                      ? "bg-[#BE944E]/15 text-[#8C6424] border border-[#BE944E]/50 font-bold"
+                      : "text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+                  }`}
+                >
+                  {s === "ALL" ? "Tất Cả Phong Cách" : s}
+                </button>
+              );
+            })}
+          </div>
 
-            {/* Spacer */}
-            <div className="flex-1 hidden sm:block" />
-
-            {/* Search input */}
-            <div className="relative w-full sm:w-52 shrink-0">
+          {/* Row 3: Search input + Sort Button on SAME LINE */}
+          <div className="flex items-center gap-2 pt-0.5">
+            {/* Search input: flex-1 so it takes available space */}
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Tìm mẫu..."
+                placeholder="Tìm kiếm mẫu thiệp..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setDisplayedCount(12); }}
-                className="w-full pl-8 pr-8 py-2 rounded-xl border border-stone-200 bg-stone-50/80 text-xs focus:outline-none focus:border-[#BE944E] transition text-stone-800 placeholder:text-stone-400"
+                className="w-full pl-8 pr-7 py-2 rounded-xl border border-stone-200 bg-stone-50/80 text-xs focus:outline-none focus:border-[#BE944E] transition text-stone-800 placeholder:text-stone-400"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-700 cursor-pointer">
-                  <X className="w-3 h-3" />
+                <button onClick={() => setSearchQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-stone-400 hover:text-stone-700 cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Sort Dropdown */}
+            {/* Sort Dropdown: anchored right without overflow */}
             <div className="relative shrink-0">
               <button
                 onClick={() => setShowSortMenu(!showSortMenu)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-xs font-semibold text-stone-700 transition cursor-pointer whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-xs font-semibold text-stone-700 transition cursor-pointer whitespace-nowrap active:scale-95"
               >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-stone-500" />
+                <SlidersHorizontal className="w-3.5 h-3.5 text-[#8C6424]" />
                 <span className="hidden sm:inline">{sortOptions.find((o) => o.id === sortBy)?.label}</span>
-                <span className="sm:hidden">Sắp xếp</span>
+                <span className="sm:hidden font-medium">Sắp xếp</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-stone-400 transition-transform ${showSortMenu ? "rotate-180" : ""}`} />
               </button>
+
               <AnimatePresence>
                 {showSortMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl border border-stone-200 shadow-xl z-30 overflow-hidden"
-                  >
-                    {sortOptions.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => { setSortBy(opt.id); setShowSortMenu(false); }}
-                        className={`w-full px-4 py-2.5 text-xs text-left font-medium transition cursor-pointer flex items-center justify-between ${
-                          sortBy === opt.id ? "bg-amber-50 text-[#8C6424] font-bold" : "text-stone-700 hover:bg-stone-50"
-                        }`}
-                      >
-                        <span>{opt.label}</span>
-                        {sortBy === opt.id && <Check className="w-3.5 h-3.5 text-[#BE944E]" />}
-                      </button>
-                    ))}
-                  </motion.div>
+                  <>
+                    {/* Backdrop */}
+                    <div
+                      className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px]"
+                      onClick={() => setShowSortMenu(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-48 sm:w-52 bg-white rounded-2xl border border-stone-200 shadow-2xl z-50 overflow-hidden py-1.5"
+                    >
+                      <div className="px-3.5 py-1.5 text-[10px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 sm:hidden">
+                        Sắp xếp theo
+                      </div>
+                      {sortOptions.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => { setSortBy(opt.id); setShowSortMenu(false); }}
+                          className={`w-full px-3.5 py-2.5 text-xs text-left font-medium transition cursor-pointer flex items-center justify-between ${
+                            sortBy === opt.id ? "bg-amber-50 text-[#8C6424] font-bold" : "text-stone-700 hover:bg-stone-50"
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          {sortBy === opt.id && <Check className="w-3.5 h-3.5 text-[#BE944E]" />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -602,20 +610,18 @@ export default function CollectionsPage() {
         </div>
       </section>
 
-      {/* Close sort menu backdrop */}
-      {showSortMenu && <div className="fixed inset-0 z-20" onClick={() => setShowSortMenu(false)} />}
-
       {/* ------------------------------------------------------------- */}
       {/* 4. TEMPLATES GRID */}
       {/* ------------------------------------------------------------- */}
-      <section className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 my-8">
+      <section className="relative z-10 max-w-6xl mx-auto px-3.5 sm:px-6 my-4 sm:my-8">
         {/* Result count */}
-        <div className="text-xs text-stone-500 mb-4 font-medium">
+        <div className="flex items-center justify-between text-xs text-stone-500 mb-3 px-1 font-medium">
           {searchQuery ? (
             <span>Tìm thấy <span className="font-bold text-stone-800">{filteredTemplates.length}</span> mẫu cho &ldquo;{searchQuery}&rdquo;</span>
           ) : (
-            <span>Hiển thị <span className="font-bold text-stone-800">{Math.min(displayedCount, filteredTemplates.length)}</span>/{filteredTemplates.length} mẫu</span>
+            <span>Hiển thị <span className="font-bold text-stone-800">{Math.min(displayedCount, filteredTemplates.length)}</span>/{filteredTemplates.length} mẫu thiệp</span>
           )}
+          <span className="text-[11px] text-stone-400 hidden sm:inline">Chạm vào mẫu để xem trực tiếp</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">

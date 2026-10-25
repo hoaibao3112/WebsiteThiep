@@ -10,6 +10,7 @@ import { GiftQrBoxModal } from "../shared/GiftQrBoxModal";
 import { RsvpFormModal } from "../shared/RsvpFormModal";
 import { GuestbookSection } from "../shared/GuestbookSection";
 import { LanguageSwitcher } from "../shared/LanguageSwitcher";
+import { LiveEventBanner } from "../shared/LiveEventBanner";
 import { useLanguage } from "@/context/LanguageContext";
 import { Cake, MapPin, Calendar, Clock, Gift, UserCheck, Navigation } from "lucide-react";
 import { formatDate, formatTime } from "@/lib/utils";
@@ -51,6 +52,17 @@ export const BirthdayView: React.FC<{
       )}
 
       <FallingEffect effect={card.fallingEffect || "BALLOON"} scoped={isPreview} />
+
+      {/* LIVE EVENT BANNER */}
+      {!isPreview && card.events && card.events.length > 0 && (
+        <LiveEventBanner
+          events={card.events.map((e) => ({ ...e, eventDate: typeof e.eventDate === "string" ? e.eventDate : new Date(e.eventDate).toISOString() }))}
+          primaryColor={primaryColor}
+          cardCategory="BIRTHDAY"
+          onOpenRsvp={() => setShowRsvp(true)}
+          onOpenGift={() => setShowGift(true)}
+        />
+      )}
       {!isPreview && (
         <AudioPlayer
           musicUrl={card.musicUrl}

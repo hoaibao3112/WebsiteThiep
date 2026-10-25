@@ -14,6 +14,7 @@ import { getMonogram } from "@/lib/guest/monogram";
 import { getTemplateConfig } from "@/lib/editor/template-config";
 import { X } from "lucide-react";
 import { getWeddingScene } from "@/lib/editor/wedding-scene";
+import { LiveEventBanner } from "../shared/LiveEventBanner";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
 import { Template10NhaCoHy } from "./templates/Template10NhaCoHy";
 import { Template11SageGardenGlass } from "./templates/Template11SageGardenGlass";
@@ -147,6 +148,17 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
 
       {/* 2. HIỆU ỨNG RƠI, NHẠC NỀN & NÚT THẢ TIM CHÚC PHÚC */}
       <FallingEffect effect={card.fallingEffect || "PETAL"} scoped={isPreview} />
+
+      {/* 2.1 LIVE EVENT BANNER — Trạng thái sự kiện realtime (Sắp / Đang / Đã xong) */}
+      {!isPreview && !isDemoCard && card.events && card.events.length > 0 && (
+        <LiveEventBanner
+          events={card.events.map((e) => ({ ...e, eventDate: typeof e.eventDate === "string" ? e.eventDate : new Date(e.eventDate).toISOString() }))}
+          primaryColor={primaryColor}
+          cardCategory="WEDDING"
+          onOpenRsvp={() => setShowRsvp(true)}
+          onOpenGift={() => setShowGift(true)}
+        />
+      )}
       {!isPreview && (
         <>
           <AudioPlayer

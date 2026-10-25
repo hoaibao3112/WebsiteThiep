@@ -10,6 +10,7 @@ import { GiftQrBoxModal } from "../shared/GiftQrBoxModal";
 import { RsvpFormModal } from "../shared/RsvpFormModal";
 import { GuestbookSection } from "../shared/GuestbookSection";
 import { LanguageSwitcher } from "../shared/LanguageSwitcher";
+import { LiveEventBanner } from "../shared/LiveEventBanner";
 import { BocDoGame } from "./BocDoGame";
 import { useLanguage } from "@/context/LanguageContext";
 import {
@@ -71,6 +72,17 @@ export const NewbornView: React.FC<{
       )}
 
       <FallingEffect effect={card.fallingEffect || "BALLOON"} scoped={isPreview} />
+
+      {/* LIVE EVENT BANNER */}
+      {!isPreview && card.events && card.events.length > 0 && (
+        <LiveEventBanner
+          events={card.events.map((e) => ({ ...e, eventDate: typeof e.eventDate === "string" ? e.eventDate : new Date(e.eventDate).toISOString() }))}
+          primaryColor={primaryColor}
+          cardCategory="NEWBORN"
+          onOpenRsvp={() => setShowRsvp(true)}
+          onOpenGift={() => setShowGift(true)}
+        />
+      )}
       {!isPreview && (
         <AudioPlayer
           musicUrl={card.musicUrl}

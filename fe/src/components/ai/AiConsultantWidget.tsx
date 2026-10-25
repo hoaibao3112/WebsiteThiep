@@ -210,14 +210,14 @@ export function AiConsultantWidget() {
   return (
     <>
       {/* 1. NÚT KÍCH HOẠT FLOATING CHAT BUBBLE (Góc phải dưới) */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end">
         <AnimatePresence>
           {!isOpen && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.8, y: 10 }}
-              className="flex items-center gap-2 mb-2 pointer-events-auto"
+              className="hidden sm:flex items-center gap-2 mb-2 pointer-events-auto"
             >
               {hasNewBadge && (
                 <div className="relative bg-[#fffdf9]/95 text-[#3b302a] text-xs py-1.5 px-3.5 rounded-full border border-[#d9af62]/40 shadow-xl backdrop-blur-md flex items-center gap-2">
@@ -245,7 +245,7 @@ export function AiConsultantWidget() {
             setIsOpen(!isOpen);
             setHasNewBadge(false);
           }}
-          className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${
+          className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${
             isOpen
               ? 'bg-[#ece3d4] text-[#3b302a] border border-[#d4c5b2]'
               : 'bg-gradient-to-tr from-[#9c3a21] via-[#ba4f33] to-[#c59533] text-white shadow-[#9c3a21]/30'
