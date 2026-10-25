@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
@@ -25,6 +26,11 @@ import {
   AlertTriangle,
   RefreshCw,
   ExternalLink,
+  Layers,
+  Globe,
+  Image as ImageIcon,
+  ShoppingBag,
+  ArrowUpRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -642,6 +648,99 @@ function BillingContent() {
               </div>
             );
           })}
+        </div>
+
+        {/* LỊCH SỬ GÓI & TIỆN ÍCH ĐÃ MUA THÀNH CÔNG */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200/80 shadow-xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100">
+            <div>
+              <h2 className="text-lg font-bold font-serif text-stone-900 flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-600" />
+                <span>Lịch Sử Gói & Tiện Ích Đã Mua Thành Công</span>
+              </h2>
+              <p className="text-xs text-stone-500 mt-0.5">
+                Danh sách các gói cước và tiện ích mở rộng đã thanh toán & kích hoạt cho tài khoản của bạn
+              </p>
+            </div>
+            <Link
+              href="/dashboard/addons"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition border border-amber-200 w-fit"
+            >
+              <ShoppingBag className="w-4 h-4 text-amber-700" />
+              <span>Cửa Hàng Tiện Ích</span>
+            </Link>
+          </div>
+
+          {!billingSummary?.paidOrders || billingSummary.paidOrders.length === 0 ? (
+            <div className="text-center py-8 px-4 rounded-2xl bg-[#FAF7F2] border border-amber-200/50 space-y-2">
+              <p className="text-sm font-bold text-stone-800">Chưa có giao dịch mua nào</p>
+              <p className="text-xs text-stone-500 max-w-md mx-auto">
+                Tài khoản của bạn đang dùng phiên bản mặc định. Khi nâng cấp gói VIP hoặc mua tiện ích bổ sung, danh sách các mục đã kích hoạt sẽ hiển thị chi tiết tại đây.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {billingSummary.paidOrders.map((order) => {
+                const isPlan = order.orderType === "PLAN";
+                return (
+                  <div
+                    key={order.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF7F2] border border-stone-200/70 hover:border-amber-300 transition"
+                  >
+                    <div className="flex items-start sm:items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        isPlan
+                          ? "bg-amber-100 text-amber-700 border border-amber-300"
+                          : "bg-purple-100 text-purple-700 border border-purple-200"
+                      }`}>
+                        {isPlan ? (
+                          <Crown className="w-5 h-5 text-amber-600" />
+                        ) : order.itemCode.includes("CARD") ? (
+                          <Layers className="w-5 h-5 text-purple-600" />
+                        ) : order.itemCode.includes("PHOTO") ? (
+                          <ImageIcon className="w-5 h-5 text-blue-600" />
+                        ) : order.itemCode.includes("DOMAIN") ? (
+                          <Globe className="w-5 h-5 text-emerald-600" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-amber-600" />
+                        )}
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-bold text-stone-900">
+                            {order.itemName}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isPlan
+                              ? "bg-amber-100 text-amber-800 border border-amber-200"
+                              : "bg-purple-100 text-purple-800 border border-purple-200"
+                          }`}>
+                            {isPlan ? "Gói Dịch Vụ" : "Tiện Ích"}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <Check className="w-3 h-3" />
+                            Đã kích hoạt thành công
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-500">
+                          Mã đơn: <strong className="font-mono text-stone-700">{order.orderCode}</strong>
+                          {order.paidAt && (
+                            <> • Kích hoạt: {new Date(order.paidAt).toLocaleString("vi-VN")}</>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="sm:text-right shrink-0">
+                      <span className="text-sm font-bold text-emerald-700">
+                        {order.amount.toLocaleString("vi-VN")} đ
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

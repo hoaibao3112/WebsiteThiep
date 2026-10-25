@@ -32,9 +32,36 @@ export interface BillingPaymentInfo {
   expiredAt: Date;
 }
 
+export interface AccountQuotaDTO {
+  extraCards: number;
+  extraPhotos: number;
+  extraDomains: number;
+  extraViews: number;
+  extraProfiles: number;
+  planExpiresAt: Date | null;
+  totalAllowedCards: number;
+  totalAllowedPhotos: number;
+  totalAllowedDomains: number;
+}
+
+export interface PaidOrderItemDTO {
+  id: string;
+  orderCode: string;
+  orderType: "PLAN" | "ADDON";
+  itemName: string;
+  itemCode: string;
+  amount: number;
+  paidAt: Date | null;
+  createdAt: Date;
+  status: string;
+  badge?: string;
+}
+
 export interface BillingSummary {
   accountId: string;
   effectivePlan: EffectivePlanDTO;
+  accountQuota: AccountQuotaDTO;
+  paidOrders: PaidOrderItemDTO[];
   activeOrder: {
     id: string;
     orderCode: string;
@@ -105,7 +132,7 @@ export class BillingService {
       data: { status: "EXPIRED" },
     });
 
-    const [effectivePlan, activeOrderRecord, membership] = await Promise.all([
+    const [effectivePlan, activeOrderRecord, membership, account, paidOrders] = await Promise.all([
       AccountEntitlementService.getEffectivePlan(accountId),
       prisma.order.findFirst({
         where: {
@@ -122,6 +149,33 @@ export class BillingService {
             select: { role: true },
           })
         : null,
+      prisma.account.findUniqueOrThrow({
+        where: { id: accountId },
+        select: {
+          extraCards: true,
+          extraPhotos: true,
+          extraDomains: true,
+          extraViews: true,
+          extraProfiles: true,
+          planExpiresAt: true,
+        },
+      }),
+      prisma.order.findMany({
+        where: {
+          accountId,
+          status: "PAID",
+        },
+        orderBy: { createdAt: "desc" },
+        take: 30,
+        include: {
+          plan: {
+            select: {
+              code: true,
+              name: true,
+            },
+          },
+        },
+      }),
     ]);
 
     const role = membership?.role ?? "OWNER";
@@ -170,9 +224,46 @@ export class BillingService {
         }
       : null;
 
+    const formattedPaidOrders: PaidOrderItemDTO[] = paidOrders.map((o) => {
+      const metadata = o.addonMetadata as { name?: string; badge?: string } | null;
+      const isPlan = o.orderType === "PLAN";
+      const itemName = isPlan
+        ? o.plan?.name ?? "Gói dịch vụ"
+        : metadata?.name ?? o.addonCode ?? "Tiện ích bổ sung";
+      const itemCode = isPlan ? o.plan?.code ?? "PLAN" : o.addonCode ?? "ADDON";
+      const badge = isPlan ? (o.plan?.code === "VIP" ? "VIP" : "BASIC") : metadata?.badge ?? "ADDON";
+
+      return {
+        id: o.id,
+        orderCode: o.orderCode,
+        orderType: o.orderType as "PLAN" | "ADDON",
+        itemName,
+        itemCode,
+        amount: o.amount,
+        paidAt: o.paidAt,
+        createdAt: o.createdAt,
+        status: o.status,
+        badge,
+      };
+    });
+
+    const accountQuota: AccountQuotaDTO = {
+      extraCards: account.extraCards,
+      extraPhotos: account.extraPhotos,
+      extraDomains: account.extraDomains,
+      extraViews: account.extraViews,
+      extraProfiles: account.extraProfiles,
+      planExpiresAt: account.planExpiresAt,
+      totalAllowedCards: 2 + account.extraCards,
+      totalAllowedPhotos: effectivePlan.capabilities.maxPhotos + account.extraPhotos,
+      totalAllowedDomains: (effectivePlan.capabilities.allowCustomDomain ? 1 : 0) + account.extraDomains,
+    };
+
     return {
       accountId,
       effectivePlan,
+      accountQuota,
+      paidOrders: formattedPaidOrders,
       activeOrder,
       paymentInfo,
       activeOrderId: activeOrder?.id ?? null,

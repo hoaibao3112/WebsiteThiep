@@ -33,9 +33,16 @@ import {
   Globe,
   PenLine,
   ShoppingBag,
+  ShieldCheck,
+  Layers,
+  Image as ImageIcon,
+  Clock,
+  ArrowUpRight,
+  Zap,
 } from "lucide-react";
 import { QuickFillModal, QuickFillData } from "@/components/card/QuickFillModal";
 import { DashboardSidebar } from "@/components/shared/DashboardSidebar";
+import { BillingSummary } from "@/types/billing.types";
 
 interface DashboardCard {
   id: string;
@@ -85,6 +92,9 @@ export default function MyCardsPage() {
   // Floating Support Chat State
   const [isChatOpen, setIsChatOpen] = useState(false);
 
+  const [billingSummary, setBillingSummary] = useState<BillingSummary | null>(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+
   // Fetch cards
   const fetchCards = async () => {
     setLoading(true);
@@ -112,9 +122,25 @@ export default function MyCardsPage() {
     } catch {}
   };
 
+  // Fetch billing summary (active plan, addon quotas, paid orders)
+  const fetchBillingSummary = async () => {
+    setBillingLoading(true);
+    try {
+      const res = await ApiClient.request<BillingSummary>("/billing/summary");
+      if (res.success && res.data) {
+        setBillingSummary(res.data);
+      }
+    } catch {
+      // silent fallback
+    } finally {
+      setBillingLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchCards();
     fetchProfile();
+    fetchBillingSummary();
   }, []);
 
   // Quick fill callback
@@ -647,13 +673,31 @@ export default function MyCardsPage() {
           {/* TAB 5: TÀI KHOẢN */}
           {activeTab === "account" && (
             <div className="space-y-6 animate-fadeIn">
-              <div>
-                <h2 className="text-2xl font-serif font-bold text-[#2B2118]">
-                  Thông tin tài khoản
-                </h2>
-                <p className="text-xs text-[#8E7E70] mt-0.5">
-                  Quản lý thông tin cá nhân và hồ sơ cưới lưu trữ của tài khoản
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-2xl font-serif font-bold text-[#2B2118]">
+                    Thông tin tài khoản & Gói dịch vụ
+                  </h2>
+                  <p className="text-xs text-[#8E7E70] mt-0.5">
+                    Quản lý thông tin cá nhân, gói bản quyền và các tính năng tiện ích đã mua thành công
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/dashboard/billing"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold transition shadow-xs"
+                  >
+                    <Crown className="w-4 h-4 text-white" />
+                    <span>Nâng cấp VIP</span>
+                  </Link>
+                  <Link
+                    href="/dashboard/addons"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#EADBCC] hover:bg-[#FAF7F2] text-[#4A3728] text-xs font-semibold transition"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-amber-600" />
+                    <span>Cửa hàng tiện ích</span>
+                  </Link>
+                </div>
               </div>
 
               {/* USER INFO CARD */}
@@ -667,11 +711,302 @@ export default function MyCardsPage() {
                       {user?.name || "Trần Hoài Bảo"}
                     </h3>
                     <p className="text-xs text-[#8E7E70]">{user?.email}</p>
-                    <span className="inline-block mt-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                      Thành viên chính thức
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                      <span className="inline-block text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Thành viên chính thức
+                      </span>
+                      {billingSummary?.effectivePlan.planCode === "VIP" && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-gradient-to-r from-amber-100 to-amber-200 px-2.5 py-0.5 rounded-full border border-amber-300">
+                          <Crown className="w-3 h-3 text-amber-700" />
+                          Gói VIP Trọn Đời
+                        </span>
+                      )}
+                      {billingSummary?.effectivePlan.planCode === "BASIC" && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full border border-blue-200">
+                          <ShieldCheck className="w-3 h-3 text-blue-700" />
+                          Gói Tiêu Chuẩn (BASIC)
+                        </span>
+                      )}
+                      {billingSummary?.effectivePlan.planCode === "FREE" && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-stone-600 bg-stone-100 px-2.5 py-0.5 rounded-full border border-stone-200">
+                          Gói Miễn Phí (FREE)
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* CURRENT PLAN & ENTITLEMENTS STATUS */}
+              <div className="bg-white rounded-3xl p-6 border border-[#EADBCC] shadow-2xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#F0E6D8]">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                      billingSummary?.effectivePlan.planCode === "VIP"
+                        ? "bg-amber-100 text-amber-700 border border-amber-300"
+                        : billingSummary?.effectivePlan.planCode === "BASIC"
+                        ? "bg-blue-100 text-blue-700 border border-blue-200"
+                        : "bg-stone-100 text-stone-600 border border-stone-200"
+                    }`}>
+                      {billingSummary?.effectivePlan.planCode === "VIP" ? (
+                        <Crown className="w-6 h-6 text-amber-600" />
+                      ) : (
+                        <ShieldCheck className="w-6 h-6 text-blue-600" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-[#2B2118]">
+                          {billingSummary?.effectivePlan.planName || "Gói Dịch Vụ Tài Khoản"}
+                        </h3>
+                        {billingSummary?.effectivePlan.isPaid ? (
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            ✓ Đã kích hoạt
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
+                            Mặc định
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[#8E7E70] mt-0.5">
+                        {billingSummary?.effectivePlan.planCode === "VIP"
+                          ? "Thời hạn: Vĩnh viễn không giới hạn thời gian sử dụng"
+                          : billingSummary?.effectivePlan.planExpiresAt
+                          ? `Thời hạn: Còn ${billingSummary.effectivePlan.daysRemaining ?? 0} ngày (Hạn dùng: ${new Date(billingSummary.effectivePlan.planExpiresAt).toLocaleDateString("vi-VN")})`
+                          : "Đang sử dụng phiên bản miễn phí cơ bản"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/dashboard/billing"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 hover:text-amber-800 transition"
+                  >
+                    <span>Quản lý gói dịch vụ</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* HẠN MỨC & QUYỀN LỢI TÀI KHOẢN (CỘNG DỒN TỪ GÓI VÀ TIỆN ÍCH) */}
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E7E70] mb-3">
+                    Hạn Mức & Dung Lượng Đã Mua (Cộng dồn)
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Thẻ tạo thiệp */}
+                    <div className="bg-[#FAF7F2] rounded-2xl p-4 border border-[#EADBCC] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#78695A] font-medium flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-purple-600" />
+                          Số thiệp được tạo
+                        </span>
+                        {(billingSummary?.accountQuota?.extraCards ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-200">
+                            +{billingSummary?.accountQuota?.extraCards} đã kích hoạt
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xl font-bold font-serif text-[#2B2118]">
+                        {billingSummary?.accountQuota?.totalAllowedCards ?? 2} <span className="text-xs font-sans font-normal text-[#8E7E70]">thiệp</span>
+                      </p>
+                      <p className="text-[11px] text-[#8E7E70]">
+                        2 thiệp cơ bản {(billingSummary?.accountQuota?.extraCards ?? 0) > 0 ? `+ ${billingSummary?.accountQuota?.extraCards} mua thêm` : ""}
+                      </p>
+                    </div>
+
+                    {/* Album ảnh */}
+                    <div className="bg-[#FAF7F2] rounded-2xl p-4 border border-[#EADBCC] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#78695A] font-medium flex items-center gap-1.5">
+                          <ImageIcon className="w-4 h-4 text-blue-600" />
+                          Kho ảnh album cưới
+                        </span>
+                        {(billingSummary?.accountQuota?.extraPhotos ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-md border border-blue-200">
+                            +{billingSummary?.accountQuota?.extraPhotos} đã kích hoạt
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xl font-bold font-serif text-[#2B2118]">
+                        {billingSummary?.accountQuota?.totalAllowedPhotos ?? 10} <span className="text-xs font-sans font-normal text-[#8E7E70]">ảnh tối đa</span>
+                      </p>
+                      <p className="text-[11px] text-[#8E7E70]">
+                        {billingSummary?.effectivePlan.capabilities.maxPhotos ?? 10} ảnh theo gói {(billingSummary?.accountQuota?.extraPhotos ?? 0) > 0 ? `+ ${billingSummary?.accountQuota?.extraPhotos} mua thêm` : ""}
+                      </p>
+                    </div>
+
+                    {/* Tên miền riêng */}
+                    <div className="bg-[#FAF7F2] rounded-2xl p-4 border border-[#EADBCC] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-[#78695A] font-medium flex items-center gap-1.5">
+                          <Globe className="w-4 h-4 text-emerald-600" />
+                          Slot tên miền riêng
+                        </span>
+                        {(billingSummary?.accountQuota?.extraDomains ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
+                            +{billingSummary?.accountQuota?.extraDomains} đã kích hoạt
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xl font-bold font-serif text-[#2B2118]">
+                        {billingSummary?.accountQuota?.totalAllowedDomains ?? 0} <span className="text-xs font-sans font-normal text-[#8E7E70]">slot kết nối</span>
+                      </p>
+                      <p className="text-[11px] text-[#8E7E70]">
+                        {billingSummary?.effectivePlan.capabilities.allowCustomDomain ? "1 slot theo gói" : "0 theo gói"} {(billingSummary?.accountQuota?.extraDomains ?? 0) > 0 ? `+ ${billingSummary?.accountQuota?.extraDomains} mua thêm` : ""}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ĐẶC QUYỀN ĐÃ MỞ KHÓA */}
+                <div className="pt-1">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#8E7E70] mb-3">
+                    Đặc Quyền Đã Mở Khóa
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                    <div className="p-3 rounded-xl bg-white border border-[#EADBCC] flex items-center gap-2.5 shadow-2xs">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${!billingSummary?.effectivePlan.capabilities.hasWatermark ? "text-emerald-600" : "text-stone-300"}`} />
+                      <span className={!billingSummary?.effectivePlan.capabilities.hasWatermark ? "font-semibold text-[#2B2118]" : "text-stone-400"}>
+                        {!billingSummary?.effectivePlan.capabilities.hasWatermark ? "Đã gỡ Watermark" : "Có logo bản quyền"}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-[#EADBCC] flex items-center gap-2.5 shadow-2xs">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${billingSummary?.effectivePlan.capabilities.allowMusicUpload ? "text-emerald-600" : "text-stone-300"}`} />
+                      <span className={billingSummary?.effectivePlan.capabilities.allowMusicUpload ? "font-semibold text-[#2B2118]" : "text-stone-400"}>
+                        {billingSummary?.effectivePlan.capabilities.allowMusicUpload ? "Tải nhạc MP3 tự chọn" : "Nhạc mặc định"}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-[#EADBCC] flex items-center gap-2.5 shadow-2xs">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${billingSummary?.effectivePlan.capabilities.allowTelegramNoti ? "text-emerald-600" : "text-stone-300"}`} />
+                      <span className={billingSummary?.effectivePlan.capabilities.allowTelegramNoti ? "font-semibold text-[#2B2118]" : "text-stone-400"}>
+                        {billingSummary?.effectivePlan.capabilities.allowTelegramNoti ? "Thông báo Telegram" : "Chưa bật Telegram"}
+                      </span>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-white border border-[#EADBCC] flex items-center gap-2.5 shadow-2xs">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${billingSummary?.effectivePlan.capabilities.allowPremiumTemplates ? "text-emerald-600" : "text-stone-300"}`} />
+                      <span className={billingSummary?.effectivePlan.capabilities.allowPremiumTemplates ? "font-semibold text-[#2B2118]" : "text-stone-400"}>
+                        {billingSummary?.effectivePlan.capabilities.allowPremiumTemplates ? "Kho mẫu thiệp VIP" : "Mẫu thiệp cơ bản"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* LỊCH SỬ GÓI & TIỆN ÍCH ĐÃ MUA THÀNH CÔNG */}
+              <div className="bg-white rounded-3xl p-6 border border-[#EADBCC] shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-base font-bold text-[#2B2118]">
+                      Lịch sử gói & tiện ích đã mua thành công
+                    </h3>
+                    <p className="text-xs text-[#8E7E70] mt-0.5">
+                      Danh sách các gói cước và tiện ích mở rộng đã thanh toán & kích hoạt cho tài khoản của bạn
+                    </p>
+                  </div>
+                  {billingSummary?.paidOrders && billingSummary.paidOrders.length > 0 && (
+                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                      Đã kích hoạt {billingSummary.paidOrders.length} mục
+                    </span>
+                  )}
+                </div>
+
+                {billingLoading ? (
+                  <div className="py-8 text-center text-xs text-[#8E7E70]">
+                    Đang tải dữ liệu đơn hàng đã mua...
+                  </div>
+                ) : !billingSummary?.paidOrders || billingSummary.paidOrders.length === 0 ? (
+                  <div className="text-center py-8 px-4 rounded-2xl bg-[#FAF7F2] border border-[#EADBCC] space-y-3">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+                      <Crown className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[#2B2118]">Chưa có đơn hàng nào được mua</p>
+                      <p className="text-xs text-[#8E7E70] mt-1 max-w-md mx-auto">
+                        Bạn hiện đang sử dụng Gói Miễn Phí. Khi mua Gói VIP hoặc Tiện ích bổ sung, danh sách các mục đã kích hoạt thành công sẽ hiển thị chi tiết tại đây.
+                      </p>
+                    </div>
+                    <div className="pt-1 flex items-center justify-center gap-3">
+                      <Link
+                        href="/dashboard/billing"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold hover:opacity-95 transition shadow-xs"
+                      >
+                        Nâng cấp Gói VIP
+                      </Link>
+                      <Link
+                        href="/dashboard/addons"
+                        className="px-4 py-2 rounded-xl bg-white border border-[#EADBCC] text-[#4A3728] text-xs font-semibold hover:bg-[#FAF7F2] transition"
+                      >
+                        Xem Tiện ích mở rộng
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {billingSummary.paidOrders.map((order) => {
+                      const isPlan = order.orderType === "PLAN";
+                      return (
+                        <div
+                          key={order.id}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-[#FAF7F2] border border-[#EADBCC] hover:border-amber-300 transition"
+                        >
+                          <div className="flex items-start sm:items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                              isPlan
+                                ? "bg-amber-100 text-amber-700 border border-amber-300"
+                                : "bg-purple-100 text-purple-700 border border-purple-200"
+                            }`}>
+                              {isPlan ? (
+                                <Crown className="w-5 h-5 text-amber-600" />
+                              ) : order.itemCode.includes("CARD") ? (
+                                <Layers className="w-5 h-5 text-purple-600" />
+                              ) : order.itemCode.includes("PHOTO") ? (
+                                <ImageIcon className="w-5 h-5 text-blue-600" />
+                              ) : order.itemCode.includes("DOMAIN") ? (
+                                <Globe className="w-5 h-5 text-emerald-600" />
+                              ) : (
+                                <Clock className="w-5 h-5 text-amber-600" />
+                              )}
+                            </div>
+                            <div className="space-y-0.5">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm font-bold text-[#2B2118]">
+                                  {order.itemName}
+                                </span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  isPlan
+                                    ? "bg-amber-100 text-amber-800 border border-amber-200"
+                                    : "bg-purple-100 text-purple-800 border border-purple-200"
+                                }`}>
+                                  {isPlan ? "Gói Dịch Vụ" : "Tiện Ích"}
+                                </span>
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  <Check className="w-3 h-3" />
+                                  Đã kích hoạt thành công
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#8E7E70]">
+                                Mã đơn: <strong className="font-mono text-[#4A3728]">{order.orderCode}</strong>
+                                {order.paidAt && (
+                                  <> • Kích hoạt lúc: {new Date(order.paidAt).toLocaleString("vi-VN")}</>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="sm:text-right shrink-0">
+                            <span className="text-sm font-bold text-emerald-700">
+                              {order.amount.toLocaleString("vi-VN")} đ
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* WEDDING PROFILE SHORTCUT */}

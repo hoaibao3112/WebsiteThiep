@@ -72,8 +72,35 @@ export interface CreateOrderResponse {
   replayed: boolean;
 }
 
+export interface AccountQuotaDTO {
+  extraCards: number;
+  extraPhotos: number;
+  extraDomains: number;
+  extraViews: number;
+  extraProfiles: number;
+  planExpiresAt: string | null;
+  totalAllowedCards: number;
+  totalAllowedPhotos: number;
+  totalAllowedDomains: number;
+}
+
+export interface PaidOrderItemDTO {
+  id: string;
+  orderCode: string;
+  orderType: "PLAN" | "ADDON";
+  itemName: string;
+  itemCode: string;
+  amount: number;
+  paidAt: string | null;
+  createdAt: string;
+  status: string;
+  badge?: string;
+}
+
 export interface BillingSummary {
   effectivePlan: EffectivePlanSummary;
+  accountQuota?: AccountQuotaDTO;
+  paidOrders?: PaidOrderItemDTO[];
   activeOrder: PaymentOrder | null;
   paymentInfo?: PaymentInfo | null;
   isOwner: boolean;
