@@ -16,6 +16,7 @@ import { X } from "lucide-react";
 import { getWeddingScene } from "@/lib/editor/wedding-scene";
 import { LiveEventBanner } from "../shared/LiveEventBanner";
 import { WeddingSceneRenderer } from "./WeddingSceneRenderer";
+import { Template09ImperialDragon } from "./templates/Template09ImperialDragon";
 import { Template10NhaCoHy } from "./templates/Template10NhaCoHy";
 import { Template11SageGardenGlass } from "./templates/Template11SageGardenGlass";
 import { Template12RoyalCrimson } from "./templates/Template12RoyalCrimson";
@@ -200,6 +201,17 @@ export const WeddingView: React.FC<WeddingViewProps> = ({
           />
         ) : effectiveSlug === "wedding-royal-crimson-velvet" ? (
           <Template12RoyalCrimson
+            card={card}
+            data={data}
+            primaryColor={primaryColor}
+            guestName={activeGuestName}
+            onOpenRsvp={() => setShowRsvp(true)}
+            onOpenGift={() => setShowGift(true)}
+            onSelectPhoto={(url) => setSelectedPhoto(url)}
+            isPreview={isPreview}
+          />
+        ) : effectiveSlug === "wedding-imperial-dragon-crimson" ? (
+          <Template09ImperialDragon
             card={card}
             data={data}
             primaryColor={primaryColor}
