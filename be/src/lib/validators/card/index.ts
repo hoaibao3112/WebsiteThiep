@@ -188,7 +188,7 @@ const CommonDraftFields = {
     z.string().min(3, "Đường dẫn tối thiểu 3 ký tự").max(50).regex(/^[a-z0-9-]+$/)
   ),
   templateSlug: z.string().trim().min(1).max(100),
-  openingEffect: z.enum(["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX"]).default("WAX_SEAL"),
+  openingEffect: z.enum(["NONE", "WAX_SEAL", "GATE_OPEN", "GIFT_BOX", "ROYAL_CURTAIN", "ORIENTAL_DOOR"]).default("WAX_SEAL"),
   fallingEffect: z.enum(["NONE", "PETAL", "HEART", "SNOW", "CONFETTI", "BALLOON"]).default("PETAL"),
   musicUrl: z.string().trim().max(2_000).nullable().optional(),
   isAutoPlay: z.boolean().default(true),

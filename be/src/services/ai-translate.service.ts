@@ -225,13 +225,17 @@ ${JSON.stringify(contentToTranslate, null, 2)}`;
       },
     };
 
-    const updatedCard = await prisma.card.update({
-      where: { id: cardId, accountId },
-      data: {
-        categoryData: updatedCategoryData as Prisma.InputJsonValue,
-      },
-    });
+    // Cập nhật categoryData qua raw SQL để KHÔNG kích hoạt @updatedAt của Prisma trên Card,
+    // giúp bảo toàn optimistic concurrency lock (tránh lỗi 409 CARD_VERSION_CONFLICT của người dùng)
+    await prisma.$executeRaw`
+      UPDATE "cards"
+      SET "categoryData" = ${JSON.stringify(updatedCategoryData)}::jsonb
+      WHERE "id" = ${cardId} AND "accountId" = ${accountId}
+    `;
 
-    return updatedCard;
+    return {
+      ...card,
+      categoryData: updatedCategoryData,
+    };
   }
 }

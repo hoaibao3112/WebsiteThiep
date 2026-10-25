@@ -542,6 +542,7 @@ function EditCardContent() {
   const [successToast, setSuccessToast] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const categoryDataRef = React.useRef<CardDetail["categoryData"]>(DEMO_CARD.categoryData);
+  const initialSlugRef = React.useRef<string>("");
   const draftRevisionRef = React.useRef(0);
 
   // ────────────────────────────────────────────────────────────────
@@ -550,6 +551,7 @@ function EditCardContent() {
 
   const populateFromCard = useCallback((card: CardDetail) => {
     categoryDataRef.current = card.categoryData;
+    initialSlugRef.current = card.slug;
     setCategory(card.cardCategory);
     setSlug(card.slug);
     setCardStatus(card.status || "DRAFT");
@@ -1493,7 +1495,7 @@ function EditCardContent() {
       : undefined;
 
     // 4. Chuẩn hóa slug và templateSlug (Đảm bảo nếu thiệp đã ACTIVE thì luôn giữ slug hiện tại để tránh 409 SLUG_LOCKED)
-    const activeLockedSlug = cardStatus === "ACTIVE" && slug ? slug : snapSlug;
+    const activeLockedSlug = cardStatus === "ACTIVE" ? (initialSlugRef.current || slug || snapSlug) : snapSlug;
     const cleanSlug = activeLockedSlug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "") || `thiep-${Date.now()}`;
     if (cleanSlug.length < 3) {
       setSaving(false);
@@ -1664,6 +1666,19 @@ function EditCardContent() {
 
       if (!res.success) {
         if (res.status === 409 && ((res as any).code === "CARD_VERSION_CONFLICT" || res.error?.includes("phiên khác"))) {
+          const serverUpdatedAt = (res.details as any)?.currentUpdatedAt;
+          if (serverUpdatedAt) {
+            const nextIso = new Date(serverUpdatedAt).toISOString();
+            expectedUpdatedAtRef.current = nextIso;
+            setExpectedUpdatedAt(nextIso);
+          }
+
+          // Tự động retry 1 lần nếu là auto-save và có timestamp mới từ server
+          if (!navigate && !forceOverwrite && serverUpdatedAt) {
+            console.warn("Đồng bộ timestamp phiên làm việc mới nhất từ máy chủ, tự động lưu lại...");
+            return persistCard(draftSnapshot, false, false);
+          }
+
           setConflictModalOpen(true);
           return;
         }

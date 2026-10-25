@@ -16,6 +16,9 @@ interface ApiPayload<T> {
   data?: T;
   error?: string;
   message?: string;
+  code?: string;
+  details?: unknown;
+  currentVersion?: number;
   fieldErrors?: Record<string, string[]>;
 }
 
@@ -84,6 +87,7 @@ export class ApiClient {
       }
       if (response.ok === false || payload.success === false) {
         return {
+          ...payload,
           success: false,
           status: response.status,
           error: payload.error || payload.message || "Yêu cầu không thể hoàn tất",

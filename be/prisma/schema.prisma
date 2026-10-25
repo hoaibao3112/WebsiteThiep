@@ -178,6 +178,8 @@ enum OpeningEffect {
   WAX_SEAL
   GATE_OPEN
   GIFT_BOX
+  ROYAL_CURTAIN
+  ORIENTAL_DOOR
 }
 
 enum FallingEffect {
