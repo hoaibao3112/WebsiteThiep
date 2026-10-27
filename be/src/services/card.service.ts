@@ -609,13 +609,17 @@ export class CardService {
           where: { id: cardId, accountId },
           select: { version: true, updatedAt: true },
         });
+        // Fix: Nếu latest null (card bị xóa trong race), trả 404 thay vì version: 0
+        if (!latest) {
+          throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền chỉnh sửa", "CARD_NOT_FOUND");
+        }
         throw new HttpError(
           409,
           "Dữ liệu thiệp đã được cập nhật từ một phiên làm việc khác",
           "CARD_VERSION_CONFLICT",
           {
-            currentVersion: latest?.version ?? 0,
-            ...(latest?.updatedAt ? { currentUpdatedAt: latest.updatedAt.toISOString() } : {}),
+            currentVersion: latest.version,
+            currentUpdatedAt: latest.updatedAt.toISOString(),
           },
         );
       }
@@ -788,7 +792,16 @@ export class CardService {
       }
     }
 
-    PublishCardDataSchema.parse(card.categoryData);
+    // Fix: safeParse thay vì parse() để bubble lên HttpError 400 thay vì ZodError 500
+    const publishValidation = PublishCardDataSchema.safeParse(card.categoryData);
+    if (!publishValidation.success) {
+      throw new HttpError(
+        400,
+        "Dữ liệu thiệp chưa đủ để xuất bản. Vui lòng kiểm tra lại thông tin",
+        "INVALID_PUBLISH_DATA",
+        { fieldErrors: publishValidation.error.flatten().fieldErrors },
+      );
+    }
 
     const now = new Date();
     const publishedAt = card.publishedAt || now;
@@ -808,7 +821,9 @@ export class CardService {
           where: { code: "FREE" },
           select: { durationDays: true },
         });
-        const durationDays = freePlan?.durationDays ?? card.plan?.durationDays ?? 7;
+        // Fix: Chỉ dùng freePlan từ DB — KHÔNG dùng card.plan?.durationDays vì đó là
+        // plan tại thời điểm TẠO thiệp (có thể là BASIC 180 ngày), sẽ sai khi user downgrade
+        const durationDays = freePlan?.durationDays ?? 7;
         expiredAt = new Date(publishedAt.getTime() + durationDays * 24 * 60 * 60 * 1000);
       }
     }

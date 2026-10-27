@@ -12,6 +12,7 @@ const db = vi.hoisted(() => ({
   card: {
     findFirst: vi.fn(),
     findUnique: vi.fn(),
+    findMany: vi.fn(),
     count: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
@@ -712,6 +713,8 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
       });
 
       db.card.updateMany.mockResolvedValue({ count: 0 }); // Không update được do stale updatedAt
+      // Fix: Mock findFirst thứ 2 (latest lookup sau updateMany count=0)
+      db.card.findFirst.mockResolvedValueOnce({ version: 5, updatedAt: latestDate });
 
       await expect(
         CardService.updateDraft("account-1", "card-1", input, pastDate.toISOString())
@@ -886,6 +889,70 @@ describe("CardService.updateDraft template premium & plan permissions", () => {
         where: { id: "existing-event-id", cardId: "card-1", accountId: "account-1" },
         data: expect.objectContaining({ eventName: "Lễ Cưới Cập Nhật" }),
       }));
+    });
+
+    it("photos: gán isCover = true cho ảnh đầu tiên nếu không chỉ định, và tôn trọng isCover được truyền vào", async () => {
+      mockCard();
+
+      db.template.findUnique.mockResolvedValue({
+        id: "tpl-1",
+        slug: input.templateSlug,
+        category: "WEDDING",
+        isActive: true,
+        isPremium: false,
+      });
+
+      db.card.updateMany.mockResolvedValue({ count: 1 });
+      db.card.findFirstOrThrow.mockResolvedValue({ id: "card-1", version: 1 });
+
+      await CardService.updateDraft("account-1", "card-1", {
+        ...input,
+        photos: [
+          { url: "https://img.test/photo1.jpg" }, // sortOrder 0, isCover undefined -> true
+          { url: "https://img.test/photo2.jpg" }, // sortOrder 1, isCover undefined -> false
+          { url: "https://img.test/photo3.jpg", isCover: true }, // sortOrder 2, explicit isCover: true
+        ],
+      });
+
+      expect(db.cardPhoto.deleteMany).toHaveBeenCalledWith({
+        where: { cardId: "card-1", accountId: "account-1" },
+      });
+      expect(db.cardPhoto.createMany).toHaveBeenCalledWith({
+        data: [
+          expect.objectContaining({ url: "https://img.test/photo1.jpg", sortOrder: 0, isCover: true }),
+          expect.objectContaining({ url: "https://img.test/photo2.jpg", sortOrder: 1, isCover: false }),
+          expect.objectContaining({ url: "https://img.test/photo3.jpg", sortOrder: 2, isCover: true }),
+        ],
+      });
+    });
+  });
+
+  describe("getUserCards", () => {
+    it("đảm bảo multi-tenant isolation: chỉ query theo accountId và sắp xếp createdAt desc", async () => {
+      const mockResult = [
+        { id: "c-1", slug: "card-1", accountId: "acc-user-1" },
+        { id: "c-2", slug: "card-2", accountId: "acc-user-1" },
+      ];
+      db.card.findMany.mockResolvedValueOnce(mockResult);
+
+      const cards = await CardService.getUserCards("acc-user-1");
+
+      expect(db.card.findMany).toHaveBeenCalledWith({
+        where: { accountId: "acc-user-1" },
+        include: {
+          plan: true,
+          template: true,
+          _count: {
+            select: {
+              rsvpResponses: true,
+              wishes: true,
+              guests: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      expect(cards).toEqual(mockResult);
     });
   });
 });

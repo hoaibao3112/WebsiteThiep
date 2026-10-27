@@ -69,4 +69,52 @@ describe("RSVP notification failure", () => {
       })
     );
   });
+
+  it("tìm guest với điều kiện OR khi truyền cả guestToken và guestCode đồng thời", async () => {
+    prismaMock.card.findUnique.mockResolvedValue({
+      id: "card-1",
+      slug: "wedding",
+      status: "ACTIVE",
+      expiredAt: null,
+      telegramChatId: null,
+      accountId: "account-1",
+    });
+    prismaMock.guest.findFirst.mockResolvedValue({
+      id: "guest-both",
+      fullName: "Cô Tư",
+      phone: "0911223344",
+    });
+    prismaMock.rsvpResponse.upsert.mockResolvedValue({ id: "rsvp-both" });
+
+    await RsvpService.submitRsvp({
+      cardId: "card-1",
+      fullName: "Guest Raw",
+      guestToken: "uuid-token-xyz",
+      guestCode: "CODE123",
+      status: "ATTENDING",
+      guestCount: 1,
+      side: "BRIDE",
+    });
+
+    expect(prismaMock.guest.findFirst).toHaveBeenCalledWith({
+      where: {
+        accountId: "account-1",
+        cardId: "card-1",
+        OR: [
+          { guestToken: "uuid-token-xyz" },
+          { guestCode: "CODE123" },
+        ],
+      },
+    });
+
+    expect(prismaMock.rsvpResponse.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { cardId_guestId: { cardId: "card-1", guestId: "guest-both" } },
+        create: expect.objectContaining({
+          fullName: "Cô Tư",
+          phone: "0911223344",
+        }),
+      })
+    );
+  });
 });

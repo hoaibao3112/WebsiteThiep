@@ -39,8 +39,21 @@ redis.on("error", (err) => {
   logger.error({ err }, "Redis connection error");
 });
 
-redis.on("connect", () => {
+redis.on("connect", async () => {
   logger.info("Connected to Redis successfully");
+  if (process.env.NODE_ENV !== "test") {
+    try {
+      const configRes = (await redis.config("GET", "maxmemory-policy")) as [string, string] | null;
+      if (configRes && configRes[1] && configRes[1] !== "noeviction") {
+        logger.warn(
+          { currentPolicy: configRes[1] },
+          "Redis eviction policy is not 'noeviction'. BullMQ and session storage require 'maxmemory-policy noeviction' to prevent silent data eviction."
+        );
+      }
+    } catch {
+      // Ignored if CONFIG command is restricted in managed Redis (Upstash/AWS)
+    }
+  }
 });
 
 redis.on("reconnecting", (time: number) => {

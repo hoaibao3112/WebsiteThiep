@@ -160,6 +160,11 @@ describe("Card Concurrency, Slug Lock & Multi-tenant Lifecycle", () => {
 
       // 4. updateMany count = 0 (do updatedAt không khớp)
       prismaMock.card.updateMany.mockResolvedValueOnce({ count: 0 });
+      // 5. Fix: Mock latest card lookup (sau updateMany count=0)
+      prismaMock.card.findFirst.mockResolvedValueOnce({
+        version: 3,
+        updatedAt: new Date("2026-10-22T10:05:00.000Z"),
+      });
 
       await expect(
         CardService.updateDraft(
