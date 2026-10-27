@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Template09ImperialDragon } from "@/components/wedding/templates/Template09ImperialDragon";
@@ -61,32 +61,28 @@ const MOCK_DRAGON_CARD: CardDetail = {
     },
     loveStory: [
       {
-        year: "2020",
+        date: "2020",
         title: "Kỳ Ngộ Định Mệnh",
         description: "Lần đầu gặp gỡ giữa tiết thu Hà Nội",
         imageUrl: "/images/demo/templates/t09-dragon/story-1.jpg",
       },
       {
-        year: "2023",
+        date: "2023",
         title: "Lời Hẹn Ước Hoàng Hôn",
         description: "Lời cầu hôn dưới hoàng hôn Phú Quốc",
         imageUrl: "/images/demo/templates/t09-dragon/story-2.jpg",
       },
     ],
-    bankAccounts: [
-      {
-        bankName: "Vietcombank",
-        accountNumber: "9988776655",
-        accountHolder: "NGUYEN HOANG LONG",
-        qrCodeUrl: "/images/demo/templates/t09-dragon/qr-groom.png",
-      },
-      {
-        bankName: "Techcombank",
-        accountNumber: "1122334455",
-        accountHolder: "LE BAO NGOC",
-        qrCodeUrl: "/images/demo/templates/t09-dragon/qr-bride.png",
-      },
-    ],
+  },
+  bankingPrimary: {
+    bankCode: "VCB",
+    accountNumber: "9988776655",
+    accountName: "NGUYEN HOANG LONG",
+  },
+  bankingSecondary: {
+    bankCode: "TCB",
+    accountNumber: "1122334455",
+    accountName: "LE BAO NGOC",
   },
   events: [],
   photos: [

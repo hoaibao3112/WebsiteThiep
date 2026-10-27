@@ -10,16 +10,18 @@
 
 | Trạng thái | Tên bài hát | Ca sĩ thể hiện | Cảm xúc / Phong cách | Tên file lưu vào `fe/public/music/` |
 | :---: | :--- | :--- | :--- | :--- |
-| [ ] | **Cưới Nhau Đi (Yes I Do)** | Bùi Anh Tuấn & Hiền Hồ | Hoành tráng, thánh đường hạnh phúc | `cuoi-nhau-di.mp3` |
+| [x] | **Cưới Nhau Đi (Yes I Do)** | Bùi Anh Tuấn & Hiền Hồ | Hoành tráng, thánh đường hạnh phúc | `cuoi-nhau-di.mp3` |
 | [ ] | **Ánh Nắng Của Anh** | Đức Phúc | Lãng mạn, ấm áp, tình cảm | `anh-nang-cua-anh.mp3` |
 | [ ] | **Gặp Gỡ, Yêu Đương Và Được Bên Em** | Phan Mạnh Quỳnh | Chân thành, sâu sắc, ý nghĩa | `gap-go-yeu-duong.mp3` |
-| [ ] | **Ta Là Của Nhau** | Đông Nhi & Ông Cao Thắng | Tình yêu bền chặt, happy ending | `ta-la-cua-nhau.mp3` |
-| [ ] | **Yêu Là Cưới** | Phát Hồ | Vui nhộn, rộn ràng tiệc cưới | `yeu-la-cuoi.mp3` |
-| [ ] | **Cưới Thôi** | Masew x Masiu x B Ray | Hiện đại, năng động, Gen Z | `cuoi-thoi.mp3` |
-| [ ] | **Bản Tình Ca Đầu Tiên** | Duy Khoa | Hoài niệm, ngọt ngào, kinh điển | `ban-tinh-ca-dau-tien.mp3` |
-| [ ] | **Hôm Nay Tôi Cưới Em** | Khải Đăng | Xúc động, tâm sự của chú rể | `hom-nay-toi-cuoi-em.mp3` |
-| [ ] | **Nơi Này Có Anh** | Sơn Tùng M-TP | Tươi sáng, bắt tai, ngọt ngào | `noi-nay-co-anh.mp3` |
-| [ ] | **Cơn Mưa Tình Yêu** | Hà Anh Tuấn & Phương Linh | Song ca tình yêu bất hủ | `con-mua-tinh-yeu.mp3` |
+| [x] | **Ta Là Của Nhau** | Đông Nhi & Ông Cao Thắng | Tình yêu bền chặt, happy ending | `ta-la-cua-nhau.mp3` |
+| [x] | **Yêu Là Cưới** | Phát Hồ | Vui nhộn, rộn ràng tiệc cưới | `yeu-la-cuoi.mp3` |
+| [x] | **Cưới Thôi** | Masew x Masiu x B Ray | Hiện đại, năng động, Gen Z | `cuoi-thoi.mp3` |
+| [x] | **Bản Tình Ca Đầu Tiên** | Duy Khoa | Hoài niệm, ngọt ngào, kinh điển | `ban-tinh-ca-dau-tien.mp3` |
+| [x] | **Hôm Nay Tôi Cưới Em (Dự Đám Cưới Cô Ấy)** | Khải Đăng | Xúc động, tâm sự của chú rể | `hom-nay-toi-cuoi-em.mp3` |
+| [x] | **Nơi Này Có Anh** | Sơn Tùng M-TP | Tươi sáng, bắt tai, ngọt ngào | `noi-nay-co-anh.mp3` |
+| [x] | **Cơn Mưa Tình Yêu** | Hà Anh Tuấn & Phương Linh | Song ca tình yêu bất hủ | `con-mua-tinh-yeu.mp3` |
+| [x] | **Chỉ Cần Có Nhau** | Vũ Duy Khánh | Ý nghĩa, cam kết trọn đời | `chi-can-co-nhau.mp3` |
+| [x] | **Người Đầu Tiên** | Vũ | Mộc mạc, lắng đọng, tình cảm | `nguoi-dau-tien.mp3` |
 | [ ] | **Qua Đêm Nay** | Hà Anh Tuấn & Phương Linh | Lễ cưới thăng hoa, nồng nàn | `qua-dem-nay.mp3` |
 | [ ] | **Dành Cho Em** | Hoàng Tôn | R&B ngọt ngào, êm dịu | `danh-cho-em.mp3` |
 | [ ] | **Vợ Tuyệt Vời Nhất** | Vũ Duy Khánh | Ý nghĩa dành riêng tặng cô dâu | `vo-tuyet-voi-nhat.mp3` |
@@ -63,27 +65,34 @@
 
 ---
 
-## 📂 PHẦN 4: 14 BÀI ĐÃ CÓ SẴN (ĐỂ ĐỐI CHIẾU TRÁNH TẢI TRÙNG)
+## 📂 PHẦN 4: 24 BÀI ĐÃ SẴN SÀNG TRONG HỆ THỐNG
 
-Các bài này **đã có sẵn trong thư mục `fe/public/music/`**, không cần tải lại:
-1. `a-thousand-years.mp3` — A Thousand Years (Christina Perri)
-2. `beautiful-in-white.mp3` — Beautiful In White (Shane Filan)
-3. `die-with-a-smile.mp3` — Die With A Smile (Lady Gaga & Bruno Mars)
-4. `everytime-we-touch.mp3` — Everytime We Touch (Cascada Acoustic)
-5. `hon-ca-yeu.mp3` — Hơn Cả Yêu (Đức Phúc)
-6. `i-do.mp3` — I Do (911 Band)
-7. `le-duong.mp3` — Lễ Đường
-8. `like-my-father.mp3` — Like My Father (Jax)
-9. `marry-you.mp3` — Marry You (Bruno Mars)
-10. `mot-nha.mp3` — Một Nhà (Da LAB)
-11. `ngay-dau-tien.mp3` — Ngày Đầu Tiên (Đức Phúc)
-12. `perfect.mp3` — Perfect (Ed Sheeran)
-13. `until-i-found-you.mp3` — Until I Found You (Stephen Sanchez)
-14. `xin-ma-ruoc-dau.mp3` — Xin Má Rước Dâu (Diệu Kiên)
+Các bài này **đã có file trong `fe/public/music/` và đã tích hợp vào giao diện chọn nhạc thiệp cưới**:
 
----
+### Nhạc Việt Nam (15 bài):
+1. `ngay-dau-tien.mp3` — **Ngày Đầu Tiên** (Đức Phúc)
+2. `cuoi-nhau-di.mp3` — **Cưới Nhau Đi (Yes I Do)** (Bùi Anh Tuấn & Hiền Hồ)
+3. `hon-ca-yeu.mp3` — **Hơn Cả Yêu** (Đức Phúc)
+4. `ta-la-cua-nhau.mp3` — **Ta Là Của Nhau** (Đông Nhi & Ông Cao Thắng)
+5. `ban-tinh-ca-dau-tien.mp3` — **Bản Tình Ca Đầu Tiên** (Duy Khoa)
+6. `con-mua-tinh-yeu.mp3` — **Cơn Mưa Tình Yêu** (Hà Anh Tuấn & Phương Linh)
+7. `noi-nay-co-anh.mp3` — **Nơi Này Có Anh** (Sơn Tùng M-TP)
+8. `mot-nha.mp3` — **Một Nhà** (Da LAB)
+9. `yeu-la-cuoi.mp3` — **Yêu Là Cưới** (Phát Hồ)
+10. `cuoi-thoi.mp3` — **Cưới Thôi** (Masew x Masiu x B Ray)
+11. `xin-ma-ruoc-dau.mp3` — **Xin Má Rước Dâu** (Diệu Kiên)
+12. `chi-can-co-nhau.mp3` — **Chỉ Cần Có Nhau** (Vũ Duy Khánh)
+13. `hom-nay-toi-cuoi-em.mp3` — **Hôm Nay Tôi Dự Đám Cưới Cô Ấy** (Khải Đăng)
+14. `nguoi-dau-tien.mp3` — **Người Đầu Tiên** (Vũ)
+15. `le-duong.mp3` — **Lễ Đường (Wedding Anthem)** (Truyền Thống)
 
-## 🚀 HƯỚNG DẪN TIẾP THEO
-1. Tải các file `.mp3` và đổi đúng tên theo cột **Tên file lưu vào `fe/public/music/`**.
-2. Thả file vào thư mục: `d:\freelancer\WebsiteThiep\fe\public\music\`.
-3. Bất cứ lúc nào tải xong 1 vài bài hoặc toàn bộ, chỉ cần nhắn tôi: *"Tôi đã tải bài X, Y, Z"* hoặc *"Cập nhật hết nhạc mới vào code đi"* – Tôi sẽ lập tức đưa các bài mới này vào danh sách chọn nhạc trên giao diện chỉnh sửa thiệp!
+### Nhạc Quốc Tế (9 bài):
+16. `beautiful-in-white.mp3` — **Beautiful In White** (Shane Filan)
+17. `die-with-a-smile.mp3` — **Die With A Smile** (Lady Gaga & Bruno Mars)
+18. `until-i-found-you.mp3` — **Until I Found You** (Stephen Sanchez)
+19. `i-do.mp3` — **I Do** (911 Band)
+20. `a-thousand-years.mp3` — **A Thousand Years** (Christina Perri)
+21. `perfect.mp3` — **Perfect** (Ed Sheeran)
+22. `marry-you.mp3` — **Marry You** (Bruno Mars)
+23. `everytime-we-touch.mp3` — **Everytime We Touch (Slow Acoustic)** (Cascada Acoustic)
+24. `like-my-father.mp3` — **Like My Father** (Jax)

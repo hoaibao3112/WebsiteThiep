@@ -207,20 +207,31 @@ const TEMPLATE_PRESETS = [
 const MUSIC_OPTIONS = [
   // NHẠC CƯỚI VIỆT NAM
   { title: "Ngày Đầu Tiên", artist: "Đức Phúc", duration: "3:40", category: "VN", badge: "Hot Nhất", src: "/music/ngay-dau-tien.mp3" },
-  { title: "Lễ Đường (Wedding Anthem)", artist: "Nhạc Cưới Tình Yêu", duration: "3:45", category: "VN", badge: "Yêu Thích", src: "/music/le-duong.mp3" },
-  { title: "Xin Má Rước Dâu", artist: "Diệu Kiên", duration: "3:16", category: "VN", badge: "Rộn Ràng", src: "/music/xin-ma-ruoc-dau.mp3" },
+  { title: "Cưới Nhau Đi (Yes I Do)", artist: "Bùi Anh Tuấn & Hiền Hồ", duration: "3:58", category: "VN", badge: "Thánh Đường", src: "/music/cuoi-nhau-di.mp3" },
   { title: "Hơn Cả Yêu", artist: "Đức Phúc", duration: "4:05", category: "VN", badge: "Ngọt Ngào", src: "/music/hon-ca-yeu.mp3" },
+  { title: "Ta Là Của Nhau", artist: "Đông Nhi & Ông Cao Thắng", duration: "3:48", category: "VN", badge: "Hạnh Phúc", src: "/music/ta-la-cua-nhau.mp3" },
+  { title: "Bản Tình Ca Đầu Tiên", artist: "Duy Khoa", duration: "4:20", category: "VN", badge: "Kinh Điển", src: "/music/ban-tinh-ca-dau-tien.mp3" },
+  { title: "Cơn Mưa Tình Yêu", artist: "Hà Anh Tuấn & Phương Linh", duration: "4:40", category: "VN", badge: "Song Ca", src: "/music/con-mua-tinh-yeu.mp3" },
+  { title: "Nơi Này Có Anh", artist: "Sơn Tùng M-TP", duration: "4:20", category: "VN", badge: "Tươi Vui", src: "/music/noi-nay-co-anh.mp3" },
   { title: "Một Nhà", artist: "Da LAB", duration: "3:18", category: "VN", badge: "Vui Tươi", src: "/music/mot-nha.mp3" },
+  { title: "Yêu Là Cưới", artist: "Phát Hồ", duration: "3:10", category: "VN", badge: "Sôi Động", src: "/music/yeu-la-cuoi.mp3" },
+  { title: "Cưới Thôi", artist: "Masew x Masiu x B Ray", duration: "3:02", category: "VN", badge: "Trending", src: "/music/cuoi-thoi.mp3" },
+  { title: "Xin Má Rước Dâu", artist: "Diệu Kiên", duration: "3:16", category: "VN", badge: "Rộn Ràng", src: "/music/xin-ma-ruoc-dau.mp3" },
+  { title: "Chỉ Cần Có Nhau", artist: "Vũ Duy Khánh", duration: "3:50", category: "VN", badge: "Ý Nghĩa", src: "/music/chi-can-co-nhau.mp3" },
+  { title: "Hôm Nay Tôi Dự Đám Cưới Cô Ấy", artist: "Khải Đăng", duration: "4:35", category: "VN", badge: "Cảm Xúc", src: "/music/hom-nay-toi-cuoi-em.mp3" },
+  { title: "Người Đầu Tiên", artist: "Vũ", duration: "3:55", category: "VN", badge: "Lắng Đọng", src: "/music/nguoi-dau-tien.mp3" },
+  { title: "Lễ Đường (Wedding Anthem)", artist: "Nhạc Cưới Tình Yêu", duration: "3:45", category: "VN", badge: "Yêu Thích", src: "/music/le-duong.mp3" },
+
   // NHẠC CƯỚI QUỐC TẾ
-  { title: "Die With A Smile", artist: "Lady Gaga & Bruno Mars", duration: "4:11", category: "INT", badge: "Siêu Hit", src: "/music/die-with-a-smile.mp3" },
   { title: "Beautiful In White", artist: "Shane Filan (Westlife)", duration: "3:30", category: "INT", badge: "Hoàng Gia", src: "/music/beautiful-in-white.mp3" },
-  { title: "Marry You", artist: "Bruno Mars", duration: "3:50", category: "INT", badge: "Rộn Ràng", src: "/music/marry-you.mp3" },
-  { title: "Everytime We Touch (Slow Acoustic)", artist: "Cascada Acoustic", duration: "3:16", category: "INT", badge: "Lãng Mạn", src: "/music/everytime-we-touch.mp3" },
-  { title: "Like My Father", artist: "Jax", duration: "3:02", category: "INT", badge: "Ý Nghĩa", src: "/music/like-my-father.mp3" },
+  { title: "Die With A Smile", artist: "Lady Gaga & Bruno Mars", duration: "4:11", category: "INT", badge: "Siêu Hit", src: "/music/die-with-a-smile.mp3" },
   { title: "Until I Found You", artist: "Stephen Sanchez", duration: "2:57", category: "INT", badge: "Trending", src: "/music/until-i-found-you.mp3" },
   { title: "I Do", artist: "911 Band", duration: "3:24", category: "INT", badge: "Kinh Điển", src: "/music/i-do.mp3" },
   { title: "A Thousand Years", artist: "Christina Perri", duration: "4:45", category: "INT", badge: "Bất Hủ", src: "/music/a-thousand-years.mp3" },
   { title: "Perfect", artist: "Ed Sheeran", duration: "4:23", category: "INT", badge: "Du Dương", src: "/music/perfect.mp3" },
+  { title: "Marry You", artist: "Bruno Mars", duration: "3:50", category: "INT", badge: "Rộn Ràng", src: "/music/marry-you.mp3" },
+  { title: "Everytime We Touch (Slow Acoustic)", artist: "Cascada Acoustic", duration: "3:16", category: "INT", badge: "Lãng Mạn", src: "/music/everytime-we-touch.mp3" },
+  { title: "Like My Father", artist: "Jax", duration: "3:02", category: "INT", badge: "Ý Nghĩa", src: "/music/like-my-father.mp3" },
 ];
 
 const COLOR_PRESETS = [
