@@ -231,12 +231,10 @@ export class CustomFormService {
   }
 
   static async deleteSubmission(accountId: string, cardId: string, submissionId: string) {
-    const submission = await prisma.customFormSubmission.findFirst({
+    const result = await prisma.customFormSubmission.deleteMany({
       where: { id: submissionId, cardId, accountId },
     });
-    if (!submission) throw new HttpError(404, "Khong tim thay ban ghi", "NOT_FOUND");
-
-    await prisma.customFormSubmission.delete({ where: { id: submissionId } });
+    if (result.count === 0) throw new HttpError(404, "Khong tim thay ban ghi", "NOT_FOUND");
     return { success: true };
   }
 }

@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { logger } from "../lib/logger";
 import { mailCircuit } from "../lib/circuit-breaker";
+import { escapeHtml } from "../lib/html";
 
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -152,27 +153,27 @@ export class MailService {
           <table class="table-info">
             <tr>
               <td class="label">👤 Họ và Tên:</td>
-              <td class="value">${data.fullName}</td>
+              <td class="value">${escapeHtml(data.fullName)}</td>
             </tr>
             <tr>
               <td class="label">📞 Số điện thoại / Zalo:</td>
-              <td class="value" style="color: #0068FF; font-size: 15px;">${data.phone}</td>
+              <td class="value" style="color: #0068FF; font-size: 15px;">${escapeHtml(data.phone)}</td>
             </tr>
             <tr>
               <td class="label">✉️ Email:</td>
-              <td class="value">${data.email || "(Khách không cung cấp)"}</td>
+              <td class="value">${data.email ? escapeHtml(data.email) : "(Khách không cung cấp)"}</td>
             </tr>
             <tr>
               <td class="label">📦 Gói Dịch Vụ:</td>
-              <td class="value" style="color: #8C6424;">${data.servicePackage || "Bespoke (Thiết Kế Độc Bản)"}</td>
+              <td class="value" style="color: #8C6424;">${data.servicePackage ? escapeHtml(data.servicePackage) : "Bespoke (Thiết Kế Độc Bản)"}</td>
             </tr>
             <tr>
               <td class="label">🎨 Mẫu Yêu Thích:</td>
-              <td class="value">${data.favoriteTemplate || "Không chọn"}</td>
+              <td class="value">${data.favoriteTemplate ? escapeHtml(data.favoriteTemplate) : "Không chọn"}</td>
             </tr>
             <tr>
               <td class="label">📝 Ghi Chú & Yêu Cầu:</td>
-              <td class="value" style="font-weight: 500; line-height: 1.5;">${data.notes || "(Không có ghi chú thêm)"}</td>
+              <td class="value" style="font-weight: 500; line-height: 1.5;">${data.notes ? escapeHtml(data.notes) : "(Không có ghi chú thêm)"}</td>
             </tr>
             <tr>
               <td class="label">⏰ Thời Gian Gửi:</td>
@@ -262,7 +263,7 @@ export class MailService {
 
           <div class="code-box">
             <div class="code-title">Mã Chuyển Khoản Đối Soát (Nội dung CK)</div>
-            <div class="code-val">${data.orderCode}</div>
+            <div class="code-val">${escapeHtml(data.orderCode)}</div>
           </div>
 
           <table class="table-info">
@@ -272,19 +273,19 @@ export class MailService {
             </tr>
             <tr>
               <td class="label">📦 Sản Phẩm / Gói:</td>
-              <td class="value" style="color: #8C6239;">${data.itemName} (${data.orderType === "PLAN" ? "Gói Dịch Vụ" : "Tiện Ích Add-on"})</td>
+              <td class="value" style="color: #8C6239;">${escapeHtml(data.itemName)} (${data.orderType === "PLAN" ? "Gói Dịch Vụ" : "Tiện Ích Add-on"})</td>
             </tr>
             <tr>
               <td class="label">👤 Tên Khách Hàng:</td>
-              <td class="value">${data.customerName || "Khách hàng"}</td>
+              <td class="value">${data.customerName ? escapeHtml(data.customerName) : "Khách hàng"}</td>
             </tr>
             <tr>
               <td class="label">✉️ Email Tài Khoản:</td>
-              <td class="value">${data.customerEmail || "Không có"}</td>
+              <td class="value">${data.customerEmail ? escapeHtml(data.customerEmail) : "Không có"}</td>
             </tr>
             <tr>
               <td class="label">📞 Điện Thoại / Zalo:</td>
-              <td class="value" style="color: #0068FF;">${data.customerPhone || "Chưa cập nhật"}</td>
+              <td class="value" style="color: #0068FF;">${data.customerPhone ? escapeHtml(data.customerPhone) : "Chưa cập nhật"}</td>
             </tr>
             <tr>
               <td class="label">⏰ Thời Gian Khách Báo:</td>

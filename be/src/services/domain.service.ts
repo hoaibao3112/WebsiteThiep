@@ -330,7 +330,7 @@ export class DomainService {
     await this.invalidateDomainCache(customDomain.domain);
 
     // 3. Xóa record trong DB
-    await prisma.customDomain.delete({
+    await prisma.customDomain.deleteMany({
       where: { id: domainId, accountId },
     });
 
