@@ -93,7 +93,7 @@ export class ReminderService {
     const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}@weddingcard`;
     const now = formatIcs(new Date());
     const escape = (str: string) =>
-      str.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+      str.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r/g, "").replace(/\n/g, "\\n");
 
     const lines = [
       "BEGIN:VCALENDAR",

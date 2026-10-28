@@ -38,6 +38,7 @@ import {
   BookOpen,
   Pencil,
   Camera,
+  Type,
 } from "lucide-react";
 import { uploadSingleImage } from "@/lib/image-upload";
 import { EditorField } from "@/lib/editor/template-registry";
@@ -160,26 +161,59 @@ function DefaultInspector() {
     canvasMode,
     setCanvasMode,
     openAlbum3DEditor,
+    setActiveTool,
   } = useEditor();
 
   const [wishTab, setWishTab] = useState<"content" | "public" | "private">("content");
-  const [expandWish, setExpandWish] = useState(true);
+  const [expandWish, setExpandWish] = useState(false);
   const [expandColor, setExpandColor] = useState(false);
+  const [expandCanvas, setExpandCanvas] = useState(false);
+  const [expandAlbum, setExpandAlbum] = useState(false);
 
   const cardSlug = (draft as any).slug || "";
 
   return (
     <aside className="w-72 sm:w-80 bg-white border-l border-stone-200 flex flex-col justify-between h-full select-none shrink-0 shadow-xs z-20">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Header */}
-        <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
-            Thuộc Tính Thiệp
-          </span>
-          <p className="text-xs text-stone-500 mt-0.5">
-            Kích đúp vào văn bản hoặc ảnh trên thiệp để chỉnh sửa nhanh.
-          </p>
+      <div className="flex-1 overflow-y-auto">
+        {/* ── CONTEXTUAL HINT ── */}
+        <div className="p-4 border-b border-stone-100">
+          <div className="rounded-2xl bg-gradient-to-br from-amber-50 to-rose-50/60 border border-amber-200/80 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="size-8 rounded-xl bg-amber-500/15 flex items-center justify-center shrink-0">
+                <Sparkles className="size-4 text-amber-700" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-stone-900 block">Thiết kế thiệp</span>
+                <span className="text-[10px] text-stone-500">Click vào thiệp để chọn và chỉnh sửa</span>
+              </div>
+            </div>
+
+            {/* Quick action hints */}
+            <div className="space-y-1.5">
+              {[
+                { icon: Type, label: "Thêm văn bản", hint: "Text", action: () => setActiveTool("text") },
+                { icon: ImageIcon, label: "Thêm ảnh", hint: "Image", action: () => setActiveTool("image") },
+                { icon: Palette, label: "Đổi nền thiệp", hint: "BG", action: () => setActiveTool("background") },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.hint}
+                    type="button"
+                    onClick={item.action}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/80 hover:bg-white border border-amber-200/60 hover:border-amber-300 text-left text-xs font-semibold text-stone-700 hover:text-stone-900 transition cursor-pointer group shadow-2xs"
+                  >
+                    <Icon className="size-3.5 text-amber-700 shrink-0 group-hover:scale-110 transition-transform" />
+                    <span>{item.label}</span>
+                    <ChevronDown className="size-3 ml-auto text-stone-400 -rotate-90" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
+
+        <div className="p-4 space-y-3">
 
         {/* ── KÍCH THƯỚC & ĐỘ DÀI KHUNG THIỆP (CANVAS HEIGHT) ── */}
         <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-50/80 to-white border border-amber-200/90 shadow-xs space-y-3">
@@ -525,6 +559,7 @@ function DefaultInspector() {
             </div>
           )}
         </div>
+        </div>{/* end p-4 space-y-3 */}
       </div>
 
       {/* Save Button */}

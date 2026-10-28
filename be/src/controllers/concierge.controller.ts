@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { MailService } from "../services/mail.service";
+import { checkRateLimit } from "../lib/rate-limiter";
 
 export class ConciergeController {
   /**
@@ -8,6 +9,14 @@ export class ConciergeController {
    */
   static async submit(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      const clientIp = req.ip || req.socket.remoteAddress || "127.0.0.1";
+      await checkRateLimit(
+        `ratelimit:concierge:ip:${clientIp}`,
+        5,
+        600,
+        "Bạn đã gửi quá nhiều yêu cầu trong thời gian ngắn. Vui lòng thử lại sau 10 phút!"
+      );
+
       // req.body đã được validate bởi middleware validate(ConciergeSchema)
       const { fullName, phone, email, servicePackage, favoriteTemplate, notes } = req.body;
 

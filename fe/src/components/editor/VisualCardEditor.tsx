@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState, useEffect } from "react";
+import React, { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { EditorProvider, useEditor, ToolCategory } from "./EditorContext";
 import { LeftSidebar } from "./LeftSidebar";
@@ -24,6 +24,8 @@ import {
   Tv,
   BookOpen,
   ExternalLink,
+  MoreHorizontal,
+  Check,
 } from "lucide-react";
 import { Album3DManagerModal } from "../card/Album3DManagerModal";
 import { LiveCardPreviewModal } from "./LiveCardPreviewModal";
@@ -229,7 +231,7 @@ function VisualCardEditorInner({
 }
 
 // ────────────────────────────────────────────────────────────────
-// TOP BAR (KHỚP 100% ẢNH MẪU NGAYCHUNGDOI)
+// TOP BAR — SIMPLIFIED: Essential actions visible, secondary in "More" menu
 // ────────────────────────────────────────────────────────────────
 
 interface CanvasTopBarProps {
@@ -249,6 +251,8 @@ function CanvasTopBar({
 }: CanvasTopBarProps) {
   const { draft, undo, redo, canUndo, canRedo, hasUnsavedChanges, saveState, triggerSave } = useEditor();
   const [internalSaving, setInternalSaving] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
   const cardId = (draft as any)?.id || (draft as any)?._id;
 
   const handleSaveClick = async () => {
@@ -262,12 +266,25 @@ function CanvasTopBar({
     }
   };
 
+  // Close more menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    };
+    if (moreOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [moreOpen]);
+
   const isSavingActive = isSaving || internalSaving || saveState === "saving";
 
   return (
-    <header className="h-14 bg-white border-b border-stone-200 px-3 sm:px-5 flex items-center justify-between shrink-0 z-30 select-none shadow-2xs">
-      {/* LEFT: BACK + BRAND HEART BADGE + "ngày chung đôi" + UNDO / REDO */}
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+    <header className="h-14 bg-white border-b border-stone-200 px-3 sm:px-4 flex items-center justify-between shrink-0 z-30 select-none shadow-2xs">
+      {/* LEFT: BACK + BRAND + UNDO/REDO */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <Link
           href={backUrl}
           className="size-8 rounded-full hover:bg-stone-100 flex items-center justify-center text-stone-600 hover:text-stone-900 transition shrink-0"
@@ -276,9 +293,9 @@ function CanvasTopBar({
           <ChevronLeft className="size-5" />
         </Link>
 
-        {/* BRAND BADGE: Pink rounded square with Heart + ngày chung đôi */}
-        <div className="flex items-center gap-2 select-none shrink-0">
-          <div className="size-7 sm:size-8 rounded-lg bg-pink-100 flex items-center justify-center text-pink-500 shadow-2xs">
+        {/* BRAND BADGE */}
+        <div className="flex items-center gap-1.5 select-none shrink-0">
+          <div className="size-7 rounded-lg bg-pink-100 flex items-center justify-center text-pink-500 shadow-2xs">
             <Heart className="size-4 fill-pink-500 text-pink-500" />
           </div>
           <span className="hidden sm:inline font-bold text-sm tracking-tight text-stone-800">
@@ -286,8 +303,8 @@ function CanvasTopBar({
           </span>
         </div>
 
-        {/* UNDO / REDO CONTROLS */}
-        <div className="flex items-center gap-0.5 border-l border-stone-200 pl-2 sm:pl-3">
+        {/* UNDO / REDO */}
+        <div className="flex items-center gap-0.5 border-l border-stone-200 pl-2">
           <button
             type="button"
             onClick={undo}
@@ -309,56 +326,29 @@ function CanvasTopBar({
         </div>
       </div>
 
-      {/* CENTER: SAVED / UNSAVED STATE BADGE */}
-      <div className="flex items-center gap-2">
+      {/* CENTER: SAVE STATUS */}
+      <div className="flex items-center">
         {hasUnsavedChanges ? (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-3 py-1 rounded-full shadow-2xs animate-in fade-in">
-            <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="hidden xs:inline">Có thay đổi chưa lưu</span>
-            <span className="xs:hidden">Chưa lưu</span>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-full shadow-2xs animate-in fade-in">
+            <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
+            <span className="hidden sm:inline">Chưa lưu</span>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full shadow-2xs">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            <span>Đã lưu</span>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full shadow-2xs">
+            <Check className="size-3 text-emerald-600" />
+            <span className="hidden sm:inline">Đã lưu</span>
           </div>
         )}
       </div>
 
-      {/* RIGHT: VIEW CARD + SOLID BLACK PILL BUTTON "Lưu thiệp" */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-        {cardId && (
-          <Link
-            href={`/dashboard/cards/${cardId}/memories`}
-            className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-200 bg-amber-50/70 text-amber-900 text-xs font-semibold hover:bg-amber-100 transition shadow-2xs"
-            title="Quản lý ảnh kỷ niệm & Màn hình LED tiệc cưới"
-          >
-            <Tv className="size-3.5 text-amber-600" />
-            <span>Màn Hình LED</span>
-          </Link>
-        )}
-
-        <button
-          type="button"
-          onClick={() => {
-            window.dispatchEvent(
-              new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
-            );
-          }}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-100/90 hover:bg-amber-200 text-amber-950 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-95"
-          title="Chỉnh sửa Trang Bìa Sau (Màn Kết) & Album 3D"
-        >
-          <BookOpen className="size-3.5 text-amber-800" />
-          <span className="hidden sm:inline">Album 3D &amp; Bìa Sau</span>
-          <span className="sm:hidden">Bìa Sau</span>
-        </button>
-
-        {/* NÚT XEM TRƯỚC TRỰC TIẾP (LIVE PREVIEW MODAL) */}
+      {/* RIGHT: PREVIEW + MORE MENU + SAVE */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* XEM TRƯỚC */}
         {onOpenPreview && (
           <button
             type="button"
             onClick={onOpenPreview}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-2xs cursor-pointer"
             title="Xem trước thiệp cưới thực tế như khách mời (Ctrl+P)"
           >
             <Eye className="size-3.5 text-amber-700" />
@@ -366,36 +356,94 @@ function CanvasTopBar({
           </button>
         )}
 
-        {previewUrl && (
-          <Link
-            href={previewUrl}
-            target="_blank"
-            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-200 text-stone-600 text-xs font-medium hover:bg-stone-50 transition"
-            title="Mở liên kết thiệp công khai (tab mới)"
-          >
-            <ExternalLink className="size-3 text-stone-500" />
-            <span>Mở link</span>
-          </Link>
-        )}
-
-        {onSwitchToForm && (
+        {/* MORE MENU (⋯) */}
+        <div className="relative" ref={moreRef}>
           <button
             type="button"
-            onClick={onSwitchToForm}
-            className="hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-full border border-stone-200 text-stone-500 hover:text-stone-800 text-xs font-medium hover:bg-stone-50 transition cursor-pointer"
-            title="Chuyển sang chế độ nhập liệu biểu mẫu truyền thống"
+            onClick={() => setMoreOpen((v) => !v)}
+            className={`size-8 rounded-full flex items-center justify-center text-stone-600 hover:bg-stone-100 transition cursor-pointer border ${
+              moreOpen ? "bg-stone-100 border-stone-300" : "border-transparent hover:border-stone-200"
+            }`}
+            title="Thêm tùy chọn"
+            aria-label="Mở menu thêm"
+            aria-expanded={moreOpen}
           >
-            <SlidersHorizontal className="size-3" />
-            <span>Biểu Mẫu</span>
+            <MoreHorizontal className="size-4" />
           </button>
-        )}
 
+          {/* Dropdown */}
+          <AnimatePresence>
+            {moreOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+                className="absolute right-0 top-10 w-52 bg-white rounded-2xl border border-stone-200 shadow-xl z-50 overflow-hidden py-1.5"
+              >
+                {cardId && (
+                  <Link
+                    href={`/dashboard/cards/${cardId}/memories`}
+                    onClick={() => setMoreOpen(false)}
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-stone-700 hover:bg-amber-50 hover:text-amber-900 transition"
+                    title="Quản lý ảnh kỷ niệm & Màn hình LED tiệc cưới"
+                  >
+                    <Tv className="size-3.5 text-amber-600 shrink-0" />
+                    <span>Màn Hình LED Tiệc Cưới</span>
+                  </Link>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    window.dispatchEvent(
+                      new CustomEvent("open-album-3d-editor", { detail: { tab: "backCover" } })
+                    );
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-stone-700 hover:bg-amber-50 hover:text-amber-900 transition cursor-pointer text-left"
+                >
+                  <BookOpen className="size-3.5 text-amber-700 shrink-0" />
+                  <span>Album 3D & Bìa Sau</span>
+                </button>
+
+                {previewUrl && (
+                  <Link
+                    href={previewUrl}
+                    target="_blank"
+                    onClick={() => setMoreOpen(false)}
+                    className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition"
+                  >
+                    <ExternalLink className="size-3.5 text-stone-500 shrink-0" />
+                    <span>Mở link thiệp</span>
+                  </Link>
+                )}
+
+                {onSwitchToForm && (
+                  <>
+                    <div className="my-1 mx-3 h-px bg-stone-100" />
+                    <button
+                      type="button"
+                      onClick={() => { setMoreOpen(false); onSwitchToForm(); }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900 transition cursor-pointer text-left"
+                    >
+                      <SlidersHorizontal className="size-3.5 text-stone-500 shrink-0" />
+                      <span>Chuyển sang Biểu Mẫu</span>
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* LƯU THIỆP - PRIMARY CTA */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSaveClick}
           disabled={isSavingActive}
-          className="px-5 sm:px-6 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 sm:gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
+          className="px-4 sm:px-5 py-2 rounded-full bg-stone-900 hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg flex items-center gap-1.5 cursor-pointer transition disabled:opacity-60 shrink-0"
         >
           {isSavingActive ? (
             <Loader2 className="size-3.5 animate-spin" />

@@ -3,6 +3,20 @@ import { prisma } from "../lib/prisma";
 import { HttpError } from "../lib/http-error";
 import { AccountEntitlementService } from "./account-entitlement.service";
 
+/**
+ * Chống lỗ hổng Excel Formula Injection (CWE-1236).
+ * Nếu chuỗi từ người dùng/khách mời bắt đầu bằng =, +, -, @, \t, \r thì chèn thêm dấu '
+ * để Excel hiển thị dưới dạng văn bản thuần, không thực thi mã lệnh hoặc công thức tính toán.
+ */
+function sanitizeFormula(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  const str = String(val).trim();
+  if (/^[=\+\-@\t\r]/.test(str)) {
+    return `'${str}`;
+  }
+  return str;
+}
+
 export class ExportService {
   /**
    * Xuất danh sách khách mời và RSVP ra file Excel
@@ -79,12 +93,12 @@ export class ExportService {
 
       const row = rsvpSheet.addRow({
         index: idx + 1,
-        fullName: r.fullName,
-        phone: r.phone || "---",
+        fullName: sanitizeFormula(r.fullName),
+        phone: sanitizeFormula(r.phone || "---"),
         status: statusText,
         guestCount: r.status === "ATTENDING" ? r.guestCount : 0,
         side: sideText,
-        note: r.note || "",
+        note: sanitizeFormula(r.note || ""),
         createdAt: r.createdAt.toLocaleString("vi-VN"),
       });
 
@@ -127,11 +141,11 @@ export class ExportService {
 
       guestSheet.addRow({
         index: idx + 1,
-        guestCode: g.guestCode,
-        salutation: g.salutation,
-        fullName: g.fullName,
-        group: g.group || "Chung",
-        phone: g.phone || "---",
+        guestCode: sanitizeFormula(g.guestCode),
+        salutation: sanitizeFormula(g.salutation || ""),
+        fullName: sanitizeFormula(g.fullName),
+        group: sanitizeFormula(g.group || "Chung"),
+        phone: sanitizeFormula(g.phone || "---"),
         customUrl: finalUrl,
       });
     });

@@ -919,7 +919,7 @@ export const DEMO_TEMPLATES_MAP: Record<string, CardDetail> = {
     status: "ACTIVE",
     openingEffect: "NONE",
     fallingEffect: "PETAL",
-    musicUrl: "/music/anh-nang-cua-anh.mp3",
+    musicUrl: "/music/cuoi-nhau-di.mp3",
     isAutoPlay: true,
     primaryColor: "#B22222",
     fontFamily: "Playfair Display",

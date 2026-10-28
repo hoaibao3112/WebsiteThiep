@@ -5,6 +5,7 @@ import { HttpError } from '../lib/http-error';
 import { seedAiKnowledge } from '../services/ai-seed.service';
 import { prisma } from '../lib/prisma';
 import { logger } from '../lib/logger';
+import { checkRateLimit } from '../lib/rate-limiter';
 
 export class AiController {
   /**
@@ -13,6 +14,14 @@ export class AiController {
    */
   static async chat(req: Request, res: Response): Promise<void> {
     try {
+      const clientIp = req.ip || req.socket.remoteAddress || '127.0.0.1';
+      await checkRateLimit(
+        `ratelimit:ai:chat:${clientIp}`,
+        15,
+        60,
+        'Bạn đang gửi tin nhắn quá nhanh. Vui lòng đợi 1 phút trước khi tiếp tục trò chuyện với AI!'
+      );
+
       const { message, sessionId } = req.body;
       // sessionId do client gửi: chỉ chấp nhận ký tự an toàn, còn lại tự sinh bằng CSPRNG
       const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,100}$/;

@@ -35,20 +35,24 @@ interface NavItem {
   label: string;
   drawerTitle: string;
   icon: React.ComponentType<{ className?: string }>;
+  group: "create" | "settings";
+  hint?: string;
 }
 
 const TOOLS: NavItem[] = [
-  { id: "text", label: "Văn bản", drawerTitle: "Văn bản", icon: Type },
-  { id: "image", label: "Hình ảnh", drawerTitle: "Hình ảnh", icon: ImageIcon },
-  { id: "album3d", label: "Album 3D", drawerTitle: "Album 3D & Bìa Màn Kết", icon: BookOpen },
-  { id: "stock", label: "Stock", drawerTitle: "Thư viện Stock", icon: Layers },
-  { id: "background", label: "Nền", drawerTitle: "Nền thiệp", icon: Palette },
-  { id: "music", label: "Nhạc", drawerTitle: "Nhạc nền", icon: Music },
-  { id: "shape", label: "Hình dạng", drawerTitle: "Hình dạng", icon: Shapes },
-  { id: "widget", label: "Tiện ích", drawerTitle: "Tiện ích", icon: LayoutGrid },
-  { id: "preset", label: "Preset", drawerTitle: "Preset mẫu", icon: Mail },
-  { id: "color", label: "Mẫu", drawerTitle: "Mẫu thiết kế", icon: Columns },
-  { id: "effect", label: "Hiệu ứng", drawerTitle: "Hiệu ứng tương tác", icon: Sparkles },
+  // ── NHÓM TẠO ──
+  { id: "text", label: "Văn bản", drawerTitle: "Thêm văn bản", icon: Type, group: "create", hint: "Thêm tiêu đề, chú thích" },
+  { id: "image", label: "Ảnh", drawerTitle: "Hình ảnh", icon: ImageIcon, group: "create", hint: "Tải ảnh lên hoặc thêm ảnh" },
+  { id: "shape", label: "Hình dạng", drawerTitle: "Hình dạng & Đường", icon: Shapes, group: "create", hint: "Thêm đường, khung viền" },
+  { id: "widget", label: "Tiện ích", drawerTitle: "Tiện ích trang trí", icon: LayoutGrid, group: "create", hint: "Đồng hồ đếm ngược, QR, đếm ngày" },
+  { id: "stock", label: "Thư viện", drawerTitle: "Thư viện Stock", icon: Layers, group: "create", hint: "Clipart, sticker, hoa lá" },
+  // ── NHÓM CÀI ĐẶT ──
+  { id: "background", label: "Nền", drawerTitle: "Nền thiệp", icon: Palette, group: "settings", hint: "Màu nền, ảnh nền, họa tiết" },
+  { id: "music", label: "Nhạc", drawerTitle: "Nhạc nền thiệp", icon: Music, group: "settings", hint: "Chọn bản nhạc phát tự động" },
+  { id: "color", label: "Mẫu", drawerTitle: "Mẫu thiệp nhanh", icon: Columns, group: "settings", hint: "Áp dụng bộ màu & font có sẵn" },
+  { id: "effect", label: "Hiệu ứng", drawerTitle: "Hiệu ứng tương tác", icon: Sparkles, group: "settings", hint: "Hoa rơi, pháo hoa, snow..." },
+  { id: "preset", label: "Preset", drawerTitle: "Bộ mẫu thiết kế", icon: Mail, group: "settings", hint: "Bộ thiết kế hoàn chỉnh" },
+  { id: "album3d", label: "Album", drawerTitle: "Album 3D & Bìa Màn Kết", icon: BookOpen, group: "settings", hint: "Cuốn album lật trang 3D" },
 ];
 
 export function LeftSidebar() {
@@ -102,35 +106,57 @@ export function LeftSidebar() {
   };
 
   const activeToolItem = TOOLS.find((t) => t.id === activeTool);
+  const createTools = TOOLS.filter((t) => t.group === "create");
+  const settingsTools = TOOLS.filter((t) => t.group === "settings");
 
   return (
     <div className="relative flex h-full select-none bg-white">
-      {/* 1. NARROW ICON DOCK (VERTICAL ~68px) KHỚP CHUẨN NGAYCHUNGDOI */}
-      <aside className="w-[70px] bg-white border-r border-stone-200 flex flex-col justify-start py-3 z-30 shrink-0 shadow-xs">
-        <div className="flex flex-col items-center gap-1.5 overflow-y-auto px-1.5">
-          {TOOLS.map((tool) => {
-            const Icon = tool.icon;
-            const isActive = tool.id === "shape" ? isShapePopoverOpen : activeTool === tool.id;
+      {/* 1. NARROW ICON DOCK (VERTICAL ~72px) */}
+      <aside className="w-[72px] bg-white border-r border-stone-200 flex flex-col justify-start py-2 z-30 shrink-0 shadow-xs overflow-y-auto">
 
-            return (
-              <button
-                key={tool.id}
-                type="button"
-                onClick={(e) => handleToolClick(tool.id, e)}
-                className={`w-full min-h-[52px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer ${
-                  isActive
-                    ? "bg-stone-100 text-stone-900 font-bold border border-stone-200 shadow-2xs"
-                    : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
-                }`}
-                title={tool.label}
-              >
-                <Icon className={`size-4.5 ${isActive ? "text-stone-900" : ""}`} />
-                <span className="text-[10px] leading-tight tracking-tight text-center">
-                  {tool.label}
-                </span>
-              </button>
-            );
-          })}
+        {/* Nhóm TẠO */}
+        <div className="px-1.5 pb-1">
+          <span className="block text-[9px] font-bold uppercase tracking-widest text-stone-400 text-center py-1.5 select-none">Tạo</span>
+          <div className="flex flex-col items-center gap-0.5">
+            {createTools.map((tool) => {
+              const Icon = tool.icon;
+              const isActive = tool.id === "shape" ? isShapePopoverOpen : activeTool === tool.id;
+
+              return (
+                <ToolButton
+                  key={tool.id}
+                  tool={tool}
+                  isActive={isActive}
+                  Icon={Icon}
+                  onClick={(e) => handleToolClick(tool.id, e)}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mx-3 my-1.5 h-px bg-stone-200/80" />
+
+        {/* Nhóm CÀI ĐẶT */}
+        <div className="px-1.5 pb-2">
+          <span className="block text-[9px] font-bold uppercase tracking-widest text-stone-400 text-center py-1.5 select-none">Thiết lập</span>
+          <div className="flex flex-col items-center gap-0.5">
+            {settingsTools.map((tool) => {
+              const Icon = tool.icon;
+              const isActive = activeTool === tool.id;
+
+              return (
+                <ToolButton
+                  key={tool.id}
+                  tool={tool}
+                  isActive={isActive}
+                  Icon={Icon}
+                  onClick={(e) => handleToolClick(tool.id, e)}
+                />
+              );
+            })}
+          </div>
         </div>
       </aside>
 
@@ -146,28 +172,33 @@ export function LeftSidebar() {
         {activeTool && (
           <motion.div
             initial={{ opacity: 0, x: -10, width: 0 }}
-            animate={{ opacity: 1, x: 0, width: 320 }}
+            animate={{ opacity: 1, x: 0, width: 300 }}
             exit={{ opacity: 0, x: -10, width: 0 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="h-full bg-white border-r border-stone-200 shadow-lg z-20 flex flex-col shrink-0 relative"
           >
-            {/* Header sub-drawer với nút thu gọn '<' */}
-            <div className="h-12 border-b border-stone-100 px-4 flex items-center justify-between shrink-0">
-              <span className="text-sm font-bold text-stone-800">
-                {activeToolItem?.drawerTitle || "Công cụ"}
-              </span>
+            {/* Header sub-drawer */}
+            <div className="h-12 border-b border-stone-100 px-4 flex items-center justify-between shrink-0 bg-stone-50/60">
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">
+                  {activeToolItem?.group === "create" ? "Tạo" : "Thiết lập"}
+                </span>
+                <span className="text-sm font-bold text-stone-800 truncate">
+                  {activeToolItem?.drawerTitle || "Công cụ"}
+                </span>
+              </div>
               <button
                 type="button"
                 aria-label="Thu gọn panel"
                 onClick={() => setActiveTool(null)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
+                className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer shrink-0 ml-2"
                 title="Thu gọn"
               >
                 <ChevronLeft className="size-4" />
               </button>
             </div>
 
-            {/* Vertical Edge Collapse Toggle (Khớp nút thu gọn ở cạnh drawer trong ảnh mẫu) */}
+            {/* Vertical Edge Collapse Toggle */}
             <button
               type="button"
               onClick={() => setActiveTool(null)}
@@ -183,5 +214,41 @@ export function LeftSidebar() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+// ── Tool Button Component ──────────────────────────────────
+interface ToolButtonProps {
+  tool: NavItem;
+  isActive: boolean;
+  Icon: React.ComponentType<{ className?: string }>;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+function ToolButton({ tool, isActive, Icon, onClick }: ToolButtonProps) {
+  return (
+    <button
+      key={tool.id}
+      type="button"
+      onClick={onClick}
+      className={`w-full min-h-[54px] rounded-xl flex flex-col items-center justify-center gap-1 transition cursor-pointer group relative ${
+        isActive
+          ? "bg-amber-500/15 text-amber-800 font-bold border border-amber-300/70 shadow-inner"
+          : "text-stone-500 hover:text-stone-900 hover:bg-stone-50/80"
+      }`}
+      title={tool.hint || tool.label}
+      aria-label={tool.label}
+      aria-pressed={isActive}
+    >
+      <Icon className={`size-[18px] transition-transform group-hover:scale-110 ${isActive ? "text-amber-700" : ""}`} />
+      <span className={`text-[9.5px] leading-tight tracking-tight text-center font-semibold ${isActive ? "text-amber-800" : ""}`}>
+        {tool.label}
+      </span>
+
+      {/* Active indicator dot */}
+      {isActive && (
+        <span className="absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
+      )}
+    </button>
   );
 }

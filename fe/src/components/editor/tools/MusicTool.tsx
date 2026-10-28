@@ -159,16 +159,15 @@ export function MusicTool() {
           {/* Filter categories */}
           <div className="flex gap-1 overflow-x-auto pb-0.5">
             {[
-              { id: "all", label: "Tất cả" },
-              { id: "vn", label: "Nhạc Việt" },
-              { id: "intl", label: "Quốc tế" },
-              { id: "piano", label: "Piano / Acoustic" },
+              { id: "all", label: "Tất cả (24)" },
+              { id: "vn", label: "Nhạc Việt (15)" },
+              { id: "intl", label: "Quốc tế (9)" },
             ].map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => setFilterCat(c.id as any)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer shrink-0 ${
                   filterCat === c.id
                     ? "bg-amber-100 text-amber-900 font-bold"
                     : "bg-stone-100 text-stone-600 hover:bg-stone-200"

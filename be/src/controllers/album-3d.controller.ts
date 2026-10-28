@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { Album3DService } from "../services/album-3d.service";
 import { Album3DConfigSchema } from "../schemas/album-3d.schema";
 import { AuthenticatedRequest } from "../middlewares/auth.middleware";
+import { checkRateLimit } from "../lib/rate-limiter";
 import { z } from "zod";
 
 export class Album3DController {
@@ -78,6 +79,14 @@ export class Album3DController {
    */
   static async importDrive(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
+      const clientIp = req.ip || req.socket.remoteAddress || "127.0.0.1";
+      await checkRateLimit(
+        `ratelimit:google-drive-import:${clientIp}`,
+        10,
+        60,
+        "Bạn đang nhập link Google Drive quá nhanh. Vui lòng thử lại sau 1 phút!"
+      );
+
       const input = req.body?.url || req.body?.links || req.body?.input;
       if (!input || typeof input !== "string") {
         return res.status(400).json({
