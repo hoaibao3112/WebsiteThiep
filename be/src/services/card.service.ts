@@ -382,15 +382,11 @@ export class CardService {
   }
 
   static async deleteCard(accountId: string, cardId: string) {
-    const existing = await prisma.card.findFirst({
-      where: { id: cardId, accountId },
-      select: { id: true },
-    });
-    if (!existing) {
+    const result = await prisma.card.deleteMany({ where: { id: cardId, accountId } });
+    if (result.count === 0) {
       throw new HttpError(404, "Không tìm thấy thiệp hoặc bạn không có quyền xóa", "CARD_NOT_FOUND");
     }
-
-    return prisma.card.delete({ where: { id: cardId, accountId } });
+    return { success: true };
   }
 
   static async isSlugAvailable(slug: string, excludeCardId?: string) {

@@ -241,18 +241,13 @@ export class WeddingMemoryService {
    * Xóa ảnh kỷ niệm
    */
   static async deleteMemory(accountId: string, cardId: string, memoryId: string): Promise<{ success: boolean }> {
-    const memory = await prisma.weddingMemory.findFirst({
+    const result = await prisma.weddingMemory.deleteMany({
       where: { id: memoryId, accountId, cardId },
-      select: { id: true },
     });
 
-    if (!memory) {
+    if (result.count === 0) {
       throw new HttpError(404, "Không tìm thấy ảnh kỷ niệm", "MEMORY_NOT_FOUND");
     }
-
-    await prisma.weddingMemory.delete({
-      where: { id: memoryId },
-    });
 
     try {
       const channel = `wedding:memories:${cardId}`;

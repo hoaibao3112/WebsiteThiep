@@ -243,7 +243,7 @@ export class GuestSignatureService {
       }
     }
 
-    await prisma.guestSignature.delete({ where: { id: signatureId } });
+    await prisma.guestSignature.deleteMany({ where: { id: signatureId, cardId, accountId } });
     return { success: true };
   }
 }
